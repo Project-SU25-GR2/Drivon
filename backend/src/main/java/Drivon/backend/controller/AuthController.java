@@ -14,6 +14,14 @@ import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.Optional;
+import org.springframework.http.HttpStatus;
+import Drivon.backend.dto.GoogleAuthRequest;
+import Drivon.backend.dto.AuthResponse;
+import Drivon.backend.service.UserService;
+import Drivon.backend.service.JwtTokenProvider;
+import Drivon.backend.model.UserRole;
+import Drivon.backend.model.UserStatus;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -25,6 +33,12 @@ public class AuthController {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
@@ -87,5 +101,55 @@ public class AuthController {
         // This endpoint is mainly for confirmation or potential future server-side
         // invalidation.
         return ResponseEntity.ok("Logout successful");
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<?> googleAuth(@RequestBody GoogleAuthRequest request) {
+        try {
+            if (request.getEmail() == null || request.getGoogleId() == null) {
+                return ResponseEntity.badRequest().body("Email and Google ID are required");
+            }
+
+            // First check if user exists with this Google ID
+            Optional<User> existingGoogleUser = userService.findByGoogleId(request.getGoogleId());
+            if (existingGoogleUser.isPresent()) {
+                User user = existingGoogleUser.get();
+                String token = jwtTokenProvider.createToken(user.getEmail());
+                return ResponseEntity.ok(new AuthResponse(token, user));
+            }
+
+            // Then check if user exists with this email
+            Optional<User> existingUser = userService.findByEmail(request.getEmail());
+            if (existingUser.isPresent()) {
+                // If user exists with this email, update their Google ID
+                User user = existingUser.get();
+                user.setGoogleId(request.getGoogleId());
+                user.setEmailVerified(true);
+                // Update fullName if missing
+                if (user.getFullName() == null || user.getFullName().isEmpty()) {
+                    user.setFullName(request.getName());
+                }
+                user = userService.save(user);
+                String token = jwtTokenProvider.createToken(user.getEmail());
+                return ResponseEntity.ok(new AuthResponse(token, user));
+            }
+
+            // If no user exists with this email or Google ID, create new user
+            User newUser = new User();
+            newUser.setEmail(request.getEmail());
+            newUser.setGoogleId(request.getGoogleId());
+            newUser.setFullName(request.getName());
+            newUser.setEmailVerified(true);
+            newUser.setRole(UserRole.renter);
+            newUser.setStatus(UserStatus.active);
+            
+            newUser = userService.save(newUser);
+            String token = jwtTokenProvider.createToken(newUser.getEmail());
+            return ResponseEntity.ok(new AuthResponse(token, newUser));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error during Google authentication: " + e.getMessage());
+        }
     }
 }

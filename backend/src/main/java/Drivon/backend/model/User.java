@@ -2,7 +2,9 @@ package Drivon.backend.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import lombok.Data;
 
+@Data
 @Entity
 @Table(name = "users")
 public class User {
@@ -20,6 +22,8 @@ public class User {
     private String fullName;
     private String avatarUrl;
     private String address;
+    private String googleId;
+    private boolean enabled = true;
 
     @Enumerated(EnumType.STRING)
     private UserRole role = UserRole.renter;

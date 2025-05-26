@@ -13,6 +13,7 @@ import HomeContent from './components/HomeContent';
 import MainLayout from './components/MainLayout';
 import AuthPage from './components/AuthPage';
 import ForgotPasswordPage from './components/ForgotPasswordPage';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -46,47 +47,49 @@ function App() {
   };
 
   return (
-    <Routes>
-      <Route path="/" element={<MainLayout user={user} handleLogout={handleLogout}><HomeContent /></MainLayout>} />
-      <Route 
-        path="/auth" 
-        element={
-          user ? <Navigate to="/" replace /> : 
-          <AuthPage handleLoginSuccess={handleLoginSuccess} handleSignupSuccess={handleSignupSuccess} />
-        } 
-      />
-      <Route 
-        path="/payment" 
-        element={
-          user ? <PaymentForm /> : 
-          <Navigate to="/auth" replace />
-        } 
-      />
-      <Route path="/profile" element={<MainLayout user={user} handleLogout={handleLogout}><ProfilePage user={user} onUpdateUser={handleLoginSuccess} /></MainLayout>} />
-      <Route path="/change-password" element={<MainLayout user={user} handleLogout={handleLogout}><ChangePasswordPage /></MainLayout>} />
-      <Route path="/change-avatar" element={<MainLayout user={user} handleLogout={handleLogout}><ChangeAvatarPage /></MainLayout>} />
-      <Route path="/forgot-password" element={<MainLayout user={user} handleLogout={handleLogout}><ForgotPasswordPage /></MainLayout>} />
-      <Route 
-        path="/admin" 
-        element={
-          <MainLayout user={user} handleLogout={handleLogout}>
-            <AdminPage user={user} />
-          </MainLayout>
-        } 
-      />
-      <Route 
-        path="/contracts" 
-        element={
-          user ? (
-            <MainLayout user={user} handleLogout={handleLogout}>
-              <ContractForm user={user} />
-            </MainLayout>
-          ) : (
+    <GoogleOAuthProvider clientId="966794015874-5g0iktfn8junh19ctfuoua6bh9m815er.apps.googleusercontent.com">
+      <Routes>
+        <Route path="/" element={<MainLayout user={user} handleLogout={handleLogout}><HomeContent /></MainLayout>} />
+        <Route 
+          path="/auth" 
+          element={
+            user ? <Navigate to="/" replace /> : 
+            <AuthPage handleLoginSuccess={handleLoginSuccess} handleSignupSuccess={handleSignupSuccess} />
+          } 
+        />
+        <Route 
+          path="/payment" 
+          element={
+            user ? <PaymentForm /> : 
             <Navigate to="/auth" replace />
-          )
-        } 
-      />
-    </Routes>
+          } 
+        />
+        <Route path="/profile" element={<MainLayout user={user} handleLogout={handleLogout}><ProfilePage user={user} onUpdateUser={handleLoginSuccess} /></MainLayout>} />
+        <Route path="/change-password" element={<MainLayout user={user} handleLogout={handleLogout}><ChangePasswordPage /></MainLayout>} />
+        <Route path="/change-avatar" element={<MainLayout user={user} handleLogout={handleLogout}><ChangeAvatarPage /></MainLayout>} />
+        <Route path="/forgot-password" element={<MainLayout user={user} handleLogout={handleLogout}><ForgotPasswordPage /></MainLayout>} />
+        <Route 
+          path="/admin" 
+          element={
+            <MainLayout user={user} handleLogout={handleLogout}>
+              <AdminPage user={user} />
+            </MainLayout>
+          } 
+        />
+        <Route 
+          path="/contracts" 
+          element={
+            user ? (
+              <MainLayout user={user} handleLogout={handleLogout}>
+                <ContractForm user={user} />
+              </MainLayout>
+            ) : (
+              <Navigate to="/auth" replace />
+            )
+          } 
+        />
+      </Routes>
+    </GoogleOAuthProvider>
   );
 }
 

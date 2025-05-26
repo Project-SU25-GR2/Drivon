@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { GoogleLogin } from '@react-oauth/google';
+import { jwtDecode } from 'jwt-decode';
 
 const Login = ({ onLoginSuccess }) => {
     const [email, setEmail] = useState('');
@@ -17,11 +19,38 @@ const Login = ({ onLoginSuccess }) => {
             });
 
             if (response.data) {
-                onLoginSuccess(response.data);
+                onLoginSuccess(response.data.user || response.data);
+                if (response.data.token) {
+                    localStorage.setItem('token', response.data.token);
+                }
             }
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed. Please try again.');
         }
+    };
+
+    const handleGoogleSuccess = async (credentialResponse) => {
+        try {
+            const decoded = jwtDecode(credentialResponse.credential);
+            const response = await axios.post('http://localhost:8080/api/auth/google', {
+                email: decoded.email,
+                name: decoded.name,
+                googleId: decoded.sub
+            });
+            
+            if (response.data) {
+                onLoginSuccess(response.data.user || response.data);
+                if (response.data.token) {
+                    localStorage.setItem('token', response.data.token);
+                }
+            }
+        } catch (err) {
+            setError(err.response?.data?.message || 'Google login failed. Please try again.');
+        }
+    };
+
+    const handleGoogleError = () => {
+        setError('Google login failed. Please try again.');
     };
 
     return (
@@ -57,6 +86,15 @@ const Login = ({ onLoginSuccess }) => {
                 >
                     Login
                 </button>
+                
+                <div style={{ marginTop: '20px', textAlign: 'center' }}>
+                    <p>Or login with:</p>
+                    <GoogleLogin
+                        onSuccess={handleGoogleSuccess}
+                        onError={handleGoogleError}
+                        useOneTap
+                    />
+                </div>
             </form>
         </div>
     );

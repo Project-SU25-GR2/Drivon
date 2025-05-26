@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { GoogleLogin } from '@react-oauth/google';
+import { jwtDecode } from 'jwt-decode';
 
 const Signup = ({ onSignupSuccess }) => {
     const [formData, setFormData] = useState({
@@ -50,6 +52,27 @@ const Signup = ({ onSignupSuccess }) => {
                 setGeneralError('Registration failed. Please try again.');
             }
         }
+    };
+
+    const handleGoogleSuccess = async (credentialResponse) => {
+        try {
+            const decoded = jwtDecode(credentialResponse.credential);
+            const response = await axios.post('http://localhost:8080/api/auth/google', {
+                email: decoded.email,
+                name: decoded.name,
+                googleId: decoded.sub
+            });
+            
+            if (response.data) {
+                onSignupSuccess(response.data);
+            }
+        } catch (err) {
+            setGeneralError(err.response?.data?.message || 'Google signup failed. Please try again.');
+        }
+    };
+
+    const handleGoogleError = () => {
+        setGeneralError('Google signup failed. Please try again.');
     };
 
     return (
@@ -129,6 +152,15 @@ const Signup = ({ onSignupSuccess }) => {
             <button type="submit" className="auth-button">
                 Sign Up
             </button>
+
+            <div style={{ marginTop: '20px', textAlign: 'center' }}>
+                <p>Or sign up with:</p>
+                <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={handleGoogleError}
+                    useOneTap
+                />
+            </div>
         </form>
     );
 };
