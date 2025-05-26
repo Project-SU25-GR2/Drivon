@@ -24,11 +24,11 @@ public class SecurityConfig {
             .cors().and()
             .csrf().disable()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and()
-            .authorizeHttpRequests()
+                .and()
+                .authorizeHttpRequests()
             .requestMatchers("/api/auth/**", "/api/**").permitAll()
-            .anyRequest().authenticated();
-        
+                .anyRequest().authenticated();
+
         return http.build();
     }
 
@@ -54,7 +54,7 @@ public class SecurityConfig {
         configuration.setExposedHeaders(Arrays.asList("Authorization"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
