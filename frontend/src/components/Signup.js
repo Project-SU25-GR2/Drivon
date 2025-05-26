@@ -33,7 +33,6 @@ function Signup({ onSignupSuccess }) {
             <h2>Sign Up</h2>
             <form onSubmit={handleSubmit}>
                 <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px' }}>Email:</label>
                     <input
                         type="email"
                         name="email"
@@ -45,11 +44,11 @@ function Signup({ onSignupSuccess }) {
                             borderRadius: '4px',
                             border: '1px solid #ddd'
                         }}
+                        placeholder="Email"
                         required
                     />
                 </div>
                 <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px' }}>Phone:</label>
                     <input
                         type="tel"
                         name="phone"
@@ -61,11 +60,11 @@ function Signup({ onSignupSuccess }) {
                             borderRadius: '4px',
                             border: '1px solid #ddd'
                         }}
+                        placeholder="Phone"
                         required
                     />
                 </div>
                 <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px' }}>Password:</label>
                     <input
                         type="password"
                         name="password"
@@ -77,11 +76,11 @@ function Signup({ onSignupSuccess }) {
                             borderRadius: '4px',
                             border: '1px solid #ddd'
                         }}
+                        placeholder="Password"
                         required
                     />
                 </div>
                 <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px' }}>Full Name:</label>
                     <input
                         type="text"
                         name="fullName"
@@ -93,11 +92,11 @@ function Signup({ onSignupSuccess }) {
                             borderRadius: '4px',
                             border: '1px solid #ddd'
                         }}
+                        placeholder="Full Name"
                         required
                     />
                 </div>
                 <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px' }}>Address:</label>
                     <input
                         type="text"
                         name="address"
@@ -109,6 +108,7 @@ function Signup({ onSignupSuccess }) {
                             borderRadius: '4px',
                             border: '1px solid #ddd'
                         }}
+                        placeholder="Address"
                         required
                     />
                 </div>

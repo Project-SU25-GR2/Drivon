@@ -21,7 +21,6 @@ function Login({ onLoginSuccess }) {
             <h2>Login</h2>
             <form onSubmit={handleSubmit}>
                 <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px' }}>Email:</label>
                     <input
                         type="email"
                         value={email}
@@ -32,11 +31,11 @@ function Login({ onLoginSuccess }) {
                             borderRadius: '4px',
                             border: '1px solid #ddd'
                         }}
+                        placeholder="Email"
                         required
                     />
                 </div>
                 <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px' }}>Password:</label>
                     <input
                         type="password"
                         value={password}
@@ -47,6 +46,7 @@ function Login({ onLoginSuccess }) {
                             borderRadius: '4px',
                             border: '1px solid #ddd'
                         }}
+                        placeholder="Password"
                         required
                     />
                 </div>

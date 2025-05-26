@@ -1,0 +1,63 @@
+package Drivon.backend.controller;
+
+import Drivon.backend.model.User;
+import Drivon.backend.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+// import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map; // Import Map for role update request body
+import Drivon.backend.model.UserRole; // Import UserRole enum
+
+@RestController
+@RequestMapping("/api/admin")
+@CrossOrigin(origins = "http://localhost:3000")
+// @PreAuthorize("hasRole('ADMIN')") // Ensure only users with ADMIN role can
+// access this controller
+public class AdminController {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @GetMapping("/users")
+    public ResponseEntity<List<User>> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return ResponseEntity.ok(users);
+    }
+
+    // Endpoint to update user role
+    @PutMapping("/users/{userId}/role")
+    public ResponseEntity<?> updateUserRole(@PathVariable Long userId, @RequestBody Map<String, String> roleUpdate) {
+        return userRepository.findById(userId).map(user -> {
+            String newRole = roleUpdate.get("role");
+            if (newRole == null || newRole.isEmpty()) {
+                return ResponseEntity.badRequest().body("New role must be provided.");
+            }
+            // Simple validation, you might want more robust validation
+            if (!newRole.equals("USER") && !newRole.equals("ADMIN")) {
+                return ResponseEntity.badRequest().body("Invalid role.");
+            }
+
+            try {
+                UserRole roleEnum = UserRole.valueOf(newRole.toUpperCase()); // Convert string to enum, case-insensitive
+                user.setRole(roleEnum);
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body("Invalid role provided.");
+            }
+            userRepository.save(user);
+            return ResponseEntity.ok().body("User role updated successfully.");
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    // Endpoint to delete a user
+    @DeleteMapping("/users/{userId}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long userId) {
+        return userRepository.findById(userId).map(user -> {
+            userRepository.delete(user);
+            return ResponseEntity.ok().body("User deleted successfully.");
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+}
