@@ -93,6 +93,13 @@ const Login = ({ onLoginSuccess }) => {
                         onSuccess={handleGoogleSuccess}
                         onError={handleGoogleError}
                         useOneTap
+                        popup_type="popup"
+                        popup_properties={{
+                            width: 500,
+                            height: 600,
+                            left: window.screenX + (window.outerWidth - 500) / 2,
+                            top: window.screenY + (window.outerHeight - 600) / 2
+                        }}
                     />
                 </div>
             </form>

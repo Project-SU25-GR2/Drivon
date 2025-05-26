@@ -20,6 +20,9 @@ public class JwtTokenProvider {
 
     private SecretKey getSigningKey() {
         byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
+        if (keyBytes.length < 32) {
+            throw new IllegalArgumentException("JWT secret key must be at least 32 characters long");
+        }
         return Keys.hmacShaKeyFor(keyBytes);
     }
 

@@ -143,11 +143,17 @@ public class AuthController {
             newUser.setRole(UserRole.renter);
             newUser.setStatus(UserStatus.active);
             
-            newUser = userService.save(newUser);
-            String token = jwtTokenProvider.createToken(newUser.getEmail());
-            return ResponseEntity.ok(new AuthResponse(token, newUser));
+            try {
+                newUser = userService.save(newUser);
+                String token = jwtTokenProvider.createToken(newUser.getEmail());
+                return ResponseEntity.ok(new AuthResponse(token, newUser));
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error saving new user: " + e.getMessage());
+            }
 
         } catch (Exception e) {
+            e.printStackTrace(); // Add this for server-side logging
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error during Google authentication: " + e.getMessage());
         }

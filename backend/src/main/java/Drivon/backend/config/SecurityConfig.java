@@ -49,9 +49,17 @@ public class SecurityConfig {
             "Accept",
             "Origin",
             "Access-Control-Request-Method",
-            "Access-Control-Request-Headers"
+            "Access-Control-Request-Headers",
+            "Cross-Origin-Opener-Policy",
+            "Cross-Origin-Embedder-Policy",
+            "Cross-Origin-Resource-Policy"
         ));
-        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+        configuration.setExposedHeaders(Arrays.asList(
+            "Authorization",
+            "Cross-Origin-Opener-Policy",
+            "Cross-Origin-Embedder-Policy",
+            "Cross-Origin-Resource-Policy"
+        ));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 
