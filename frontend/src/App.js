@@ -65,9 +65,42 @@ function App() {
             <Navigate to="/auth" replace />
           } 
         />
-        <Route path="/profile" element={<MainLayout user={user} handleLogout={handleLogout}><ProfilePage user={user} onUpdateUser={handleLoginSuccess} /></MainLayout>} />
-        <Route path="/change-password" element={<MainLayout user={user} handleLogout={handleLogout}><ChangePasswordPage /></MainLayout>} />
-        <Route path="/change-avatar" element={<MainLayout user={user} handleLogout={handleLogout}><ChangeAvatarPage /></MainLayout>} />
+        <Route 
+          path="/profile" 
+          element={
+            user ? (
+              <MainLayout user={user} handleLogout={handleLogout}>
+                <ProfilePage user={user} onUpdateUser={handleLoginSuccess} />
+              </MainLayout>
+            ) : (
+              <Navigate to="/auth" replace />
+            )
+          } 
+        />
+        <Route 
+          path="/change-password" 
+          element={
+            user ? (
+              <MainLayout user={user} handleLogout={handleLogout}>
+                <ChangePasswordPage />
+              </MainLayout>
+            ) : (
+              <Navigate to="/auth" replace />
+            )
+          } 
+        />
+        <Route 
+          path="/change-avatar" 
+          element={
+            user ? (
+              <MainLayout user={user} handleLogout={handleLogout}>
+                <ChangeAvatarPage />
+              </MainLayout>
+            ) : (
+              <Navigate to="/auth" replace />
+            )
+          } 
+        />
         <Route path="/forgot-password" element={<MainLayout user={user} handleLogout={handleLogout}><ForgotPasswordPage /></MainLayout>} />
         <Route 
           path="/admin" 

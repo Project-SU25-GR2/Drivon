@@ -1,0 +1,265 @@
+.profile-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.profile-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+.profile-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+  border-radius: 1rem;
+  color: white;
+}
+
+.profile-avatar-section {
+  margin-bottom: 1.5rem;
+}
+
+.profile-avatar-wrapper {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.profile-avatar {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 4px solid white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  object-fit: cover;
+}
+
+.change-avatar-button {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background-color: #0d6efd;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid white;
+  transition: all 0.2s ease;
+}
+
+.change-avatar-button:hover {
+  background-color: #0b5ed7;
+  color: white;
+  transform: scale(1.1);
+}
+
+.profile-name {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin: 0.5rem 0;
+}
+
+.profile-email {
+  font-size: 1rem;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.profile-content {
+  display: grid;
+  gap: 2rem;
+}
+
+.profile-section {
+  background: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.section-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #212529;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+.info-item {
+  margin-bottom: 1rem;
+}
+
+.info-item label {
+  display: block;
+  font-size: 0.875rem;
+  color: #6c757d;
+  margin-bottom: 0.5rem;
+}
+
+.info-item p {
+  margin: 0;
+  font-size: 1rem;
+  color: #212529;
+  font-weight: 500;
+}
+
+.edit-form {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 0;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #212529;
+}
+
+.form-control {
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.form-control:disabled {
+  background-color: #f8f9fa;
+  cursor: not-allowed;
+}
+
+.form-text {
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.security-actions {
+  display: grid;
+  gap: 1rem;
+}
+
+.security-action-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 0.5rem;
+  color: #212529;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.security-action-item:hover {
+  background-color: #e9ecef;
+  color: #212529;
+  transform: translateX(5px);
+}
+
+.security-action-item i {
+  font-size: 1.5rem;
+  color: #0d6efd;
+}
+
+.security-action-item h4 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.security-action-item p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.alert {
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .profile-container {
+    margin: 1rem auto;
+  }
+
+  .profile-header {
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+  }
+
+  .profile-avatar {
+    width: 120px;
+    height: 120px;
+  }
+
+  .profile-section {
+    padding: 1.5rem;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+  }
+} 

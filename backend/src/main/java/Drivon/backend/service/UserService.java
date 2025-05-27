@@ -23,8 +23,8 @@ public class UserService {
     }
 
     public User save(User user) {
-        if (user.getPassword() == null) {
-            // Generate a random password for Google users
+        if (user.getPassword() == null && user.getGoogleId() == null) {
+            // Generate a random password only for non-Google users
             user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
         }
         return userRepository.save(user);
