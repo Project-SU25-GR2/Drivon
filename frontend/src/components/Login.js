@@ -2,15 +2,18 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
+import Button from './Button';
 
 const Login = ({ onLoginSuccess }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setIsLoading(true);
 
         try {
             const response = await axios.post('http://localhost:8080/api/auth/login', {
@@ -26,10 +29,13 @@ const Login = ({ onLoginSuccess }) => {
             }
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed. Please try again.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const handleGoogleSuccess = async (credentialResponse) => {
+        setIsLoading(true);
         try {
             const decoded = jwtDecode(credentialResponse.credential);
             const response = await axios.post('http://localhost:8080/api/auth/google', {
@@ -46,6 +52,8 @@ const Login = ({ onLoginSuccess }) => {
             }
         } catch (err) {
             setError(err.response?.data?.message || 'Google login failed. Please try again.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -59,7 +67,6 @@ const Login = ({ onLoginSuccess }) => {
             <form onSubmit={handleSubmit} className="auth-form">
                 {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
                 <div>
-                    <label>Email:</label>
                     <input
                         type="email"
                         placeholder="Email"
@@ -70,7 +77,6 @@ const Login = ({ onLoginSuccess }) => {
                     />
                 </div>
                 <div>
-                    <label>Password:</label>
                     <input
                         type="password"
                         placeholder="Password"
@@ -80,12 +86,13 @@ const Login = ({ onLoginSuccess }) => {
                         required
                     />
                 </div>
-                <button
+                <Button
                     type="submit"
+                    isLoading={isLoading}
                     className="auth-button"
                 >
                     Login
-                </button>
+                </Button>
                 
                 <div style={{ marginTop: '20px', textAlign: 'center' }}>
                     <p>Or login with:</p>

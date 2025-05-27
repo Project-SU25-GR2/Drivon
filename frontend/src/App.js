@@ -11,7 +11,6 @@ import ChangePasswordPage from './components/ChangePasswordPage';
 import ChangeAvatarPage from './components/ChangeAvatarPage';
 import HomeContent from './components/HomeContent';
 import MainLayout from './components/MainLayout';
-import AuthPage from './components/AuthPage';
 import ForgotPasswordPage from './components/ForgotPasswordPage';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
@@ -54,7 +53,9 @@ function App() {
           path="/auth" 
           element={
             user ? <Navigate to="/" replace /> : 
-            <AuthPage handleLoginSuccess={handleLoginSuccess} handleSignupSuccess={handleSignupSuccess} />
+            <MainLayout user={user} handleLogout={handleLogout}>
+              <HomeContent />
+            </MainLayout>
           } 
         />
         <Route 

@@ -48,7 +48,7 @@ public class AuthController {
         if (user == null || !passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             return ResponseEntity.badRequest().body("Invalid email or password");
         }
-
+        System.out.println("User logged in: " + user);
         return ResponseEntity.ok(user);
     }
 

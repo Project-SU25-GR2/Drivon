@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
+import Button from './Button';
 
 const Signup = ({ onSignupSuccess }) => {
     const [formData, setFormData] = useState({
@@ -13,6 +14,7 @@ const Signup = ({ onSignupSuccess }) => {
     });
     const [errors, setErrors] = useState({});
     const [generalError, setGeneralError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -33,6 +35,7 @@ const Signup = ({ onSignupSuccess }) => {
         e.preventDefault();
         setErrors({});
         setGeneralError('');
+        setIsLoading(true);
 
         try {
             const response = await axios.post('http://localhost:8080/api/auth/signup', formData);
@@ -51,10 +54,13 @@ const Signup = ({ onSignupSuccess }) => {
             } else {
                 setGeneralError('Registration failed. Please try again.');
             }
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const handleGoogleSuccess = async (credentialResponse) => {
+        setIsLoading(true);
         try {
             const decoded = jwtDecode(credentialResponse.credential);
             const response = await axios.post('http://localhost:8080/api/auth/google', {
@@ -68,6 +74,8 @@ const Signup = ({ onSignupSuccess }) => {
             }
         } catch (err) {
             setGeneralError(err.response?.data?.message || 'Google signup failed. Please try again.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -80,7 +88,6 @@ const Signup = ({ onSignupSuccess }) => {
             {generalError && <div className="error-message">{generalError}</div>}
             
             <div>
-                <label>Full Name:</label>
                 <input
                     type="text"
                     name="fullName"
@@ -94,7 +101,6 @@ const Signup = ({ onSignupSuccess }) => {
             </div>
 
             <div>
-                <label>Email:</label>
                 <input
                     type="email"
                     name="email"
@@ -108,7 +114,6 @@ const Signup = ({ onSignupSuccess }) => {
             </div>
 
             <div>
-                <label>Password:</label>
                 <input
                     type="password"
                     name="password"
@@ -122,7 +127,6 @@ const Signup = ({ onSignupSuccess }) => {
             </div>
 
             <div>
-                <label>Phone:</label>
                 <input
                     type="tel"
                     name="phone"
@@ -136,7 +140,6 @@ const Signup = ({ onSignupSuccess }) => {
             </div>
 
             <div>
-                <label>Address:</label>
                 <input
                     type="text"
                     name="address"
@@ -149,9 +152,13 @@ const Signup = ({ onSignupSuccess }) => {
                 {errors.address && <div className="field-error">{errors.address}</div>}
             </div>
 
-            <button type="submit" className="auth-button">
+            <Button
+                type="submit"
+                isLoading={isLoading}
+                className="auth-button"
+            >
                 Sign Up
-            </button>
+            </Button>
 
             <div style={{ marginTop: '20px', textAlign: 'center' }}>
                 <p>Or sign up with:</p>
