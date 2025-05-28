@@ -1,4 +1,8 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import CLOUDINARY_CONFIG from '../config/cloudinary';
+import './ChangeAvatarPage.css';
 
 const ChangeAvatarPage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -6,10 +10,25 @@ const ChangeAvatarPage = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState(null);
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const navigate = useNavigate();
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setUploadError('Kích thước file không được vượt quá 5MB');
+        setSelectedFile(null);
+        setPreviewUrl(null);
+        return;
+      }
+
+      if (!file.type.startsWith('image/')) {
+        setUploadError('Vui lòng chọn file hình ảnh');
+        setSelectedFile(null);
+        setPreviewUrl(null);
+        return;
+      }
+
       setSelectedFile(file);
       setPreviewUrl(URL.createObjectURL(file));
       setUploadError(null);
@@ -26,34 +45,139 @@ const ChangeAvatarPage = () => {
       return;
     }
 
-    console.log('Uploading file:', selectedFile.name);
     setUploading(true);
-    setTimeout(() => {
-      setUploading(false);
+    setUploadError(null);
+    setUploadSuccess(false);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
+      formData.append('api_key', CLOUDINARY_CONFIG.apiKey);
+
+      const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloudName}/upload`;
+      const cloudinaryResponse = await axios.post(cloudinaryUrl, formData);
+      const imageUrl = cloudinaryResponse.data.secure_url;
+
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user || !user.email) {
+        throw new Error('User not found');
+      }
+
+      const response = await axios.put('http://localhost:8080/api/profile/update-avatar', {
+        email: user.email,
+        avatarUrl: imageUrl
+      });
+
+      const updatedUser = response.data;
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+
       setUploadSuccess(true);
-      setSelectedFile(null);
-      setPreviewUrl(null);
-      alert('Ảnh đại diện đã được tải lên thành công (mô phỏng)!');
-    }, 1500);
+      setUploadError(null);
+      
+      setTimeout(() => {
+        window.location.href = '/profile';
+      }, 1500);
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      setUploadError(error.response?.data?.error || 'Có lỗi xảy ra khi tải ảnh lên.');
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
-    <div>
-      <h2>Đổi ảnh đại diện</h2>
-      <div>
-        <input type="file" accept="image/*" onChange={handleFileChange} />
-      </div>
-      {previewUrl && (
-        <div style={{ marginTop: '20px' }}>
-          <p>Ảnh xem trước:</p>
-          <img src={previewUrl} alt="Xem trước ảnh đại diện" style={{ maxWidth: '200px', maxHeight: '200px' }} />
+    <div className="change-avatar-container">
+      <div className="avatar-card">
+        <div className="avatar-card-header">
+          <h2>
+            <i className="bi bi-person-circle me-2"></i>
+            Đổi ảnh đại diện
+          </h2>
+          <p className="text-muted">Chọn ảnh đại diện mới cho tài khoản của bạn</p>
         </div>
-      )}
-      <button onClick={handleUpload} disabled={!selectedFile || uploading} style={{ marginTop: '20px' }}>
-        {uploading ? 'Đang tải lên...' : 'Tải ảnh lên'}
-      </button>
-      {uploadError && <p style={{ color: 'red' }}>{uploadError}</p>}
-      {uploadSuccess && <p style={{ color: 'green' }}>Tải lên thành công!</p>}
+
+        <div className="avatar-card-body">
+          <div className="upload-section">
+            <div className="preview-area">
+              {previewUrl ? (
+                <img src={previewUrl} alt="Preview" className="avatar-preview" />
+              ) : (
+                <div className="upload-placeholder">
+                  <i className="bi bi-cloud-arrow-up"></i>
+                  <p>Kéo thả ảnh vào đây hoặc click để chọn</p>
+                </div>
+              )}
+            </div>
+
+            <div className="upload-controls">
+              <label className="upload-button" htmlFor="avatar-upload">
+                <i className="bi bi-image me-2"></i>
+                Chọn ảnh
+                <input
+                  type="file"
+                  id="avatar-upload"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  disabled={uploading}
+                  style={{ display: 'none' }}
+                />
+              </label>
+              
+              <div className="upload-info">
+                <small className="text-muted">
+                  <i className="bi bi-info-circle me-1"></i>
+                  Hỗ trợ các định dạng: JPG, PNG, GIF. Kích thước tối đa: 5MB
+                </small>
+              </div>
+            </div>
+          </div>
+
+          {uploadError && (
+            <div className="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+              <i className="bi bi-exclamation-triangle-fill me-2"></i>
+              {uploadError}
+              <button type="button" className="btn-close" onClick={() => setUploadError(null)}></button>
+            </div>
+          )}
+
+          {uploadSuccess && (
+            <div className="alert alert-success alert-dismissible fade show mt-3" role="alert">
+              <i className="bi bi-check-circle-fill me-2"></i>
+              Cập nhật ảnh đại diện thành công!
+              <button type="button" className="btn-close" onClick={() => setUploadSuccess(false)}></button>
+            </div>
+          )}
+
+          <div className="avatar-actions">
+            <button
+              className="btn btn-primary"
+              onClick={handleUpload}
+              disabled={!selectedFile || uploading}
+            >
+              {uploading ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  Đang tải lên...
+                </>
+              ) : (
+                <>
+                  <i className="bi bi-cloud-upload me-2"></i>
+                  Lưu ảnh đại diện
+                </>
+              )}
+            </button>
+            <button
+              className="btn btn-light"
+              onClick={() => navigate('/profile')}
+              disabled={uploading}
+            >
+              <i className="bi bi-arrow-left me-2"></i>
+              Quay lại
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

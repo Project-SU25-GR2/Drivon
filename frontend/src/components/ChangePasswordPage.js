@@ -1,142 +1,243 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate, useLocation } from "react-router-dom";
-import Button from "./Button";
+import { useNavigate } from "react-router-dom";
 
 const ChangePasswordPage = () => {
-  const [oldPassword, setOldPassword] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [hasPassword, setHasPassword] = useState(true);
   const navigate = useNavigate();
-  const location = useLocation();
-  const email = new URLSearchParams(location.search).get("email");
+
+  useEffect(() => {
+    // Kiểm tra xem người dùng đã có mật khẩu hay chưa
+    const checkPasswordStatus = async () => {
+      try {
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (!user || !user.email) {
+          navigate("/auth");
+          return;
+        }
+
+        const response = await axios.get(
+          `http://localhost:8080/api/profile/check-password-status/${user.email}`
+        );
+        setHasPassword(response.data.hasPassword);
+      } catch (err) {
+        console.error("Error checking password status:", err);
+        setError("Không thể kiểm tra trạng thái mật khẩu");
+      }
+    };
+
+    checkPasswordStatus();
+  }, [navigate]);
+
+  const validatePassword = (password) => {
+    if (password.length < 8) {
+      return "Mật khẩu phải có ít nhất 8 ký tự";
+    }
+    if (!/[A-Z]/.test(password)) {
+      return "Mật khẩu phải chứa ít nhất 1 chữ hoa";
+    }
+    if (!/[a-z]/.test(password)) {
+      return "Mật khẩu phải chứa ít nhất 1 chữ thường";
+    }
+    if (!/[0-9]/.test(password)) {
+      return "Mật khẩu phải chứa ít nhất 1 số";
+    }
+    if (!/[!@#$%^&*]/.test(password)) {
+      return "Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt (!@#$%^&*)";
+    }
+    return null;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    setMessage("");
-    setError("");
+    setError(null);
+    setSuccess(false);
+    setLoading(true);
 
-    if (newPassword !== confirmPassword) {
-      setError("Mật khẩu mới không khớp");
-      setIsLoading(false);
+    // Validate mật khẩu mới
+    const passwordError = validatePassword(newPassword);
+    if (passwordError) {
+      setError(passwordError);
+      setLoading(false);
       return;
     }
 
-    if (newPassword.length < 6) {
-      setError("Mật khẩu mới phải có ít nhất 6 ký tự");
-      setIsLoading(false);
+    // Kiểm tra mật khẩu xác nhận
+    if (newPassword !== confirmPassword) {
+      setError("Mật khẩu xác nhận không khớp");
+      setLoading(false);
       return;
     }
 
     try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (!user || !user.email) {
+        throw new Error("User not found");
+      }
+
+      const endpoint = hasPassword
+        ? "/api/profile/change-password"
+        : "/api/profile/create-password";
+      const payload = hasPassword
+        ? { email: user.email, currentPassword, newPassword }
+        : { email: user.email, newPassword };
+
       const response = await axios.post(
-        "http://localhost:8080/api/auth/change-password",
-        {
-          email,
-          oldPassword,
-          newPassword,
-        }
+        `http://localhost:8080${endpoint}`,
+        payload
       );
-      setMessage("Thay đổi mật khẩu thành công");
-      setTimeout(() => navigate("/auth"), 2000);
+
+      if (response.data.success) {
+        setSuccess(true);
+        setNewPassword("");
+        setConfirmPassword("");
+        setCurrentPassword("");
+
+        // Redirect sau 2 giây
+        setTimeout(() => {
+          navigate("/profile");
+        }, 2000);
+      }
     } catch (err) {
-      setError(err.response?.data || "Không thể thay đổi mật khẩu");
+      console.error("Error changing password:", err);
+      setError(
+        err.response?.data?.error || "Có lỗi xảy ra khi thay đổi mật khẩu"
+      );
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  if (!email) {
-    return (
-      <div style={{ maxWidth: "400px", margin: "0 auto", padding: "20px" }}>
-        <div style={{ color: "red" }}>Link không hợp lệ</div>
-      </div>
-    );
-  }
-
   return (
-    <div style={{ maxWidth: "400px", margin: "0 auto", padding: "20px" }}>
-      <h2>Thay đổi mật khẩu</h2>
-      <form onSubmit={handleSubmit} className="auth-form">
-        <div>
-          <input
-            type="password"
-            placeholder="Mật khẩu cũ"
-            value={oldPassword}
-            onChange={(e) => setOldPassword(e.target.value)}
-            className="auth-input"
-            required
-            minLength="6"
-          />
+    <div className="container mt-4">
+      <div className="card shadow">
+        <div className="card-header bg-primary text-white">
+          <h2 className="h5 mb-0">
+            <i className="bi bi-key me-2"></i>
+            {hasPassword ? "Đổi mật khẩu" : "Tạo mật khẩu mới"}
+          </h2>
         </div>
-        <div>
-          <input
-            type="password"
-            placeholder="Mật khẩu mới"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            className="auth-input"
-            required
-            minLength="6"
-          />
+        <div className="card-body">
+          <form onSubmit={handleSubmit}>
+            {error && (
+              <div
+                className="alert alert-danger alert-dismissible fade show"
+                role="alert"
+              >
+                {error}
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setError(null)}
+                ></button>
+              </div>
+            )}
+
+            {success && (
+              <div
+                className="alert alert-success alert-dismissible fade show"
+                role="alert"
+              >
+                {hasPassword
+                  ? "Đổi mật khẩu thành công!"
+                  : "Tạo mật khẩu thành công!"}
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setSuccess(false)}
+                ></button>
+              </div>
+            )}
+
+            {hasPassword && (
+              <div className="mb-3">
+                <label htmlFor="currentPassword" className="form-label">
+                  Mật khẩu hiện tại
+                </label>
+                <input
+                  type="password"
+                  className="form-control"
+                  id="currentPassword"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  required
+                />
+              </div>
+            )}
+
+            <div className="mb-3">
+              <label htmlFor="newPassword" className="form-label">
+                Mật khẩu mới
+              </label>
+              <input
+                type="password"
+                className="form-control"
+                id="newPassword"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+              />
+              <div className="form-text">
+                Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường,
+                số và ký tự đặc biệt
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label htmlFor="confirmPassword" className="form-label">
+                Xác nhận mật khẩu mới
+              </label>
+              <input
+                type="password"
+                className="form-control"
+                id="confirmPassword"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
+              <button
+                type="submit"
+                className="btn btn-primary me-2"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <span
+                      className="spinner-border spinner-border-sm me-2"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
+                    Đang xử lý...
+                  </>
+                ) : (
+                  <>
+                    <i className="bi bi-check-circle me-2"></i>
+                    {hasPassword ? "Đổi mật khẩu" : "Tạo mật khẩu"}
+                  </>
+                )}
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => navigate("/profile")}
+                disabled={loading}
+              >
+                <i className="bi bi-x-circle me-2"></i>
+                Hủy
+              </button>
+            </div>
+          </form>
         </div>
-        <div>
-          <input
-            type="password"
-            placeholder="Xác nhận mật khẩu mới"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className="auth-input"
-            required
-            minLength="6"
-          />
-        </div>
-
-        {message && (
-          <div
-            style={{
-              color: "green",
-              marginBottom: "15px",
-              padding: "10px",
-              backgroundColor: "#d4edda",
-              borderRadius: "4px",
-            }}
-          >
-            {message}
-          </div>
-        )}
-
-        {error && (
-          <div
-            style={{
-              color: "red",
-              marginBottom: "15px",
-              padding: "10px",
-              backgroundColor: "#ffebee",
-              borderRadius: "4px",
-            }}
-          >
-            {error}
-          </div>
-        )}
-
-        <Button type="submit" isLoading={isLoading} className="auth-button">
-          Thay đổi mật khẩu
-        </Button>
-
-        <Button
-          type="button"
-          onClick={() => navigate("/login")}
-          className="auth-button secondary"
-          style={{ marginTop: "10px" }}
-        >
-          Quay lại đăng nhập
-        </Button>
-      </form>
+      </div>
     </div>
   );
 };
