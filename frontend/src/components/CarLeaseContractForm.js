@@ -1,23 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import pdfMake from 'pdfmake/build/pdfmake';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
 import { useLocation } from 'react-router-dom';
 import './ContractForm.css';
+
+// Initialize pdfMake with fonts
+pdfMake.vfs = pdfFonts.pdfMake ? pdfFonts.pdfMake.vfs : pdfFonts.vfs;
 
 const CarLeaseContractForm = ({ user }) => {
     const location = useLocation();
     const contractData = location.state?.contractData;
+
+    // Get user from localStorage as fallback
+    const storedUser = JSON.parse(localStorage.getItem('user'));
+    const currentUser = user || storedUser;
 
     const [formData, setFormData] = useState({
         contractNumber: contractData?.contractNumber || '',
         startDate: contractData?.startDate || '',
         endDate: contractData?.endDate || '',
         carId: contractData?.carId || '',
-        ownerId: user?.id || '',
-        customerId: user?.id || '',
+        ownerId: currentUser?.userId || '',
+        customerId: currentUser?.userId || '',
         deposit: contractData?.deposit || '',
-        totalAmount: contractData?.totalAmount || '',
         name: contractData?.name || '',
         phone: contractData?.phone || '',
         cccd: contractData?.cccd || '',
@@ -37,19 +43,19 @@ const CarLeaseContractForm = ({ user }) => {
             setFormData(prev => ({
                 ...prev,
                 carId: contractData.carId,
-                totalAmount: contractData.totalAmount || ''
             }));
         }
     }, [contractData]);
 
     useEffect(() => {
-        if (user?.id) {
+        if (currentUser?.userId) {
             setFormData(prev => ({
                 ...prev,
-                ownerId: user.id
+                ownerId: currentUser.userId,
+                customerId: currentUser.userId
             }));
         }
-    }, [user]);
+    }, [currentUser]);
 
     useEffect(() => {
         let timer;
@@ -117,9 +123,6 @@ const CarLeaseContractForm = ({ user }) => {
         if (!formData.deposit) {
             newErrors.deposit = 'Please enter deposit amount';
         }
-        if (!formData.totalAmount) {
-            newErrors.totalAmount = 'Please enter total amount';
-        }
         if (!formData.name) {
             newErrors.name = 'Please enter full name';
         }
@@ -170,69 +173,85 @@ const CarLeaseContractForm = ({ user }) => {
     };
 
     const generatePDF = (contractData) => {
-        const doc = new jsPDF();
-        
-        // Add header
-        doc.setFontSize(20);
-        doc.text('SOCIALIST REPUBLIC OF VIETNAM', 105, 20, { align: 'center' });
-        doc.text('Independence - Freedom - Happiness', 105, 30, { align: 'center' });
-        doc.text('------------------------------', 105, 40, { align: 'center' });
-        doc.text('CAR LEASE AGREEMENT', 105, 50, { align: 'center' });
+        const docDefinition = {
+            content: [
+                { text: 'CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM', style: 'header', alignment: 'center' },
+                { text: 'Độc lập – Tự do – Hạnh phúc', style: 'subheader', alignment: 'center' },
+                { text: '-------------------------------', alignment: 'center', margin: [0, 0, 0, 10] },
+                { text: 'HỢP ĐỒNG ĐĂNG KÍ CHO THUÊ XE', style: 'title', alignment: 'center', margin: [0, 10, 0, 0] },
+                { text: `Ngày: ${new Date().toLocaleDateString('vi-VN')}`, alignment: 'center' },
+                { text: `Số HĐ: ${contractData.contractNumber}`, alignment: 'center', margin: [0, 0, 0, 20] },
 
-        // Add date
-        const today = new Date();
-        doc.setFontSize(12);
-        doc.text(`Date: ${today.getDate()} Month: ${today.getMonth() + 1} Year: ${today.getFullYear()}`, 20, 70);
-        doc.text(`Contract No: ${contractData.contractNumber}`, 20, 80);
+                { text: 'BÊN A', style: 'section' },
+                { text: `Tên: ${contractData.name}` },
+                { text: `Số điện thoại: ${contractData.phone}` },
+                { text: `CCCD: ${contractData.cccd}` },
+                { text: `Mail: ${contractData.email}`, margin: [0, 0, 0, 10] },
 
-        // Add Party A
-        let currentY = 100;
-        doc.text('PARTY A', 20, currentY);
-        currentY += 10;
-        doc.text(`Name: ${contractData.name}`, 20, currentY);
-        currentY += 10;
-        doc.text(`Phone: ${contractData.phone}`, 20, currentY);
-        currentY += 10;
-        doc.text(`ID Number: ${contractData.cccd}`, 20, currentY);
-        currentY += 10;
-        doc.text(`Email: ${contractData.email}`, 20, currentY);
+                { text: 'BÊN B', style: 'section' },
+                { text: 'Tên: Cty TNHH Group2' },
+                { text: 'Số điện thoại: 0394672210' },
+                { text: 'Mail: Binhvuong221004@gmail.com', margin: [0, 0, 0, 20] },
 
-        // Add Party B
-        currentY += 20;
-        doc.text('PARTY B', 20, currentY);
-        currentY += 10;
-        doc.text('Name: Group2 LLC', 20, currentY);
-        currentY += 10;
-        doc.text('Phone: 0394672210', 20, currentY);
-        currentY += 10;
-        doc.text('Email: Binhvuong221004@gmail.com', 20, currentY);
+                { text: 'THÔNG TIN XE', style: 'section' },
+                { text: `Hãng xe: ${contractData.carData?.carBrand || 'N/A'}` },
+                { text: `Model: ${contractData.carData?.carModel || 'N/A'}` },
+                { text: `Năm sản xuất: ${contractData.carData?.year || 'N/A'}` },
+                { text: `Biển số xe: ${contractData.carData?.licensePlate || 'N/A'}` },
+                { text: `Giá thuê/ngày: ${contractData.carData?.dailyRate?.toLocaleString('vi-VN') || 'N/A'} VND` },
+                { text: `Tiền cọc: ${contractData.deposit.toLocaleString('vi-VN')} VNĐ` },
+                { text: `Địa điểm: ${contractData.carData?.location || 'N/A'}`, margin: [0, 0, 0, 20] },
 
-        // Add agreement section
-        currentY += 20;
-        doc.text('Agreement Terms:', 20, currentY);
-        currentY += 20;
+                { text: 'THÔNG TIN HỢP ĐỒNG', style: 'section' },
+                { text: `Ngày bắt đầu: ${contractData.startDate}` },
+                { text: `Ngày kết thúc: ${contractData.endDate}`, margin: [0, 0, 0, 20]},
 
-        // Add signatures
-        doc.text('PARTY A:', 20, currentY);
-        doc.text('PARTY B:', 120, currentY);
-        currentY += 10;
-        doc.text(`Name: ${contractData.name}`, 20, currentY);
-        doc.text('Group2', 120, currentY);
-        currentY += 10;
-        doc.text(`Verification Code: ${contractData.verificationCode}`, 20, currentY);
-        doc.text('Signed!', 120, currentY);
+                {
+                    columns: [
+                        {
+                            width: '*',
+                            text: [
+                                { text: 'BÊN A:\n', style: 'section' },
+                                { text: `Tên: ${contractData.name}\n` },
+                                { text: 'Đã ký online "verify code"', italics: true }
+                            ]
+                        },
+                        {
+                            width: '*',
+                            text: [
+                                { text: 'BÊN B:\n', style: 'section' },
+                                { text: 'Tên: Group2\n' },
+                                { text: 'Đã ký!' }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            styles: {
+                header: { fontSize: 14, bold: true },
+                subheader: { fontSize: 12, italics: true },
+                title: { fontSize: 16, bold: true },
+                section: { fontSize: 13, bold: true, margin: [0, 10, 0, 5] }
+            },
+            defaultStyle: {
+                font: 'Roboto'
+            }
+        };
 
-        // Add signature lines
-        doc.line(20, currentY + 10, 100, currentY + 10);
-        doc.line(120, currentY + 10, 200, currentY + 10);
-
-        return doc.output('blob');
+        return new Promise((resolve) => {
+            pdfMake.createPdf(docDefinition).getBlob((blob) => {
+                resolve(blob);
+            });
+        });
     };
 
     const generateContractNumber = () => {
-        const timestamp = new Date().getTime();
-        const random = Math.floor(Math.random() * 1000);
-        return `HD${timestamp}${random}`;
+        const date = new Date();
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+        return `HD${year}${month}${day}${random}`;
     };
 
     const handleSubmit = async (e) => {
@@ -250,6 +269,12 @@ const CarLeaseContractForm = ({ user }) => {
 
         // Generate a new contract number
         const newContractNumber = generateContractNumber();
+        
+        // Update formData with the new contract number
+        setFormData(prev => ({
+            ...prev,
+            contractNumber: newContractNumber
+        }));
 
         // Ensure all required fields are present and properly formatted
         const formattedData = {
@@ -259,11 +284,11 @@ const CarLeaseContractForm = ({ user }) => {
             carId: formData.carId.toString(),
             customerId: "1", // Use a default customer ID
             deposit: parseFloat(formData.deposit) || 0,
-            totalAmount: parseFloat(formData.totalAmount) || 0,
             name: formData.name,
             phone: formData.phone,
             cccd: formData.cccd,
-            email: formData.email
+            email: formData.email,
+            carData: contractData?.carData
         };
 
         try {
@@ -274,17 +299,18 @@ const CarLeaseContractForm = ({ user }) => {
                 setMessage('Contract created successfully!');
                 
                 // Generate PDF using form data and verification code
-                const pdfBlob = generatePDF({
+                const pdfBlob = await generatePDF({
                     ...formData,
                     contractNumber: newContractNumber,
-                    verificationCode: verificationCode
+                    verificationCode: verificationCode,
+                    carData: contractData?.carData
                 });
                 const pdfUrl = URL.createObjectURL(pdfBlob);
                 window.open(pdfUrl, '_blank');
 
                 const link = document.createElement('a');
                 link.href = pdfUrl;
-                link.download = 'car_lease_agreement.pdf';
+                link.download = `hopdong_${newContractNumber}.pdf`;
                 link.click();
 
                 setTimeout(() => {
@@ -294,7 +320,6 @@ const CarLeaseContractForm = ({ user }) => {
         } catch (error) {
             console.error('Error details:', error.response?.data);
             if (error.response?.data?.errors) {
-                // If there are validation errors, show them
                 const errorMessages = Object.values(error.response.data.errors).join(', ');
                 setMessage('Validation errors: ' + errorMessages);
             } else {
@@ -409,11 +434,9 @@ const CarLeaseContractForm = ({ user }) => {
                         type="text"
                         name="ownerId"
                         value={formData.ownerId}
-                        onChange={handleChange}
-                        className={errors.ownerId ? 'error' : ''}
-                        required
+                        readOnly
+                        className="readonly-input"
                     />
-                    {errors.ownerId && <div className="field-error">{errors.ownerId}</div>}
                 </div>
 
                 <div className="form-group">
@@ -427,19 +450,6 @@ const CarLeaseContractForm = ({ user }) => {
                         required
                     />
                     {errors.deposit && <div className="field-error">{errors.deposit}</div>}
-                </div>
-
-                <div className="form-group">
-                    <label>Total Amount:</label>
-                    <input
-                        type="number"
-                        name="totalAmount"
-                        value={formData.totalAmount}
-                        onChange={handleChange}
-                        className={errors.totalAmount ? 'error' : ''}
-                        required
-                    />
-                    {errors.totalAmount && <div className="field-error">{errors.totalAmount}</div>}
                 </div>
 
                 <div className="form-group">
@@ -484,7 +494,7 @@ const CarLeaseContractForm = ({ user }) => {
                 </div>
 
                 <div className="form-group">
-                    <label>Email:</label>
+                    <label>Email Contact:</label>
                     <input
                         type="email"
                         name="email"

@@ -44,7 +44,6 @@ public class ContractService {
         contract.setCarId(request.getCarId());
         contract.setCustomerId(request.getCustomerId());
         contract.setDeposit(request.getDeposit());
-        contract.setTotalAmount(request.getTotalAmount());
         contract.setStatus("PENDING");
         contract.setName(request.getName());
         contract.setPhone(request.getPhone());
@@ -64,7 +63,6 @@ public class ContractService {
         contract.setCarId(request.getCarId());
         contract.setCustomerId(request.getCustomerId());
         contract.setDeposit(request.getDeposit());
-        contract.setTotalAmount(request.getTotalAmount());
         contract.setStatus("PENDING_LEASE");
         contract.setName(request.getName());
         contract.setPhone(request.getPhone());

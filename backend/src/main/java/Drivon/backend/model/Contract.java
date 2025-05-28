@@ -24,7 +24,6 @@ public class Contract {
     private String carId;
     private String customerId;
     private Double deposit;
-    private Double totalAmount;
     private String status;
     private String name;
     private String phone;

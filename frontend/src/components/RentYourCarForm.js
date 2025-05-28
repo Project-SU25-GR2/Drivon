@@ -123,7 +123,6 @@ const RentYourCarForm = () => {
         carId: formData.licensePlate, // Sử dụng biển số xe làm ID
         customerId: '1', // ID khách hàng mặc định
         deposit: formData.dailyRate * 0.5, // Tiền cọc = 50% giá thuê/ngày
-        totalAmount: formData.dailyRate * 30, // Tổng tiền = giá thuê/ngày * 30 ngày
         name: '', // Để trống cho người dùng điền
         phone: '', // Để trống cho người dùng điền
         cccd: '', // Để trống cho người dùng điền
@@ -156,7 +155,7 @@ const RentYourCarForm = () => {
 
   return (
     <div className="rent-your-car-container">
-      <h2>Rent Your Car</h2>
+      <h2>Become a Partner	</h2>
       <form onSubmit={handleSubmit} className="rent-car-form">
         <div className="form-group">
           <label htmlFor="carBrand">Car Brand</label>
@@ -242,6 +241,7 @@ const RentYourCarForm = () => {
           <textarea
             id="description"
             name="description"
+            placeholder='Mô tả xe (màu sơn, động cơ, hệ thống điều hòa, số chỗ ngồi, tính năng, ...)'
             value={formData.description}
             onChange={handleChange}
             rows="4"
