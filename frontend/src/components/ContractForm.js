@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import pdfMake from 'pdfmake/build/pdfmake';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
 import { useLocation } from 'react-router-dom';
+
+// Initialize pdfMake with fonts
+pdfMake.vfs = pdfFonts.pdfMake ? pdfFonts.pdfMake.vfs : pdfFonts.vfs;
 
 const CarRentalContractForm = () => {
     const location = useLocation();
@@ -15,7 +18,6 @@ const CarRentalContractForm = () => {
         carId: contractData?.carId || '',
         customerId: contractData?.customerId || '',
         deposit: contractData?.deposit || '',
-        totalAmount: contractData?.totalAmount || '',
         name: contractData?.name || '',
         phone: contractData?.phone || '',
         cccd: contractData?.cccd || '',
@@ -36,7 +38,6 @@ const CarRentalContractForm = () => {
             setFormData(prev => ({
                 ...prev,
                 carId: contractData.carId,
-                totalAmount: contractData.totalAmount || ''
             }));
         }
     }, [contractData]);
@@ -109,9 +110,6 @@ const CarRentalContractForm = () => {
         if (!formData.deposit) {
             newErrors.deposit = 'Vui lòng nhập tiền cọc';
         }
-        if (!formData.totalAmount) {
-            newErrors.totalAmount = 'Vui lòng nhập tổng tiền';
-        }
         if (!formData.name) {
             newErrors.name = 'Vui lòng nhập họ tên';
         }
@@ -162,42 +160,76 @@ const CarRentalContractForm = () => {
     };
 
     const generatePDF = (contractData) => {
-        const doc = new jsPDF();
-        
-        // Add title
-        doc.setFontSize(20);
-        doc.text('HỢP ĐỒNG THUÊ XE', 105, 20, { align: 'center' });
-        
-        // Add contract details
-        doc.setFontSize(12);
-        const details = [
-            ['Số hợp đồng:', contractData.contractNumber],
-            ['Ngày bắt đầu:', contractData.startDate],
-            ['Ngày kết thúc:', contractData.endDate],
-            ['Mã xe:', contractData.carId],
-            ['Mã khách hàng:', contractData.customerId],
-            ['Tiền cọc:', contractData.deposit.toLocaleString('vi-VN') + ' VNĐ'],
-            ['Tổng tiền:', contractData.totalAmount.toLocaleString('vi-VN') + ' VNĐ'],
-            ['Họ tên:', contractData.name],
-            ['Số điện thoại:', contractData.phone],
-            ['CCCD:', contractData.cccd],
-            ['Email:', contractData.email]
-        ];
+        const docDefinition = {
+            content: [
+                { text: 'CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM', style: 'header', alignment: 'center' },
+                { text: 'Độc lập – Tự do – Hạnh phúc', style: 'subheader', alignment: 'center' },
+                { text: '-------------------------------', alignment: 'center', margin: [0, 0, 0, 10] },
+                { text: 'HỢP ĐỒNG THUÊ XE', style: 'title', alignment: 'center', margin: [0, 10, 0, 0] },
+                { text: `Ngày: ${new Date().toLocaleDateString('vi-VN')}`, alignment: 'center' },
+                { text: `Số HĐ: ${contractData.contractNumber}`, alignment: 'center', margin: [0, 0, 0, 20] },
 
-        autoTable(doc, {
-            startY: 30,
-            head: [['Thông tin', 'Chi tiết']],
-            body: details,
-            theme: 'grid',
-            headStyles: { fillColor: [41, 128, 185] }
+                { text: 'BÊN A', style: 'section' },
+                { text: `Tên: ${contractData.name}` },
+                { text: `Số điện thoại: ${contractData.phone}` },
+                { text: `CCCD: ${contractData.cccd}` },
+                { text: `Mail: ${contractData.email}`, margin: [0, 0, 0, 10] },
+
+                { text: 'BÊN B', style: 'section' },
+                { text: 'Tên: Cty TNHH Group2' },
+                { text: 'Số điện thoại: 0394672210' },
+                { text: 'Mail: Binhvuong221004@gmail.com', margin: [0, 0, 0, 20] },
+
+                { text: 'THÔNG TIN XE', style: 'section' },
+                { text: `Hãng xe: ${contractData.carData?.carBrand || 'N/A'}` },
+                { text: `Model: ${contractData.carData?.carModel || 'N/A'}` },
+                { text: `Năm sản xuất: ${contractData.carData?.year || 'N/A'}` },
+                { text: `Biển số xe: ${contractData.carData?.licensePlate || 'N/A'}` },
+                { text: `Giá thuê/ngày: ${contractData.carData?.dailyRate?.toLocaleString('vi-VN') || 'N/A'} VND` },
+                { text: `Tiền cọc: ${contractData.deposit.toLocaleString('vi-VN')} VNĐ` },
+                { text: `Địa điểm: ${contractData.carData?.location || 'N/A'}`, margin: [0, 0, 0, 20] },
+
+                { text: 'THÔNG TIN HỢP ĐỒNG', style: 'section' },
+                { text: `Ngày bắt đầu: ${contractData.startDate}` },
+                { text: `Ngày kết thúc: ${contractData.endDate}` },
+
+                {
+                    columns: [
+                        {
+                            width: '*',
+                            text: [
+                                { text: 'BÊN A:\n', style: 'section' },
+                                { text: `Tên: ${contractData.name}\n` },
+                                { text: 'Đã ký online "verify code"', italics: true }
+                            ]
+                        },
+                        {
+                            width: '*',
+                            text: [
+                                { text: 'BÊN B:\n', style: 'section' },
+                                { text: 'Tên: Group2\n' },
+                                { text: 'Đã ký!' }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            styles: {
+                header: { fontSize: 14, bold: true },
+                subheader: { fontSize: 12, italics: true },
+                title: { fontSize: 16, bold: true },
+                section: { fontSize: 13, bold: true, margin: [0, 10, 0, 5] }
+            },
+            defaultStyle: {
+                font: 'Roboto'
+            }
+        };
+
+        return new Promise((resolve) => {
+            pdfMake.createPdf(docDefinition).getBlob((blob) => {
+                resolve(blob);
+            });
         });
-
-        // Add signature section
-        doc.text('Chữ ký bên A', 50, doc.lastAutoTable.finalY + 20);
-        doc.text('Chữ ký bên B', 150, doc.lastAutoTable.finalY + 20);
-
-        // Return the PDF as a Blob instead of saving directly
-        return doc.output('blob');
     };
 
     const handleSubmit = async (e) => {
@@ -216,7 +248,6 @@ const CarRentalContractForm = () => {
         const formattedData = {
             ...formData,
             deposit: parseFloat(formData.deposit) || 0,
-            totalAmount: parseFloat(formData.totalAmount) || 0,
             carId: parseInt(formData.carId) || 0,
             customerId: parseInt(formData.customerId) || 0
         };
@@ -230,7 +261,7 @@ const CarRentalContractForm = () => {
                 console.log('Response data received:', response.data);
                 
                 // Generate PDF Blob
-                const pdfBlob = generatePDF(response.data);
+                const pdfBlob = await generatePDF(response.data);
 
                 // Create a URL for the Blob
                 const pdfUrl = URL.createObjectURL(pdfBlob);
@@ -241,8 +272,8 @@ const CarRentalContractForm = () => {
                 // Create a temporary link to trigger download
                 const link = document.createElement('a');
                 link.href = pdfUrl;
-                link.download = 'hopdong.pdf'; // Set the desired filename
-                link.click(); // Programmatically click the link to trigger download
+                link.download = 'hopdong.pdf';
+                link.click();
 
                 // Clean up the Blob URL after a short delay
                 setTimeout(() => {
@@ -250,7 +281,7 @@ const CarRentalContractForm = () => {
                 }, 100);
 
             } else {
-                 setMessage('Tạo hợp đồng thành công, nhưng không nhận được dữ liệu trả về.');
+                setMessage('Tạo hợp đồng thành công, nhưng không nhận được dữ liệu trả về.');
             }
         } catch (error) {
             console.error('Contract creation error:', error.response?.data);
@@ -382,19 +413,6 @@ const CarRentalContractForm = () => {
                         required
                     />
                     {errors.deposit && <div className="field-error">{errors.deposit}</div>}
-                </div>
-
-                <div className="form-group">
-                    <label>Tổng tiền:</label>
-                    <input
-                        type="number"
-                        name="totalAmount"
-                        value={formData.totalAmount}
-                        onChange={handleChange}
-                        className={errors.totalAmount ? 'error' : ''}
-                        required
-                    />
-                    {errors.totalAmount && <div className="field-error">{errors.totalAmount}</div>}
                 </div>
 
                 <div className="form-group">

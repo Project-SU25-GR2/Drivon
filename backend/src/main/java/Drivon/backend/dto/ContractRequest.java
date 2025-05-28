@@ -31,8 +31,6 @@ public class ContractRequest {
     @NotNull(message = "Deposit amount is required")
     private Double deposit;
 
-    @NotNull(message = "Total amount is required")
-    private Double totalAmount;
 
     @NotBlank(message = "Name is required")
     private String name;

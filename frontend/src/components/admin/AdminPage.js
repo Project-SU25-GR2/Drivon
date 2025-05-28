@@ -2,22 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import axios from 'axios'; // Assuming you'll use axios for API calls
 import './AdminPage.css'; // Import the new CSS file
-import DashboardOverview from './DashboardOverview';
-import UserManagementPage from './UserManagementPage';
-import ComposePage from './ComposePage';
-import CalendarPage from './CalendarPage';
-import ChatPage from './ChatPage';
-import ChartsPage from './ChartsPage';
-import FormsPage from './FormsPage';
-import UIElementsPage from './UIElementsPage';
-import TablesPage from './TablesPage';
-import MapsPage from './MapsPage';
-import PagesPage from './PagesPage';
-import MultipleLevelsPage from './MultipleLevelsPage';
 
 // Component for Admin Page
 const AdminPage = ({ user }) => {
-  const [activeTab, setActiveTab] = useState('dashboard'); // State to keep track of the active tab
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -121,53 +108,203 @@ const AdminPage = ({ user }) => {
           <span>Adminator</span>
         </div>
         <ul className="sidebar-nav">
-          <li><a href="#" className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => setActiveTab('dashboard')}><i className="fas fa-tachometer-alt"></i> Dashboard</a></li> {/* Add active class */}
-          <li><a href="#" className={activeTab === 'users' ? 'active' : ''} onClick={() => setActiveTab('users')}><i className="fas fa-users"></i> User Management</a></li>
-          <li><a href="#" className={activeTab === 'compose' ? 'active' : ''} onClick={() => setActiveTab('compose')}><i className="fas fa-edit"></i> Compose</a></li>
-          <li><a href="#" className={activeTab === 'calendar' ? 'active' : ''} onClick={() => setActiveTab('calendar')}><i className="fas fa-calendar-alt"></i> Calendar</a></li>
-          <li><a href="#" className={activeTab === 'chat' ? 'active' : ''} onClick={() => setActiveTab('chat')}><i className="fas fa-comments"></i> Chat</a></li>
-          <li><a href="#" className={activeTab === 'charts' ? 'active' : ''} onClick={() => setActiveTab('charts')}><i className="fas fa-chart-bar"></i> Charts</a></li>
-          <li><a href="#" className={activeTab === 'forms' ? 'active' : ''} onClick={() => setActiveTab('forms')}><i className="fas fa-file-alt"></i> Forms</a></li>
-          <li><a href="#" className={activeTab === 'ui-elements' ? 'active' : ''} onClick={() => setActiveTab('ui-elements')}><i className="fas fa-cube"></i> UI Elements</a></li>
-          <li><a href="#" className={activeTab === 'tables' ? 'active' : ''} onClick={() => setActiveTab('tables')}><i className="fas fa-table"></i> Tables</a></li>
-          <li><a href="#" className={activeTab === 'maps' ? 'active' : ''} onClick={() => setActiveTab('maps')}><i className="fas fa-map"></i> Maps</a></li>
-          <li><a href="#" className={activeTab === 'pages' ? 'active' : ''} onClick={() => setActiveTab('pages')}><i className="fas fa-file"></i> Pages</a></li>
-          <li><a href="#" className={activeTab === 'multiple-levels' ? 'active' : ''} onClick={() => setActiveTab('multiple-levels')}><i className="fas fa-layer-group"></i> Multiple Levels</a></li>
+          <li><a href="#" className="active"><i className="fas fa-tachometer-alt"></i> Dashboard</a></li> {/* Add active class */}
+          <li><a href="#"><i className="fas fa-envelope"></i> Email</a></li>
+          <li><a href="#"><i className="fas fa-edit"></i> Compose</a></li>
+          <li><a href="#"><i className="fas fa-calendar-alt"></i> Calendar</a></li>
+          <li><a href="#"><i className="fas fa-comments"></i> Chat</a></li>
+          <li><a href="#"><i className="fas fa-chart-bar"></i> Charts</a></li>
+          <li><a href="#"><i className="fas fa-file-alt"></i> Forms</a></li>
+          <li><a href="#"><i className="fas fa-cube"></i> UI Elements</a></li>
+          <li><a href="#"><i className="fas fa-table"></i> Tables</a></li>
+          <li><a href="#"><i className="fas fa-map"></i> Maps</a></li>
+          <li><a href="#"><i className="fas fa-file"></i> Pages</a></li>
+          <li><a href="#"><i className="fas fa-layer-group"></i> Multiple Levels</a></li>
         </ul>
       </div>
       <div className="main-content">
         {/* Header will go here */}
-        <div className="header">
-          <div className="header-left">
-            {/* Add search bar or other elements if needed */}
-          </div>
-          <div className="header-right">
-            <i className="fas fa-bell"></i> {/* Notification icon */}
-            <i className="fas fa-envelope"></i> {/* Message icon */}
-            <div className="user-profile">
-              <img src="placeholder-user.png" alt="User Avatar" /> {/* Placeholder for user avatar */}
-              <span>User Name</span> {/* Placeholder for user name */}
+        {/* Dashboard content will go here */}
+        <div className="dashboard-content">
+            {/* This is where the cards, map, charts etc. will be added */}
+            {/* The existing user table will be moved or adapted later */}
+            <h3>Dashboard Overview</h3>
+
+            {/* Metric Cards */}
+            <div className="metric-cards">
+                <div className="card">
+                    <div className="card-title">Total Visits</div>
+                    <div className="card-value">10,500</div> {/* Placeholder value */}
+                    <div className="card-trend">
+                        {/* Placeholder for small chart */}
+                        <div className="mini-chart"></div>
+                        <span className="percentage-change positive">+10%</span>
+                    </div>
+                </div>
+
+                <div className="card">
+                    <div className="card-title">Total Page Views</div>
+                    <div className="card-value">50,000</div> {/* Placeholder value */}
+                    <div className="card-trend">
+                        {/* Placeholder for small chart */}
+                        <div className="mini-chart"></div>
+                        <span className="percentage-change negative">-7%</span>
+                    </div>
+                </div>
+
+                <div className="card">
+                    <div className="card-title">Unique Visitor</div>
+                    <div className="card-value">8,200</div> {/* Placeholder value */}
+                    <div className="card-trend">
+                        {/* Placeholder for small chart */}
+                        <div className="mini-chart"></div>
+                        <span className="percentage-change negative">-12%</span>
+                    </div>
+                </div>
+
+                <div className="card">
+                    <div className="card-title">Bounce Rate</div>
+                    <div className="card-value">33%</div> {/* Placeholder value */}
+                    <div className="card-trend">
+                         {/* Placeholder for small chart */}
+                         <div className="mini-chart"></div>
+                         <span className="percentage-change positive">+33%</span> {/* Example positive change */}
+                    </div>
+                </div>
             </div>
-          </div>
-        </div>
 
-        {/* Conditional rendering based on activeTab */}
-        <div className="content-area">
-          {activeTab === 'dashboard' && <DashboardOverview />}
-          {activeTab === 'users' && <UserManagementPage />}
-          {activeTab === 'compose' && <ComposePage />}
-          {activeTab === 'calendar' && <CalendarPage />}
-          {activeTab === 'chat' && <ChatPage />}
-          {activeTab === 'charts' && <ChartsPage />}
-          {activeTab === 'forms' && <FormsPage />}
-          {activeTab === 'ui-elements' && <UIElementsPage />}
-          {activeTab === 'tables' && <TablesPage />}
-          {activeTab === 'maps' && <MapsPage />}
-          {activeTab === 'pages' && <PagesPage />}
-          {activeTab === 'multiple-levels' && <MultipleLevelsPage />}
-          {/* Add conditional rendering for other tabs as needed */}
-        </div>
+            {/* Placeholder for other sections (Map, Regional Stats, Circular Charts) */}
+            {/* <p>Content will be added here according to the image.</p> */}
 
+            {/* Site Visits Section */}
+            <div className="site-visits-section">
+                <h4>Site Visits</h4>
+                <div className="site-visits-content">
+                    <div className="world-map-placeholder">
+                        {/* Placeholder for World Map */}
+                        World Map goes here
+                    </div>
+                    <div className="regional-stats">
+                        {/* Regional Stats List */}
+                        <div className="stat-item">
+                            <div className="stat-label">100k</div>
+                            <div className="stat-region">Visitors From USA</div>
+                            <div className="progress-bar-container">
+                                <div className="progress-bar" style={{ width: '50%', backgroundColor: '#6f42c1' }}></div> {/* Example color */}
+                            </div>
+                            <div className="stat-percentage">50%</div>
+                        </div>
+                         <div className="stat-item">
+                            <div className="stat-label">1M</div>
+                            <div className="stat-region">Visitors From Europe</div>
+                            <div className="progress-bar-container">
+                                <div className="progress-bar" style={{ width: '80%', backgroundColor: '#28a745' }}></div> {/* Example color */}
+                            </div>
+                            <div className="stat-percentage">80%</div>
+                        </div>
+                         <div className="stat-item">
+                            <div className="stat-label">450k</div>
+                            <div className="stat-region">Visitors From Australia</div>
+                            <div className="progress-bar-container">
+                                <div className="progress-bar" style={{ width: '40%', backgroundColor: '#007bff' }}></div> {/* Example color */}
+                            </div>
+                            <div className="stat-percentage">40%</div>
+                        </div>
+                         <div className="stat-item">
+                            <div className="stat-label">1B</div>
+                            <div className="stat-region">Visitors From India</div>
+                            <div className="progress-bar-container">
+                                <div className="progress-bar" style={{ width: '90%', backgroundColor: '#dc3545' }}></div> {/* Example color */}
+                            </div>
+                            <div className="stat-percentage">90%</div>
+                        </div>
+                        {/* Add more regional stats as needed */}
+                    </div>
+                </div>
+            </div>
+
+            {/* Placeholder for Circular Charts */}
+            <div className="circular-charts-section">
+                 <h4>User Statistics</h4> {/* Example title */}
+                 <div className="circular-charts-container">
+                     <div className="chart-item">
+                         {/* Placeholder for New Users Chart */}
+                         <div className="circular-chart">75%</div> {/* Placeholder value */}
+                         <div className="chart-label">New Users</div>
+                     </div>
+                     <div className="chart-item">
+                          {/* Placeholder for New Purchases Chart */}
+                          <div className="circular-chart">50%</div> {/* Placeholder value */}
+                          <div className="chart-label">New Purchases</div>
+                      </div>
+                      <div className="chart-item">
+                           {/* Placeholder for Bounce Rate Chart */}
+                           <div className="circular-chart">90%</div> {/* Placeholder value */}
+                           <div className="chart-label">Bounce Rate</div>
+                       </div>
+                 </div>
+            </div>
+
+             {/* Remaining Widgets Section */}
+             <div className="remaining-widgets">
+                 <div className="widget monthly-stats">
+                     <h4>Monthly Stats</h4>
+                     {/* Placeholder content */}
+                     <p>Monthly stats content here.</p>
+                 </div>
+                 <div className="widget todo-list">
+                     <h4>Todo List</h4>
+                     {/* Placeholder content */}
+                     <ul>
+                         <li>Call John for Dinner</li>
+                         <li>Book Boss Flight 2 Days</li>
+                         <li>Hit the Gym 3 Minutes</li>
+                         <li>Give Purchase Report not important</li>
+                         <li>Watch Game of Thrones Episode Tomorrow</li>
+                         <li>Give Purchase report Done</li>
+                     </ul>
+                 </div>
+                 <div className="widget sales-report">
+                     <h4>Sales Report</h4>
+                     {/* Placeholder content */}
+                      <p>Sales: $6,000</p>
+                      {/* Placeholder for sales table */}
+                      <table>
+                          <thead>
+                              <tr>
+                                  <th>Name</th>
+                                  <th>Status</th>
+                                  <th>Date</th>
+                                  <th>Price</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              <tr><td>Item #1 Name</td><td>Unavailable</td><td>Nov 18</td><td>$12</td></tr>
+                              <tr><td>Item #2 Name</td><td>New</td><td>Nov 19</td><td>$34</td></tr>
+                              <tr><td>Item #3 Name</td><td>New</td><td>Nov 20</td><td>-$45</td></tr>
+                              <tr><td>Item #4 Name</td><td>Unavailable</td><td>Nov 21</td><td>$65</td></tr>
+                              <tr><td>Item #5 Name</td><td>Used</td><td>Nov 22</td><td>$78</td></tr>
+                              <tr><td>Item #6 Name</td><td>Used</td><td>Nov 23</td><td>-$88</td></tr>
+                              <tr><td>Item #7 Name</td><td>Old</td><td>Nov 22</td><td>$56</td></tr>
+                          </tbody>
+                      </table>
+                      <p><a href="#">Check all the sales</a></p>
+                 </div>
+                 <div className="widget weather">
+                     <h4>Weather</h4>
+                      {/* Placeholder content */}
+                      <p>32°F Partly Clouds</p>
+                      <p>Monday, Nov 01 2017</p>
+                      <p>Wind: 10km/h, Sunrise: 05:00 AM, Pressure: 1B</p>
+                 </div>
+                 <div className="widget quick-chat">
+                     <h4>Quick Chat</h4>
+                      {/* Placeholder content */}
+                     <div>Chat messages here...</div>
+                 </div>
+             </div>
+
+        </div>
       </div>
     </div>
   );

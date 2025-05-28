@@ -71,4 +71,10 @@
     .image-grid img {
         height: 120px;
     }
+}
+
+.readonly-input {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+    border: 1px solid #ddd;
 } 
