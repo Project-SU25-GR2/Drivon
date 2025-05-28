@@ -26,10 +26,8 @@ const Login = ({ onLoginSuccess }) => {
       );
 
       if (response.data) {
-        onLoginSuccess(response.data.user || response.data);
-        if (response.data.token) {
-          localStorage.setItem("token", response.data.token);
-        }
+        const userDataWithToken = { ...response.data.user, token: response.data.token };
+        onLoginSuccess(userDataWithToken);
       }
     } catch (err) {
       setError(
@@ -54,10 +52,8 @@ const Login = ({ onLoginSuccess }) => {
       );
 
       if (response.data) {
-        onLoginSuccess(response.data.user || response.data);
-        if (response.data.token) {
-          localStorage.setItem("token", response.data.token);
-        }
+        const userDataWithToken = { ...response.data.user, token: response.data.token };
+        onLoginSuccess(userDataWithToken);
       }
     } catch (err) {
       setError(

@@ -34,6 +34,18 @@ public class ContractController {
         }
     }
 
+    @PostMapping("/lease")
+    public ResponseEntity<?> createLeaseContract(@Valid @RequestBody ContractRequest contractRequest) {
+        try {
+            Contract contract = contractService.createLeaseContract(contractRequest);
+            return ResponseEntity.ok(contract);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
     @PostMapping("/send-code")
     public ResponseEntity<?> sendVerificationCode(@RequestBody Map<String, String> request) {
         try {
@@ -55,6 +67,20 @@ public class ContractController {
             String code = request.get("code");
             boolean isValid = contractService.verifyCode(email, code);
             return ResponseEntity.ok(Map.of("success", isValid));
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    @PostMapping("/send-pdf")
+    public ResponseEntity<?> sendContractPDF(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            String contractId = request.get("contractId");
+            emailService.sendContractPDF(email, contractId);
+            return ResponseEntity.ok(Map.of("success", true));
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
             error.put("error", e.getMessage());

@@ -3,7 +3,11 @@ package Drivon.backend.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import java.io.File;
 
 @Service
 public class EmailService {
@@ -19,9 +23,19 @@ public class EmailService {
         emailSender.send(message);
     }
 
-    public void sendContractPDF(String to, String pdfPath) {
-        // TODO: Implement PDF sending functionality
-        // This would require using MimeMessage and attachments
+    public void sendContractPDF(String to, String contractId) throws MessagingException {
+        MimeMessage message = emailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+        helper.setTo(to);
+        helper.setSubject("Hợp đồng cho thuê xe");
+        helper.setText("Đính kèm là bản hợp đồng cho thuê xe của bạn");
+
+        // Đọc file PDF từ thư mục lưu trữ
+        File pdfFile = new File("contracts/" + contractId + ".pdf");
+        helper.addAttachment("hopdong.pdf", pdfFile);
+
+        emailSender.send(message);
     }
 
     @Autowired
@@ -39,7 +53,7 @@ public class EmailService {
                 "Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.\n\n" +
                 "Trân trọng,\n" +
                 "Đội ngũ Drivon");
-        
+
         mailSender.send(message);
     }
 }

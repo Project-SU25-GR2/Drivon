@@ -13,6 +13,8 @@ import HomeContent from "./components/HomeContent";
 import MainLayout from "./components/MainLayout";
 import ForgotPasswordPage from "./components/ForgotPasswordPage";
 import ResetPasswordPage from "./components/ResetPasswordPage";
+import RentYourCarForm from "./components/RentYourCarForm";
+import CarLeaseContractForm from "./components/CarLeaseContractForm";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
 function App() {
@@ -185,7 +187,33 @@ function App() {
           element={
             user ? (
               <MainLayout user={user} handleLogout={handleLogout}>
-                <ContractForm user={user} />
+                <ContractForm />
+              </MainLayout>
+            ) : (
+              <Navigate to="/auth" replace />
+            )
+          }
+        />
+
+        <Route
+          path="/contracts/lease"
+          element={
+            user ? (
+              <MainLayout user={user} handleLogout={handleLogout}>
+                <CarLeaseContractForm user={user} />
+              </MainLayout>
+            ) : (
+              <Navigate to="/auth" replace />
+            )
+          }
+        />
+
+        <Route
+          path="/rent-your-car"
+          element={
+            user ? (
+              <MainLayout user={user} handleLogout={handleLogout}>
+                <RentYourCarForm />
               </MainLayout>
             ) : (
               <Navigate to="/auth" replace />

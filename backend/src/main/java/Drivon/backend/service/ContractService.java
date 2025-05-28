@@ -8,6 +8,10 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.time.LocalDateTime;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 
 @Service
 public class ContractService {
@@ -47,7 +51,28 @@ public class ContractService {
         contract.setCccd(request.getCccd());
         contract.setEmail(request.getEmail());
 
-        return contractRepository.save(contract);
+        Contract savedContract = contractRepository.save(contract);
+        generateContractFile(savedContract);
+        return savedContract;
+    }
+
+    public Contract createLeaseContract(ContractRequest request) {
+        Contract contract = new Contract();
+        contract.setContractNumber(request.getContractNumber());
+        contract.setStartDate(request.getStartDate());
+        contract.setEndDate(request.getEndDate());
+        contract.setCarId(request.getCarId());
+        contract.setCustomerId(request.getCustomerId());
+        contract.setDeposit(request.getDeposit());
+        contract.setTotalAmount(request.getTotalAmount());
+        contract.setStatus("PENDING_LEASE");
+        contract.setName(request.getName());
+        contract.setPhone(request.getPhone());
+        contract.setCccd(request.getCccd());
+        contract.setEmail(request.getEmail());
+
+        Contract savedContract = contractRepository.save(contract);
+        return savedContract;
     }
 
     public String generateVerificationCode(String email) {
@@ -68,5 +93,49 @@ public class ContractService {
             verificationCodes.remove(email);
         }
         return isValid;
+    }
+
+    private void generateContractFile(Contract contract) {
+        try {
+            // Tạo thư mục contracts nếu chưa tồn tại
+            File contractsDir = new File("contracts");
+            if (!contractsDir.exists()) {
+                contractsDir.mkdir();
+            }
+
+            // Tạo file hợp đồng
+            File contractFile = new File(contractsDir, contract.getId() + ".txt");
+            FileWriter writer = new FileWriter(contractFile);
+
+            // Ghi nội dung hợp đồng
+            writer.write("CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM\n");
+            writer.write("Độc lập – Tự do – Hạnh phúc\n");
+            writer.write("------------------------------\n");
+            writer.write("HỢP ĐỒNG CHO THUÊ XE\n");
+            writer.write("Ngày " + contract.getStartDate().format(DateTimeFormatter.ofPattern("d")) +
+                    " tháng " + contract.getStartDate().format(DateTimeFormatter.ofPattern("M")) +
+                    " năm " + contract.getStartDate().format(DateTimeFormatter.ofPattern("yyyy")) + "\n");
+            writer.write("Số: " + contract.getContractNumber() + "\n\n");
+
+            writer.write("BÊN A\n");
+            writer.write("Tên: " + contract.getName() + "\n");
+            writer.write("Số điện thoại: " + contract.getPhone() + "\n");
+            writer.write("CCCD: " + contract.getCccd() + "\n");
+            writer.write("Email: " + contract.getEmail() + "\n\n");
+
+            writer.write("BÊN B\n");
+            writer.write("Tên: Cty TNHH Group2\n");
+            writer.write("Số điện thoại: 0394672210\n");
+            writer.write("Email: Binhvuong221004@gmail.com\n\n");
+
+            writer.write("Đồng ý với điều khoản:\n");
+            writer.write("BÊN A:                                                          BÊN B:\n");
+            writer.write("Tên: " + contract.getName() + "                                Group2\n");
+            writer.write("Mã xác nhận:                                                    Đã ký!\n");
+
+            writer.close();
+        } catch (IOException e) {
+            throw new RuntimeException("Không thể tạo file hợp đồng", e);
+        }
     }
 }
