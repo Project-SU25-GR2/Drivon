@@ -1,0 +1,650 @@
+.admin-dashboard {
+    display: flex;
+    height: 100vh;
+    font-family: Arial, sans-serif; /* Example font */
+    background-color: #f8f9fa; /* Light background for consistency */
+}
+
+.sidebar {
+    width: 250px; /* Adjust width as needed */
+    background-color: #fff; /* White background */
+    color: #333; /* Dark grey text */
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0; /* Prevent sidebar from shrinking */
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px; /* Add some space below header */
+    border-bottom: 1px solid #eee; /* Subtle separator */
+}
+
+.sidebar-header .logo {
+    width: 40px; /* Adjust logo size */
+    margin-right: 10px;
+}
+
+.sidebar-header span {
+    font-size: 24px;
+    font-weight: bold;
+    color: #007bff; /* Example color for Adminator text */
+}
+
+.sidebar-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-nav li {
+    margin-bottom: 5px; /* Reduced space between list items */
+}
+
+.sidebar-nav a {
+    text-decoration: none;
+    color: #333; /* Dark grey text */
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    padding: 10px 15px; /* Added horizontal padding */
+    border-radius: 5px; /* Slightly rounded corners */
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.sidebar-nav a i {
+    margin-right: 15px; /* Increased space between icon and text */
+    color: #6c757d; /* Grey color for icons */
+    width: 20px; /* Fixed icon width for alignment */
+    text-align: center;
+}
+
+.sidebar-nav a:hover,
+.sidebar-nav a.active {
+    background-color: #e9ecef; /* Light grey background on hover/active */
+    color: #007bff; /* Blue text on hover/active */
+}
+
+.sidebar-nav a:hover i,
+.sidebar-nav a.active i {
+    color: #007bff; /* Blue icon on hover/active */
+}
+
+.main-content {
+    flex-grow: 1;
+    padding: 0 20px; /* Add horizontal padding */
+    background-color: #f8f9fa; /* Light background for content area */
+    overflow-y: auto; /* Enable scrolling if content overflows */
+}
+
+.header {
+    background-color: #fff; /* White background for header */
+    padding: 15px 20px; /* Padding inside the header */
+    margin-bottom: 20px; /* Space below the header */
+    /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); */ /* Removed shadow based on image */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e9ecef; /* Subtle bottom border */
+}
+
+.header-left i,
+.header-right .header-icons i {
+    margin-right: 15px; /* Space between icons */
+    color: #6c757d; /* Grey color for header icons */
+    font-size: 18px; /* Icon size */
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.header-left i:hover,
+.header-right .header-icons i:hover {
+    color: #007bff; /* Blue on hover */
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+}
+
+.header-icons {
+    margin-right: 20px; /* Space between icons and user profile */
+    display: flex;
+    align-items: center;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.user-profile .user-avatar {
+    width: 30px; /* Avatar size */
+    height: 30px;
+    border-radius: 50%; /* Circular avatar */
+    margin-right: 10px;
+}
+
+.user-profile span {
+    margin-right: 5px; /* Space between name and dropdown icon */
+    font-weight: bold;
+}
+
+.user-profile i {
+     color: #6c757d; /* Grey color for dropdown icon */
+     font-size: 14px; /* Smaller icon size */
+}
+
+.dashboard-content {
+    padding: 20px; /* Add padding to content area */
+}
+
+.metric-cards {
+    display: flex;
+    justify-content: space-between; /* Distribute cards evenly */
+    gap: 20px; /* Space between cards */
+    margin-bottom: 20px; /* Space below the cards */
+}
+
+.card {
+    flex: 1; /* Allow cards to grow and shrink */
+    background-color: #fff; /* White background */
+    padding: 20px;
+    border-radius: 8px; /* More rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+    display: flex;
+    flex-direction: column;
+}
+
+.card-title {
+    font-size: 14px;
+    color: #6c757d; /* Grey text for title */
+    margin-bottom: 10px;
+}
+
+.card-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #343a40; /* Darker text for value */
+    margin-bottom: 10px;
+}
+
+.card-trend {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Space between chart and percentage */
+}
+
+.mini-chart {
+    width: 50px; /* Placeholder width for chart */
+    height: 30px; /* Placeholder height for chart */
+    background-color: #e9ecef; /* Light grey placeholder background */
+    /* Add actual chart styling when implementing */
+}
+
+.percentage-change {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.percentage-change.positive {
+    color: #28a745; /* Green for positive change */
+}
+
+.percentage-change.negative {
+    color: #dc3545; /* Red for negative change */
+}
+
+.site-visits-section {
+    background-color: #fff; /* White background */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+}
+
+.site-visits-section h4 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #343a40; /* Darker text for title */
+}
+
+.site-visits-content {
+    display: flex;
+    gap: 20px; /* Space between map and stats */
+}
+
+.world-map-placeholder {
+    flex: 2; /* Map takes more space */
+    background-color: #e9ecef; /* Placeholder background */
+    height: 300px; /* Placeholder height */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    color: #6c757d; /* Grey text */
+    border-radius: 8px; /* Rounded corners */
+}
+
+.regional-stats {
+    flex: 1; /* Stats take less space */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around; /* Distribute space between items */
+}
+
+.stat-item {
+    margin-bottom: 15px; /* Space between stat items */
+}
+
+.stat-label {
+    font-size: 16px;
+    font-weight: bold;
+    color: #343a40; /* Dark text */
+    margin-bottom: 5px;
+}
+
+.stat-region {
+    font-size: 14px;
+    color: #6c757d; /* Grey text */
+    margin-bottom: 5px;
+}
+
+.progress-bar-container {
+    width: 100%;
+    background-color: #e9ecef; /* Light grey background for container */
+    border-radius: 5px; /* Rounded corners */
+    overflow: hidden; /* Hide overflow of the bar */
+    height: 8px; /* Height of the progress bar */
+    margin-bottom: 5px;
+}
+
+.progress-bar {
+    height: 100%;
+    border-radius: 5px; /* Rounded corners */
+    /* background-color is set inline in JSX */
+}
+
+.stat-percentage {
+    font-size: 14px;
+    font-weight: bold;
+    color: #343a40; /* Dark text */
+}
+
+.circular-charts-section {
+     background-color: #fff; /* White background */
+     padding: 20px;
+     border-radius: 8px;
+     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+     margin-bottom: 20px;
+}
+
+.circular-charts-section h4 {
+     margin-top: 0;
+     margin-bottom: 20px;
+     color: #343a40; /* Darker text for title */
+}
+
+.circular-charts-container {
+     display: flex;
+     justify-content: space-around; /* Distribute charts evenly */
+     align-items: center;
+}
+
+.chart-item {
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+}
+
+.circular-chart {
+     width: 80px; /* Size of the circular chart */
+     height: 80px;
+     border-radius: 50%; /* Make it circular */
+     border: 5px solid #007bff; /* Example border color */
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     font-size: 20px;
+     font-weight: bold;
+     color: #343a40; /* Dark text */
+     margin-bottom: 10px;
+     /* Add actual chart styling when implementing */
+}
+
+.chart-item:nth-child(2) .circular-chart { /* Style for the second chart */
+    border-color: #28a745; /* Green border */
+}
+
+.chart-item:nth-child(3) .circular-chart { /* Style for the third chart */
+    border-color: #dc3545; /* Red border */
+}
+
+.chart-label {
+    font-size: 14px;
+    color: #6c757d; /* Grey text */
+}
+
+.remaining-widgets {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive grid */
+    gap: 20px; /* Space between widgets */
+}
+
+.widget {
+    background-color: #fff; /* White background */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.widget h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #343a40; /* Darker text for title */
+    border-bottom: 1px solid #eee; /* Subtle separator */
+    padding-bottom: 10px;
+}
+
+.widget ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.widget li {
+    margin-bottom: 10px;
+    color: #495057; /* Slightly darker grey text */
+}
+
+.widget table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+}
+
+.widget th,
+.widget td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6; /* Table row separator */
+}
+
+.widget th {
+    background-color: #e9ecef; /* Light grey background for table header */
+    font-size: 14px;
+    color: #495057;
+}
+
+.widget td {
+     font-size: 14px;
+     color: #6c757d;
+}
+
+.widget table a {
+    color: #007bff; /* Link color */
+    text-decoration: none;
+}
+
+.widget table a:hover {
+    text-decoration: underline;
+}
+
+/* Specific widget styling adjustments */
+.todo-list ul li {
+    /* Add styling for todo list items, e.g., checkboxes or icons */
+}
+
+.weather p {
+    margin-bottom: 5px;
+    color: #495057;
+}
+
+.quick-chat div {
+    /* Add styling for chat messages */
+    height: 150px; /* Example chat window height */
+    overflow-y: auto;
+    border: 1px solid #eee;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+/* Adjust grid columns for specific widgets if needed */
+/* Example: Make sales report span two columns */
+/*
+.sales-report {
+    grid-column: span 2;
+}
+*/
+
+/* Add more styles for specific sections as you build them */
+
+/* User Management Page Styles */
+.user-management-container {
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow-x: auto; /* Add horizontal scrolling if content overflows */
+}
+
+.user-management-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.search-box {
+    flex: 1;
+    max-width: 300px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.user-stats {
+    display: flex;
+    gap: 20px;
+}
+
+.user-stats span {
+    font-size: 14px;
+    color: #666;
+}
+
+.edit-user-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.edit-user-form {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+    max-width: 90%;
+}
+
+.edit-user-form h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #666;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.save-button,
+.cancel-button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.save-button {
+    background-color: #28a745;
+    color: white;
+}
+
+.save-button:hover {
+    background-color: #218838;
+}
+
+.cancel-button {
+    background-color: #6c757d;
+    color: white;
+}
+
+.cancel-button:hover {
+    background-color: #5a6268;
+}
+
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    table-layout: auto; /* Allow browser to auto-size columns */
+}
+
+.user-table th,
+.user-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    white-space: nowrap; /* Prevent text wrapping in cells */
+}
+
+.user-table th:first-child,
+.user-table td:first-child {
+    width: 50px; /* Set a fixed width for the ID column */
+    min-width: 50px; /* Ensure the width is at least 50px */
+}
+
+.user-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #333;
+}
+
+.user-table tr:hover {
+    background-color: #f8f9fa;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-badge.active {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-badge.inactive {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.edit-button,
+.delete-button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.2s;
+}
+
+.edit-button {
+    background-color: #007bff;
+    color: white;
+}
+
+.edit-button:hover {
+    background-color: #0056b3;
+}
+
+.delete-button {
+    background-color: #dc3545;
+    color: white;
+}
+
+.delete-button:hover {
+    background-color: #c82333;
+}
+
+.role-select {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+    cursor: pointer;
+}
+
+.role-select:focus {
+    outline: none;
+    border-color: #007bff;
+} 

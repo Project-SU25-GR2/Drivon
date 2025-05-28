@@ -174,53 +174,53 @@ const CarLeaseContractForm = ({ user }) => {
         
         // Add header
         doc.setFontSize(20);
-        doc.text('SOCIALIST REPUBLIC OF VIETNAM', 105, 20, { align: 'center' });
-        doc.text('Independence - Freedom - Happiness', 105, 30, { align: 'center' });
+        doc.text('CONG HOA XA HOI CHU NGHIA VIET NAM', 105, 20, { align: 'center' });
+        doc.text('Doc lap - Tu do - Hanh phuc', 105, 30, { align: 'center' });
         doc.text('------------------------------', 105, 40, { align: 'center' });
-        doc.text('CAR LEASE AGREEMENT', 105, 50, { align: 'center' });
+        doc.text('HOP DONG CHO THUE XE', 105, 50, { align: 'center' });
 
         // Add date
         const today = new Date();
         doc.setFontSize(12);
-        doc.text(`Date: ${today.getDate()} Month: ${today.getMonth() + 1} Year: ${today.getFullYear()}`, 20, 70);
-        doc.text(`Contract No: ${contractData.contractNumber}`, 20, 80);
+        doc.text(`Ngay ${today.getDate()} thang ${today.getMonth() + 1} nam ${today.getFullYear()}`, 20, 70);
+        doc.text(`So: ${contractData.contractNumber}`, 20, 80);
 
         // Add Party A
         let currentY = 100;
-        doc.text('PARTY A', 20, currentY);
+        doc.text('BEN A', 20, currentY);
         currentY += 10;
-        doc.text(`Name: ${contractData.name}`, 20, currentY);
+        doc.text(`Ten: ${contractData.name}`, 20, currentY);
         currentY += 10;
-        doc.text(`Phone: ${contractData.phone}`, 20, currentY);
+        doc.text(`So dien thoai: ${contractData.phone}`, 20, currentY);
         currentY += 10;
-        doc.text(`ID Number: ${contractData.cccd}`, 20, currentY);
+        doc.text(`CCCD: ${contractData.cccd}`, 20, currentY);
         currentY += 10;
-        doc.text(`Email: ${contractData.email}`, 20, currentY);
+        doc.text(`Mail: ${contractData.email}`, 20, currentY);
 
         // Add Party B
         currentY += 20;
-        doc.text('PARTY B', 20, currentY);
+        doc.text('BEN B', 20, currentY);
         currentY += 10;
-        doc.text('Name: Group2 LLC', 20, currentY);
+        doc.text('Ten: Cty TNHH Group2', 20, currentY);
         currentY += 10;
-        doc.text('Phone: 0394672210', 20, currentY);
+        doc.text('So dien thoai: 0394672210', 20, currentY);
         currentY += 10;
-        doc.text('Email: Binhvuong221004@gmail.com', 20, currentY);
+        doc.text('Mail: Binhvuong221004@gmail.com', 20, currentY);
 
         // Add agreement section
         currentY += 20;
-        doc.text('Agreement Terms:', 20, currentY);
+        doc.text('Dong y voi dieu khoan:', 20, currentY);
         currentY += 20;
 
         // Add signatures
-        doc.text('PARTY A:', 20, currentY);
-        doc.text('PARTY B:', 120, currentY);
+        doc.text('BEN A:', 20, currentY);
+        doc.text('BEN B:', 120, currentY);
         currentY += 10;
-        doc.text(`Name: ${contractData.name}`, 20, currentY);
+        doc.text(`Ten: ${contractData.name}`, 20, currentY);
         doc.text('Group2', 120, currentY);
         currentY += 10;
-        doc.text(`Verification Code: ${contractData.verificationCode}`, 20, currentY);
-        doc.text('Signed!', 120, currentY);
+        doc.text(`Ma xac nhan: ${contractData.verificationCode}`, 20, currentY);
+        doc.text('Da ki!', 120, currentY);
 
         // Add signature lines
         doc.line(20, currentY + 10, 100, currentY + 10);
@@ -304,245 +304,56 @@ const CarLeaseContractForm = ({ user }) => {
     };
 
     return (
-        <div className="contract-form-container">
-            <h2>Car Lease Agreement</h2>
-            {message && <div className={`message ${message.includes('successfully') ? 'success' : 'error'}`}>{message}</div>}
-            
-            {contractData?.carData && (
-                <div className="car-info-section">
-                    <h3>Vehicle Information</h3>
-                    <div className="info-grid">
-                        <div className="info-item">
-                            <label>Brand:</label>
-                            <span>{contractData.carData.carBrand}</span>
+        <div className="admin-dashboard">
+            <div className="sidebar">
+                <div className="sidebar-header">
+                    {/* Logo and Adminator text */}
+                    <img src="/path/to/your/logo.png" alt="Logo" className="logo"/> {/* Replace with actual path */}
+                    <span>Adminator</span>
+                </div>
+                <ul className="sidebar-nav">
+                    <li><a href="#"><i className="fas fa-tachometer-alt"></i> Dashboard</a></li> {/* Replace i classes with actual icon classes */}
+                    <li><a href="#"><i className="fas fa-envelope"></i> Email</a></li>
+                    <li><a href="#"><i className="fas fa-edit"></i> Compose</a></li>
+                    <li><a href="#"><i className="fas fa-calendar-alt"></i> Calendar</a></li>
+                    <li><a href="#"><i className="fas fa-comments"></i> Chat</a></li>
+                    <li><a href="#"><i className="fas fa-chart-bar"></i> Charts</a></li>
+                    <li><a href="#"><i className="fas fa-file-alt"></i> Forms</a></li>
+                    <li><a href="#"><i className="fas fa-cube"></i> UI Elements</a></li>
+                    <li><a href="#"><i className="fas fa-table"></i> Tables</a></li>
+                    <li><a href="#"><i className="fas fa-map"></i> Maps</a></li>
+                    <li><a href="#"><i className="fas fa-file"></i> Pages</a></li>
+                    <li><a href="#"><i className="fas fa-layer-group"></i> Multiple Levels</a></li>
+                </ul>
+            </div>
+            <div className="main-content">
+                {/* Header will go here */}
+                <div className="header">
+                    <div className="header-left">
+                        <i className="fas fa-bars"></i> {/* Menu icon */}
+                        <i className="fas fa-search"></i> {/* Search icon */}
+                    </div>
+                    <div className="header-right">
+                        <div className="header-icons">
+                            <i className="fas fa-bell"></i> {/* Notification icon */}
+                            <i className="fas fa-envelope"></i> {/* Message icon */}
                         </div>
-                        <div className="info-item">
-                            <label>Model:</label>
-                            <span>{contractData.carData.carModel}</span>
-                        </div>
-                        <div className="info-item">
-                            <label>Year:</label>
-                            <span>{contractData.carData.year}</span>
-                        </div>
-                        <div className="info-item">
-                            <label>License Plate:</label>
-                            <span>{contractData.carData.licensePlate}</span>
-                        </div>
-                        <div className="info-item">
-                            <label>Daily Rate:</label>
-                            <span>{contractData.carData.dailyRate.toLocaleString()} VND</span>
-                        </div>
-                        <div className="info-item">
-                            <label>Location:</label>
-                            <span>{contractData.carData.location}</span>
+                        <div className="user-profile">
+                            <img src="/path/to/user/avatar.jpg" alt="User Avatar" className="user-avatar"/> {/* Replace with actual path */}
+                            <span>John Doe</span> {/* Replace with actual user name */}
+                            <i className="fas fa-chevron-down"></i> {/* Dropdown icon */}
                         </div>
                     </div>
-                    {contractData.carData.images && contractData.carData.images.length > 0 && (
-                        <div className="car-images">
-                            <h4>Vehicle Images:</h4>
-                            <div className="image-grid">
-                                {contractData.carData.images.map((image, index) => (
-                                    <img key={index} src={image} alt={`Car ${index + 1}`} />
-                                ))}
-                            </div>
-                        </div>
-                    )}
                 </div>
-            )}
-
-            <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                    <label>Contract Number:</label>
-                    <input
-                        type="text"
-                        name="contractNumber"
-                        value={formData.contractNumber}
-                        onChange={handleChange}
-                        className={errors.contractNumber ? 'error' : ''}
-                        required
-                    />
-                    {errors.contractNumber && <div className="field-error">{errors.contractNumber}</div>}
+                {/* Dashboard content will go here */}
+                <div className="dashboard-content">
+                    {/* This is where the cards, map, charts etc. will be added */}
+                    {/* The existing user table will be moved or adapted later */}
+                    <h3>Dashboard Overview</h3>
+                    {/* Placeholder for dashboard content */}
+                    <p>Content will be added here according to the image.</p>
                 </div>
-
-                <div className="form-group">
-                    <label>Start Date:</label>
-                    <input
-                        type="date"
-                        name="startDate"
-                        value={formData.startDate}
-                        onChange={handleChange}
-                        className={errors.startDate ? 'error' : ''}
-                        required
-                    />
-                    {errors.startDate && <div className="field-error">{errors.startDate}</div>}
-                </div>
-
-                <div className="form-group">
-                    <label>End Date:</label>
-                    <input
-                        type="date"
-                        name="endDate"
-                        value={formData.endDate}
-                        onChange={handleChange}
-                        className={errors.endDate ? 'error' : ''}
-                        required
-                    />
-                    {errors.endDate && <div className="field-error">{errors.endDate}</div>}
-                </div>
-
-                <div className="form-group">
-                    <label>Car ID:</label>
-                    <input
-                        type="text"
-                        name="carId"
-                        value={formData.carId}
-                        onChange={handleChange}
-                        className={errors.carId ? 'error' : ''}
-                        required
-                    />
-                    {errors.carId && <div className="field-error">{errors.carId}</div>}
-                </div>
-
-                <div className="form-group">
-                    <label>Owner ID:</label>
-                    <input
-                        type="text"
-                        name="ownerId"
-                        value={formData.ownerId}
-                        onChange={handleChange}
-                        className={errors.ownerId ? 'error' : ''}
-                        required
-                    />
-                    {errors.ownerId && <div className="field-error">{errors.ownerId}</div>}
-                </div>
-
-                <div className="form-group">
-                    <label>Deposit:</label>
-                    <input
-                        type="number"
-                        name="deposit"
-                        value={formData.deposit}
-                        onChange={handleChange}
-                        className={errors.deposit ? 'error' : ''}
-                        required
-                    />
-                    {errors.deposit && <div className="field-error">{errors.deposit}</div>}
-                </div>
-
-                <div className="form-group">
-                    <label>Total Amount:</label>
-                    <input
-                        type="number"
-                        name="totalAmount"
-                        value={formData.totalAmount}
-                        onChange={handleChange}
-                        className={errors.totalAmount ? 'error' : ''}
-                        required
-                    />
-                    {errors.totalAmount && <div className="field-error">{errors.totalAmount}</div>}
-                </div>
-
-                <div className="form-group">
-                    <label>Full Name:</label>
-                    <input
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        className={errors.name ? 'error' : ''}
-                        required
-                    />
-                    {errors.name && <div className="field-error">{errors.name}</div>}
-                </div>
-
-                <div className="form-group">
-                    <label>Phone Number:</label>
-                    <input
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleChange}
-                        pattern="[0-9]{10,11}"
-                        className={errors.phone ? 'error' : ''}
-                        required
-                    />
-                    {errors.phone && <div className="field-error">{errors.phone}</div>}
-                </div>
-
-                <div className="form-group">
-                    <label>ID Number:</label>
-                    <input
-                        type="text"
-                        name="cccd"
-                        value={formData.cccd}
-                        onChange={handleChange}
-                        pattern="[0-9]{12}"
-                        className={errors.cccd ? 'error' : ''}
-                        required
-                    />
-                    {errors.cccd && <div className="field-error">{errors.cccd}</div>}
-                </div>
-
-                <div className="form-group">
-                    <label>Email:</label>
-                    <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        className={errors.email ? 'error' : ''}
-                        required
-                    />
-                    {errors.email && <div className="field-error">{errors.email}</div>}
-                </div>
-
-                <div className="verification-section">
-                    <button
-                        type="button"
-                        onClick={sendVerificationCode}
-                        disabled={isCountingDown || !formData.email}
-                        className="verification-button"
-                    >
-                        Send Verification Code
-                    </button>
-                    {isCountingDown && (
-                        <span className="countdown">
-                            {Math.floor(countdown / 60)}:{(countdown % 60).toString().padStart(2, '0')}
-                        </span>
-                    )}
-                </div>
-
-                <div className="form-group">
-                    <label>Verification Code:</label>
-                    <div className="verification-input-group">
-                        <input
-                            type="text"
-                            value={verificationCode}
-                            onChange={(e) => setVerificationCode(e.target.value)}
-                            className={errors.verificationCode ? 'error' : ''}
-                            required
-                        />
-                        <button
-                            type="button"
-                            onClick={verifyCode}
-                            className="verify-button"
-                        >
-                            Verify
-                        </button>
-                    </div>
-                    {errors.verificationCode && (
-                        <div className="field-error">{errors.verificationCode}</div>
-                    )}
-                </div>
-
-                <button
-                    type="submit"
-                    className="submit-button"
-                    disabled={!isVerified}
-                >
-                    Create Contract
-                </button>
-            </form>
+            </div>
         </div>
     );
 };

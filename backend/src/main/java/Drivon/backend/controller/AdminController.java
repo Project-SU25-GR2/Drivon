@@ -51,6 +51,23 @@ public class AdminController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    // Endpoint to update user information
+    @PutMapping("/users/{userId}")
+    public ResponseEntity<?> updateUserInfo(@PathVariable Long userId, @RequestBody User updatedUser) {
+        return userRepository.findById(userId).map(user -> {
+            // Update user properties from updatedUser object
+            user.setEmail(updatedUser.getEmail());
+            user.setPhone(updatedUser.getPhone()); // Assuming phone can be updated
+            user.setFullName(updatedUser.getFullName());
+            user.setAddress(updatedUser.getAddress()); // Assuming address can be updated
+            user.setRole(updatedUser.getRole()); // Allow updating role via this endpoint as well
+            // Add other fields you want to allow updating
+
+            userRepository.save(user);
+            return ResponseEntity.ok().body("User information updated successfully.");
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
     // Endpoint to delete a user
     @DeleteMapping("/users/{userId}")
     public ResponseEntity<?> deleteUser(@PathVariable Long userId) {

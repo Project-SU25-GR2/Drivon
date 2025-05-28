@@ -4,7 +4,7 @@ import "./App.css";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
 import PaymentForm from "./components/PaymentForm";
-import AdminPage from "./components/AdminPage";
+import AdminPage from "./components/admin/AdminPage";
 import ContractForm from "./components/ContractForm";
 import ProfilePage from "./components/ProfilePage";
 import ChangePasswordPage from "./components/ChangePasswordPage";
