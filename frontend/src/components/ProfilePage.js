@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import './ProfilePage.css';
 
 const ProfilePage = ({ user, onUpdateUser }) => {
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState({});
   const [loading, setLoading] = useState(true);
@@ -12,15 +16,10 @@ const ProfilePage = ({ user, onUpdateUser }) => {
   const [hasPassword, setHasPassword] = useState(true);
 
   useEffect(() => {
-    if (user) {
-      setEditedUser({ ...user });
-      checkPasswordStatus();
-      setLoading(false);
-      setError(null);
-    } else {
-      setError('User data not available.');
-      setLoading(false);
-    }
+    setEditedUser({ ...user });
+    checkPasswordStatus();
+    setLoading(false);
+    setError(null);
   }, [user]);
 
   const checkPasswordStatus = async () => {

@@ -219,11 +219,11 @@ public class AuthController {
             }
 
             try {
-                emailService.sendPasswordResetEmail(user.getEmail(), token);
-                logger.info("Password reset email sent successfully to: {}", user.getEmail());
+                emailService.sendPasswordResetCode(user.getEmail(), token);
+                logger.info("Password reset code sent successfully to: {}", user.getEmail());
             } catch (Exception e) {
-                logger.error("Error sending email: {}", e.getMessage());
-                return ResponseEntity.internalServerError().body("Failed to send password reset email");
+                logger.error("Error sending reset code: {}", e.getMessage());
+                return ResponseEntity.internalServerError().body("Failed to send password reset code");
             }
 
             return ResponseEntity.ok().body("Password reset instructions have been sent to your email");

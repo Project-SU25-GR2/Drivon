@@ -97,19 +97,6 @@ function App() {
           }
         />
 
-        {/* <Route
-          path="/forgot-password"
-          element={
-            user ? (
-              <Navigate to="/" replace />
-            ) : (
-              <MainLayout user={user} handleLogout={handleLogout}>
-                <ForgotPasswordPage />
-              </MainLayout>
-            )
-          }
-        /> */}
-
         <Route
           path="/reset-password"
           element={
@@ -125,31 +112,14 @@ function App() {
 
         <Route
           path="/payment"
-          element={user ? <PaymentForm /> : <Navigate to="/auth" replace />}
-        />
-
-        <Route
-          path="/profile"
           element={
-            <MainLayout user={user} handleLogout={handleLogout}>
-              <ProfilePage user={user} onUpdateUser={handleLoginSuccess} />
-            </MainLayout>
-          }
-        />
-        <Route
-          path="/change-password"
-          element={
-            <MainLayout user={user} handleLogout={handleLogout}>
-              <ChangePasswordPage />
-            </MainLayout>
-          }
-        />
-        <Route
-          path="/change-avatar"
-          element={
-            <MainLayout user={user} handleLogout={handleLogout}>
-              <ChangeAvatarPage />
-            </MainLayout>
+            user ? (
+              <MainLayout user={user} handleLogout={handleLogout}>
+                <PaymentForm />
+              </MainLayout>
+            ) : (
+              <Navigate to="/auth" replace />
+            )
           }
         />
 
@@ -165,6 +135,7 @@ function App() {
             )
           }
         />
+
         <Route
           path="/change-password"
           element={
@@ -177,6 +148,7 @@ function App() {
             )
           }
         />
+
         <Route
           path="/change-avatar"
           element={
@@ -189,6 +161,7 @@ function App() {
             )
           }
         />
+
         <Route
           path="/forgot-password"
           element={
@@ -197,12 +170,17 @@ function App() {
             </MainLayout>
           }
         />
+
         <Route
           path="/admin"
           element={
-            <MainLayout user={user} handleLogout={handleLogout}>
-              <AdminPage user={user} />
-            </MainLayout>
+            user ? (
+              <MainLayout user={user} handleLogout={handleLogout}>
+                <AdminPage user={user} />
+              </MainLayout>
+            ) : (
+              <Navigate to="/auth" replace />
+            )
           }
         />
 
