@@ -23,4 +23,23 @@ public class EmailService {
         // TODO: Implement PDF sending functionality
         // This would require using MimeMessage and attachments
     }
+
+    @Autowired
+    private JavaMailSender mailSender;
+
+    public void sendPasswordResetCode(String to, String code) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject("Mã xác thực đặt lại mật khẩu - Drivon");
+        message.setText("Xin chào,\n\n" +
+                "Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.\n" +
+                "Đây là mã xác thực của bạn:\n\n" +
+                code + "\n\n" +
+                "Mã này sẽ hết hạn sau 5 phút.\n\n" +
+                "Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.\n\n" +
+                "Trân trọng,\n" +
+                "Đội ngũ Drivon");
+        
+        mailSender.send(message);
+    }
 }

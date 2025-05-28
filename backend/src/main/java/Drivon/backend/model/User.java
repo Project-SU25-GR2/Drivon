@@ -3,6 +3,7 @@ package Drivon.backend.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.Data;
+import java.util.Date;
 
 @Data
 @Entity
@@ -34,6 +35,11 @@ public class User {
     private boolean emailVerified = false;
     private boolean phoneVerified = false;
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    private String resetPasswordToken;
+    
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date resetPasswordTokenExpiry;
 
     // Getters and Setters
     public Long getUserId() {
@@ -130,5 +136,21 @@ public class User {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getResetPasswordToken() {
+        return resetPasswordToken;
+    }
+
+    public void setResetPasswordToken(String resetPasswordToken) {
+        this.resetPasswordToken = resetPasswordToken;
+    }
+
+    public Date getResetPasswordTokenExpiry() {
+        return resetPasswordTokenExpiry;
+    }
+
+    public void setResetPasswordTokenExpiry(Date resetPasswordTokenExpiry) {
+        this.resetPasswordTokenExpiry = resetPasswordTokenExpiry;
     }
 } 

@@ -22,11 +22,25 @@ import Drivon.backend.service.UserService;
 import Drivon.backend.service.JwtTokenProvider;
 import Drivon.backend.model.UserRole;
 import Drivon.backend.model.UserStatus;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import java.util.Date;
+import org.springframework.util.StringUtils;
+import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import Drivon.backend.dto.ForgotPasswordRequest;
+import Drivon.backend.model.PasswordResetToken;
+import Drivon.backend.repository.PasswordResetTokenRepository;
+import Drivon.backend.service.EmailService;
+import Drivon.backend.dto.ChangePasswordRequest;
 
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "http://localhost:3000")
 public class AuthController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     @Autowired
     private UserRepository userRepository;
@@ -39,6 +53,15 @@ public class AuthController {
 
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
+
+    @Autowired
+    private JavaMailSender mailSender;
+
+    @Autowired
+    private PasswordResetTokenRepository tokenRepository;
+
+    @Autowired
+    private EmailService emailService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
@@ -156,6 +179,213 @@ public class AuthController {
             e.printStackTrace(); // Add this for server-side logging
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error during Google authentication: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        try {
+            logger.info("Processing forgot password request for email: {}", request.getEmail());
+            
+            if (!StringUtils.hasText(request.getEmail())) {
+                return ResponseEntity.badRequest().body("Email is required");
+            }
+
+            User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+            if (user == null) {
+                // For security reasons, don't reveal that the email doesn't exist
+                logger.info("User not found for email: {}", request.getEmail());
+                return ResponseEntity.ok().body("If an account exists with this email, a password reset link will be sent");
+            }
+
+            // Delete any existing token for this user
+            PasswordResetToken existingToken = tokenRepository.findByUser(user);
+            if (existingToken != null) {
+                logger.info("Deleting existing token for user: {}", user.getEmail());
+                tokenRepository.delete(existingToken);
+            }
+
+            // Generate new token
+            String token = UUID.randomUUID().toString();
+            PasswordResetToken passwordResetToken = new PasswordResetToken(token, user);
+            logger.info("Generated new token for user: {}", user.getEmail());
+            
+            try {
+                tokenRepository.save(passwordResetToken);
+                logger.info("Saved token to database for user: {}", user.getEmail());
+            } catch (Exception e) {
+                logger.error("Error saving token to database: {}", e.getMessage());
+                return ResponseEntity.internalServerError().body("Failed to process password reset request");
+            }
+
+            try {
+                emailService.sendPasswordResetEmail(user.getEmail(), token);
+                logger.info("Password reset email sent successfully to: {}", user.getEmail());
+            } catch (Exception e) {
+                logger.error("Error sending email: {}", e.getMessage());
+                return ResponseEntity.internalServerError().body("Failed to send password reset email");
+            }
+
+            return ResponseEntity.ok().body("Password reset instructions have been sent to your email");
+            
+        } catch (Exception e) {
+            logger.error("Unexpected error in forgot password: {}", e.getMessage());
+            return ResponseEntity.internalServerError().body("Failed to process password reset request");
+        }
+    }
+
+    @PostMapping("/send-reset-code")
+    public ResponseEntity<?> sendResetCode(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        try {
+            if (!StringUtils.hasText(email)) {
+                return ResponseEntity.badRequest().body("Email là bắt buộc");
+            }
+
+            User user = userRepository.findByEmail(email).orElse(null);
+            if (user == null) {
+                // For security reasons, don't reveal that the email doesn't exist
+                return ResponseEntity.ok().body("Nếu email tồn tại, mã xác thực sẽ được gửi");
+            }
+
+            // Generate 6-digit code
+            String code = String.format("%06d", (int) (Math.random() * 1000000));
+            
+            // Save code to database with expiry time
+            PasswordResetToken resetToken = new PasswordResetToken();
+            resetToken.setUser(user);
+            resetToken.setToken(code);
+            resetToken.setExpiryDate(new Date(System.currentTimeMillis() + 5 * 60 * 1000)); // 5 minutes
+            
+            // Delete any existing tokens
+            PasswordResetToken existingToken = tokenRepository.findByUser(user);
+            if (existingToken != null) {
+                tokenRepository.delete(existingToken);
+            }
+            
+            tokenRepository.save(resetToken);
+            
+            // Send code via email
+            emailService.sendPasswordResetCode(email, code);
+            
+            return ResponseEntity.ok().body("Mã xác thực đã được gửi");
+        } catch (Exception e) {
+            logger.error("Error in sending reset code: {}", e.getMessage());
+            return ResponseEntity.internalServerError().body("Không thể gửi mã xác thực");
+        }
+    }
+
+    @PostMapping("/verify-reset-code")
+    public ResponseEntity<?> verifyResetCode(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String code = request.get("code");
+
+        try {
+            if (!StringUtils.hasText(email) || !StringUtils.hasText(code)) {
+                return ResponseEntity.badRequest().body("Email và mã xác thực là bắt buộc");
+            }
+
+            User user = userRepository.findByEmail(email).orElse(null);
+            if (user == null) {
+                return ResponseEntity.badRequest().body("Email không hợp lệ");
+            }
+
+            PasswordResetToken resetToken = tokenRepository.findByUser(user);
+            if (resetToken == null || !resetToken.getToken().equals(code)) {
+                return ResponseEntity.badRequest().body("Mã xác thực không hợp lệ");
+            }
+
+            if (resetToken.isExpired()) {
+                tokenRepository.delete(resetToken);
+                return ResponseEntity.badRequest().body("Mã xác thực đã hết hạn");
+            }
+
+            return ResponseEntity.ok().body("Mã xác thực hợp lệ");
+        } catch (Exception e) {
+            logger.error("Error in verifying reset code: {}", e.getMessage());
+            return ResponseEntity.internalServerError().body("Không thể xác thực mã");
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String code = request.get("code");
+        String newPassword = request.get("newPassword");
+
+        try {
+            if (!StringUtils.hasText(email) || !StringUtils.hasText(code) || !StringUtils.hasText(newPassword)) {
+                return ResponseEntity.badRequest().body("Email, mã xác thực và mật khẩu mới là bắt buộc");
+            }
+
+            User user = userRepository.findByEmail(email).orElse(null);
+            if (user == null) {
+                return ResponseEntity.badRequest().body("Email không hợp lệ");
+            }
+
+            PasswordResetToken resetToken = tokenRepository.findByUser(user);
+            if (resetToken == null || !resetToken.getToken().equals(code)) {
+                return ResponseEntity.badRequest().body("Mã xác thực không hợp lệ");
+            }
+
+            if (resetToken.isExpired()) {
+                tokenRepository.delete(resetToken);
+                return ResponseEntity.badRequest().body("Mã xác thực đã hết hạn");
+            }
+
+            // Validate password format
+            if (newPassword.length() < 6 || 
+                !newPassword.matches(".*[A-Z].*") || 
+                !newPassword.matches(".*[0-9].*")) {
+                return ResponseEntity.badRequest().body("Mật khẩu mới phải có ít nhất 6 ký tự, 1 chữ hoa và 1 số");
+            }
+
+            // Update password
+            user.setPassword(passwordEncoder.encode(newPassword));
+            userRepository.save(user);
+
+            // Delete used token
+            tokenRepository.delete(resetToken);
+
+            return ResponseEntity.ok().body("Đặt lại mật khẩu thành công");
+        } catch (Exception e) {
+            logger.error("Error in resetting password: {}", e.getMessage());
+            return ResponseEntity.internalServerError().body("Không thể đặt lại mật khẩu");
+        }
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request) {
+        try {
+            if (!StringUtils.hasText(request.getEmail()) || 
+                !StringUtils.hasText(request.getOldPassword()) || 
+                !StringUtils.hasText(request.getNewPassword())) {
+                return ResponseEntity.badRequest().body("Email, mật khẩu cũ và mật khẩu mới là bắt buộc");
+            }
+
+            User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+            if (user == null) {
+                return ResponseEntity.badRequest().body("Không tìm thấy tài khoản");
+            }
+
+            // Verify old password
+            if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+                return ResponseEntity.badRequest().body("Mật khẩu cũ không chính xác");
+            }
+
+            // Check if new password is same as old password
+            if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+                return ResponseEntity.badRequest().body("Mật khẩu mới không được trùng với mật khẩu cũ");
+            }
+
+            // Update password
+            user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+            userRepository.save(user);
+
+            return ResponseEntity.ok().body("Thay đổi mật khẩu thành công");
+        } catch (Exception e) {
+            logger.error("Error in change password: {}", e.getMessage());
+            return ResponseEntity.internalServerError().body("Không thể thay đổi mật khẩu");
         }
     }
 }
