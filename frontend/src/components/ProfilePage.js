@@ -4,10 +4,6 @@ import axios from 'axios';
 import './ProfilePage.css';
 
 const ProfilePage = ({ user, onUpdateUser }) => {
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
-
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState({});
   const [loading, setLoading] = useState(true);
@@ -93,6 +89,10 @@ const ProfilePage = ({ user, onUpdateUser }) => {
   const getDefaultAvatarUrl = (name) => {
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0D8ABC&color=fff&size=128`;
   };
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
 
   if (loading) {
     return (

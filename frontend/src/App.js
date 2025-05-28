@@ -174,13 +174,9 @@ function App() {
         <Route
           path="/admin"
           element={
-            user ? (
-              <MainLayout user={user} handleLogout={handleLogout}>
-                <AdminPage user={user} />
-              </MainLayout>
-            ) : (
-              <Navigate to="/auth" replace />
-            )
+            <MainLayout user={user} handleLogout={handleLogout}>
+              <AdminPage user={user} />
+            </MainLayout>
           }
         />
 
