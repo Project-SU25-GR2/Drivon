@@ -15,6 +15,7 @@ const CarLeaseContractForm = ({ user }) => {
         endDate: contractData?.endDate || '',
         carId: contractData?.carId || '',
         ownerId: user?.id || '',
+        customerId: user?.id || '',
         deposit: contractData?.deposit || '',
         totalAmount: contractData?.totalAmount || '',
         name: contractData?.name || '',
@@ -66,21 +67,21 @@ const CarLeaseContractForm = ({ user }) => {
         
         if (name === 'phone' && value) {
             if (!/^[0-9]{10,11}$/.test(value)) {
-                setErrors(prev => ({ ...prev, [name]: 'Số điện thoại phải có 10-11 chữ số' }));
+                setErrors(prev => ({ ...prev, [name]: 'Phone number must be 10-11 digits' }));
                 return;
             }
         }
         
         if (name === 'cccd' && value) {
             if (!/^[0-9]{12}$/.test(value)) {
-                setErrors(prev => ({ ...prev, [name]: 'CCCD phải có 12 chữ số' }));
+                setErrors(prev => ({ ...prev, [name]: 'ID number must be 12 digits' }));
                 return;
             }
         }
         
         if (name === 'email' && value) {
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-                setErrors(prev => ({ ...prev, [name]: 'Email không hợp lệ' }));
+                setErrors(prev => ({ ...prev, [name]: 'Invalid email format' }));
                 return;
             }
         }
@@ -99,37 +100,37 @@ const CarLeaseContractForm = ({ user }) => {
         const newErrors = {};
         
         if (!formData.contractNumber) {
-            newErrors.contractNumber = 'Vui lòng nhập số hợp đồng';
+            newErrors.contractNumber = 'Please enter contract number';
         }
         if (!formData.startDate) {
-            newErrors.startDate = 'Vui lòng chọn ngày bắt đầu';
+            newErrors.startDate = 'Please select start date';
         }
         if (!formData.endDate) {
-            newErrors.endDate = 'Vui lòng chọn ngày kết thúc';
+            newErrors.endDate = 'Please select end date';
         }
         if (!formData.carId) {
-            newErrors.carId = 'Vui lòng nhập mã xe';
+            newErrors.carId = 'Please enter car ID';
         }
         if (!formData.ownerId) {
-            newErrors.ownerId = 'Vui lòng nhập mã chủ xe';
+            newErrors.ownerId = 'Please enter owner ID';
         }
         if (!formData.deposit) {
-            newErrors.deposit = 'Vui lòng nhập tiền cọc';
+            newErrors.deposit = 'Please enter deposit amount';
         }
         if (!formData.totalAmount) {
-            newErrors.totalAmount = 'Vui lòng nhập tổng tiền';
+            newErrors.totalAmount = 'Please enter total amount';
         }
         if (!formData.name) {
-            newErrors.name = 'Vui lòng nhập họ tên';
+            newErrors.name = 'Please enter full name';
         }
         if (!formData.phone) {
-            newErrors.phone = 'Vui lòng nhập số điện thoại';
+            newErrors.phone = 'Please enter phone number';
         }
         if (!formData.cccd) {
-            newErrors.cccd = 'Vui lòng nhập CCCD';
+            newErrors.cccd = 'Please enter ID number';
         }
         if (!formData.email) {
-            newErrors.email = 'Vui lòng nhập email';
+            newErrors.email = 'Please enter email';
         }
 
         setErrors(newErrors);
@@ -142,12 +143,12 @@ const CarLeaseContractForm = ({ user }) => {
                 email: formData.email
             });
             if (response.data.success) {
-                setMessage('Mã xác thực đã được gửi đến email của bạn');
+                setMessage('Verification code has been sent to your email');
                 setCountdown(120);
                 setIsCountingDown(true);
             }
         } catch (error) {
-            setMessage('Lỗi khi gửi mã xác thực: ' + (error.response?.data?.error || error.message));
+            setMessage('Error sending verification code: ' + (error.response?.data?.error || error.message));
         }
     };
 
@@ -159,12 +160,12 @@ const CarLeaseContractForm = ({ user }) => {
             });
             if (response.data.success) {
                 setIsVerified(true);
-                setMessage('Xác thực thành công!');
+                setMessage('Verification successful!');
             } else {
-                setMessage('Mã xác thực không đúng');
+                setMessage('Invalid verification code');
             }
         } catch (error) {
-            setMessage('Lỗi khi xác thực: ' + (error.response?.data?.error || error.message));
+            setMessage('Error verifying code: ' + (error.response?.data?.error || error.message));
         }
     };
 
@@ -173,235 +174,117 @@ const CarLeaseContractForm = ({ user }) => {
         
         // Add header
         doc.setFontSize(20);
-        doc.text('CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM', 105, 20, { align: 'center' });
-        doc.setFontSize(16);
-        doc.text('Độc lập - Tự do - Hạnh phúc', 105, 30, { align: 'center' });
-        doc.setFontSize(20);
-        doc.text('HỢP ĐỒNG CHO THUÊ XE', 105, 45, { align: 'center' });
+        doc.text('SOCIALIST REPUBLIC OF VIETNAM', 105, 20, { align: 'center' });
+        doc.text('Independence - Freedom - Happiness', 105, 30, { align: 'center' });
+        doc.text('------------------------------', 105, 40, { align: 'center' });
+        doc.text('CAR LEASE AGREEMENT', 105, 50, { align: 'center' });
 
-        // Add contract number and date
+        // Add date
+        const today = new Date();
         doc.setFontSize(12);
-        doc.text(`Số: ${contractData.contractNumber}`, 20, 60);
-        doc.text(`Ngày: ${new Date().toLocaleDateString('vi-VN')}`, 150, 60);
+        doc.text(`Date: ${today.getDate()} Month: ${today.getMonth() + 1} Year: ${today.getFullYear()}`, 20, 70);
+        doc.text(`Contract No: ${contractData.contractNumber}`, 20, 80);
 
-        // Add parties
-        let currentY = 80;
-        doc.setFontSize(12);
-        doc.text('BÊN CHO THUÊ (BÊN A):', 20, currentY);
+        // Add Party A
+        let currentY = 100;
+        doc.text('PARTY A', 20, currentY);
         currentY += 10;
-        doc.text('CÔNG TY TNHH DRIVON', 20, currentY);
+        doc.text(`Name: ${contractData.name}`, 20, currentY);
         currentY += 10;
-        doc.text('Địa chỉ: 123 Đường ABC, Quận XYZ, TP. Hồ Chí Minh', 20, currentY);
+        doc.text(`Phone: ${contractData.phone}`, 20, currentY);
         currentY += 10;
-        doc.text('Mã số thuế: 0123456789', 20, currentY);
-        currentY += 10;
-        doc.text('Đại diện: Nguyễn Văn A - Chức vụ: Giám đốc', 20, currentY);
-
-        currentY += 30;
-        doc.text('BÊN THUÊ (BÊN B):', 20, currentY);
-        currentY += 10;
-        doc.text(`Họ và tên: ${contractData.name}`, 20, currentY);
-        currentY += 10;
-        doc.text(`Số CCCD: ${contractData.cccd}`, 20, currentY);
-        currentY += 10;
-        doc.text(`Địa chỉ: ${contractData.address || 'Chưa cập nhật'}`, 20, currentY);
-        currentY += 10;
-        doc.text(`Số điện thoại: ${contractData.phone}`, 20, currentY);
+        doc.text(`ID Number: ${contractData.cccd}`, 20, currentY);
         currentY += 10;
         doc.text(`Email: ${contractData.email}`, 20, currentY);
 
-        // Add car information
+        // Add Party B
         currentY += 20;
-        doc.text('THÔNG TIN XE CHO THUÊ:', 20, currentY);
+        doc.text('PARTY B', 20, currentY);
         currentY += 10;
-        doc.text(`Hãng xe: ${contractData.carData.carBrand}`, 20, currentY);
+        doc.text('Name: Group2 LLC', 20, currentY);
         currentY += 10;
-        doc.text(`Model: ${contractData.carData.carModel}`, 20, currentY);
+        doc.text('Phone: 0394672210', 20, currentY);
         currentY += 10;
-        doc.text(`Năm sản xuất: ${contractData.carData.year}`, 20, currentY);
-        currentY += 10;
-        doc.text(`Biển số xe: ${contractData.carData.licensePlate}`, 20, currentY);
-        currentY += 10;
-        doc.text(`Giá thuê/ngày: ${contractData.carData.dailyRate.toLocaleString('vi-VN')} VND`, 20, currentY);
-        currentY += 10;
-        doc.text(`Địa điểm: ${contractData.carData.location}`, 20, currentY);
-        currentY += 10;
+        doc.text('Email: Binhvuong221004@gmail.com', 20, currentY);
 
-        // Add car images
-        if (contractData.carData.images && contractData.carData.images.length > 0) {
-            currentY += 10;
-            doc.text('Hình ảnh xe:', 20, currentY);
-            currentY += 10;
-            const imageWidth = 60; // Max width for each image
-            const imageHeight = 40; // Max height for each image
-            let startX = 20;
-            const imageGap = 5;
-
-            for (const imageUrl of contractData.carData.images) {
-                const img = new Image();
-                img.crossOrigin = 'Anonymous'; // To avoid CORS issues
-                img.onload = () => {
-                    const aspectRatio = img.width / img.height;
-                    let displayWidth = imageWidth;
-                    let displayHeight = imageHeight;
-
-                    if (aspectRatio > 1) { // Wide image
-                        displayHeight = imageWidth / aspectRatio;
-                    } else { // Tall or square image
-                        displayWidth = imageHeight * aspectRatio;
-                    }
-                    
-                    // Add image, center vertically within the allocated height if needed
-                    const imageY = currentY + (imageHeight - displayHeight) / 2;
-
-                    // Check if adding image goes beyond page bottom
-                    if (imageY + displayHeight > doc.internal.pageSize.height - 20) {
-                        doc.addPage();
-                        currentY = 20; // Reset Y position for new page
-                        startX = 20; // Reset X position for new page
-                        // Recalculate imageY for the new page
-                        const imageY = currentY + (imageHeight - displayHeight) / 2;
-                         doc.addImage(img, 'JPEG', startX, imageY, displayWidth, displayHeight);
-                         startX += displayWidth + imageGap; // Move X for next image
-                    } else {
-                        doc.addImage(img, 'JPEG', startX, imageY, displayWidth, displayHeight);
-                         startX += displayWidth + imageGap; // Move X for next image
-                    }
-                   
-                };
-                 img.onerror = () => {
-                     console.error('Error loading image for PDF:', imageUrl);
-                     // Optionally add a placeholder text
-                     doc.text('Image failed to load', startX, currentY + imageHeight / 2);
-                      startX += imageWidth + imageGap; // Move X even if image fails
-                 };
-                img.src = imageUrl;
-            }
-            currentY += imageHeight + 10; // Move Y down after adding images
-        }
-
-        // Add contract terms
-        currentY += 10;
-        doc.text('ĐIỀU KHOẢN HỢP ĐỒNG:', 20, currentY);
-        currentY += 10;
-        doc.setFontSize(11);
-        doc.text('1. Thời hạn hợp đồng:', 20, currentY);
-        currentY += 10;
-        doc.text(`- Ngày bắt đầu: ${contractData.startDate}`, 30, currentY);
-        currentY += 10;
-        doc.text(`- Ngày kết thúc: ${contractData.endDate}`, 30, currentY);
-
+        // Add agreement section
         currentY += 20;
-        doc.text('2. Giá trị hợp đồng:', 20, currentY);
-        currentY += 10;
-        doc.text(`- Tiền cọc: ${contractData.deposit.toLocaleString('vi-VN')} VND`, 30, currentY);
-        currentY += 10;
-        doc.text(`- Tổng tiền: ${contractData.totalAmount.toLocaleString('vi-VN')} VND`, 30, currentY);
-
+        doc.text('Agreement Terms:', 20, currentY);
         currentY += 20;
-        doc.text('3. Quyền và nghĩa vụ của bên A:', 20, currentY);
-        currentY += 10;
-        doc.text('- Cung cấp xe đúng thông tin đã cam kết', 30, currentY);
-        currentY += 10;
-        doc.text('- Bảo dưỡng, sửa chữa xe định kỳ', 30, currentY);
-        currentY += 10;
-        doc.text('- Hỗ trợ khách hàng 24/7', 30, currentY);
-
-        currentY += 20;
-        doc.text('4. Quyền và nghĩa vụ của bên B:', 20, currentY);
-        currentY += 10;
-        doc.text('- Sử dụng xe đúng mục đích', 30, currentY);
-        currentY += 10;
-        doc.text('- Bảo quản xe cẩn thận', 30, currentY);
-        currentY += 10;
-        doc.text('- Thanh toán đầy đủ theo thỏa thuận', 30, currentY);
-        currentY += 20; // Add space before signatures
 
         // Add signatures
-        const signatureY = currentY + 30; // Position signatures below terms
-        doc.text('Đại diện bên A', 50, signatureY);
-        doc.text('Đại diện bên B', 150, signatureY);
+        doc.text('PARTY A:', 20, currentY);
+        doc.text('PARTY B:', 120, currentY);
+        currentY += 10;
+        doc.text(`Name: ${contractData.name}`, 20, currentY);
+        doc.text('Group2', 120, currentY);
+        currentY += 10;
+        doc.text(`Verification Code: ${contractData.verificationCode}`, 20, currentY);
+        doc.text('Signed!', 120, currentY);
 
         // Add signature lines
-        doc.line(30, signatureY + 10, 100, signatureY + 10);
-        doc.line(130, signatureY + 10, 200, signatureY + 10);
-
-        // Add stamp and seal (adjust positions as needed)
-        const stampImage = new Image();
-        stampImage.crossOrigin = 'Anonymous';
-        stampImage.onload = () => {
-             doc.addImage(stampImage, 'PNG', 40, signatureY - 25, 30, 30);
-        };
-        stampImage.onerror = () => {
-            console.error('Error loading stamp image for PDF');
-        };
-        stampImage.src = '/images/stamp.png';
-        
-        const sealImage = new Image();
-        sealImage.crossOrigin = 'Anonymous';
-         sealImage.onload = () => {
-            doc.addImage(sealImage, 'PNG', 140, signatureY - 25, 30, 30);
-        };
-        sealImage.onerror = () => {
-            console.error('Error loading seal image for PDF');
-        };
-        sealImage.src = '/images/seal.png';
-
+        doc.line(20, currentY + 10, 100, currentY + 10);
+        doc.line(120, currentY + 10, 200, currentY + 10);
 
         return doc.output('blob');
+    };
+
+    const generateContractNumber = () => {
+        const timestamp = new Date().getTime();
+        const random = Math.floor(Math.random() * 1000);
+        return `HD${timestamp}${random}`;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         
         if (!validateForm()) {
-            setMessage('Vui lòng điền đầy đủ thông tin hợp lệ');
+            setMessage('Please fill in all required fields correctly');
             return;
         }
 
         if (!isVerified) {
-            setMessage('Vui lòng xác thực email trước khi tạo hợp đồng');
+            setMessage('Please verify your email before creating the contract');
             return;
         }
 
+        // Generate a new contract number
+        const newContractNumber = generateContractNumber();
+
+        // Ensure all required fields are present and properly formatted
         const formattedData = {
-            ...formData,
+            contractNumber: newContractNumber,
+            startDate: formData.startDate,
+            endDate: formData.endDate,
+            carId: formData.carId.toString(),
+            customerId: "1", // Use a default customer ID
             deposit: parseFloat(formData.deposit) || 0,
             totalAmount: parseFloat(formData.totalAmount) || 0,
-            carId: parseInt(formData.carId) || 0,
-            ownerId: parseInt(formData.ownerId) || 0
+            name: formData.name,
+            phone: formData.phone,
+            cccd: formData.cccd,
+            email: formData.email
         };
 
         try {
-            // Get auth token from localStorage
-            const user = JSON.parse(localStorage.getItem('user'));
-            const authToken = user?.token;
-
-            console.log('User data from localStorage:', user);
-            console.log('Auth Token:', authToken);
-
-            if (!authToken) {
-                setMessage('Vui lòng đăng nhập để tạo hợp đồng.');
-                console.error('Auth token is missing or invalid.');
-                return;
-            }
-
-            const response = await axios.post('http://localhost:8080/api/contracts/lease', formattedData, {
-                headers: {
-                    'Authorization': `Bearer ${authToken}`
-                }
-            });
+            console.log('Sending data:', formattedData);
+            const response = await axios.post('http://localhost:8080/api/contracts/lease', formattedData);
 
             if (response.data) {
-                setMessage('Tạo hợp đồng thành công!');
+                setMessage('Contract created successfully!');
                 
-                const pdfBlob = generatePDF(response.data);
+                // Generate PDF using form data and verification code
+                const pdfBlob = generatePDF({
+                    ...formData,
+                    contractNumber: newContractNumber,
+                    verificationCode: verificationCode
+                });
                 const pdfUrl = URL.createObjectURL(pdfBlob);
                 window.open(pdfUrl, '_blank');
 
                 const link = document.createElement('a');
                 link.href = pdfUrl;
-                link.download = 'hopdong_chothuexe.pdf';
+                link.download = 'car_lease_agreement.pdf';
                 link.click();
 
                 setTimeout(() => {
@@ -409,21 +292,28 @@ const CarLeaseContractForm = ({ user }) => {
                 }, 100);
             }
         } catch (error) {
-            setMessage('Lỗi khi tạo hợp đồng: ' + (error.response?.data?.error || error.message));
+            console.error('Error details:', error.response?.data);
+            if (error.response?.data?.errors) {
+                // If there are validation errors, show them
+                const errorMessages = Object.values(error.response.data.errors).join(', ');
+                setMessage('Validation errors: ' + errorMessages);
+            } else {
+                setMessage('Error creating contract: ' + (error.response?.data?.error || error.message));
+            }
         }
     };
 
     return (
         <div className="contract-form-container">
-            <h2>Hợp Đồng Cho Thuê Xe</h2>
-            {message && <div className={`message ${message.includes('thành công') ? 'success' : 'error'}`}>{message}</div>}
+            <h2>Car Lease Agreement</h2>
+            {message && <div className={`message ${message.includes('successfully') ? 'success' : 'error'}`}>{message}</div>}
             
             {contractData?.carData && (
                 <div className="car-info-section">
-                    <h3>Thông Tin Xe</h3>
+                    <h3>Vehicle Information</h3>
                     <div className="info-grid">
                         <div className="info-item">
-                            <label>Hãng xe:</label>
+                            <label>Brand:</label>
                             <span>{contractData.carData.carBrand}</span>
                         </div>
                         <div className="info-item">
@@ -431,25 +321,25 @@ const CarLeaseContractForm = ({ user }) => {
                             <span>{contractData.carData.carModel}</span>
                         </div>
                         <div className="info-item">
-                            <label>Năm sản xuất:</label>
+                            <label>Year:</label>
                             <span>{contractData.carData.year}</span>
                         </div>
                         <div className="info-item">
-                            <label>Biển số xe:</label>
+                            <label>License Plate:</label>
                             <span>{contractData.carData.licensePlate}</span>
                         </div>
                         <div className="info-item">
-                            <label>Giá thuê/ngày:</label>
-                            <span>{contractData.carData.dailyRate.toLocaleString('vi-VN')} VND</span>
+                            <label>Daily Rate:</label>
+                            <span>{contractData.carData.dailyRate.toLocaleString()} VND</span>
                         </div>
                         <div className="info-item">
-                            <label>Địa điểm:</label>
+                            <label>Location:</label>
                             <span>{contractData.carData.location}</span>
                         </div>
                     </div>
                     {contractData.carData.images && contractData.carData.images.length > 0 && (
                         <div className="car-images">
-                            <h4>Hình ảnh xe:</h4>
+                            <h4>Vehicle Images:</h4>
                             <div className="image-grid">
                                 {contractData.carData.images.map((image, index) => (
                                     <img key={index} src={image} alt={`Car ${index + 1}`} />
@@ -462,7 +352,7 @@ const CarLeaseContractForm = ({ user }) => {
 
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
-                    <label>Số hợp đồng:</label>
+                    <label>Contract Number:</label>
                     <input
                         type="text"
                         name="contractNumber"
@@ -475,7 +365,7 @@ const CarLeaseContractForm = ({ user }) => {
                 </div>
 
                 <div className="form-group">
-                    <label>Ngày bắt đầu:</label>
+                    <label>Start Date:</label>
                     <input
                         type="date"
                         name="startDate"
@@ -488,7 +378,7 @@ const CarLeaseContractForm = ({ user }) => {
                 </div>
 
                 <div className="form-group">
-                    <label>Ngày kết thúc:</label>
+                    <label>End Date:</label>
                     <input
                         type="date"
                         name="endDate"
@@ -501,7 +391,7 @@ const CarLeaseContractForm = ({ user }) => {
                 </div>
 
                 <div className="form-group">
-                    <label>Mã xe:</label>
+                    <label>Car ID:</label>
                     <input
                         type="text"
                         name="carId"
@@ -514,7 +404,7 @@ const CarLeaseContractForm = ({ user }) => {
                 </div>
 
                 <div className="form-group">
-                    <label>Mã chủ xe:</label>
+                    <label>Owner ID:</label>
                     <input
                         type="text"
                         name="ownerId"
@@ -527,7 +417,7 @@ const CarLeaseContractForm = ({ user }) => {
                 </div>
 
                 <div className="form-group">
-                    <label>Tiền cọc:</label>
+                    <label>Deposit:</label>
                     <input
                         type="number"
                         name="deposit"
@@ -540,7 +430,7 @@ const CarLeaseContractForm = ({ user }) => {
                 </div>
 
                 <div className="form-group">
-                    <label>Tổng tiền:</label>
+                    <label>Total Amount:</label>
                     <input
                         type="number"
                         name="totalAmount"
@@ -553,7 +443,7 @@ const CarLeaseContractForm = ({ user }) => {
                 </div>
 
                 <div className="form-group">
-                    <label>Họ tên chủ xe:</label>
+                    <label>Full Name:</label>
                     <input
                         type="text"
                         name="name"
@@ -566,7 +456,7 @@ const CarLeaseContractForm = ({ user }) => {
                 </div>
 
                 <div className="form-group">
-                    <label>Số điện thoại:</label>
+                    <label>Phone Number:</label>
                     <input
                         type="tel"
                         name="phone"
@@ -580,7 +470,7 @@ const CarLeaseContractForm = ({ user }) => {
                 </div>
 
                 <div className="form-group">
-                    <label>CCCD:</label>
+                    <label>ID Number:</label>
                     <input
                         type="text"
                         name="cccd"
@@ -613,7 +503,7 @@ const CarLeaseContractForm = ({ user }) => {
                         disabled={isCountingDown || !formData.email}
                         className="verification-button"
                     >
-                        Gửi mã xác nhận
+                        Send Verification Code
                     </button>
                     {isCountingDown && (
                         <span className="countdown">
@@ -623,7 +513,7 @@ const CarLeaseContractForm = ({ user }) => {
                 </div>
 
                 <div className="form-group">
-                    <label>Mã xác nhận:</label>
+                    <label>Verification Code:</label>
                     <div className="verification-input-group">
                         <input
                             type="text"
@@ -637,7 +527,7 @@ const CarLeaseContractForm = ({ user }) => {
                             onClick={verifyCode}
                             className="verify-button"
                         >
-                            Xác nhận
+                            Verify
                         </button>
                     </div>
                     {errors.verificationCode && (
@@ -650,7 +540,7 @@ const CarLeaseContractForm = ({ user }) => {
                     className="submit-button"
                     disabled={!isVerified}
                 >
-                    Tạo Hợp Đồng
+                    Create Contract
                 </button>
             </form>
         </div>

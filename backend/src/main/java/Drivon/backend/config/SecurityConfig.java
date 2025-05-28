@@ -21,13 +21,13 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors().and()
-            .csrf().disable()
-            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .cors().and()
+                .csrf().disable()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeHttpRequests()
-            .requestMatchers("/api/auth/**", "/api/**").permitAll()
-                .anyRequest().authenticated();
+                .requestMatchers("/api/auth/**", "/api/contracts/**", "/api/**").permitAll()
+                .anyRequest().permitAll();
 
         return http.build();
     }
@@ -36,30 +36,27 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(
-            "http://localhost:3000",
-            "http://localhost:8080",
-            "http://127.0.0.1:3000",
-            "http://127.0.0.1:8080"
-        ));
+                "http://localhost:3000",
+                "http://localhost:8080",
+                "http://127.0.0.1:3000",
+                "http://127.0.0.1:8080"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList(
-            "Authorization",
-            "Content-Type",
-            "X-Requested-With",
-            "Accept",
-            "Origin",
-            "Access-Control-Request-Method",
-            "Access-Control-Request-Headers",
-            "Cross-Origin-Opener-Policy",
-            "Cross-Origin-Embedder-Policy",
-            "Cross-Origin-Resource-Policy"
-        ));
+                "Authorization",
+                "Content-Type",
+                "X-Requested-With",
+                "Accept",
+                "Origin",
+                "Access-Control-Request-Method",
+                "Access-Control-Request-Headers",
+                "Cross-Origin-Opener-Policy",
+                "Cross-Origin-Embedder-Policy",
+                "Cross-Origin-Resource-Policy"));
         configuration.setExposedHeaders(Arrays.asList(
-            "Authorization",
-            "Cross-Origin-Opener-Policy",
-            "Cross-Origin-Embedder-Policy",
-            "Cross-Origin-Resource-Policy"
-        ));
+                "Authorization",
+                "Cross-Origin-Opener-Policy",
+                "Cross-Origin-Embedder-Policy",
+                "Cross-Origin-Resource-Policy"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 
