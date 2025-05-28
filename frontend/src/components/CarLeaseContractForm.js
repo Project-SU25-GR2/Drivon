@@ -28,7 +28,8 @@ const CarLeaseContractForm = ({ user }) => {
         phone: contractData?.phone || '',
         cccd: contractData?.cccd || '',
         email: contractData?.email || '',
-        terms: false
+        terms: false,
+        pricePerDay: contractData?.carData?.dailyRate || ''
     });
 
     const [errors, setErrors] = useState({});
@@ -70,21 +71,21 @@ const CarLeaseContractForm = ({ user }) => {
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         let newValue = type === 'checkbox' ? checked : value;
-        
+
         if (name === 'phone' && value) {
             if (!/^[0-9]{10,11}$/.test(value)) {
                 setErrors(prev => ({ ...prev, [name]: 'Phone number must be 10-11 digits' }));
                 return;
             }
         }
-        
+
         if (name === 'cccd' && value) {
             if (!/^[0-9]{12}$/.test(value)) {
                 setErrors(prev => ({ ...prev, [name]: 'ID number must be 12 digits' }));
                 return;
             }
         }
-        
+
         if (name === 'email' && value) {
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
                 setErrors(prev => ({ ...prev, [name]: 'Invalid email format' }));
@@ -96,7 +97,7 @@ const CarLeaseContractForm = ({ user }) => {
             ...prev,
             [name]: newValue
         }));
-        
+
         if (errors[name]) {
             setErrors(prev => ({ ...prev, [name]: '' }));
         }
@@ -104,7 +105,7 @@ const CarLeaseContractForm = ({ user }) => {
 
     const validateForm = () => {
         const newErrors = {};
-        
+
         if (!formData.contractNumber) {
             newErrors.contractNumber = 'Please enter contract number';
         }
@@ -198,13 +199,17 @@ const CarLeaseContractForm = ({ user }) => {
                 { text: `Model: ${contractData.carData?.carModel || 'N/A'}` },
                 { text: `Năm sản xuất: ${contractData.carData?.year || 'N/A'}` },
                 { text: `Biển số xe: ${contractData.carData?.licensePlate || 'N/A'}` },
-                { text: `Giá thuê/ngày: ${contractData.carData?.dailyRate?.toLocaleString('vi-VN') || 'N/A'} VND` },
-                { text: `Tiền cọc: ${contractData.deposit.toLocaleString('vi-VN')} VNĐ` },
+                { text: `Miêu tả: ${contractData.carData?.description || 'N/A'}` },
                 { text: `Địa điểm: ${contractData.carData?.location || 'N/A'}`, margin: [0, 0, 0, 20] },
+
+                { text: 'THÔNG TIN BÊN THUÊ CẦN CUNG CẤP', style: 'section' },
+                { text: `Yêu cầu: CCCD/CMND/Hộ chiếu, Giấy phép lái xe` },
+                { text: `Giá thuê/ngày: ${contractData.pricePerDay.toLocaleString('vi-VN')} VNĐ` },
+                { text: `Tiền cọc: ${contractData.deposit.toLocaleString('vi-VN')} VNĐ` , margin: [0, 0, 0, 20]},
 
                 { text: 'THÔNG TIN HỢP ĐỒNG', style: 'section' },
                 { text: `Ngày bắt đầu: ${contractData.startDate}` },
-                { text: `Ngày kết thúc: ${contractData.endDate}`, margin: [0, 0, 0, 20]},
+                { text: `Ngày kết thúc: ${contractData.endDate}`, margin: [0, 0, 0, 20] },
 
                 {
                     columns: [
@@ -256,7 +261,7 @@ const CarLeaseContractForm = ({ user }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         if (!validateForm()) {
             setMessage('Please fill in all required fields correctly');
             return;
@@ -269,7 +274,7 @@ const CarLeaseContractForm = ({ user }) => {
 
         // Generate a new contract number
         const newContractNumber = generateContractNumber();
-        
+
         // Update formData with the new contract number
         setFormData(prev => ({
             ...prev,
@@ -288,6 +293,7 @@ const CarLeaseContractForm = ({ user }) => {
             phone: formData.phone,
             cccd: formData.cccd,
             email: formData.email,
+            pricePerDay: parseFloat(formData.pricePerDay) || 0,
             carData: contractData?.carData
         };
 
@@ -297,7 +303,7 @@ const CarLeaseContractForm = ({ user }) => {
 
             if (response.data) {
                 setMessage('Contract created successfully!');
-                
+
                 // Generate PDF using form data and verification code
                 const pdfBlob = await generatePDF({
                     ...formData,
@@ -329,54 +335,88 @@ const CarLeaseContractForm = ({ user }) => {
     };
 
     return (
-        <div className="admin-dashboard">
-            <div className="sidebar">
-                <div className="sidebar-header">
-                    {/* Logo and Adminator text */}
-                    <img src="/path/to/your/logo.png" alt="Logo" className="logo"/> {/* Replace with actual path */}
-                    <span>Adminator</span>
-                </div>
-                <ul className="sidebar-nav">
-                    <li><a href="#"><i className="fas fa-tachometer-alt"></i> Dashboard</a></li> {/* Replace i classes with actual icon classes */}
-                    <li><a href="#"><i className="fas fa-envelope"></i> Email</a></li>
-                    <li><a href="#"><i className="fas fa-edit"></i> Compose</a></li>
-                    <li><a href="#"><i className="fas fa-calendar-alt"></i> Calendar</a></li>
-                    <li><a href="#"><i className="fas fa-comments"></i> Chat</a></li>
-                    <li><a href="#"><i className="fas fa-chart-bar"></i> Charts</a></li>
-                    <li><a href="#"><i className="fas fa-file-alt"></i> Forms</a></li>
-                    <li><a href="#"><i className="fas fa-cube"></i> UI Elements</a></li>
-                    <li><a href="#"><i className="fas fa-table"></i> Tables</a></li>
-                    <li><a href="#"><i className="fas fa-map"></i> Maps</a></li>
-                    <li><a href="#"><i className="fas fa-file"></i> Pages</a></li>
-                    <li><a href="#"><i className="fas fa-layer-group"></i> Multiple Levels</a></li>
-                </ul>
-            </div>
-            <div className="main-content">
-                {/* Header will go here */}
-                <div className="header">
-                    <div className="header-left">
-                        <i className="fas fa-bars"></i> {/* Menu icon */}
-                        <i className="fas fa-search"></i> {/* Search icon */}
-                    </div>
-                    <div className="header-right">
-                        <div className="header-icons">
-                            <i className="fas fa-bell"></i> {/* Notification icon */}
-                            <i className="fas fa-envelope"></i> {/* Message icon */}
+        <div className="contract-form-container">
+            <h2>Car Lease Agreement</h2>
+            {message && <div className={`message ${message.includes('successfully') ? 'success' : 'error'}`}>{message}</div>}
+
+            {contractData?.carData && (
+                <div className="car-info-section">
+                    <h3>Vehicle Information</h3>
+                    <div className="info-grid">
+                        <div className="info-item">
+                            <label>Brand:</label>
+                            <span>{contractData.carData.carBrand}</span>
                         </div>
-                        <div className="user-profile">
-                            <img src="/path/to/user/avatar.jpg" alt="User Avatar" className="user-avatar"/> {/* Replace with actual path */}
-                            <span>John Doe</span> {/* Replace with actual user name */}
-                            <i className="fas fa-chevron-down"></i> {/* Dropdown icon */}
+                        <div className="info-item">
+                            <label>Model:</label>
+                            <span>{contractData.carData.carModel}</span>
+                        </div>
+                        <div className="info-item">
+                            <label>Year:</label>
+                            <span>{contractData.carData.year}</span>
+                        </div>
+                        <div className="info-item">
+                            <label>License Plate:</label>
+                            <span>{contractData.carData.licensePlate}</span>
+                        </div>
+                        <div className="info-item">
+                            <label>Description:</label>
+                            <span>{contractData.carData.description}</span>
+                        </div>
+                        <div className="info-item">
+                            <label>Location:</label>
+                            <span>{contractData.carData.location}</span>
                         </div>
                     </div>
+                    {contractData.carData.images && contractData.carData.images.length > 0 && (
+                        <div className="car-images">
+                            <h4>Vehicle Images:</h4>
+                            <div className="image-grid">
+                                {contractData.carData.images.map((image, index) => (
+                                    <img key={index} src={image} alt={`Car ${index + 1}`} />
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
-                {/* Dashboard content will go here */}
-                <div className="dashboard-content">
-                    {/* This is where the cards, map, charts etc. will be added */}
-                    {/* The existing user table will be moved or adapted later */}
-                    <h3>Dashboard Overview</h3>
-                    {/* Placeholder for dashboard content */}
-                    <p>Content will be added here according to the image.</p>
+            )}
+
+            <form onSubmit={handleSubmit}>
+                <div className="form-group">
+                    <label>Deposit:</label>
+                    <input
+                        type="number"
+                        name="deposit"
+                        value={formData.deposit}
+                        onChange={handleChange}
+                        className={errors.deposit ? 'error' : ''}
+                        required
+                    />
+                    {errors.deposit && <div className="field-error">{errors.deposit}</div>}
+                </div>
+                <div className="form-group">
+                    <label>Price per Day (VND):</label>
+                    <input
+                        type="number"
+                        name="pricePerDay"
+                        value={formData.pricePerDay}
+                        onChange={handleChange}
+                        className={errors.pricePerDay ? 'error' : ''}
+                        required
+                    />
+                    {errors.pricePerDay && <div className="field-error">{errors.pricePerDay}</div>}
+                </div>
+                <div className="form-group">
+                    <label>Contract Number:</label>
+                    <input
+                        type="text"
+                        name="contractNumber"
+                        value={formData.contractNumber}
+                        onChange={handleChange}
+                        className={errors.contractNumber ? 'error' : ''}
+                        required
+                    />
+                    {errors.contractNumber && <div className="field-error">{errors.contractNumber}</div>}
                 </div>
 
                 <div className="form-group">
@@ -429,18 +469,7 @@ const CarLeaseContractForm = ({ user }) => {
                     />
                 </div>
 
-                <div className="form-group">
-                    <label>Deposit:</label>
-                    <input
-                        type="number"
-                        name="deposit"
-                        value={formData.deposit}
-                        onChange={handleChange}
-                        className={errors.deposit ? 'error' : ''}
-                        required
-                    />
-                    {errors.deposit && <div className="field-error">{errors.deposit}</div>}
-                </div>
+
 
                 <div className="form-group">
                     <label>Full Name:</label>
@@ -542,7 +571,7 @@ const CarLeaseContractForm = ({ user }) => {
                 >
                     Create Contract
                 </button>
-            </div>
+            </form>
         </div>
     );
 };

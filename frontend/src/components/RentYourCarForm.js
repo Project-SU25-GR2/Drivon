@@ -213,18 +213,6 @@ const RentYourCarForm = () => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="dailyRate">Daily Rate (VND)</label>
-          <input
-            type="number"
-            id="dailyRate"
-            name="dailyRate"
-            value={formData.dailyRate}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <div className="form-group">
           <label htmlFor="location">Location</label>
           <input
             type="text"

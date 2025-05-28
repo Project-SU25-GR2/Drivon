@@ -46,4 +46,7 @@ public class ContractRequest {
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
     private String email;
+
+    @NotNull(message = "Price per day is required")
+    private Double pricePerDay;
 }

@@ -49,6 +49,7 @@ public class ContractService {
         contract.setPhone(request.getPhone());
         contract.setCccd(request.getCccd());
         contract.setEmail(request.getEmail());
+        contract.setPricePerDay(request.getPricePerDay());
 
         Contract savedContract = contractRepository.save(contract);
         generateContractFile(savedContract);
@@ -68,6 +69,7 @@ public class ContractService {
         contract.setPhone(request.getPhone());
         contract.setCccd(request.getCccd());
         contract.setEmail(request.getEmail());
+        contract.setPricePerDay(request.getPricePerDay());
 
         Contract savedContract = contractRepository.save(contract);
         return savedContract;

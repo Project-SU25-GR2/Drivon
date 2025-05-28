@@ -29,4 +29,5 @@ public class Contract {
     private String phone;
     private String cccd;
     private String email;
+    private Double pricePerDay;
 }

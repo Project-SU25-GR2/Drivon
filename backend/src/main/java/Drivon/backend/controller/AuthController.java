@@ -71,8 +71,10 @@ public class AuthController {
         if (user == null || !passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             return ResponseEntity.badRequest().body("Invalid email or password");
         }
-        System.out.println("User logged in: " + user);
-        return ResponseEntity.ok(user);
+        // Tạo token
+        String token = jwtTokenProvider.createToken(user.getEmail());
+        // Trả về giống Google login
+        return ResponseEntity.ok(new AuthResponse(token, user));
     }
 
     @PostMapping("/signup")
