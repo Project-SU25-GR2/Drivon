@@ -155,22 +155,26 @@ const ProfilePage = ({ user, onUpdateUser }) => {
           </div>
 
           {!isEditing ? (
-            <div className="info-grid">
-              <div className="info-item">
-                <label>Họ và tên</label>
-                <p>{user.fullName || 'Chưa cập nhật'}</p>
+            <div>
+              <div className="info-grid">
+                <div className="info-item">
+                  <label>Họ và tên</label>
+                  <p>{user.fullName || 'Chưa cập nhật'}</p>
+                </div>
+                <div className="info-item">
+                  <label>Email</label>
+                  <p>{user.email}</p>
+                </div>
               </div>
-              <div className="info-item">
-                <label>Email</label>
-                <p>{user.email}</p>
-              </div>
-              <div className="info-item">
-                <label>Số điện thoại</label>
-                <p>{user.phone || 'Chưa cập nhật'}</p>
-              </div>
-              <div className="info-item">
-                <label>Địa chỉ</label>
-                <p>{user.address || 'Chưa cập nhật'}</p>
+              <div className="info-grid">
+                <div className="info-item">
+                  <label>Số điện thoại</label>
+                  <p>{user.phone || 'Chưa cập nhật'}</p>
+                </div>
+                <div className="info-item">
+                  <label>Địa chỉ</label>
+                  <p>{user.address || 'Chưa cập nhật'}</p>
+                </div>
               </div>
             </div>
           ) : (
