@@ -31,16 +31,17 @@ public class ContractRequest {
     @NotNull(message = "Deposit amount is required")
     private Double deposit;
 
+    private String status;
 
     @NotBlank(message = "Name is required")
     private String name;
 
     @NotBlank(message = "Phone number is required")
-    @Pattern(regexp = "^[0-9]{10,11}$", message = "Phone number must be 10-11 digits")
+    @Pattern(regexp = "^[0-9]{10,15}$", message = "Phone number must be 10-15 digits")
     private String phone;
 
     @NotBlank(message = "CCCD is required")
-    @Pattern(regexp = "^[0-9]{12}$", message = "CCCD must be 12 digits")
+    @Pattern(regexp = "^[0-9]{9,20}$", message = "CCCD must be 9-20 digits")
     private String cccd;
 
     @NotBlank(message = "Email is required")
@@ -49,4 +50,8 @@ public class ContractRequest {
 
     @NotNull(message = "Price per day is required")
     private Double pricePerDay;
+
+    private String pdfUrl;
+
+    private CarData carData;
 }

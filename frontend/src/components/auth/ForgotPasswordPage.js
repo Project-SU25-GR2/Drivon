@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import Button from "./Button";
+import Button from "../others/Button";
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");

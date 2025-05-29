@@ -2,7 +2,9 @@ package Drivon.backend.service;
 
 import Drivon.backend.dto.ContractRequest;
 import Drivon.backend.model.Contract;
+import Drivon.backend.model.Car;
 import Drivon.backend.repository.ContractRepository;
+import Drivon.backend.repository.CarRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.Map;
@@ -18,6 +20,9 @@ public class ContractService {
 
     @Autowired
     private ContractRepository contractRepository;
+
+    @Autowired
+    private CarRepository carRepository;
 
     // Store verification codes with expiration time
     private final Map<String, VerificationCode> verificationCodes = new ConcurrentHashMap<>();
@@ -50,6 +55,7 @@ public class ContractService {
         contract.setCccd(request.getCccd());
         contract.setEmail(request.getEmail());
         contract.setPricePerDay(request.getPricePerDay());
+        contract.setPdfUrl(request.getPdfUrl());
 
         Contract savedContract = contractRepository.save(contract);
         generateContractFile(savedContract);
@@ -57,6 +63,23 @@ public class ContractService {
     }
 
     public Contract createLeaseContract(ContractRequest request) {
+        // Lưu xe nếu chưa có
+        if (request.getCarData() != null) {
+            String licensePlate = request.getCarData().getLicensePlate();
+            if (!carRepository.existsById(licensePlate)) {
+                Car car = new Car();
+                car.setLicensePlate(licensePlate);
+                car.setOwnerId(Integer.parseInt(request.getCustomerId()));
+                car.setBrand(request.getCarData().getBrand());
+                car.setModel(request.getCarData().getModel());
+                car.setYear(request.getCarData().getYear());
+                car.setDescription(request.getCarData().getDescription());
+                car.setStatus("available");
+                car.setLocation(request.getCarData().getLocation());
+                System.out.println("new car added: " + car);
+                carRepository.save(car);
+            }
+        }
         Contract contract = new Contract();
         contract.setContractNumber(request.getContractNumber());
         contract.setStartDate(request.getStartDate());
@@ -70,6 +93,7 @@ public class ContractService {
         contract.setCccd(request.getCccd());
         contract.setEmail(request.getEmail());
         contract.setPricePerDay(request.getPricePerDay());
+        contract.setPdfUrl(request.getPdfUrl());
 
         Contract savedContract = contractRepository.save(contract);
         return savedContract;

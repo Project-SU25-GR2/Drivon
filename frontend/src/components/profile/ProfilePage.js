@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import axios from 'axios';
-import './ProfilePage.css';
+import '../css/ProfilePage.css';
 
 const ProfilePage = ({ user, onUpdateUser }) => {
   const [isEditing, setIsEditing] = useState(false);

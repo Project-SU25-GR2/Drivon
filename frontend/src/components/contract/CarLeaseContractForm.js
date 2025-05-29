@@ -3,7 +3,8 @@ import axios from 'axios';
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 import { useLocation } from 'react-router-dom';
-import './ContractForm.css';
+import '../css/ContractForm.css';
+import cloudinaryConfig  from '../../config/cloudinary';
 
 // Initialize pdfMake with fonts
 pdfMake.vfs = pdfFonts.pdfMake ? pdfFonts.pdfMake.vfs : pdfFonts.vfs;
@@ -195,8 +196,8 @@ const CarLeaseContractForm = ({ user }) => {
                 { text: 'Mail: Binhvuong221004@gmail.com', margin: [0, 0, 0, 20] },
 
                 { text: 'THÔNG TIN XE', style: 'section' },
-                { text: `Hãng xe: ${contractData.carData?.carBrand || 'N/A'}` },
-                { text: `Model: ${contractData.carData?.carModel || 'N/A'}` },
+                { text: `Hãng xe: ${contractData.carData?.brand || 'N/A'}` },
+                { text: `Model: ${contractData.carData?.model || 'N/A'}` },
                 { text: `Năm sản xuất: ${contractData.carData?.year || 'N/A'}` },
                 { text: `Biển số xe: ${contractData.carData?.licensePlate || 'N/A'}` },
                 { text: `Miêu tả: ${contractData.carData?.description || 'N/A'}` },
@@ -259,6 +260,16 @@ const CarLeaseContractForm = ({ user }) => {
         return `HD${year}${month}${day}${random}`;
     };
 
+    const uploadPDFToCloudinary = async (pdfBlob) => {
+        const formData = new FormData();
+        formData.append('file', pdfBlob, 'contract.pdf');
+        formData.append('upload_preset', cloudinaryConfig.uploadPreset);
+        formData.append('api_key', cloudinaryConfig.apiKey);
+        const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/raw/upload`;
+        const response = await axios.post(cloudinaryUrl, formData);
+        return response.data.secure_url;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -298,29 +309,40 @@ const CarLeaseContractForm = ({ user }) => {
         };
 
         try {
-            console.log('Sending data:', formattedData);
-            const response = await axios.post('http://localhost:8080/api/contracts/lease', formattedData);
+            // 1. Generate PDF
+            const pdfBlob = await generatePDF({
+                ...formData,
+                contractNumber: newContractNumber,
+                verificationCode: verificationCode,
+                carData: contractData?.carData
+            });
+
+            // 2. Upload PDF lên Cloudinary
+            let pdfUrl = '';
+            try {
+                pdfUrl = await uploadPDFToCloudinary(pdfBlob);
+            } catch (err) {
+                setMessage('Lỗi khi upload PDF lên Cloudinary: ' + (err.response?.data?.error || err.message));
+                return;
+            }
+
+            // 3. Gửi thông tin hợp đồng + pdfUrl lên backend
+            const response = await axios.post('http://localhost:8080/api/contracts/lease', {
+                ...formattedData,
+                pdfUrl
+            });
 
             if (response.data) {
                 setMessage('Contract created successfully!');
-
-                // Generate PDF using form data and verification code
-                const pdfBlob = await generatePDF({
-                    ...formData,
-                    contractNumber: newContractNumber,
-                    verificationCode: verificationCode,
-                    carData: contractData?.carData
-                });
-                const pdfUrl = URL.createObjectURL(pdfBlob);
-                window.open(pdfUrl, '_blank');
-
+                // Tạo URL từ pdfBlob và mở tab mới + tải file PDF về
+                const localPdfUrl = URL.createObjectURL(pdfBlob);
+                window.open(localPdfUrl, '_blank');
                 const link = document.createElement('a');
-                link.href = pdfUrl;
+                link.href = localPdfUrl;
                 link.download = `hopdong_${newContractNumber}.pdf`;
                 link.click();
-
                 setTimeout(() => {
-                    URL.revokeObjectURL(pdfUrl);
+                    URL.revokeObjectURL(localPdfUrl);
                 }, 100);
             }
         } catch (error) {
@@ -345,11 +367,11 @@ const CarLeaseContractForm = ({ user }) => {
                     <div className="info-grid">
                         <div className="info-item">
                             <label>Brand:</label>
-                            <span>{contractData.carData.carBrand}</span>
+                            <span>{contractData.carData.brand}</span>
                         </div>
                         <div className="info-item">
                             <label>Model:</label>
-                            <span>{contractData.carData.carModel}</span>
+                            <span>{contractData.carData.model}</span>
                         </div>
                         <div className="info-item">
                             <label>Year:</label>
@@ -468,8 +490,6 @@ const CarLeaseContractForm = ({ user }) => {
                         className="readonly-input"
                     />
                 </div>
-
-
 
                 <div className="form-group">
                     <label>Full Name:</label>

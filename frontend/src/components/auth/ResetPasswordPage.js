@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
-import Button from "./Button";
+import Button from "../others/Button";
 
 const ResetPasswordPage = () => {
   const [newPassword, setNewPassword] = useState("");

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import Login from "./Login";
-import Signup from "./Signup";
-import ForgotPasswordPage from "./ForgotPasswordPage";
-import "./MainLayout.css";
+import Login from '../auth/Login';
+import Signup from '../auth/Signup';
+import ForgotPasswordPage from '../auth/ForgotPasswordPage';
+import '../css/MainLayout.css';
 
 const MainLayout = ({ user, handleLogout, children }) => {
   const [authMode, setAuthMode] = useState("login"); // 'login', 'signup', or 'forgot'

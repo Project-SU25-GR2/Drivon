@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import CLOUDINARY_CONFIG from '../config/cloudinary';
-import './ChangeAvatarPage.css';
+import cloudinaryConfig  from '../../config/cloudinary';
+import '../css/ChangeAvatarPage.css';
 
 const ChangeAvatarPage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -52,10 +52,10 @@ const ChangeAvatarPage = () => {
     try {
       const formData = new FormData();
       formData.append('file', selectedFile);
-      formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
-      formData.append('api_key', CLOUDINARY_CONFIG.apiKey);
+      formData.append('upload_preset', cloudinaryConfig.uploadPreset);
+      formData.append('api_key', cloudinaryConfig.apiKey);
 
-      const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloudName}/upload`;
+      const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/upload`;
       const cloudinaryResponse = await axios.post(cloudinaryUrl, formData);
       const imageUrl = cloudinaryResponse.data.secure_url;
 

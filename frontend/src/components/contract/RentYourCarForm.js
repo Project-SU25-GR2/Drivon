@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import CLOUDINARY_CONFIG from '../config/cloudinary';
-import './RentYourCarForm.css';
+import cloudinaryConfig  from '../../config/cloudinary';
+import '../css/RentYourCarForm.css';
 import { useNavigate } from 'react-router-dom';
 
 const RentYourCarForm = () => {
@@ -28,8 +28,8 @@ const RentYourCarForm = () => {
   ];
 
   const [formData, setFormData] = useState({
-    carBrand: '',
-    carModel: '',
+    brand: '',
+    model: '',
     year: '',
     licensePlate: '',
     dailyRate: '',
@@ -77,10 +77,10 @@ const RentYourCarForm = () => {
       const uploadPromises = files.map(async (file) => {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
-        formData.append('api_key', CLOUDINARY_CONFIG.apiKey);
+        formData.append('upload_preset', cloudinaryConfig.uploadPreset);
+        formData.append('api_key', cloudinaryConfig.apiKey);
 
-        const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloudName}/upload`;
+        const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/upload`;
         const response = await axios.post(cloudinaryUrl, formData);
         return response.data.secure_url;
       });
@@ -128,8 +128,8 @@ const RentYourCarForm = () => {
         cccd: '', // Để trống cho người dùng điền
         email: '', // Để trống cho người dùng điền
         carData: { // Thêm thông tin xe
-          carBrand: formData.carBrand,
-          carModel: formData.carModel,
+          brand: formData.brand,
+          model: formData.model,
           year: formData.year,
           licensePlate: formData.licensePlate,
           dailyRate: formData.dailyRate,
@@ -158,11 +158,11 @@ const RentYourCarForm = () => {
       <h2>Become a Partner	</h2>
       <form onSubmit={handleSubmit} className="rent-car-form">
         <div className="form-group">
-          <label htmlFor="carBrand">Car Brand</label>
+          <label htmlFor="brand">Car Brand</label>
           <select
-            id="carBrand"
-            name="carBrand"
-            value={formData.carBrand}
+            id="brand"
+            name="brand"
+            value={formData.brand}
             onChange={handleChange}
             required
             className="select-input"
@@ -177,12 +177,12 @@ const RentYourCarForm = () => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="carModel">Car Model</label>
+          <label htmlFor="model">Car Model</label>
           <input
             type="text"
-            id="carModel"
-            name="carModel"
-            value={formData.carModel}
+            id="model"
+            name="model"
+            value={formData.model}
             onChange={handleChange}
             required
           />

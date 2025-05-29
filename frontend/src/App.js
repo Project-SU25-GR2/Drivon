@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import "./App.css";
-import Login from "./components/Login";
-import Signup from "./components/Signup";
-import PaymentForm from "./components/PaymentForm";
+import Login from "./components/auth/Login";
+import Signup from "./components/auth/Signup";
+import PaymentForm from "./components/payment/PaymentForm";
 import AdminPage from "./components/admin/AdminPage";
-import ContractForm from "./components/ContractForm";
-import ProfilePage from "./components/ProfilePage";
-import ChangePasswordPage from "./components/ChangePasswordPage";
-import ChangeAvatarPage from "./components/ChangeAvatarPage";
-import HomeContent from "./components/HomeContent";
-import MainLayout from "./components/MainLayout";
-import ForgotPasswordPage from "./components/ForgotPasswordPage";
-import ResetPasswordPage from "./components/ResetPasswordPage";
-import RentYourCarForm from "./components/RentYourCarForm";
-import CarLeaseContractForm from "./components/CarLeaseContractForm";
+import ContractForm from "./components/contract/ContractForm";
+import ProfilePage from "./components/profile/ProfilePage";
+import ChangePasswordPage from "./components/auth/ChangePasswordPage";
+import ChangeAvatarPage from "./components/profile/ChangeAvatarPage";
+import HomeContent from "./components/home/HomeContent";
+import MainLayout from "./components/home/MainLayout";
+import ForgotPasswordPage from "./components/auth/ForgotPasswordPage";
+import ResetPasswordPage from "./components/auth/ResetPasswordPage";
+import RentYourCarForm from "./components/contract/RentYourCarForm";
+import CarLeaseContractForm from "./components/contract/CarLeaseContractForm";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
 function App() {

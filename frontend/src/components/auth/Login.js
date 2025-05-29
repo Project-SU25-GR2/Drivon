@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
-import Button from "./Button";
+import Button from "../others/Button";
 import { Link } from "react-router-dom";
 
 const Login = ({ onLoginSuccess }) => {

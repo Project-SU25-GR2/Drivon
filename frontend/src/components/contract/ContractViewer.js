@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import './ContractViewer.css';
+import './css/ContractViewer.css';
 
 const ContractViewer = ({ carData }) => {
   const [contractData, setContractData] = useState(null);
@@ -67,11 +67,11 @@ const ContractViewer = ({ carData }) => {
           <div className="info-grid">
             <div className="info-item">
               <label>Hãng xe:</label>
-              <span>{carData.carBrand}</span>
+              <span>{carData.brand}</span>
             </div>
             <div className="info-item">
               <label>Model:</label>
-              <span>{carData.carModel}</span>
+              <span>{carData.model}</span>
             </div>
             <div className="info-item">
               <label>Năm sản xuất:</label>
