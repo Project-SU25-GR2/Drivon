@@ -212,6 +212,10 @@ const CarLeaseContractForm = ({ user }) => {
                 { text: `Ngày bắt đầu: ${contractData.startDate}` },
                 { text: `Ngày kết thúc: ${contractData.endDate}`, margin: [0, 0, 0, 20] },
 
+                { text: 'ĐIỀU KHOẢN', style: 'section' },
+                { text: 'Bên A đã đọc và đồng ý với các điều khoản của hợp đồng này.', margin: [0, 0, 0, 20] },
+                { text: '☒ Đã đồng ý với điều khoản', margin: [0, 0, 0, 20] },
+
                 {
                     columns: [
                         {
@@ -584,10 +588,23 @@ const CarLeaseContractForm = ({ user }) => {
                     )}
                 </div>
 
+                <div className="form-group">
+                    <label>
+                        <input
+                            type="checkbox"
+                            name="terms"
+                            checked={formData.terms}
+                            onChange={handleChange}
+                            required
+                        />
+                        Đồng ý với điều khoản
+                    </label>
+                </div>
+
                 <button
                     type="submit"
                     className="submit-button"
-                    disabled={!isVerified}
+                    disabled={!isVerified || !formData.terms}
                 >
                     Create Contract
                 </button>
