@@ -162,4 +162,8 @@ public class ContractService {
             throw new RuntimeException("Không thể tạo file hợp đồng", e);
         }
     }
+
+    public boolean checkCarExists(String carId) {
+        return carRepository.existsById(carId);
+    }
 }

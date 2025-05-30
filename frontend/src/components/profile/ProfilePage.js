@@ -155,23 +155,27 @@ const ProfilePage = ({ user, onUpdateUser }) => {
           </div>
 
           {!isEditing ? (
-              <div className="info-container">
-                <div className="info-item">
-                  <div className="info-label">Họ và tên</div>
-                  <div className="info-value">{user.fullName || 'Chưa cập nhật'}</div>
-                </div>
-                <div className="info-item">
-                  <div className="info-label">Email</div>
-                  <div className="info-value">{user.email}</div>
-                </div>
-                <div className="info-item">
-                  <div className="info-label">Số điện thoại</div>
-                  <div className="info-value">{user.phone || 'Chưa cập nhật'}</div>
-                </div>
-                <div className="info-item">
-                  <div className="info-label">Địa chỉ</div>
-                  <div className="info-value">{user.address || 'Chưa cập nhật'}</div>
-                </div>
+              <div>
+                  <div className="info-grid">
+                      <div className="info-item">
+                          <label>Họ và tên</label>
+                          <p>{user.fullName || 'Chưa cập nhật'}</p>
+                      </div>
+                      <div className="info-item">
+                          <label>Email</label>
+                          <p>{user.email}</p>
+                      </div>
+                  </div>
+                  <div className="info-grid">
+                      <div className="info-item">
+                          <label>Số điện thoại</label>
+                          <p>{user.phone || 'Chưa cập nhật'}</p>
+                      </div>
+                      <div className="info-item">
+                          <label>Địa chỉ</label>
+                          <p>{user.address || 'Chưa cập nhật'}</p>
+                      </div>
+                  </div>
               </div>
           ) : (
             <form className="edit-form" onSubmit={(e) => e.preventDefault()}>

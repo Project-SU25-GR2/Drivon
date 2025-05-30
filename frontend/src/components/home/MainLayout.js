@@ -13,8 +13,8 @@ const MainLayout = ({ user, handleLogout, children }) => {
     user && user.avatarUrl
       ? user.avatarUrl
       : "https://ui-avatars.com/api/?name=" +
-        encodeURIComponent(user?.fullName || "User") +
-        "&background=FFD700&color=222&size=64";
+      encodeURIComponent(user?.fullName || "User") +
+      "&background=FFD700&color=222&size=64";
 
   const showAuthForm = location.pathname === "/auth";
 
@@ -38,13 +38,19 @@ const MainLayout = ({ user, handleLogout, children }) => {
         <div className="logo">
           CAR<span>RENTAL</span>
         </div>
+        
         <nav>
           <Link to="/">Home</Link>
+          <a href="#">Rent car</a>
           <Link to="/contracts">Contracts</Link>
           <Link to="/rent-your-car">Become a Partner	</Link>
-          <a href="#">About</a>
-          <a href="#">Pages</a>
+          {/* <a href="#">About</a>
+          <a href="#">Pages</a> */}
           <a href="#">Contact</a>
+          <div className="search-box">
+            <input type="text" placeholder="Search..." />
+            <button type="button"><i className="fas fa-search"></i></button>
+          </div>
           {user && user.role === "ADMIN" && <Link to="/admin">Admin</Link>}
         </nav>
         <div className="auth-payment-buttons">
@@ -87,9 +93,8 @@ const MainLayout = ({ user, handleLogout, children }) => {
                   Login
                 </button>
                 <button
-                  className={`auth-tab ${
-                    authMode === "signup" ? "active" : ""
-                  }`}
+                  className={`auth-tab ${authMode === "signup" ? "active" : ""
+                    }`}
                   onClick={() => setAuthMode("signup")}
                 >
                   Signup

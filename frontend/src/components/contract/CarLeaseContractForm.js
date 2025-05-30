@@ -5,6 +5,7 @@ import pdfFonts from 'pdfmake/build/vfs_fonts';
 import { useLocation } from 'react-router-dom';
 import '../css/ContractForm.css';
 import cloudinaryConfig  from '../../config/cloudinary';
+import Button from '../others/Button';
 
 // Initialize pdfMake with fonts
 pdfMake.vfs = pdfFonts.pdfMake ? pdfFonts.pdfMake.vfs : pdfFonts.vfs;
@@ -39,6 +40,11 @@ const CarLeaseContractForm = ({ user }) => {
     const [isCountingDown, setIsCountingDown] = useState(false);
     const [isVerified, setIsVerified] = useState(false);
     const [verificationCode, setVerificationCode] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [isSendingCode, setIsSendingCode] = useState(false);
+    const [isVerifying, setIsVerifying] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isContractCreated, setIsContractCreated] = useState(false);
 
     useEffect(() => {
         if (contractData) {
@@ -143,6 +149,7 @@ const CarLeaseContractForm = ({ user }) => {
     };
 
     const sendVerificationCode = async () => {
+        setIsSendingCode(true);
         try {
             const response = await axios.post('http://localhost:8080/api/contracts/send-code', {
                 email: formData.email
@@ -154,10 +161,13 @@ const CarLeaseContractForm = ({ user }) => {
             }
         } catch (error) {
             setMessage('Error sending verification code: ' + (error.response?.data?.error || error.message));
+        } finally {
+            setIsSendingCode(false);
         }
     };
 
     const verifyCode = async () => {
+        setIsVerifying(true);
         try {
             const response = await axios.post('http://localhost:8080/api/contracts/verify-code', {
                 email: formData.email,
@@ -166,11 +176,15 @@ const CarLeaseContractForm = ({ user }) => {
             if (response.data.success) {
                 setIsVerified(true);
                 setMessage('Verification successful!');
+                setIsCountingDown(false);
+                setCountdown(0);
             } else {
                 setMessage('Invalid verification code');
             }
         } catch (error) {
             setMessage('Error verifying code: ' + (error.response?.data?.error || error.message));
+        } finally {
+            setIsVerifying(false);
         }
     };
 
@@ -211,6 +225,10 @@ const CarLeaseContractForm = ({ user }) => {
                 { text: 'THÔNG TIN HỢP ĐỒNG', style: 'section' },
                 { text: `Ngày bắt đầu: ${contractData.startDate}` },
                 { text: `Ngày kết thúc: ${contractData.endDate}`, margin: [0, 0, 0, 20] },
+
+                { text: 'ĐIỀU KHOẢN', style: 'section' },
+                { text: 'Bên A đã đọc và đồng ý với các điều khoản của hợp đồng này.', margin: [0, 0, 0, 20] },
+                { text: '☒ Đã đồng ý với điều khoản', margin: [0, 0, 0, 20] },
 
                 {
                     columns: [
@@ -272,14 +290,31 @@ const CarLeaseContractForm = ({ user }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsSubmitting(true);
 
         if (!validateForm()) {
             setMessage('Please fill in all required fields correctly');
+            setIsSubmitting(false);
             return;
         }
 
         if (!isVerified) {
             setMessage('Please verify your email before creating the contract');
+            setIsSubmitting(false);
+            return;
+        }
+
+        // Kiểm tra carId đã tồn tại chưa
+        try {
+            const checkResponse = await axios.get(`http://localhost:8080/api/contracts/check-car/${formData.carId}`);
+            if (checkResponse.data.exists) {
+                setMessage('Car ID already exists in the system. Please choose another car.');
+                setIsSubmitting(false);
+                return;
+            }
+        } catch (error) {
+            setMessage('Error checking car ID: ' + (error.response?.data?.error || error.message));
+            setIsSubmitting(false);
             return;
         }
 
@@ -323,6 +358,7 @@ const CarLeaseContractForm = ({ user }) => {
                 pdfUrl = await uploadPDFToCloudinary(pdfBlob);
             } catch (err) {
                 setMessage('Lỗi khi upload PDF lên Cloudinary: ' + (err.response?.data?.error || err.message));
+                setIsSubmitting(false);
                 return;
             }
 
@@ -334,6 +370,7 @@ const CarLeaseContractForm = ({ user }) => {
 
             if (response.data) {
                 setMessage('Contract created successfully!');
+                setIsContractCreated(true);
                 // Tạo URL từ pdfBlob và mở tab mới + tải file PDF về
                 const localPdfUrl = URL.createObjectURL(pdfBlob);
                 window.open(localPdfUrl, '_blank');
@@ -353,6 +390,8 @@ const CarLeaseContractForm = ({ user }) => {
             } else {
                 setMessage('Error creating contract: ' + (error.response?.data?.error || error.message));
             }
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -546,14 +585,15 @@ const CarLeaseContractForm = ({ user }) => {
                 </div>
 
                 <div className="verification-section">
-                    <button
+                    <Button
                         type="button"
                         onClick={sendVerificationCode}
-                        disabled={isCountingDown || !formData.email}
+                        disabled={isCountingDown || !formData.email || isVerified || isContractCreated}
+                        isLoading={isSendingCode}
                         className="verification-button"
                     >
                         Send Verification Code
-                    </button>
+                    </Button>
                     {isCountingDown && (
                         <span className="countdown">
                             {Math.floor(countdown / 60)}:{(countdown % 60).toString().padStart(2, '0')}
@@ -570,27 +610,45 @@ const CarLeaseContractForm = ({ user }) => {
                             onChange={(e) => setVerificationCode(e.target.value)}
                             className={errors.verificationCode ? 'error' : ''}
                             required
+                            disabled={isVerified || isContractCreated}
                         />
-                        <button
+                        <Button
                             type="button"
                             onClick={verifyCode}
+                            isLoading={isVerifying}
+                            disabled={isVerified || isContractCreated}
                             className="verify-button"
                         >
                             Verify
-                        </button>
+                        </Button>
                     </div>
                     {errors.verificationCode && (
                         <div className="field-error">{errors.verificationCode}</div>
                     )}
                 </div>
 
-                <button
+                <div className="form-group">
+                    <label>
+                        <input
+                            type="checkbox"
+                            name="terms"
+                            checked={formData.terms}
+                            onChange={handleChange}
+                            required
+                            disabled={isContractCreated}
+                        />
+                        Đồng ý với điều khoản
+                    </label>
+                </div>
+
+                <Button
                     type="submit"
                     className="submit-button"
-                    disabled={!isVerified}
+                    disabled={!isVerified || !formData.terms || isContractCreated}
+                    isLoading={isSubmitting}
                 >
                     Create Contract
-                </button>
+                </Button>
             </form>
         </div>
     );
