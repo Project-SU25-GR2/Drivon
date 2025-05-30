@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map; // Import Map for role update request body
 import Drivon.backend.model.UserRole; // Import UserRole enum
+import Drivon.backend.model.UserStatus;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -74,6 +75,27 @@ public class AdminController {
         return userRepository.findById(userId).map(user -> {
             userRepository.delete(user);
             return ResponseEntity.ok().body("User deleted successfully.");
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    // Endpoint to update user status
+    @PutMapping("/users/{userId}/status")
+    public ResponseEntity<?> updateUserStatus(@PathVariable Long userId,
+            @RequestBody Map<String, String> statusUpdate) {
+        return userRepository.findById(userId).map(user -> {
+            String newStatus = statusUpdate.get("status");
+            if (newStatus == null || newStatus.isEmpty()) {
+                return ResponseEntity.badRequest().body("New status must be provided.");
+            }
+
+            try {
+                UserStatus statusEnum = UserStatus.valueOf(newStatus.toUpperCase());
+                user.setStatus(statusEnum);
+                userRepository.save(user);
+                return ResponseEntity.ok().body("User status updated successfully.");
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body("Invalid status. Must be either ACTIVE or BANNED.");
+            }
         }).orElse(ResponseEntity.notFound().build());
     }
 

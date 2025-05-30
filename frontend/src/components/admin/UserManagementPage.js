@@ -1,17 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import './UserManagement.css';
 
 const UserManagementPage = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [editingUser, setEditingUser] = useState(null);
-    const [editForm, setEditForm] = useState({
-        fullName: '',
-        email: '',
-        role: ''
-    });
 
     const fetchUsers = async () => {
         try {
@@ -55,24 +50,15 @@ const UserManagementPage = () => {
         }
     };
 
-    const handleEditUser = (user) => {
-        setEditingUser(user);
-        setEditForm({
-            fullName: user.fullName,
-            email: user.email,
-            role: user.role
-        });
-    };
-
-    const handleSaveEdit = async () => {
+    const handleToggleStatus = async (userId, currentStatus) => {
         try {
-            await axios.put(`http://localhost:8080/api/admin/users/${editingUser.id}`, editForm);
-            alert('User updated successfully!');
-            setEditingUser(null);
+            const newStatus = currentStatus === 'ACTIVE' ? 'BANNED' : 'ACTIVE';
+            await axios.put(`http://localhost:8080/api/admin/users/${userId}/status`, { status: newStatus });
+            alert(`User ${newStatus === 'ACTIVE' ? 'unbanned' : 'banned'} successfully!`);
             fetchUsers();
         } catch (err) {
-            console.error('Error updating user:', err);
-            alert('Failed to update user: ' + (err.response?.data?.message || err.message));
+            console.error('Error updating user status:', err);
+            alert('Failed to update user status: ' + (err.response?.data?.message || err.message));
         }
     };
 
@@ -109,45 +95,6 @@ const UserManagementPage = () => {
                     </div>
                 </div>
 
-                {editingUser && (
-                    <div className="edit-user-modal">
-                        <div className="edit-user-form">
-                            <h3>Edit User</h3>
-                            <div className="form-group">
-                                <label>Username:</label>
-                                <input
-                                    type="text"
-                                    value={editForm.fullName}
-                                    onChange={(e) => setEditForm({...editForm, fullName: e.target.value})}
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label>Email:</label>
-                                <input
-                                    type="email"
-                                    value={editForm.email}
-                                    onChange={(e) => setEditForm({...editForm, email: e.target.value})}
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label>Role:</label>
-                                <select
-                                    value={editForm.role}
-                                    onChange={(e) => setEditForm({...editForm, role: e.target.value})}
-                                >
-                                    <option value="renter">Renter</option>
-                                    <option value="owner">Owner</option>
-                                    <option value="admin">Admin</option>
-                                </select>
-                            </div>
-                            <div className="form-actions">
-                                <button onClick={handleSaveEdit} className="save-button">Save</button>
-                                <button onClick={() => setEditingUser(null)} className="cancel-button">Cancel</button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
                 <table className="user-table">
                     <thead>
                         <tr>
@@ -180,19 +127,23 @@ const UserManagementPage = () => {
                                     </select>
                                 </td>
                                 <td>
-                                    <span className={`status-badge ${user.status?.toLowerCase()}`}>
-                                        {user.status || 'ACTIVE'}
-                                    </span>
+                                    <div className="toggle-container">
+                                        <label className="toggle-switch">
+                                            <input
+                                                type="checkbox"
+                                                checked={user.status === 'ACTIVE'}
+                                                onChange={() => handleToggleStatus(user.userId, user.status)}
+                                            />
+                                            <span className="toggle-slider"></span>
+                                        </label>
+                                        <span className="toggle-label">
+                                            {user.status === 'ACTIVE' ? 'Active' : 'Banned'}
+                                        </span>
+                                    </div>
                                 </td>
                                 <td>{new Date(user.createdAt).toLocaleDateString()}</td>
                                 <td>
                                     <div className="action-buttons">
-                                        <button
-                                            onClick={() => handleEditUser(user)}
-                                            className="edit-button"
-                                        >
-                                            Edit
-                                        </button>
                                         <button
                                             onClick={() => handleDeleteUser(user.userId)}
                                             className="delete-button"
