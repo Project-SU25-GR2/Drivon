@@ -1,6 +1,6 @@
 .admin-dashboard {
     display: flex;
-    height: 100vh;
+    /* height: 100vh; */ /* Remove fixed height */
     font-family: Arial, sans-serif; /* Example font */
     background-color: #f8f9fa; /* Light background for consistency */
 }
@@ -79,6 +79,7 @@
     padding: 0; /* Remove padding here, add to content sections */
     background-color: #f8f9fa; /* Light background for content area */
     overflow-y: auto; /* Enable scrolling if content overflows */
+    min-height: calc(100vh - /* height of header */ - /* height of footer */); /* Ensure main content takes at least remaining height */
 }
 
 .header {
