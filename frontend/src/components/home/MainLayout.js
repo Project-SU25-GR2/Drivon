@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import Login from '../auth/Login';
 import Signup from '../auth/Signup';
 import ForgotPasswordPage from '../auth/ForgotPasswordPage';
+import Footer from '../layout/footer';
 import '../css/MainLayout.css';
 
 const MainLayout = ({ user, handleLogout, children }) => {
@@ -145,6 +146,7 @@ const MainLayout = ({ user, handleLogout, children }) => {
       )}
 
       <div className="page-content">{children}</div>
+      <Footer />
     </div>
   );
 };
