@@ -101,28 +101,27 @@
   color: #212529;
 }
 
-.info-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
+.info-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .info-item {
-  margin-bottom: 1rem;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
 }
 
 .info-item label {
+  font-weight: bold;
+  color: #333;
   display: block;
-  font-size: 0.875rem;
-  color: #6c757d;
-  margin-bottom: 0.5rem;
+  margin-bottom: 4px;
 }
 
 .info-item p {
   margin: 0;
-  font-size: 1rem;
-  color: #212529;
-  font-weight: 500;
+  color: #666;
 }
 
 .edit-form {
@@ -230,6 +229,7 @@
   border-radius: 0.5rem;
   margin-bottom: 1.5rem;
 }
+
 
 @media (max-width: 768px) {
   .profile-container {
