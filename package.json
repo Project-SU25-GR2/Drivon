@@ -1,0 +1,13 @@
+{
+  "name": "drivon",
+  "version": "1.0.0",
+  "description": "Drivon Car Rental System",
+  "scripts": {
+    "start": "concurrently \"cd backend && ./mvnw spring-boot:run\" \"cd frontend && npm start\"",
+    "install-deps": "cd frontend && npm install && cd ../backend && ./mvnw clean install",
+    "dev": "concurrently \"cd backend && ./mvnw spring-boot:run\" \"cd frontend && npm start\""
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2"
+  }
+} 
