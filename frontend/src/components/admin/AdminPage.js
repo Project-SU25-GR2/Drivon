@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios'; // Assuming you'll use axios for API calls
 import './AdminPage.css'; // Import the new CSS file
 
@@ -22,7 +22,16 @@ const AdminPage = ({ user }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeComponent, setActiveComponent] = useState('dashboard');
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get active component from URL or default to 'dashboard'
+  const activeComponent = new URLSearchParams(location.search).get('tab') || 'dashboard';
+
+  const setActiveComponent = (component) => {
+    // Preserve the current path while updating the tab parameter
+    navigate(`/admin?tab=${component}`, { replace: true });
+  };
 
   // Define fetchUsers outside useEffect so it can be called from other functions
   const fetchUsers = async () => {

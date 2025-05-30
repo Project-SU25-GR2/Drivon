@@ -2,6 +2,17 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './UserManagement.css';
 
+const LoadingSpinner = () => (
+  <div className="loading-container">
+    <div className="loading-spinner">
+      <div className="spinner-circle"></div>
+      <div className="spinner-circle"></div>
+      <div className="spinner-circle"></div>
+    </div>
+    <p className="loading-text">Loading users...</p>
+  </div>
+);
+
 const UserManagementPage = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -52,12 +63,27 @@ const UserManagementPage = () => {
 
     const handleToggleStatus = async (userId, currentStatus) => {
         try {
-            const newStatus = currentStatus === 'ACTIVE' ? 'BANNED' : 'ACTIVE';
-            await axios.put(`http://localhost:8080/api/admin/users/${userId}/status`, { status: newStatus });
+            // Convert current status to uppercase for comparison
+            const currentStatusUpper = currentStatus?.toUpperCase() || 'ACTIVE';
+            const newStatus = currentStatusUpper === 'ACTIVE' ? 'BANNED' : 'ACTIVE';
+            
+            // Log the request data for debugging
+            console.log('Updating status:', {
+                userId,
+                currentStatus: currentStatusUpper,
+                newStatus
+            });
+
+            const response = await axios.put(`http://localhost:8080/api/admin/users/${userId}/status`, { 
+                status: newStatus 
+            });
+            
+            console.log('Server response:', response.data);
             alert(`User ${newStatus === 'ACTIVE' ? 'unbanned' : 'banned'} successfully!`);
             fetchUsers();
         } catch (err) {
             console.error('Error updating user status:', err);
+            console.error('Error details:', err.response?.data);
             alert('Failed to update user status: ' + (err.response?.data?.message || err.message));
         }
     };
@@ -68,7 +94,7 @@ const UserManagementPage = () => {
     );
 
     if (loading) {
-        return <div className="admin-content-page">Loading users...</div>;
+        return <LoadingSpinner />;
     }
 
     if (error) {
@@ -77,7 +103,6 @@ const UserManagementPage = () => {
 
     return (
         <div className="admin-content-page">
-            <h2>User Management</h2>
             <div className="user-management-container">
                 <div className="user-management-header">
                     <div className="search-box">
@@ -91,7 +116,7 @@ const UserManagementPage = () => {
                     </div>
                     <div className="user-stats">
                         <span>Total Users: {users.length}</span>
-                        <span>Active Users: {users.filter(u => u.status === 'ACTIVE').length}</span>
+                        <span>Active Users: {users.filter(u => u.status?.toUpperCase() === 'ACTIVE').length}</span>
                     </div>
                 </div>
 
@@ -110,7 +135,7 @@ const UserManagementPage = () => {
                     </thead>
                     <tbody>
                         {filteredUsers.map((user, index) => (
-                            <tr key={user.id}>
+                            <tr key={`user-${user.userId}-${index}`}>
                                 <td>{index + 1}</td>
                                 <td>{user.userId}</td>
                                 <td>{user.fullName}</td>
@@ -131,13 +156,13 @@ const UserManagementPage = () => {
                                         <label className="toggle-switch">
                                             <input
                                                 type="checkbox"
-                                                checked={user.status === 'ACTIVE'}
+                                                checked={user.status?.toUpperCase() === 'ACTIVE'}
                                                 onChange={() => handleToggleStatus(user.userId, user.status)}
                                             />
                                             <span className="toggle-slider"></span>
                                         </label>
                                         <span className="toggle-label">
-                                            {user.status === 'ACTIVE' ? 'Active' : 'Banned'}
+                                            {user.status?.toUpperCase() === 'ACTIVE' ? 'Active' : 'Banned'}
                                         </span>
                                     </div>
                                 </td>
