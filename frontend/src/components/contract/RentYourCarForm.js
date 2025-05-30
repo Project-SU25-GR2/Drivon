@@ -3,6 +3,7 @@ import axios from 'axios';
 import cloudinaryConfig  from '../../config/cloudinary';
 import '../css/RentYourCarForm.css';
 import { useNavigate } from 'react-router-dom';
+import Button from '../others/Button';
 
 const RentYourCarForm = () => {
   const navigate = useNavigate();
@@ -111,6 +112,19 @@ const RentYourCarForm = () => {
     
     if (!validateForm()) {
       setMessage('Vui lòng điền đầy đủ thông tin hợp lệ');
+      return;
+    }
+
+    // Kiểm tra carId đã tồn tại chưa
+    try {
+      const checkResponse = await axios.get(`http://localhost:8080/api/contracts/check-car/${formData.licensePlate}`);
+      if (checkResponse.data.exists) {
+        setMessage('Car ID already exists in the system. Please choose another car.');
+        
+        return;
+      }
+    } catch (error) {
+      setMessage('Error checking car ID: ' + (error.response?.data?.error || error.message));
       return;
     }
 
@@ -277,9 +291,14 @@ const RentYourCarForm = () => {
           </div>
         </div>
 
-        <button type="submit" className="submit-button" disabled={uploading}>
+        <Button
+          type="submit"
+          className="submit-button"
+          disabled={uploading}
+          isLoading={uploading}
+        >
           {uploading ? 'Uploading...' : 'Submit'}
-        </button>
+        </Button>
       </form>
       {message && (
         <div className="form-message">{message}</div>

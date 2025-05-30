@@ -87,4 +87,16 @@ public class ContractController {
             return ResponseEntity.badRequest().body(error);
         }
     }
+
+    @GetMapping("/check-car/{carId}")
+    public ResponseEntity<?> checkCarExists(@PathVariable String carId) {
+        try {
+            boolean exists = contractService.checkCarExists(carId);
+            return ResponseEntity.ok(Map.of("exists", exists));
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
 }

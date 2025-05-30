@@ -44,8 +44,8 @@ const MainLayout = ({ user, handleLogout, children }) => {
           <a href="#">Rent car</a>
           <Link to="/contracts">Contracts</Link>
           <Link to="/rent-your-car">Become a Partner	</Link>
-          <a href="#">About</a>
-          <a href="#">Pages</a>
+          {/* <a href="#">About</a>
+          <a href="#">Pages</a> */}
           <a href="#">Contact</a>
           <div className="search-box">
             <input type="text" placeholder="Search..." />
