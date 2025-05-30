@@ -1,0 +1,3 @@
+@echo off
+echo Starting Drivon Application...
+npm run dev 
