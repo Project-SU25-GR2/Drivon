@@ -79,33 +79,19 @@ const CarLeaseContractForm = ({ user }) => {
         const { name, value, type, checked } = e.target;
         let newValue = type === 'checkbox' ? checked : value;
 
-        if (name === 'phone' && value) {
-            if (!/^[0-9]{10,11}$/.test(value)) {
-                setErrors(prev => ({ ...prev, [name]: 'Phone number must be 10-11 digits' }));
-                return;
-            }
-        }
-
-        if (name === 'cccd' && value) {
-            if (!/^[0-9]{12}$/.test(value)) {
-                setErrors(prev => ({ ...prev, [name]: 'ID number must be 12 digits' }));
-                return;
-            }
-        }
-
-        if (name === 'email' && value) {
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-                setErrors(prev => ({ ...prev, [name]: 'Invalid email format' }));
-                return;
-            }
-        }
-
         setFormData(prev => ({
             ...prev,
             [name]: newValue
         }));
 
-        if (errors[name]) {
+        // Validate và set lỗi (chỉ hiển thị lỗi, không return)
+        if (name === 'phone' && value && !/^[0-9]{10,11}$/.test(value)) {
+            setErrors(prev => ({ ...prev, [name]: 'Phone number must be 10-11 digits' }));
+        } else if (name === 'cccd' && value && !/^[0-9]{12}$/.test(value)) {
+            setErrors(prev => ({ ...prev, [name]: 'ID number must be 12 digits' }));
+        } else if (name === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+            setErrors(prev => ({ ...prev, [name]: 'Invalid email format' }));
+        } else if (errors[name]) {
             setErrors(prev => ({ ...prev, [name]: '' }));
         }
     };
