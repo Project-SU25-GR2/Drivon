@@ -42,9 +42,9 @@ const MainLayout = ({ user, handleLogout, children }) => {
         
         <nav>
           <Link to="/">Home</Link>
-          <a href="#">Rent car</a>
+          <Link to="/rent-car">Rent car</Link>
           <Link to="/contracts">Contracts</Link>
-          <Link to="/rent-your-car">Become a Partner	</Link>
+          <Link to="/rent-your-car">Become a Partner</Link>
           {/* <a href="#">About</a>
           <a href="#">Pages</a> */}
           <a href="#">Contact</a>

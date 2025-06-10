@@ -16,6 +16,7 @@ import ResetPasswordPage from "./components/auth/ResetPasswordPage";
 import RentYourCarForm from "./components/contract/RentYourCarForm";
 import CarLeaseContractForm from "./components/contract/CarLeaseContractForm";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import RentCar from "./components/rent/RentCar";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -218,6 +219,15 @@ function App() {
             ) : (
               <Navigate to="/auth" replace />
             )
+          }
+        />
+
+        <Route
+          path="/rent-car"
+          element={
+            <MainLayout user={user} handleLogout={handleLogout}>
+              <RentCar />
+            </MainLayout>
           }
         />
       </Routes>

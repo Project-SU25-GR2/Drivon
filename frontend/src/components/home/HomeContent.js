@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import '../css/HomeContent.css';
+import { useNavigate } from 'react-router-dom';
 
 const HomeContent = () => {
   const [form, setForm] = useState({
@@ -9,6 +10,7 @@ const HomeContent = () => {
     returnDate: '',
     returnTime: '',
   });
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -88,6 +90,9 @@ const HomeContent = () => {
           </div>
           <button type="submit" className="submit-button">Tìm Xe giá tốt</button>
         </form>
+        <button className="submit-button" style={{marginTop: '16px'}} onClick={() => navigate('/rent-car')}>
+          Thuê xe ngay
+        </button>
       </div>
     </div>
   );
