@@ -1,0 +1,97 @@
+/* HomeContent.css */
+
+.home-bg-container {
+  position: relative;
+  min-height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url('https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=1500&q=80'); /* Unsplash car travel */
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+}
+
+.home-bg-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 1;
+}
+
+.booking-form-container {
+  position: relative;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.97);
+  padding: 2.5rem 2rem 2rem 2rem;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  animation: fadeIn 0.8s;
+}
+
+.booking-form-container h2 {
+  margin-bottom: 1.5rem;
+  color: #1a237e;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.booking-form .form-group {
+  margin-bottom: 1.2rem;
+  text-align: left;
+}
+
+.booking-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #333;
+  font-weight: 500;
+}
+
+.booking-form input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1.5px solid #bdbdbd;
+  border-radius: 7px;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background: #f7f9fa;
+}
+
+.booking-form input:focus {
+  border-color: #1976d2;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.12);
+}
+
+.submit-button {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(90deg, #1976d2 0%, #64b5f6 100%);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: background 0.2s, transform 0.2s;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+}
+
+.submit-button:hover {
+  background: linear-gradient(90deg, #1565c0 0%, #42a5f5 100%);
+  transform: translateY(-2px) scale(1.02);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
