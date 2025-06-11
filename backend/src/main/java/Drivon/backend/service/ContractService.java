@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Service
 public class ContractService {
@@ -165,5 +166,17 @@ public class ContractService {
 
     public boolean checkCarExists(String carId) {
         return carRepository.existsById(carId);
+    }
+
+    public List<Contract> getAllContracts() {
+        return contractRepository.findAll();
+    }
+    
+    public Contract getContractById(Long id) {
+        return contractRepository.findById(id).orElse(null);
+    }
+
+    public Contract save(Contract contract) {
+        return contractRepository.save(contract);
     }
 }

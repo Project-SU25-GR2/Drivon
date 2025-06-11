@@ -1,0 +1,125 @@
+.partner-page {
+  padding: 20px;
+}
+
+.table-container {
+  overflow-x: auto;
+  margin-top: 20px;
+}
+
+.partner-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+/* Style cho select status */
+.partner-table select {
+  padding: 6px 10px;
+  border: 1px solid #bdbdbd;
+  border-radius: 4px;
+  background: #f8f9fa;
+  font-size: 14px;
+  color: #333;
+  transition: border 0.2s;
+  outline: none;
+  min-width: 150px;
+}
+
+.partner-table select:focus {
+  border: 1.5px solid #1976d2;
+  background: #fff;
+}
+
+.partner-table option {
+  background: #fff;
+  color: #333;
+}
+
+/* Để dropdown không bị quá to */
+.partner-table td select {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Thêm hover cho dòng bảng */
+.partner-table tr:hover {
+  background-color: #e3f2fd;
+}
+.partner-table th,
+.partner-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.partner-table th {
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+
+.partner-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-badge.active {
+  background-color: #e6f4ea;
+  color: #1e7e34;
+}
+
+.status-badge.pending {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-badge.inactive {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Màu sắc cho status select (áp dụng cho option background khi mở dropdown sẽ không được, nhưng có thể đổi màu chữ select theo trạng thái) */
+.partner-table select.status-active {
+  color: #1e7e34;
+  background: #e6f4ea;
+  font-weight: bold;
+}
+.partner-table select.status-cancelled {
+  color: #b71c1c;
+  background: #fdecea;
+  font-weight: bold;
+}
+.partner-table select.status-expired {
+  color: #856404;
+  background: #fff3cd;
+  font-weight: bold;
+}
+.partner-table select.status-pending {
+  color: #1976d2;
+  background: #e3f2fd;
+  font-weight: bold;
+}
+
+/* Nếu muốn badge màu cho status khi chỉ hiển thị (nếu có) */
+.status-badge.ACTIVE_LEASE {
+  background: #e6f4ea;
+  color: #1e7e34;
+}
+.status-badge.CANCELLED_LEASE {
+  background: #fdecea;
+  color: #b71c1c;
+}
+.status-badge.EXPIRED_LEASE {
+  background: #fff3cd;
+  color: #856404;
+}
+.status-badge.PENDING_LEASE {
+  background: #e3f2fd;
+  color: #1976d2;
+} 

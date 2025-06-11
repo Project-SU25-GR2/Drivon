@@ -11,6 +11,13 @@ import java.util.List;
 import java.util.Map; // Import Map for role update request body
 import Drivon.backend.model.UserRole; // Import UserRole enum
 import Drivon.backend.model.UserStatus;
+import Drivon.backend.model.Contract;
+import Drivon.backend.service.ContractService;
+import Drivon.backend.model.Car;
+import Drivon.backend.service.CarService;
+import java.util.ArrayList;
+import java.util.HashMap;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -21,6 +28,12 @@ public class AdminController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ContractService contractService;
+    
+    @Autowired
+    private CarService carService;
 
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
@@ -97,6 +110,57 @@ public class AdminController {
                 return ResponseEntity.badRequest().body("Invalid status. Must be either ACTIVE or BANNED.");
             }
         }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/partners")
+    public ResponseEntity<?> getAllPartners() {
+        try {
+            List<Contract> contracts = contractService.getAllContracts();
+            List<Map<String, Object>> partners = new ArrayList<>();
+            
+            for (Contract contract : contracts) {
+                Map<String, Object> partner = new HashMap<>();
+                partner.put("id", contract.getId());
+                partner.put("contractNumber", contract.getContractNumber());
+                partner.put("name", contract.getName());
+                partner.put("phone", contract.getPhone());
+                partner.put("email", contract.getEmail());
+                partner.put("carId", contract.getCarId());
+                partner.put("pricePerDay", contract.getPricePerDay());
+                partner.put("deposit", contract.getDeposit());
+                partner.put("status", contract.getStatus());
+                
+                // Lấy thông tin xe
+                Car car = carService.getCarById(contract.getCarId());
+                if (car != null) {
+                    Map<String, Object> carInfo = new HashMap<>();
+                    carInfo.put("brand", car.getBrand());
+                    carInfo.put("model", car.getModel());
+                    carInfo.put("year", car.getYear());
+                    carInfo.put("description", car.getDescription());
+                    partner.put("car", carInfo);
+                }
+                
+                partners.add(partner);
+            }
+            
+            return ResponseEntity.ok(partners);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error fetching partners: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/partners/{id}/status")
+    public ResponseEntity<?> updatePartnerStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        String status = body.get("status");
+        Contract contract = contractService.getContractById(id);
+        if (contract == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Contract not found");
+        }
+        contract.setStatus(status);
+        contractService.save(contract);
+        return ResponseEntity.ok("Status updated");
     }
 
 }

@@ -11,7 +11,7 @@ import MapsPage from './MapsPage';
 import FormsPage from './FormsPage';
 import ChartsPage from './ChartsPage';
 import TablesPage from './TablesPage';
-import ComposePage from './ComposePage';
+import PartnerPage from './PartnerPage';
 import CalendarPage from './CalendarPage';
 import UIElementsPage from './UIElementsPage';
 import UserManagementPage from './UserManagementPage';
@@ -140,8 +140,8 @@ const AdminPage = ({ user }) => {
         return <ChartsPage />;
       case 'tables':
         return <TablesPage />;
-      case 'compose':
-        return <ComposePage />;
+      case 'partner':
+        return <PartnerPage />;
       case 'calendar':
         return <CalendarPage />;
       case 'ui-elements':
@@ -190,13 +190,13 @@ const AdminPage = ({ user }) => {
           <li>
             <a 
               href="#" 
-              className={activeComponent === 'compose' ? 'active' : ''}
+              className={activeComponent === 'partner' ? 'active' : ''}
               onClick={(e) => {
                 e.preventDefault();
-                setActiveComponent('compose');
+                setActiveComponent('partner');
               }}
             >
-              <i className="fas fa-edit"></i> Compose
+              <i className="fas fa-handshake"></i> Partner
             </a>
           </li>
           <li>
