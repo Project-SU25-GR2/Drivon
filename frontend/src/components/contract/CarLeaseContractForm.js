@@ -411,6 +411,10 @@ const CarLeaseContractForm = ({ user }) => {
                             <span>{contractData.carData.description}</span>
                         </div>
                         <div className="info-item">
+                            <label>Type:</label>
+                            <span>{contractData.carData.type}</span>
+                        </div>
+                        <div className="info-item">
                             <label>Location:</label>
                             <span>{contractData.carData.location}</span>
                         </div>

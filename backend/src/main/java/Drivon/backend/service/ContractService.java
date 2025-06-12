@@ -75,6 +75,7 @@ public class ContractService {
                 car.setModel(request.getCarData().getModel());
                 car.setYear(request.getCarData().getYear());
                 car.setDescription(request.getCarData().getDescription());
+                car.setType(request.getCarData().getType());
                 car.setStatus("available");
                 car.setLocation(request.getCarData().getLocation());
                 System.out.println("new car added: " + car);

@@ -147,6 +147,7 @@ const RentYourCarForm = () => {
           year: formData.year,
           licensePlate: formData.licensePlate,
           dailyRate: formData.dailyRate,
+          type: formData.type,
           location: formData.location,
           description: formData.description,
           images: formData.images
@@ -224,6 +225,24 @@ const RentYourCarForm = () => {
             onChange={handleChange}
             required
           />
+        </div>
+        <div className="form-group">
+          <label htmlFor="type">Type</label>
+          <select
+            id="type"
+            name="type"
+            value={formData.type}
+            onChange={handleChange}
+            required
+            className="select-input"
+          >
+            <option value="">Select a type</option>
+            <option value="suv">SUV</option>
+            <option value="sedan">Sedan</option>
+            <option value="mpv">MPV</option>
+            <option value="hatchback">Hatchback</option>
+            <option value="pickup">Pickup</option>
+          </select>
         </div>
 
         <div className="form-group">

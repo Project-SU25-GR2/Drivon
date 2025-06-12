@@ -315,6 +315,10 @@ const CarRentalContractForm = () => {
                             <span>{contractData.carData.licensePlate}</span>
                         </div>
                         <div className="info-item">
+                            <label>Type:</label>
+                            <span>{contractData.carData.type}</span>
+                        </div>
+                        <div className="info-item">
                             <label>Giá thuê/ngày:</label>
                             <span>{contractData.carData.dailyRate.toLocaleString('vi-VN')} VND</span>
                         </div>

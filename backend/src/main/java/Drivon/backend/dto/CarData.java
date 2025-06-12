@@ -9,6 +9,7 @@ public class CarData {
     private String model;
     private Integer year;
     private String description;
+    private String type;
     private String location;
     private Double dailyRate;
     private Integer ownerId;
