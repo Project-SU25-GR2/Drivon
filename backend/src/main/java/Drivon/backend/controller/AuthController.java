@@ -34,6 +34,8 @@ import Drivon.backend.model.PasswordResetToken;
 import Drivon.backend.repository.PasswordResetTokenRepository;
 import Drivon.backend.service.EmailService;
 import Drivon.backend.dto.ChangePasswordRequest;
+import Drivon.backend.model.EmailVerificationToken;
+import Drivon.backend.repository.EmailVerificationTokenRepository;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -62,6 +64,9 @@ public class AuthController {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private EmailVerificationTokenRepository emailVerificationTokenRepository;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
@@ -109,13 +114,37 @@ public class AuthController {
             user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
             user.setFullName(signupRequest.getFullName());
             user.setAddress(signupRequest.getAddress());
+            user.setEmailVerified(false);
+            user.setStatus(UserStatus.pending);
 
-            userRepository.save(user);
-            return ResponseEntity.ok(user);
+            user = userRepository.save(user);
+
+            // Generate verification code
+            String verificationCode = String.format("%06d", (int) (Math.random() * 1000000));
+
+            // Delete existing token if any for this user (optional, but good for cleanup)
+            EmailVerificationToken existingToken = emailVerificationTokenRepository.findByUser(user);
+            if (existingToken != null) {
+                emailVerificationTokenRepository.delete(existingToken);
+            }
+
+            // Save verification token
+            EmailVerificationToken verificationToken = new EmailVerificationToken(verificationCode, user);
+            emailVerificationTokenRepository.save(verificationToken);
+
+            // Send verification email
+            emailService.sendVerificationEmail(user.getEmail(), verificationCode);
+
+            return ResponseEntity.ok("Đăng ký thành công. Vui lòng kiểm tra email để xác thực tài khoản.");
         } catch (Exception e) {
+            logger.error("Error during user registration or email sending: {}", e.getMessage(), e);
             Map<String, String> error = new HashMap<>();
-            error.put("error", "Failed to create user: " + e.getMessage());
-            return ResponseEntity.badRequest().body(error);
+            // Provide a more generic error message to the user for security/simplicity
+            error.put("general", "Đăng ký thất bại. Vui lòng thử lại sau hoặc liên hệ hỗ trợ.");
+            // For debugging, you might return e.getMessage() during development, but not in
+            // production
+            // error.put("general", "Failed to create user: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error); // Use 500 for unexpected errors
         }
     }
 
@@ -167,14 +196,14 @@ public class AuthController {
             newUser.setEmailVerified(true);
             newUser.setRole(UserRole.renter);
             newUser.setStatus(UserStatus.active);
-            
+
             try {
                 newUser = userService.save(newUser);
                 String token = jwtTokenProvider.createToken(newUser.getEmail());
                 return ResponseEntity.ok(new AuthResponse(token, newUser));
             } catch (Exception e) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error saving new user: " + e.getMessage());
+                        .body("Error saving new user: " + e.getMessage());
             }
 
         } catch (Exception e) {
@@ -188,7 +217,7 @@ public class AuthController {
     public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
         try {
             logger.info("Processing forgot password request for email: {}", request.getEmail());
-            
+
             if (!StringUtils.hasText(request.getEmail())) {
                 return ResponseEntity.badRequest().body("Email is required");
             }
@@ -197,7 +226,8 @@ public class AuthController {
             if (user == null) {
                 // For security reasons, don't reveal that the email doesn't exist
                 logger.info("User not found for email: {}", request.getEmail());
-                return ResponseEntity.ok().body("If an account exists with this email, a password reset link will be sent");
+                return ResponseEntity.ok()
+                        .body("If an account exists with this email, a password reset link will be sent");
             }
 
             // Delete any existing token for this user
@@ -211,7 +241,7 @@ public class AuthController {
             String token = UUID.randomUUID().toString();
             PasswordResetToken passwordResetToken = new PasswordResetToken(token, user);
             logger.info("Generated new token for user: {}", user.getEmail());
-            
+
             try {
                 tokenRepository.save(passwordResetToken);
                 logger.info("Saved token to database for user: {}", user.getEmail());
@@ -229,7 +259,7 @@ public class AuthController {
             }
 
             return ResponseEntity.ok().body("Password reset instructions have been sent to your email");
-            
+
         } catch (Exception e) {
             logger.error("Unexpected error in forgot password: {}", e.getMessage());
             return ResponseEntity.internalServerError().body("Failed to process password reset request");
@@ -252,24 +282,24 @@ public class AuthController {
 
             // Generate 6-digit code
             String code = String.format("%06d", (int) (Math.random() * 1000000));
-            
+
             // Save code to database with expiry time
             PasswordResetToken resetToken = new PasswordResetToken();
             resetToken.setUser(user);
             resetToken.setToken(code);
             resetToken.setExpiryDate(new Date(System.currentTimeMillis() + 5 * 60 * 1000)); // 5 minutes
-            
+
             // Delete any existing tokens
             PasswordResetToken existingToken = tokenRepository.findByUser(user);
             if (existingToken != null) {
                 tokenRepository.delete(existingToken);
             }
-            
+
             tokenRepository.save(resetToken);
-            
+
             // Send code via email
             emailService.sendPasswordResetCode(email, code);
-            
+
             return ResponseEntity.ok().body("Mã xác thực đã được gửi");
         } catch (Exception e) {
             logger.error("Error in sending reset code: {}", e.getMessage());
@@ -336,9 +366,9 @@ public class AuthController {
             }
 
             // Validate password format
-            if (newPassword.length() < 6 || 
-                !newPassword.matches(".*[A-Z].*") || 
-                !newPassword.matches(".*[0-9].*")) {
+            if (newPassword.length() < 6 ||
+                    !newPassword.matches(".*[A-Z].*") ||
+                    !newPassword.matches(".*[0-9].*")) {
                 return ResponseEntity.badRequest().body("Mật khẩu mới phải có ít nhất 6 ký tự, 1 chữ hoa và 1 số");
             }
 
@@ -359,9 +389,9 @@ public class AuthController {
     @PostMapping("/change-password")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request) {
         try {
-            if (!StringUtils.hasText(request.getEmail()) || 
-                !StringUtils.hasText(request.getOldPassword()) || 
-                !StringUtils.hasText(request.getNewPassword())) {
+            if (!StringUtils.hasText(request.getEmail()) ||
+                    !StringUtils.hasText(request.getOldPassword()) ||
+                    !StringUtils.hasText(request.getNewPassword())) {
                 return ResponseEntity.badRequest().body("Email, mật khẩu cũ và mật khẩu mới là bắt buộc");
             }
 
@@ -388,6 +418,90 @@ public class AuthController {
         } catch (Exception e) {
             logger.error("Error in change password: {}", e.getMessage());
             return ResponseEntity.internalServerError().body("Không thể thay đổi mật khẩu");
+        }
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<?> verifyEmail(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String code = request.get("code");
+
+        try {
+            if (!StringUtils.hasText(email) || !StringUtils.hasText(code)) {
+                return ResponseEntity.badRequest().body("Email và mã xác thực là bắt buộc");
+            }
+
+            User user = userRepository.findByEmail(email).orElse(null);
+            if (user == null) {
+                return ResponseEntity.badRequest().body("Email không hợp lệ");
+            }
+
+            EmailVerificationToken verificationToken = emailVerificationTokenRepository.findByUser(user);
+            if (verificationToken == null || !verificationToken.getToken().equals(code)) {
+                return ResponseEntity.badRequest().body("Mã xác thực không hợp lệ");
+            }
+
+            if (verificationToken.isExpired()) {
+                emailVerificationTokenRepository.delete(verificationToken);
+                return ResponseEntity.badRequest().body("Mã xác thực đã hết hạn");
+            }
+
+            // Update user status
+            user.setEmailVerified(true);
+            user.setStatus(UserStatus.active);
+            userRepository.save(user);
+
+            // Delete used token
+            emailVerificationTokenRepository.delete(verificationToken);
+
+            // Generate JWT token
+            String token = jwtTokenProvider.createToken(user.getEmail());
+
+            return ResponseEntity.ok(new AuthResponse(token, user));
+        } catch (Exception e) {
+            logger.error("Error in verifying email: {}", e.getMessage());
+            return ResponseEntity.internalServerError().body("Không thể xác thực email");
+        }
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<?> resendVerification(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+
+        try {
+            if (!StringUtils.hasText(email)) {
+                return ResponseEntity.badRequest().body("Email là bắt buộc");
+            }
+
+            User user = userRepository.findByEmail(email).orElse(null);
+            if (user == null) {
+                return ResponseEntity.badRequest().body("Email không hợp lệ");
+            }
+
+            if (user.isEmailVerified()) {
+                return ResponseEntity.badRequest().body("Email đã được xác thực");
+            }
+
+            // Delete existing token if any
+            EmailVerificationToken existingToken = emailVerificationTokenRepository.findByUser(user);
+            if (existingToken != null) {
+                emailVerificationTokenRepository.delete(existingToken);
+            }
+
+            // Generate new verification code
+            String verificationCode = String.format("%06d", (int) (Math.random() * 1000000));
+
+            // Save new verification token
+            EmailVerificationToken verificationToken = new EmailVerificationToken(verificationCode, user);
+            emailVerificationTokenRepository.save(verificationToken);
+
+            // Send verification email
+            emailService.sendVerificationEmail(user.getEmail(), verificationCode);
+
+            return ResponseEntity.ok("Đã gửi lại mã xác thực");
+        } catch (Exception e) {
+            logger.error("Error in resending verification code: {}", e.getMessage());
+            return ResponseEntity.internalServerError().body("Không thể gửi lại mã xác thực");
         }
     }
 }

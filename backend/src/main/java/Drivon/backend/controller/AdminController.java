@@ -15,6 +15,8 @@ import Drivon.backend.model.Contract;
 import Drivon.backend.service.ContractService;
 import Drivon.backend.model.Car;
 import Drivon.backend.service.CarService;
+import Drivon.backend.model.CarImage;
+import Drivon.backend.repository.CarImageRepository;
 import java.util.ArrayList;
 import java.util.HashMap;
 import org.springframework.http.HttpStatus;
@@ -31,9 +33,12 @@ public class AdminController {
 
     @Autowired
     private ContractService contractService;
-    
+
     @Autowired
     private CarService carService;
+
+    @Autowired
+    private CarImageRepository carImageRepository; // Inject CarImageRepository
 
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
@@ -117,7 +122,7 @@ public class AdminController {
         try {
             List<Contract> contracts = contractService.getAllContracts();
             List<Map<String, Object>> partners = new ArrayList<>();
-            
+
             for (Contract contract : contracts) {
                 Map<String, Object> partner = new HashMap<>();
                 partner.put("id", contract.getId());
@@ -129,7 +134,7 @@ public class AdminController {
                 partner.put("pricePerDay", contract.getPricePerDay());
                 partner.put("deposit", contract.getDeposit());
                 partner.put("status", contract.getStatus());
-                
+
                 // Lấy thông tin xe
                 Car car = carService.getCarById(contract.getCarId());
                 if (car != null) {
@@ -138,16 +143,25 @@ public class AdminController {
                     carInfo.put("model", car.getModel());
                     carInfo.put("year", car.getYear());
                     carInfo.put("description", car.getDescription());
+
+                    // Lấy danh sách URL hình ảnh của xe
+                    List<CarImage> carImages = carImageRepository.findByCarId(contract.getCarId());
+                    List<String> imageUrls = new ArrayList<>();
+                    for (CarImage image : carImages) {
+                        imageUrls.add(image.getImageUrl());
+                    }
+                    carInfo.put("images", imageUrls); // Thêm mảng URL hình ảnh vào carInfo
+
                     partner.put("car", carInfo);
                 }
-                
+
                 partners.add(partner);
             }
-            
+
             return ResponseEntity.ok(partners);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error fetching partners: " + e.getMessage());
+                    .body("Error fetching partners: " + e.getMessage());
         }
     }
 

@@ -41,19 +41,31 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
+    public void sendVerificationEmail(String to, String verificationCode) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject("Xác thực email - Drivon");
+        message.setText("Xin chào,\n\n"
+                + "Cảm ơn bạn đã đăng ký tài khoản tại Drivon. Để hoàn tất quá trình đăng ký, vui lòng sử dụng mã xác thực sau:\n\n"
+                + verificationCode + "\n\n"
+                + "Mã xác thực này sẽ hết hạn sau 5 phút.\n\n"
+                + "Nếu bạn không yêu cầu đăng ký tài khoản này, vui lòng bỏ qua email này.\n\n"
+                + "Trân trọng,\n"
+                + "Đội ngũ Drivon");
+        mailSender.send(message);
+    }
+
     public void sendPasswordResetCode(String to, String code) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
-        message.setSubject("Mã xác thực đặt lại mật khẩu - Drivon");
-        message.setText("Xin chào,\n\n" +
-                "Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.\n" +
-                "Đây là mã xác thực của bạn:\n\n" +
-                code + "\n\n" +
-                "Mã này sẽ hết hạn sau 5 phút.\n\n" +
-                "Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.\n\n" +
-                "Trân trọng,\n" +
-                "Đội ngũ Drivon");
-
+        message.setSubject("Đặt lại mật khẩu - Drivon");
+        message.setText("Xin chào,\n\n"
+                + "Bạn đã yêu cầu đặt lại mật khẩu. Vui lòng sử dụng mã xác thực sau:\n\n"
+                + code + "\n\n"
+                + "Mã xác thực này sẽ hết hạn sau 5 phút.\n\n"
+                + "Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.\n\n"
+                + "Trân trọng,\n"
+                + "Đội ngũ Drivon");
         mailSender.send(message);
     }
 }

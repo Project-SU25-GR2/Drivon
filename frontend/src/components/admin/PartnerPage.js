@@ -6,6 +6,8 @@ const PartnerPage = () => {
   const [partners, setPartners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedPartner, setSelectedPartner] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const fetchPartners = async () => {
@@ -35,6 +37,16 @@ const PartnerPage = () => {
     }
   };
 
+  const handleSeeMore = (partner) => {
+    setSelectedPartner(partner);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedPartner(null);
+  };
+
   if (loading) {
     return <div>Loading partners...</div>;
   }
@@ -61,6 +73,7 @@ const PartnerPage = () => {
               <th>Deposit</th>
               <th>Description</th>
               <th>Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -93,11 +106,59 @@ const PartnerPage = () => {
                     <option value="EXPIRED_LEASE">EXPIRED</option>
                   </select>
                 </td>
+                <td>
+                  <button 
+                    className="see-more-btn"
+                    onClick={() => handleSeeMore(partner)}
+                  >
+                    See More
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {showModal && selectedPartner && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2>Car Details</h2>
+              <button className="close-btn" onClick={closeModal}>&times;</button>
+            </div>
+            <div className="modal-body">
+              <div className="car-images">
+                {selectedPartner.car?.images?.map((image, index) => (
+                  <img 
+                    key={index} 
+                    src={image} 
+                    alt={`Car ${index + 1}`} 
+                    className="car-image"
+                  />
+                ))}
+              </div>
+              <div className="car-details">
+                <h3>Car Information</h3>
+                <p><strong>Brand:</strong> {selectedPartner.car?.brand}</p>
+                <p><strong>Model:</strong> {selectedPartner.car?.model}</p>
+                <p><strong>Year:</strong> {selectedPartner.car?.year}</p>
+                <p><strong>License Plate:</strong> {selectedPartner.carId}</p>
+                <p><strong>Price per Day:</strong> {selectedPartner.pricePerDay?.toLocaleString('vi-VN')} VND</p>
+                <p><strong>Deposit:</strong> {selectedPartner.deposit?.toLocaleString('vi-VN')} VND</p>
+                <p><strong>Description:</strong> {selectedPartner.car?.description}</p>
+              </div>
+              <div className="partner-details">
+                <h3>Partner Information</h3>
+                <p><strong>Name:</strong> {selectedPartner.name}</p>
+                <p><strong>Phone:</strong> {selectedPartner.phone}</p>
+                <p><strong>Email:</strong> {selectedPartner.email}</p>
+                <p><strong>Status:</strong> {selectedPartner.status}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

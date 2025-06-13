@@ -15,6 +15,9 @@ const Signup = ({ onSignupSuccess }) => {
     const [errors, setErrors] = useState({});
     const [generalError, setGeneralError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [verificationCode, setVerificationCode] = useState('');
+    const [showVerification, setShowVerification] = useState(false);
+    const [message, setMessage] = useState('');
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -40,19 +43,80 @@ const Signup = ({ onSignupSuccess }) => {
         try {
             const response = await axios.post('http://localhost:8080/api/auth/signup', formData);
             if (response.data) {
+                setMessage('Đăng ký thành công. Vui lòng kiểm tra email để xác thực tài khoản.');
+                setShowVerification(true);
+            }
+        } catch (err) {
+            if (err.response?.data) {
+                // Handle validation errors (object with field names as keys)
+                if (typeof err.response.data === 'object' && !err.response.data.general) {
+                    setErrors(err.response.data);
+                    setGeneralError(''); // Clear general error if field errors are present
+                } else if (typeof err.response.data === 'object' && err.response.data.general) {
+                    // Handle general error from backend (object with 'general' key)
+                     setGeneralError(err.response.data.general);
+                     setErrors({}); // Clear field errors if a general error is present
+                } 
+                else if (typeof err.response.data === 'string'){
+                     // Handle general error message (string)
+                     setGeneralError(err.response.data);
+                     setErrors({}); // Clear field errors if a general error is present
+                }
+                else {
+                    // Fallback for unexpected error response format
+                    setGeneralError('Đăng ký thất bại. Định dạng lỗi không xác định.');
+                    setErrors({});
+                }
+            } else {
+                // Handle network errors or no response
+                setGeneralError('Đăng ký thất bại. Không nhận được phản hồi từ máy chủ.');
+                setErrors({});
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleVerifyEmail = async (e) => {
+        e.preventDefault();
+        setErrors({});
+        setGeneralError('');
+        setIsLoading(true);
+
+        try {
+            const response = await axios.post('http://localhost:8080/api/auth/verify-email', {
+                email: formData.email,
+                code: verificationCode
+            });
+            if (response.data) {
                 onSignupSuccess(response.data);
             }
         } catch (err) {
             if (err.response?.data) {
-                // Handle validation errors
-                if (typeof err.response.data === 'object') {
-                    setErrors(err.response.data);
-                } else {
-                    // Handle general error message
-                    setGeneralError(err.response.data);
-                }
+                setGeneralError(err.response.data);
             } else {
-                setGeneralError('Registration failed. Please try again.');
+                setGeneralError('Verification failed. Please try again.');
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleResendCode = async () => {
+        setErrors({});
+        setGeneralError('');
+        setIsLoading(true);
+
+        try {
+            const response = await axios.post('http://localhost:8080/api/auth/resend-verification', {
+                email: formData.email
+            });
+            setMessage('Mã xác thực mới đã được gửi đến email của bạn.');
+        } catch (err) {
+            if (err.response?.data) {
+                setGeneralError(err.response.data);
+            } else {
+                setGeneralError('Failed to resend verification code. Please try again.');
             }
         } finally {
             setIsLoading(false);
@@ -82,6 +146,46 @@ const Signup = ({ onSignupSuccess }) => {
     const handleGoogleError = () => {
         setGeneralError('Google signup failed. Please try again.');
     };
+
+    if (showVerification) {
+        return (
+            <form onSubmit={handleVerifyEmail} className="auth-form">
+                <h3>Xác thực email</h3>
+                {message && <div className="success-message">{message}</div>}
+                {generalError && <div className="error-message">{generalError}</div>}
+                
+                <div>
+                    <input
+                        type="text"
+                        placeholder="Nhập mã xác thực"
+                        value={verificationCode}
+                        onChange={(e) => setVerificationCode(e.target.value)}
+                        className="auth-input"
+                        required
+                        maxLength="6"
+                    />
+                </div>
+
+                <Button
+                    type="submit"
+                    isLoading={isLoading}
+                    className="auth-button"
+                >
+                    Xác thực
+                </Button>
+
+                <Button
+                    type="button"
+                    onClick={handleResendCode}
+                    isLoading={isLoading}
+                    className="auth-button secondary"
+                    style={{ marginTop: '10px' }}
+                >
+                    Gửi lại mã
+                </Button>
+            </form>
+        );
+    }
 
     return (
         <form onSubmit={handleSubmit} className="auth-form">
