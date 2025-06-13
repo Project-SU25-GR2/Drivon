@@ -5,6 +5,8 @@ import Drivon.backend.repository.CarRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class CarService {
     
@@ -14,4 +16,8 @@ public class CarService {
     public Car getCarById(String carId) {
         return carRepository.findById(carId).orElse(null);
     }
-} 
+
+    public List<Car> getAllCars() {
+        return carRepository.findAll();
+    }
+}

@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import '../css/RentCar.css';
+
 const RentCar = () => {
   const [filters, setFilters] = useState({
     location: '',
@@ -7,13 +9,39 @@ const RentCar = () => {
   });
 
   const [search, setSearch] = useState("");
+  const [cars, setCars] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Placeholder: Replace with API call to fetch cars
-  const cars = [];
+  useEffect(() => {
+    fetchCars();
+  }, []);
+
+  const fetchCars = async () => {
+    try {
+      const response = await axios.get('http://localhost:8080/api/cars');
+      setCars(response.data);
+      setLoading(false);
+    } catch (err) {
+      setError('Failed to fetch cars');
+      setLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
   };
+
+  const filteredCars = cars.filter(car => {
+    const matchesSearch = car.brand.toLowerCase().includes(search.toLowerCase()) ||
+                         car.model.toLowerCase().includes(search.toLowerCase()) ||
+                         car.location.toLowerCase().includes(search.toLowerCase());
+    const matchesBrand = !filters.brand || car.brand === filters.brand;
+    return matchesSearch && matchesBrand;
+  });
+
+  if (loading) return <div className="loading">Loading...</div>;
+  if (error) return <div className="error">{error}</div>;
 
   return (
     <div className="rent-car-page" style={{ padding: '2rem' }}>
@@ -51,20 +79,42 @@ const RentCar = () => {
           {/* Thêm các option nhiên liệu nếu cần */}
         </select>
       </div>
-      <div className="fast-search">
+      
+      <div className="quick-filters">
         <button className="btn-fast-search">SUV</button>
         <button className="btn-fast-search">Hatchback</button>
         <button className="btn-fast-search">Sedan</button>
         <button className="btn-fast-search">MPV</button>
         <button className="btn-fast-search">Pickup</button>
       </div>
+
       <div className="car-list">
-        {/* Placeholder for car cards */}
-        {cars.length === 0 ? (
-          <p>Chưa có xe nào cho thuê.</p>
+        {filteredCars.length === 0 ? (
+          <p>Không tìm thấy xe phù hợp.</p>
         ) : (
           <div className="car-grid">
-            {/* Map car data here */}
+            {filteredCars.map((car) => (
+              <div key={car.licensePlate} className="car-card">
+                <div className="car-image-container">
+                  {car.images && car.images.length > 0 ? (
+                    <img 
+                      src={car.images[0]} 
+                      alt={`${car.brand} ${car.model}`} 
+                      className="car-image"
+                    />
+                  ) : (
+                    <div className="no-image">No Image Available</div>
+                  )}
+                </div>
+                <div className="car-info">
+                  <h3>{car.brand} {car.model}</h3>
+                  <p className="car-year">{car.year}</p>
+                  <p className="car-location">{car.location}</p>
+                  <p className="car-description">{car.description}</p>
+                  <div className="car-type">{car.type}</div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -72,4 +122,4 @@ const RentCar = () => {
   );
 };
 
-export default RentCar; 
+export default RentCar;
