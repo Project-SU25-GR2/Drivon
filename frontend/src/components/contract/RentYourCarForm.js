@@ -88,24 +88,11 @@ const RentYourCarForm = () => {
 
       const uploadedUrls = await Promise.all(uploadPromises);
       
-      // Lưu URLs vào state
+      // Lưu URLs vào state (KHÔNG gọi API lưu vào DB ở đây)
       setFormData(prevState => ({
         ...prevState,
         images: [...prevState.images, ...uploadedUrls]
       }));
-
-      // Lưu URLs vào database nếu đã có licensePlate
-      if (formData.licensePlate) {
-        try {
-          await axios.post('http://localhost:8080/api/cars/images', {
-            carId: formData.licensePlate,
-            imageUrls: uploadedUrls
-          });
-        } catch (error) {
-          console.error('Error saving image URLs to database:', error);
-          // Không cần hiển thị lỗi cho user vì ảnh đã upload lên Cloudinary thành công
-        }
-      }
 
     } catch (error) {
       console.error('Error uploading images:', error);
