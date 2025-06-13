@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-
+import '../css/RentCar.css';
 const RentCar = () => {
   const [filters, setFilters] = useState({
     location: '',
     brand: '',
   });
+
+  const [search, setSearch] = useState("");
 
   // Placeholder: Replace with API call to fetch cars
   const cars = [];
@@ -15,21 +17,20 @@ const RentCar = () => {
 
   return (
     <div className="rent-car-page" style={{ padding: '2rem' }}>
-      <h2>Thuê xe</h2>
-      <div className="filter-bar" style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-        <select name="location" value={filters.location} onChange={handleChange}>
-          <option value="">Tất cả khu vực</option>
-          <option value="Hà Nội">Hà Nội</option>
-          <option value="Hồ Chí Minh">Hồ Chí Minh</option>
-          <option value="Đà Nẵng">Đà Nẵng</option>
-          <option value="Cần Thơ">Cần Thơ</option>
-          <option value="Hải Phòng">Hải Phòng</option>
-          <option value="Nha Trang">Nha Trang</option>
-          <option value="Huế">Huế</option>
-          <option value="Khác">Khác</option>
+      <div className="filter-bar">
+        <input
+          type="text"
+          placeholder="Tìm xe theo tên, địa điểm..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="search-input"
+        />
+        <select name="price" className="filter-select">
+          <option>Giá tiền</option>
+          {/* Thêm các option giá nếu cần */}
         </select>
-        <select name="brand" value={filters.brand} onChange={handleChange}>
-          <option value="">Tất cả hãng xe</option>
+        <select name="brand" value={filters.brand} onChange={handleChange} className="filter-select">
+          <option value="">Hãng xe</option>
           <option value="Toyota">Toyota</option>
           <option value="Honda">Honda</option>
           <option value="Mazda">Mazda</option>
@@ -38,6 +39,24 @@ const RentCar = () => {
           <option value="Ford">Ford</option>
           <option value="VinFast">VinFast</option>
         </select>
+        <select name="seat" className="filter-select">
+          <option>Số chỗ</option>
+          <option>2</option>
+          <option>4</option>
+          <option>5</option>
+          <option>7</option>
+        </select>
+        <select name="fuel" className="filter-select">
+          <option>Nhiên liệu</option>
+          {/* Thêm các option nhiên liệu nếu cần */}
+        </select>
+      </div>
+      <div className="fast-search">
+        <button className="btn-fast-search">SUV</button>
+        <button className="btn-fast-search">Hatchback</button>
+        <button className="btn-fast-search">Sedan</button>
+        <button className="btn-fast-search">MPV</button>
+        <button className="btn-fast-search">Pickup</button>
       </div>
       <div className="car-list">
         {/* Placeholder for car cards */}

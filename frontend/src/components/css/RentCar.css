@@ -1,0 +1,55 @@
+.rent-car-page{
+    background-color: #f9fafb;
+}
+.filter-bar{
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+.filter-select {
+    min-width: 100px;
+    padding: 0.5rem 0.2rem 0.5rem 0.5rem; /* giảm padding phải */
+    border-radius: 5px;
+    border: 1px solid #fefefe;
+    font-size: 15px;
+    background-color: #f3f4f6;
+    text-align-last: left;
+  }
+
+.filter-select[name="price"],
+.filter-select[name="brand"] {
+  min-width: 120px;
+}
+
+.filter-select[name="fuel"] {
+  min-width: 110px;
+}
+.fast-search .btn-fast-search {
+    background-color: #fff;
+    margin-right: 10px;
+    border: 2px solid #fff;
+    color: #222;
+    border-radius: 6px;
+    padding: 0.5rem 1.2rem;
+    cursor: pointer;
+}
+.fast-search .btn-fast-search:hover,
+.fast-search .btn-fast-search:active,
+.fast-search .btn-fast-search:focus {
+    background-color: #ffd700;
+    color: #000;
+    outline: none;
+}

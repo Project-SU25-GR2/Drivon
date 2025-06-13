@@ -87,10 +87,26 @@ const RentYourCarForm = () => {
       });
 
       const uploadedUrls = await Promise.all(uploadPromises);
+      
+      // Lưu URLs vào state
       setFormData(prevState => ({
         ...prevState,
         images: [...prevState.images, ...uploadedUrls]
       }));
+
+      // Lưu URLs vào database nếu đã có licensePlate
+      if (formData.licensePlate) {
+        try {
+          await axios.post('http://localhost:8080/api/cars/images', {
+            carId: formData.licensePlate,
+            imageUrls: uploadedUrls
+          });
+        } catch (error) {
+          console.error('Error saving image URLs to database:', error);
+          // Không cần hiển thị lỗi cho user vì ảnh đã upload lên Cloudinary thành công
+        }
+      }
+
     } catch (error) {
       console.error('Error uploading images:', error);
       setUploadError('Có lỗi xảy ra khi tải ảnh lên.');
@@ -99,12 +115,26 @@ const RentYourCarForm = () => {
     }
   };
 
-  const removeImage = (index) => {
+  const removeImage = async (index) => {
+    const imageToRemove = formData.images[index];
+    
+    // Xóa khỏi state
     setFormData(prevState => ({
       ...prevState,
       images: prevState.images.filter((_, i) => i !== index)
     }));
     setPreviewUrls(prev => prev.filter((_, i) => i !== index));
+
+    // Nếu đã có licensePlate, xóa ảnh khỏi database
+    if (formData.licensePlate) {
+      try {
+        await axios.delete(`http://localhost:8080/api/cars/images/${formData.licensePlate}`, {
+          data: { imageUrl: imageToRemove }
+        });
+      } catch (error) {
+        console.error('Error removing image from database:', error);
+      }
+    }
   };
 
   const handleSubmit = async (e) => {
