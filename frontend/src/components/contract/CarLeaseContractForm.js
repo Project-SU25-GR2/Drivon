@@ -26,23 +26,17 @@ const CarLeaseContractForm = ({ user }) => {
         ownerId: currentUser?.userId || '',
         customerId: currentUser?.userId || '',
         deposit: contractData?.deposit || '',
-        name: contractData?.name || '',
-        phone: contractData?.phone || '',
-        cccd: contractData?.cccd || '',
-        email: contractData?.email || '',
+        name: currentUser?.fullName || '',
+        phone: currentUser?.phone || '',
+        cccd: currentUser?.cccd || '',
+        email: currentUser?.email || '',
         terms: false,
         pricePerDay: contractData?.carData?.dailyRate || ''
     });
 
     const [errors, setErrors] = useState({});
     const [message, setMessage] = useState('');
-    const [countdown, setCountdown] = useState(0);
-    const [isCountingDown, setIsCountingDown] = useState(false);
-    const [isVerified, setIsVerified] = useState(false);
-    const [verificationCode, setVerificationCode] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [isSendingCode, setIsSendingCode] = useState(false);
-    const [isVerifying, setIsVerifying] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isContractCreated, setIsContractCreated] = useState(false);
 
@@ -51,29 +45,24 @@ const CarLeaseContractForm = ({ user }) => {
             setFormData(prev => ({
                 ...prev,
                 carId: contractData.carId,
+                pricePerDay: contractData.carData?.dailyRate || prev.pricePerDay
             }));
         }
     }, [contractData]);
 
     useEffect(() => {
-        if (currentUser?.userId) {
+        if (currentUser) {
             setFormData(prev => ({
                 ...prev,
                 ownerId: currentUser.userId,
-                customerId: currentUser.userId
+                customerId: currentUser.userId,
+                name: currentUser.fullName || prev.name,
+                phone: currentUser.phone || prev.phone,
+                cccd: currentUser.cccd || prev.cccd,
+                email: currentUser.email || prev.email
             }));
         }
     }, [currentUser]);
-
-    useEffect(() => {
-        let timer;
-        if (isCountingDown && countdown > 0) {
-            timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-        } else if (countdown === 0) {
-            setIsCountingDown(false);
-        }
-        return () => clearTimeout(timer);
-    }, [countdown, isCountingDown]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -89,8 +78,6 @@ const CarLeaseContractForm = ({ user }) => {
             setErrors(prev => ({ ...prev, [name]: 'Phone number must be 10-11 digits' }));
         } else if (name === 'cccd' && value && !/^[0-9]{12}$/.test(value)) {
             setErrors(prev => ({ ...prev, [name]: 'ID number must be 12 digits' }));
-        } else if (name === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-            setErrors(prev => ({ ...prev, [name]: 'Invalid email format' }));
         } else if (errors[name]) {
             setErrors(prev => ({ ...prev, [name]: '' }));
         }
@@ -111,67 +98,21 @@ const CarLeaseContractForm = ({ user }) => {
         if (!formData.carId) {
             newErrors.carId = 'Please enter car ID';
         }
-        if (!formData.ownerId) {
-            newErrors.ownerId = 'Please enter owner ID';
-        }
-        if (!formData.deposit) {
-            newErrors.deposit = 'Please enter deposit amount';
-        }
         if (!formData.name) {
-            newErrors.name = 'Please enter full name';
+            newErrors.name = 'Please enter name';
         }
         if (!formData.phone) {
             newErrors.phone = 'Please enter phone number';
         }
         if (!formData.cccd) {
-            newErrors.cccd = 'Please enter ID number';
+            newErrors.cccd = 'Please enter CCCD';
         }
-        if (!formData.email) {
-            newErrors.email = 'Please enter email';
+        if (!formData.terms) {
+            newErrors.terms = 'Please accept the terms';
         }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
-    };
-
-    const sendVerificationCode = async () => {
-        setIsSendingCode(true);
-        try {
-            const response = await axios.post('http://localhost:8080/api/contracts/send-code', {
-                email: formData.email
-            });
-            if (response.data.success) {
-                setMessage('Verification code has been sent to your email');
-                setCountdown(120);
-                setIsCountingDown(true);
-            }
-        } catch (error) {
-            setMessage('Error sending verification code: ' + (error.response?.data?.error || error.message));
-        } finally {
-            setIsSendingCode(false);
-        }
-    };
-
-    const verifyCode = async () => {
-        setIsVerifying(true);
-        try {
-            const response = await axios.post('http://localhost:8080/api/contracts/verify-code', {
-                email: formData.email,
-                code: verificationCode
-            });
-            if (response.data.success) {
-                setIsVerified(true);
-                setMessage('Verification successful!');
-                setIsCountingDown(false);
-                setCountdown(0);
-            } else {
-                setMessage('Invalid verification code');
-            }
-        } catch (error) {
-            setMessage('Error verifying code: ' + (error.response?.data?.error || error.message));
-        } finally {
-            setIsVerifying(false);
-        }
     };
 
     const generatePDF = (contractData) => {
@@ -276,19 +217,14 @@ const CarLeaseContractForm = ({ user }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setIsSubmitting(true);
-
+        
         if (!validateForm()) {
             setMessage('Please fill in all required fields correctly');
-            setIsSubmitting(false);
             return;
         }
 
-        if (!isVerified) {
-            setMessage('Please verify your email before creating the contract');
-            setIsSubmitting(false);
-            return;
-        }
+        setIsSubmitting(true);
+        setMessage('Creating contract...');
 
         // Kiểm tra carId đã tồn tại chưa
         try {
@@ -334,7 +270,6 @@ const CarLeaseContractForm = ({ user }) => {
             const pdfBlob = await generatePDF({
                 ...formData,
                 contractNumber: newContractNumber,
-                verificationCode: verificationCode,
                 carData: contractData?.carData
             });
 
@@ -574,59 +509,14 @@ const CarLeaseContractForm = ({ user }) => {
                 </div>
 
                 <div className="form-group">
-                    <label>Email Contact:</label>
+                    <label>Email:</label>
                     <input
                         type="email"
                         name="email"
                         value={formData.email}
-                        onChange={handleChange}
-                        className={errors.email ? 'error' : ''}
-                        required
+                        readOnly
+                        className="readonly-input"
                     />
-                    {errors.email && <div className="field-error">{errors.email}</div>}
-                </div>
-
-                <div className="verification-section">
-                    <Button
-                        type="button"
-                        onClick={sendVerificationCode}
-                        disabled={isCountingDown || !formData.email || isVerified || isContractCreated}
-                        isLoading={isSendingCode}
-                        className="verification-button"
-                    >
-                        Send Verification Code
-                    </Button>
-                    {isCountingDown && (
-                        <span className="countdown">
-                            {Math.floor(countdown / 60)}:{(countdown % 60).toString().padStart(2, '0')}
-                        </span>
-                    )}
-                </div>
-
-                <div className="form-group">
-                    <label>Verification Code:</label>
-                    <div className="verification-input-group">
-                        <input
-                            type="text"
-                            value={verificationCode}
-                            onChange={(e) => setVerificationCode(e.target.value)}
-                            className={errors.verificationCode ? 'error' : ''}
-                            required
-                            disabled={isVerified || isContractCreated}
-                        />
-                        <Button
-                            type="button"
-                            onClick={verifyCode}
-                            isLoading={isVerifying}
-                            disabled={isVerified || isContractCreated}
-                            className="verify-button"
-                        >
-                            Verify
-                        </Button>
-                    </div>
-                    {errors.verificationCode && (
-                        <div className="field-error">{errors.verificationCode}</div>
-                    )}
                 </div>
 
                 <div className="form-group">
@@ -646,7 +536,7 @@ const CarLeaseContractForm = ({ user }) => {
                 <Button
                     type="submit"
                     className="submit-button"
-                    disabled={!isVerified || !formData.terms || isContractCreated}
+                    disabled={!formData.terms || isContractCreated}
                     isLoading={isSubmitting}
                 >
                     Create Contract

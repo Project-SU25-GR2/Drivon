@@ -46,6 +46,7 @@ public class ContractController {
         }
     }
 
+    /* Comment out verification code endpoints
     @PostMapping("/send-code")
     public ResponseEntity<?> sendVerificationCode(@RequestBody Map<String, String> request) {
         try {
@@ -73,6 +74,7 @@ public class ContractController {
             return ResponseEntity.badRequest().body(error);
         }
     }
+    */
 
     @PostMapping("/send-pdf")
     public ResponseEntity<?> sendContractPDF(@RequestBody Map<String, String> request) {

@@ -25,6 +25,7 @@ public class ContractService {
     @Autowired
     private CarRepository carRepository;
 
+    /* Comment out verification code storage
     // Store verification codes with expiration time
     private final Map<String, VerificationCode> verificationCodes = new ConcurrentHashMap<>();
 
@@ -41,6 +42,7 @@ public class ContractService {
             return LocalDateTime.now().isAfter(expirationTime);
         }
     }
+    */
 
     public Contract createContract(ContractRequest request) {
         Contract contract = new Contract();
@@ -101,6 +103,7 @@ public class ContractService {
         return savedContract;
     }
 
+    /* Comment out verification code methods
     public String generateVerificationCode(String email) {
         String code = String.format("%06d", (int) (Math.random() * 1000000));
         verificationCodes.put(email, new VerificationCode(code));
@@ -120,6 +123,7 @@ public class ContractService {
         }
         return isValid;
     }
+    */
 
     private void generateContractFile(Contract contract) {
         try {
