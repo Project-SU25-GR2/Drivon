@@ -339,6 +339,43 @@ const RentYourCarForm = () => {
       {message && (
         <div className="form-message">{message}</div>
       )}
+      
+      <div className="partner-introduction">
+        <h2>Lợi ích khi trở thành đối tác của chúng tôi</h2>
+        <div className="intro-content">
+          <div className="benefits-grid">
+            <div className="benefit-item">
+              <i className="bi bi-cash-stack"></i>
+              <h3>Thu nhập ổn định</h3>
+              <p>Kiếm thêm thu nhập từ chiếc xe của bạn khi không sử dụng</p>
+            </div>
+            <div className="benefit-item">
+              <i className="bi bi-shield-check"></i>
+              <h3>Bảo hiểm toàn diện</h3>
+              <p>Xe của bạn được bảo hiểm đầy đủ trong suốt thời gian cho thuê</p>
+            </div>
+            <div className="benefit-item">
+              <i className="bi bi-graph-up"></i>
+              <h3>Quản lý hiệu quả</h3>
+              <p>Hệ thống quản lý chuyên nghiệp giúp theo dõi lịch trình và doanh thu</p>
+            </div>
+            <div className="benefit-item">
+              <i className="bi bi-people"></i>
+              <h3>Khách hàng chất lượng</h3>
+              <p>Tiếp cận với cộng đồng khách hàng đáng tin cậy</p>
+            </div>
+          </div>
+          <div className="process-section">
+            <h3>Quy trình trở thành đối tác</h3>
+            <ol>
+              <li>Điền thông tin xe và thông tin cá nhân</li>
+              <li>Chờ xác nhận từ đội ngũ của chúng tôi</li>
+              <li>Ký kết hợp đồng hợp tác</li>
+              <li>Bắt đầu cho thuê xe và kiếm thu nhập</li>
+            </ol>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
