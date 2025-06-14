@@ -58,17 +58,37 @@ const AdminPage = ({ user }) => {
   };
 
   useEffect(() => {
-    // Only fetch if user is available (temporarily removing role check for testing)
-    if (user) {
-        // Keeping the fetch call for now, but won't display the table in the new layout yet
-        // fetchUsers(); 
-    } else {
-        // If no user, set error and stop loading
-        setError('User not logged in.'); // Changed message for clarity
+    // Debug user role
+    console.log('Current user:', user);
+    console.log('User role:', user?.role);
+    
+    const checkUserRole = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8080/api/admin/check-role/${user.userId}`);
+        const { role, status } = response.data;
+        
+        if (role?.toLowerCase() !== 'admin' || status?.toLowerCase() !== 'active') {
+          alert('Tài khoản của bạn không được phép truy cập vào trang này. Vui lòng liên hệ quản trị viên nếu bạn cần quyền truy cập.');
+          navigate('/', { replace: true });
+          return;
+        }
+        
+        // If user is admin and active, continue loading the page
         setLoading(false);
-    }
+      } catch (error) {
+        console.error('Error checking user role:', error);
+        alert('Có lỗi xảy ra khi kiểm tra quyền truy cập. Vui lòng thử lại sau.');
+        navigate('/', { replace: true });
+      }
+    };
 
-  }, [user]); // Refetch users if user data changes (e.g., re-login)
+    if (user) {
+      checkUserRole();
+    } else {
+      setError('User not logged in.');
+      setLoading(false);
+    }
+  }, [user, navigate]);
 
   // Implement update role and delete user functions (Keeping for now, but not used in this layout step)
   const handleUpdateRole = async (userId, newRole) => {

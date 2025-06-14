@@ -39,12 +39,25 @@ const UserManagementPage = () => {
 
     const handleUpdateRole = async (userId, newRole) => {
         try {
-            await axios.put(`http://localhost:8080/api/admin/users/${userId}/role`, { "role": newRole });
-            alert('User role updated successfully!');
+            // Đảm bảo role được gửi đúng định dạng (chữ hoa)
+            const formattedRole = newRole.toUpperCase();
+            
+            console.log('Đang cập nhật vai trò:', {
+                userId,
+                newRole: formattedRole
+            });
+
+            const response = await axios.put(`http://localhost:8080/api/admin/users/${userId}/role`, { 
+                role: formattedRole 
+            });
+            
+            console.log('Phản hồi từ server:', response.data);
+            alert('Cập nhật vai trò người dùng thành công!');
             fetchUsers();
         } catch (err) {
-            console.error('Error updating role:', err);
-            alert('Failed to update user role: ' + (err.response?.data?.message || err.message));
+            console.error('Lỗi khi cập nhật vai trò:', err);
+            console.error('Chi tiết lỗi:', err.response?.data);
+            alert('Không thể cập nhật vai trò người dùng: ' + (err.response?.data?.message || err.message));
         }
     };
 
@@ -63,14 +76,12 @@ const UserManagementPage = () => {
 
     const handleToggleStatus = async (userId, currentStatus) => {
         try {
-            // Convert current status to uppercase for comparison
-            const currentStatusUpper = currentStatus?.toUpperCase() || 'ACTIVE';
-            const newStatus = currentStatusUpper === 'ACTIVE' ? 'BANNED' : 'ACTIVE';
+            // Đảm bảo trạng thái luôn là ACTIVE hoặc BANNED
+            const newStatus = currentStatus?.toUpperCase() === 'ACTIVE' ? 'BANNED' : 'ACTIVE';
             
-            // Log the request data for debugging
-            console.log('Updating status:', {
+            console.log('Đang cập nhật trạng thái:', {
                 userId,
-                currentStatus: currentStatusUpper,
+                currentStatus: currentStatus?.toUpperCase(),
                 newStatus
             });
 
@@ -78,13 +89,13 @@ const UserManagementPage = () => {
                 status: newStatus 
             });
             
-            console.log('Server response:', response.data);
-            alert(`User ${newStatus === 'ACTIVE' ? 'unbanned' : 'banned'} successfully!`);
+            console.log('Phản hồi từ server:', response.data);
+            alert(`Người dùng đã được ${newStatus === 'ACTIVE' ? 'mở khóa' : 'khóa'} thành công!`);
             fetchUsers();
         } catch (err) {
-            console.error('Error updating user status:', err);
-            console.error('Error details:', err.response?.data);
-            alert('Failed to update user status: ' + (err.response?.data?.message || err.message));
+            console.error('Lỗi khi cập nhật trạng thái người dùng:', err);
+            console.error('Chi tiết lỗi:', err.response?.data);
+            alert('Không thể cập nhật trạng thái người dùng: ' + (err.response?.data?.message || err.message));
         }
     };
 
@@ -146,9 +157,9 @@ const UserManagementPage = () => {
                                         onChange={(e) => handleUpdateRole(user.userId, e.target.value)}
                                         className="role-select"
                                     >
-                                        <option value="renter">Renter</option>
-                                        <option value="owner">Owner</option>
-                                        <option value="admin">Admin</option>
+                                        <option value="RENTER">Renter</option>
+                                        <option value="OWNER">Owner</option>
+                                        <option value="ADMIN">Admin</option>
                                     </select>
                                 </td>
                                 <td>

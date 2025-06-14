@@ -17,6 +17,8 @@ import RentYourCarForm from "./components/contract/RentYourCarForm";
 import CarLeaseContractForm from "./components/contract/CarLeaseContractForm";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import RentCar from "./components/rent/RentCar";
+import ManagerOwnerPage from "./components/owner/ManagerOwnerPage";
+import axios from "axios";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -27,6 +29,22 @@ function App() {
       try {
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
+        
+        // Fetch latest user info from backend
+        const fetchUserInfo = async () => {
+          try {
+            const response = await axios.put('http://localhost:8080/api/profile/update', parsedUser);
+            if (response.data) {
+              const updatedUser = { ...response.data, token: parsedUser.token };
+              setUser(updatedUser);
+              localStorage.setItem("user", JSON.stringify(updatedUser));
+            }
+          } catch (error) {
+            console.error('Error fetching user info:', error);
+          }
+        };
+        
+        fetchUserInfo();
       } catch (error) {
         localStorage.removeItem("user");
         setUser(null);
@@ -228,6 +246,15 @@ function App() {
             <MainLayout user={user} handleLogout={handleLogout}>
               <RentCar />
             </MainLayout>
+          }
+        />
+
+        <Route
+          path="/owner"
+          element={
+              <MainLayout user={user} handleLogout={handleLogout}>
+                <ManagerOwnerPage user={user} />
+              </MainLayout>
           }
         />
       </Routes>

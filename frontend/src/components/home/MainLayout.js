@@ -53,6 +53,7 @@ const MainLayout = ({ user, handleLogout, children }) => {
             <button type="button"><i className="fas fa-search"></i></button>
           </div>
           {user && user.role === "ADMIN" && <Link to="/admin">Admin</Link>}
+          {user && user.role === "OWNER" && <Link to="/owner">Manager Car</Link>}
         </nav>
         <div className="auth-payment-buttons">
           {user ? (

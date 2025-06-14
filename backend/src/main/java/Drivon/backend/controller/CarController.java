@@ -95,4 +95,41 @@ public class CarController {
             return ResponseEntity.badRequest().body(error);
         }
     }
+
+    @GetMapping("/owner/{ownerId}")
+    public ResponseEntity<?> getCarsByOwnerId(@PathVariable Long ownerId) {
+        try {
+            List<Car> cars = carService.getCarsByOwnerId(ownerId);
+            List<Map<String, Object>> carsWithImages = new ArrayList<>();
+
+            for (Car car : cars) {
+                Map<String, Object> carData = new HashMap<>();
+                carData.put("licensePlate", car.getLicensePlate());
+                carData.put("brand", car.getBrand());
+                carData.put("model", car.getModel());
+                carData.put("year", car.getYear());
+                carData.put("description", car.getDescription());
+                carData.put("type", car.getType());
+                carData.put("status", car.getStatus());
+                carData.put("location", car.getLocation());
+                carData.put("ownerId", car.getOwnerId());
+
+                // Get car images
+                List<CarImage> images = carImageRepository.findByCarId(car.getLicensePlate());
+                List<String> imageUrls = new ArrayList<>();
+                for (CarImage image : images) {
+                    imageUrls.add(image.getImageUrl());
+                }
+                carData.put("images", imageUrls);
+
+                carsWithImages.add(carData);
+            }
+
+            return ResponseEntity.ok(carsWithImages);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
 }

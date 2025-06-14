@@ -54,13 +54,15 @@ public class AdminController {
             if (newRole == null || newRole.isEmpty()) {
                 return ResponseEntity.badRequest().body("New role must be provided.");
             }
-            // Simple validation, you might want more robust validation
-            if (!newRole.equals("USER") && !newRole.equals("ADMIN")) {
+            // Cập nhật kiểm tra vai trò để chấp nhận RENTER, OWNER, ADMIN (chữ hoa)
+            String upperCaseRole = newRole.toUpperCase();
+            if (!upperCaseRole.equals("RENTER") && !upperCaseRole.equals("OWNER") && !upperCaseRole.equals("ADMIN")) {
                 return ResponseEntity.badRequest().body("Invalid role.");
             }
 
             try {
-                UserRole roleEnum = UserRole.valueOf(newRole.toUpperCase()); // Convert string to enum, case-insensitive
+                UserRole roleEnum = UserRole.valueOf(upperCaseRole); // Chuyển đổi string sang enum, dùng giá trị đã
+                                                                     // chuyển hoa
                 user.setRole(roleEnum);
             } catch (IllegalArgumentException e) {
                 return ResponseEntity.badRequest().body("Invalid role provided.");
@@ -175,6 +177,26 @@ public class AdminController {
         contract.setStatus(status);
         contractService.save(contract);
         return ResponseEntity.ok("Status updated");
+    }
+
+    @GetMapping("/check-role/{userId}")
+    public ResponseEntity<?> checkUserRole(@PathVariable Long userId) {
+        return userRepository.findById(userId).map(user -> {
+            Map<String, Object> response = new HashMap<>();
+            response.put("role", user.getRole());
+            response.put("status", user.getStatus());
+            return ResponseEntity.ok(response);
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/check-owner-role/{userId}")
+    public ResponseEntity<?> checkOwnerRole(@PathVariable Long userId) {
+        return userRepository.findById(userId).map(user -> {
+            Map<String, Object> response = new HashMap<>();
+            response.put("role", user.getRole());
+            response.put("status", user.getStatus());
+            return ResponseEntity.ok(response);
+        }).orElse(ResponseEntity.notFound().build());
     }
 
 }
