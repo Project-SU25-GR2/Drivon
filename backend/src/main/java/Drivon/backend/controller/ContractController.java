@@ -101,4 +101,14 @@ public class ContractController {
             return ResponseEntity.badRequest().body(error);
         }
     }
+
+    @GetMapping("/by-car/{carId}")
+    public ResponseEntity<?> getLatestContractByCar(@PathVariable String carId) {
+        var contractOpt = contractService.getLatestContractByCar(carId);
+        if (contractOpt.isPresent()) {
+            return ResponseEntity.ok(contractOpt.get());
+        } else {
+            return ResponseEntity.status(404).body("No contract found for this car");
+        }
+    }
 }

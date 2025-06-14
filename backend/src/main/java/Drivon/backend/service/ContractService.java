@@ -15,6 +15,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ContractService {
@@ -69,6 +70,7 @@ public class ContractService {
         // Lưu xe nếu chưa có
         if (request.getCarData() != null) {
             String licensePlate = request.getCarData().getLicensePlate();
+            System.out.println("Creating new car with data: " + request.getCarData());
             if (!carRepository.existsById(licensePlate)) {
                 Car car = new Car();
                 car.setLicensePlate(licensePlate);
@@ -76,13 +78,19 @@ public class ContractService {
                 car.setBrand(request.getCarData().getBrand());
                 car.setModel(request.getCarData().getModel());
                 car.setYear(request.getCarData().getYear());
+                car.setSeats(request.getCarData().getSeats());
                 car.setDescription(request.getCarData().getDescription());
                 car.setType(request.getCarData().getType());
+                car.setTransmission(request.getCarData().getTransmission());
+                car.setFuelType(request.getCarData().getFuelType());
+                car.setFuelConsumption(request.getCarData().getFuelConsumption());
                 car.setStatus("available");
                 car.setLocation(request.getCarData().getLocation());
-                System.out.println("new car added: " + car);
+                System.out.println("Saving new car: " + car);
                 carRepository.save(car);
             }
+        } else {
+            System.out.println("CarData is null in request");
         }
         Contract contract = new Contract();
         contract.setContractNumber(request.getContractNumber());
@@ -183,5 +191,9 @@ public class ContractService {
 
     public Contract save(Contract contract) {
         return contractRepository.save(contract);
+    }
+
+    public Optional<Contract> getLatestContractByCar(String carId) {
+        return contractRepository.findTopByCarIdOrderByStartDateDesc(carId);
     }
 }

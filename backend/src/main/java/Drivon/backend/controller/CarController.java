@@ -36,8 +36,12 @@ public class CarController {
                 carData.put("brand", car.getBrand());
                 carData.put("model", car.getModel());
                 carData.put("year", car.getYear());
+                carData.put("seats", car.getSeats());
                 carData.put("description", car.getDescription());
                 carData.put("type", car.getType());
+                carData.put("transmission", car.getTransmission());
+                carData.put("fuelType", car.getFuelType());
+                carData.put("fuelConsumption", car.getFuelConsumption());
                 carData.put("status", car.getStatus());
                 carData.put("location", car.getLocation());
                 carData.put("ownerId", car.getOwnerId());
@@ -74,8 +78,12 @@ public class CarController {
             carData.put("brand", car.getBrand());
             carData.put("model", car.getModel());
             carData.put("year", car.getYear());
+            carData.put("seats", car.getSeats());
             carData.put("description", car.getDescription());
             carData.put("type", car.getType());
+            carData.put("transmission", car.getTransmission());
+            carData.put("fuelType", car.getFuelType());
+            carData.put("fuelConsumption", car.getFuelConsumption());
             carData.put("status", car.getStatus());
             carData.put("location", car.getLocation());
             carData.put("ownerId", car.getOwnerId());
@@ -108,8 +116,12 @@ public class CarController {
                 carData.put("brand", car.getBrand());
                 carData.put("model", car.getModel());
                 carData.put("year", car.getYear());
+                carData.put("seats", car.getSeats());
                 carData.put("description", car.getDescription());
                 carData.put("type", car.getType());
+                carData.put("transmission", car.getTransmission());
+                carData.put("fuelType", car.getFuelType());
+                carData.put("fuelConsumption", car.getFuelConsumption());
                 carData.put("status", car.getStatus());
                 carData.put("location", car.getLocation());
                 carData.put("ownerId", car.getOwnerId());

@@ -1,175 +1,174 @@
 .rent-car-page{
-    background-color: #f9fafb;
-    max-width: 1200px;
-    margin: 0 auto;
+  background-color: #f9fafb;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 .filter-bar{
-    background-color: #fff;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    padding: 15px;
-    border-radius: 10px;
-    flex-wrap: wrap;
-}
-
-.search-input {
-  flex: 1;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 16px;
-  min-width: 200px;
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.filter-select {
-    min-width: 100px;
-    padding: 0.5rem 0.2rem 0.5rem 0.5rem; /* giảm padding phải */
-    border-radius: 5px;
-    border: 1px solid #fefefe;
-    font-size: 15px;
-    background-color: #f3f4f6;
-    text-align-last: left;
-    padding: 0.5rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    min-width: 150px;
-  }
-
-.filter-select[name="price"],
-.filter-select[name="brand"] {
-  min-width: 120px;
-}
-
-.filter-select[name="fuel"] {
-  min-width: 110px;
-}
-.fast-search .btn-fast-search {
-    background-color: #fff;
-    margin-right: 10px;
-    border: 2px solid #fff;
-    color: #222;
-    border-radius: 6px;
-    padding: 0.5rem 1.2rem;
-    cursor: pointer;
-    padding: 0.5rem 1rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    background: white;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-.fast-search .btn-fast-search:hover,
-.fast-search .btn-fast-search:active,
-.fast-search .btn-fast-search:focus {
-    background-color: #ffd700;
-    color: #000;
-    outline: none;
-    background: #f0f0f0;
-}
-
-.quick-filters {
+  background-color: #fff;
   display: flex;
+  align-items: center;
   gap: 1rem;
   margin-bottom: 2rem;
+  padding: 15px;
+  border-radius: 10px;
   flex-wrap: wrap;
 }
 
+.search-input {
+flex: 1;
+padding: 0.5rem 1rem;
+border-radius: 8px;
+border: 1px solid #ccc;
+font-size: 16px;
+min-width: 200px;
+padding: 0.5rem;
+border: 1px solid #ddd;
+border-radius: 4px;
+}
+
+.filter-select {
+  min-width: 100px;
+  padding: 0.5rem 0.2rem 0.5rem 0.5rem; /* giảm padding phải */
+  border-radius: 5px;
+  border: 1px solid #fefefe;
+  font-size: 15px;
+  background-color: #f3f4f6;
+  text-align-last: left;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  min-width: 150px;
+}
+
+.filter-select[name="price"],
+.filter-select[name="brand"] {
+min-width: 120px;
+}
+
+.filter-select[name="fuel"] {
+min-width: 110px;
+}
+.btn-fast-search {
+  background-color: #fff;
+  margin-right: 10px;
+  border: 2px solid #fff;
+  color: #222;
+  border-radius: 6px;
+  padding: 0.5rem 1.2rem;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.quick-filters{
+  margin-bottom: 1rem;
+}
+.btn-fast-search:hover,
+.btn-fast-search:active,
+.btn-fast-search:focus {
+  color: #000;
+  outline: none;
+  background: #ffd700;
+}
+
+
 .car-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 2rem;
-  padding: 1rem 0;
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+gap: 2rem;
+padding: 1rem 0;
 }
 
 .car-card {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  overflow: hidden;
-  transition: transform 0.3s ease;
-  background: white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+border: 1px solid #ddd;
+border-radius: 8px;
+overflow: hidden;
+background: white;
+box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+padding: 0;
 }
 
 .car-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+transform: translateY(-5px);
+box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
 .car-image-container {
-  width: 100%;
-  height: 200px;
-  overflow: hidden;
+display: block;
+width: 100%;
+height: 200px;
+overflow: hidden;
 }
 
 .car-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+display: block;
+width: 100%;
+height: 100%;
+object-fit: cover;
 }
 
+
 .no-image {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f0f0f0;
-  color: #666;
+width: 100%;
+height: 100%;
+display: flex;
+align-items: center;
+justify-content: center;
+background: #f0f0f0;
+color: #666;
 }
 
 .car-info {
-  padding: 1rem;
+padding: 1rem;
 }
 
 .car-info h3 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.2rem;
-  color: #333;
+margin: 0 0 0.5rem 0;
+font-size: 1.2rem;
+color: #333;
 }
 
 .car-year {
-  color: #666;
-  margin: 0.25rem 0;
+color: #666;
+margin: 0.25rem 0;
 }
 
 .car-location {
-  color: #666;
-  margin: 0.25rem 0;
-  font-size: 0.9rem;
+color: #666;
+margin: 0.25rem 0;
+font-size: 0.9rem;
 }
 
 .car-description {
-  color: #444;
-  margin: 0.5rem 0;
-  font-size: 0.9rem;
-  line-height: 1.4;
+color: #444;
+margin: 0.5rem 0;
+font-size: 0.9rem;
+line-height: 1.4;
 }
 
 .car-type {
-  display: inline-block;
-  padding: 0.25rem 0.5rem;
-  background: #f0f0f0;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  color: #666;
-  margin-top: 0.5rem;
+display: inline-block;
+padding: 0.25rem 0.5rem;
+background: #f0f0f0;
+border-radius: 4px;
+font-size: 0.8rem;
+color: #666;
+margin-top: 0.5rem;
 }
 
 .loading {
-  text-align: center;
-  padding: 2rem;
-  font-size: 1.2rem;
-  color: #666;
+text-align: center;
+padding: 2rem;
+font-size: 1.2rem;
+color: #666;
 }
 
 .error {
-  text-align: center;
-  padding: 2rem;
-  color: #dc3545;
-  font-size: 1.2rem;
+text-align: center;
+padding: 2rem;
+color: #dc3545;
+font-size: 1.2rem;
 }

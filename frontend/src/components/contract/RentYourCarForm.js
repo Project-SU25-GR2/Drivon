@@ -36,6 +36,11 @@ const RentYourCarForm = () => {
     dailyRate: '',
     location: '',
     description: '',
+    type: '',
+    seats: '',
+    transmission: '',
+    fuelType: '',
+    fuelConsumption: '',
     images: [],
   });
 
@@ -132,12 +137,13 @@ const RentYourCarForm = () => {
       return;
     }
 
+    console.log('Form data before submission:', formData);
+
     // Kiểm tra carId đã tồn tại chưa
     try {
       const checkResponse = await axios.get(`http://localhost:8080/api/contracts/check-car/${formData.licensePlate}`);
       if (checkResponse.data.exists) {
         setMessage('Car ID already exists in the system. Please choose another car.');
-        
         return;
       }
     } catch (error) {
@@ -167,9 +173,15 @@ const RentYourCarForm = () => {
           type: formData.type,
           location: formData.location,
           description: formData.description,
+          seats: parseInt(formData.seats),
+          transmission: formData.transmission,
+          fuelType: formData.fuelType,
+          fuelConsumption: parseFloat(formData.fuelConsumption),
           images: formData.images
         }
       };
+
+      console.log('Contract data before navigation:', contractData);
 
       // Chuyển hướng đến trang hợp đồng với dữ liệu
       navigate('/contracts/lease', { state: { contractData } });
@@ -275,18 +287,78 @@ const RentYourCarForm = () => {
         </div>
 
         <div className="form-group">
+          <label htmlFor="seats">Số chỗ ngồi</label>
+          <input
+            type="number"
+            id="seats"
+            name="seats"
+            value={formData.seats}
+            onChange={handleChange}
+            required
+            min="2"
+            max="16"
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="transmission">Hộp số</label>
+          <select
+            id="transmission"
+            name="transmission"
+            value={formData.transmission}
+            onChange={handleChange}
+            required
+            className="select-input"
+          >
+            <option value="">Chọn loại hộp số</option>
+            <option value="manual">Số sàn</option>
+            <option value="automatic">Số tự động</option>
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="fuelType">Nhiên liệu</label>
+          <select
+            id="fuelType"
+            name="fuelType"
+            value={formData.fuelType}
+            onChange={handleChange}
+            required
+            className="select-input"
+          >
+            <option value="">Chọn loại nhiên liệu</option>
+            <option value="gasoline">Xăng</option>
+            <option value="diesel">Dầu</option>
+            <option value="electric">Điện</option>
+            <option value="hybrid">Hybrid</option>
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="fuelConsumption">Mức tiêu thụ nhiên liệu (lít/100km)</label>
+          <input
+            type="number"
+            id="fuelConsumption"
+            name="fuelConsumption"
+            value={formData.fuelConsumption}
+            onChange={handleChange}
+            required
+            step="0.1"
+            min="0"
+          />
+        </div>
+        <div className="form-group">
           <label htmlFor="description">Description</label>
           <textarea
             id="description"
             name="description"
-            placeholder='Mô tả xe (màu sơn, động cơ, hệ thống điều hòa, số chỗ ngồi, tính năng, ...)'
+            placeholder='Mô tả xe (màu sơn, tính năng, ...)'
             value={formData.description}
             onChange={handleChange}
             rows="4"
             required
           />
         </div>
-
         <div className="form-group">
           <label>Car Images</label>
           <div className="image-upload-section">

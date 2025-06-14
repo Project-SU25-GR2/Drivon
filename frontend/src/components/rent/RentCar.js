@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../css/RentCar.css';
+import { Link } from 'react-router-dom';
 
 const RentCar = () => {
   const [filters, setFilters] = useState({
@@ -94,7 +95,7 @@ const RentCar = () => {
         ) : (
           <div className="car-grid">
             {filteredCars.map((car) => (
-              <div key={car.licensePlate} className="car-card">
+              <Link to={`/cars/${car.licensePlate}`} key={car.licensePlate} className="car-card" style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div className="car-image-container">
                   {car.images && car.images.length > 0 ? (
                     <img 
@@ -113,7 +114,7 @@ const RentCar = () => {
                   <p className="car-description">{car.description}</p>
                   <div className="car-type">{car.type}</div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

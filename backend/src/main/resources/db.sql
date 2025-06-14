@@ -46,6 +46,17 @@ CREATE TABLE cars (
     location VARCHAR(255),
     FOREIGN KEY (owner_id) REFERENCES users(user_id) ON DELETE SET NULL ON UPDATE CASCADE
 );
+ALTER TABLE cars
+ADD COLUMN type ENUM('suv', 'sedan', 'mpv', 'hatchback', 'pickup') AFTER status,
+-- add new table:
+ADD COLUMN seats INT AFTER year,
+ADD COLUMN transmission ENUM('manual', 'automatic') AFTER type,
+ADD COLUMN fuel_type ENUM('gasoline', 'diesel', 'electric', 'hybrid') AFTER transmission,
+ADD COLUMN fuel_consumption DECIMAL(4,2) AFTER fuel_type;
+
+
+
+
 
 -- 4. Bảng car_images
 CREATE TABLE car_images (
@@ -241,3 +252,18 @@ SELECT
     COUNT(*) AS total
 FROM complaints
 GROUP BY status;
+
+USE car_rental_system2;
+select*from users;
+select*from car_images;
+select*from contract_partners;
+select*from cars;
+select*from promotions;
+DELETE FROM cars
+WHERE license_plate = '37A40262';
+INSERT INTO promotions (code, discount_percent, valid_until, max_uses)
+VALUES ('SUMMER25', 25, '2025-08-31 23:59:59', 100),
+('NEWYEAR50', 50, '2026-01-01 23:59:59', 500),
+('WELCOME10', 10, '2025-12-31 23:59:59', 1000),
+('FLASH70', 70, '2025-07-01 23:59:59', 50);
+

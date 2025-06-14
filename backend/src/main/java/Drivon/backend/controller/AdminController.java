@@ -144,7 +144,13 @@ public class AdminController {
                     carInfo.put("brand", car.getBrand());
                     carInfo.put("model", car.getModel());
                     carInfo.put("year", car.getYear());
+                    carInfo.put("seats", car.getSeats());
                     carInfo.put("description", car.getDescription());
+                    carInfo.put("type", car.getType());
+                    carInfo.put("transmission", car.getTransmission());
+                    carInfo.put("fuelType", car.getFuelType());
+                    carInfo.put("fuelConsumption", car.getFuelConsumption());
+                    carInfo.put("location", car.getLocation());
 
                     // Lấy danh sách URL hình ảnh của xe
                     List<CarImage> carImages = carImageRepository.findByCarId(contract.getCarId());

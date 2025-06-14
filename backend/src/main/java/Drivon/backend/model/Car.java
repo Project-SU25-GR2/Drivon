@@ -23,15 +23,37 @@ public class Car {
     @Column(name = "year")
     private Integer year;
 
+    @Column(name = "seats")
+    private Integer seats;
+
     @Column(name = "description")
     private String description;
 
     @Column(name = "type")
     private String type;
 
+    @Column(name = "transmission")
+    @Enumerated(EnumType.STRING)
+    private Transmission transmission;
+
+    @Column(name = "fuel_type")
+    @Enumerated(EnumType.STRING)
+    private FuelType fuelType;
+
+    @Column(name = "fuel_consumption")
+    private Double fuelConsumption;
+
     @Column(name = "status")
     private String status;
 
     @Column(name = "location")
     private String location;
+
+    public enum Transmission {
+        manual, automatic
+    }
+
+    public enum FuelType {
+        gasoline, diesel, electric, hybrid
+    }
 } 
