@@ -118,11 +118,11 @@ const ViewCarDetail = () => {
       <div className="row car-detail-main container-fluid">
         <div className="col-12 col-md-8 car-detail-images ">
           <div className="car-detail-main-image">
-            <img src={car.images[0]} alt="car" />
+            <img src={car.mainImage} alt="car" />
           </div>
-          {car.images && car.images.length > 1 && (
+          {car.otherImages && car.otherImages.length > 0 && (
             <div className="car-detail-thumbnails">
-              {car.images.slice(1, 4).map((img, idx) => (
+              {car.otherImages.slice(0, 3).map((img, idx) => (
                 <img key={idx} src={img} alt={`car-thumb-${idx + 1}`} />
               ))}
             </div>

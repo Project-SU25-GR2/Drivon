@@ -377,7 +377,20 @@ const RentYourCarForm = () => {
               ))}
               <label className="upload-button" htmlFor="car-images">
                 <i className="bi bi-plus-lg"></i>
-                <span>Add Images</span>
+                <span>Car Images</span>
+                <input
+                  type="file"
+                  id="car-images"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageChange}
+                  disabled={uploading}
+                  style={{ display: 'none' }}
+                />
+              </label>
+              <label className="upload-button" htmlFor="car-images">
+                <i className="bi bi-plus-lg"></i>
+                <span>Other Images</span>
                 <input
                   type="file"
                   id="car-images"

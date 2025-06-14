@@ -71,6 +71,8 @@ public class ContractService {
         if (request.getCarData() != null) {
             String licensePlate = request.getCarData().getLicensePlate();
             System.out.println("Creating new car with data: " + request.getCarData());
+            System.out.println("Main Image from request: " + request.getCarData().getMainImage());
+            
             if (!carRepository.existsById(licensePlate)) {
                 Car car = new Car();
                 car.setLicensePlate(licensePlate);
@@ -86,6 +88,13 @@ public class ContractService {
                 car.setFuelConsumption(request.getCarData().getFuelConsumption());
                 car.setStatus("available");
                 car.setLocation(request.getCarData().getLocation());
+                
+                // Set main image if available
+                String mainImage = request.getCarData().getMainImage();
+                if (mainImage != null && !mainImage.trim().isEmpty()) {
+                    car.setMainImage(mainImage);
+                }
+                
                 System.out.println("Saving new car: " + car);
                 carRepository.save(car);
             }

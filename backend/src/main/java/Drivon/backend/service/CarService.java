@@ -24,4 +24,8 @@ public class CarService {
     public List<Car> getCarsByOwnerId(Long ownerId) {
         return carRepository.findByOwnerId(ownerId);
     }
+
+    public List<Car> getActiveLeaseCars() {
+        return carRepository.findCarsByContractStatus("ACTIVE_LEASE");
+    }
 }

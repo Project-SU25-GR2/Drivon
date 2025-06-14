@@ -20,7 +20,7 @@ const RentCar = () => {
 
   const fetchCars = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/cars');
+      const response = await axios.get('http://localhost:8080/api/cars/active-lease');
       setCars(response.data);
       setLoading(false);
     } catch (err) {
@@ -97,9 +97,9 @@ const RentCar = () => {
             {filteredCars.map((car) => (
               <Link to={`/cars/${car.licensePlate}`} key={car.licensePlate} className="car-card" style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div className="car-image-container">
-                  {car.images && car.images.length > 0 ? (
+                  {car.mainImage ? (
                     <img 
-                      src={car.images[0]} 
+                      src={car.mainImage} 
                       alt={`${car.brand} ${car.model}`} 
                       className="car-image"
                     />

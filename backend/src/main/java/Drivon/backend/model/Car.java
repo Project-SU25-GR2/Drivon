@@ -49,6 +49,9 @@ public class Car {
     @Column(name = "location")
     private String location;
 
+    @Column(name = "main_image")
+    private String mainImage;
+
     public enum Transmission {
         manual, automatic
     }

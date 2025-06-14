@@ -46,13 +46,16 @@ public class CarController {
                 carData.put("location", car.getLocation());
                 carData.put("ownerId", car.getOwnerId());
 
-                // Get car images
-                List<CarImage> images = carImageRepository.findByCarId(car.getLicensePlate());
-                List<String> imageUrls = new ArrayList<>();
-                for (CarImage image : images) {
-                    imageUrls.add(image.getImageUrl());
+                // Get main image from cars table
+                carData.put("mainImage", car.getMainImage());
+
+                // Get other images from car_images table
+                List<CarImage> otherImages = carImageRepository.findByCarId(car.getLicensePlate());
+                List<String> otherImageUrls = new ArrayList<>();
+                for (CarImage image : otherImages) {
+                    otherImageUrls.add(image.getImageUrl());
                 }
-                carData.put("images", imageUrls);
+                carData.put("otherImages", otherImageUrls);
 
                 carsWithImages.add(carData);
             }
@@ -88,13 +91,16 @@ public class CarController {
             carData.put("location", car.getLocation());
             carData.put("ownerId", car.getOwnerId());
 
-            // Get car images
-            List<CarImage> images = carImageRepository.findByCarId(licensePlate);
-            List<String> imageUrls = new ArrayList<>();
-            for (CarImage image : images) {
-                imageUrls.add(image.getImageUrl());
+            // Get main image from cars table
+            carData.put("mainImage", car.getMainImage());
+
+            // Get other images from car_images table
+            List<CarImage> otherImages = carImageRepository.findByCarId(car.getLicensePlate());
+            List<String> otherImageUrls = new ArrayList<>();
+            for (CarImage image : otherImages) {
+                otherImageUrls.add(image.getImageUrl());
             }
-            carData.put("images", imageUrls);
+            carData.put("otherImages", otherImageUrls);
 
             return ResponseEntity.ok(carData);
         } catch (Exception e) {
@@ -126,15 +132,62 @@ public class CarController {
                 carData.put("location", car.getLocation());
                 carData.put("ownerId", car.getOwnerId());
 
-                // Get car images
-                List<CarImage> images = carImageRepository.findByCarId(car.getLicensePlate());
-                List<String> imageUrls = new ArrayList<>();
-                for (CarImage image : images) {
-                    imageUrls.add(image.getImageUrl());
+                // Get main image from cars table
+                carData.put("mainImage", car.getMainImage());
+
+                // Get other images from car_images table
+                List<CarImage> otherImages = carImageRepository.findByCarId(car.getLicensePlate());
+                List<String> otherImageUrls = new ArrayList<>();
+                for (CarImage image : otherImages) {
+                    otherImageUrls.add(image.getImageUrl());
                 }
-                carData.put("images", imageUrls);
+                carData.put("otherImages", otherImageUrls);
 
                 carsWithImages.add(carData);
+            }
+
+            return ResponseEntity.ok(carsWithImages);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    @GetMapping("/active-lease")
+    public ResponseEntity<?> getActiveLeaseCars() {
+        try {
+            List<Car> cars = carService.getActiveLeaseCars();
+            List<Map<String, Object>> carsWithImages = new ArrayList<>();
+
+            for (Car car : cars) {
+                Map<String, Object> carData = new HashMap<>();
+                carData.put("licensePlate", car.getLicensePlate());
+                carData.put("brand", car.getBrand());
+                carData.put("model", car.getModel());
+                carData.put("year", car.getYear());
+                carData.put("seats", car.getSeats());
+                carData.put("description", car.getDescription());
+                carData.put("type", car.getType());
+                carData.put("transmission", car.getTransmission());
+                carData.put("fuelType", car.getFuelType());
+                carData.put("fuelConsumption", car.getFuelConsumption());
+                carData.put("status", car.getStatus());
+                carData.put("location", car.getLocation());
+                carData.put("ownerId", car.getOwnerId());
+                System.out.println(car);
+                // Get main image from cars table
+                carData.put("mainImage", car.getMainImage());
+
+                // Get other images from car_images table
+                List<CarImage> otherImages = carImageRepository.findByCarId(car.getLicensePlate());
+                List<String> otherImageUrls = new ArrayList<>();
+                for (CarImage image : otherImages) {
+                    otherImageUrls.add(image.getImageUrl());
+                }
+                carData.put("otherImages", otherImageUrls);
+                carsWithImages.add(carData);
+
             }
 
             return ResponseEntity.ok(carsWithImages);

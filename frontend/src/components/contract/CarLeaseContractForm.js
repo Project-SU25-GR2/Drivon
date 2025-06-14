@@ -292,9 +292,14 @@ const CarLeaseContractForm = ({ user }) => {
             // 4. Sau khi tạo hợp đồng thành công, lưu ảnh vào car_images nếu có
             if (contractData?.carData?.images && contractData.carData.images.length > 0) {
                 try {
+                    // Lấy ảnh đầu tiên làm main image, các ảnh còn lại là other images
+                    const mainImage = contractData.carData.images[0];
+                    const otherImages = contractData.carData.images.slice(1);
+
                     await axios.post('http://localhost:8080/api/cars/images', {
                         carId: formData.carId,
-                        imageUrls: contractData.carData.images
+                        mainImage: mainImage,
+                        otherImages: otherImages
                     });
                 } catch (imgErr) {
                     console.error('Lỗi khi lưu ảnh xe:', imgErr);

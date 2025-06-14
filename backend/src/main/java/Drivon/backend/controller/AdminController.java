@@ -152,13 +152,16 @@ public class AdminController {
                     carInfo.put("fuelConsumption", car.getFuelConsumption());
                     carInfo.put("location", car.getLocation());
 
-                    // Lấy danh sách URL hình ảnh của xe
+                    // Lấy main image từ table cars
+                    carInfo.put("mainImage", car.getMainImage());
+
+                    // Lấy other images từ table car_images
                     List<CarImage> carImages = carImageRepository.findByCarId(contract.getCarId());
-                    List<String> imageUrls = new ArrayList<>();
+                    List<String> otherImageUrls = new ArrayList<>();
                     for (CarImage image : carImages) {
-                        imageUrls.add(image.getImageUrl());
+                        otherImageUrls.add(image.getImageUrl());
                     }
-                    carInfo.put("images", imageUrls); // Thêm mảng URL hình ảnh vào carInfo
+                    carInfo.put("otherImages", otherImageUrls);
 
                     partner.put("car", carInfo);
                 }

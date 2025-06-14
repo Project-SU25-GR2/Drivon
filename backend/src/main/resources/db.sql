@@ -53,6 +53,7 @@ ADD COLUMN seats INT AFTER year,
 ADD COLUMN transmission ENUM('manual', 'automatic') AFTER type,
 ADD COLUMN fuel_type ENUM('gasoline', 'diesel', 'electric', 'hybrid') AFTER transmission,
 ADD COLUMN fuel_consumption DECIMAL(4,2) AFTER fuel_type;
+ALTER TABLE cars ADD COLUMN main_image TEXT;
 
 
 
@@ -259,6 +260,9 @@ select*from car_images;
 select*from contract_partners;
 select*from cars;
 select*from promotions;
+update users
+set role ='admin'
+where phone ='0394672210';
 DELETE FROM cars
 WHERE license_plate = '37A40262';
 INSERT INTO promotions (code, discount_percent, valid_until, max_uses)

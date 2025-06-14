@@ -3,6 +3,7 @@ package Drivon.backend.dto;
 import Drivon.backend.model.Car.Transmission;
 import Drivon.backend.model.Car.FuelType;
 import lombok.Data;
+import jakarta.persistence.Column;
 
 @Data
 public class CarData {
@@ -20,4 +21,7 @@ public class CarData {
     private Double dailyRate;
     private Integer ownerId;
     private String status;
+    
+    @Column(name = "main_image")
+    private String mainImage;
 } 
