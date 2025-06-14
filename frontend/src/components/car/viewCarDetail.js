@@ -93,6 +93,12 @@ const ViewCarDetail = () => {
     }
   };
 
+  const handleSelectCar = (selectedCar) => {
+    setCar(selectedCar);
+    setContract(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const filteredCars = allCars.filter(item => {
     if (!car) return false;
     if (item.licensePlate === car.licensePlate) return false;
@@ -150,15 +156,17 @@ const ViewCarDetail = () => {
               <div className="same-car-list slide" style={{ transform: `translateX(${translateX}px)` }}>
                 {filteredCars.length === 0 && <div>Không có xe tương tự</div>}
                 {filteredCars.map(item => (
-                  <div className="same-car-card" key={item.licensePlate}>
+                  <div className="same-car-card" key={item.licensePlate} onClick={() => handleSelectCar(item)} style={{ cursor: 'pointer' }}>
                     <div className="same-car-image-wrapper">
-                      <img src={item.images && item.images[0]} alt={item.model} className="same-car-image" />
+                      <img src={item.mainImage} alt={item.model} className="same-car-image" />
                       <div className="same-car-info-overlay">
                         <div className="same-car-title">{item.brand} {item.model}</div>
                         <div className="same-car-specs">
                           <span>{item.seats} chỗ</span> | <span>{item.transmission === 'manual' ? 'Số sàn' : 'Số tự động'}</span> | <span>{item.fuelType === 'gasoline' ? 'Xăng' : item.fuelType}</span>
                         </div>
-                        <div className="same-car-price">{item.pricePerDay ? item.pricePerDay.toLocaleString() : '---'} VNĐ/ngày</div>
+                        <div className="same-car-specs">
+                          <span >{item.fuelConsumption} lít/100km <i className="bi bi-fuel-pump" style={{ color: '#ffd700' }}></i></span>
+                        </div>
                       </div>
                     </div>
                   </div>
