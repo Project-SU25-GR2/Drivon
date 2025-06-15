@@ -251,17 +251,6 @@ font-size: 0.9rem;
   width: 100%;
 }
 
-.current-price::before {
-  content: '';
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  background: linear-gradient(45deg, #1a73e8, #34a853);
-  border-radius: 50%;
-  margin-right: 6px;
-  vertical-align: middle;
-}
-
 .car-price::after {
   content: '';
   position: absolute;

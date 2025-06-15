@@ -44,7 +44,10 @@ const RentYourCarForm = () => {
     images: [],
   });
 
-  const [previewUrls, setPreviewUrls] = useState([]);
+  const [mainImage, setMainImage] = useState('');
+  const [mainPreviewUrl, setMainPreviewUrl] = useState('');
+  const [otherImages, setOtherImages] = useState([]);
+  const [otherPreviewUrls, setOtherPreviewUrls] = useState([]);
   const [uploadError, setUploadError] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState('');
@@ -57,11 +60,38 @@ const RentYourCarForm = () => {
     }));
   };
 
-  const handleImageChange = async (e) => {
+  const handleMainImageChange = async (e) => {
+    const file = e.target.files[0];
+    setUploadError(null);
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('Kích thước file không được vượt quá 5MB');
+      return;
+    }
+    if (!file.type.startsWith('image/')) {
+      setUploadError('Vui lòng chọn file hình ảnh');
+      return;
+    }
+    setMainPreviewUrl(URL.createObjectURL(file));
+    setUploading(true);
+    try {
+      const formDataImg = new FormData();
+      formDataImg.append('file', file);
+      formDataImg.append('upload_preset', cloudinaryConfig.uploadPreset);
+      formDataImg.append('api_key', cloudinaryConfig.apiKey);
+      const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/upload`;
+      const response = await axios.post(cloudinaryUrl, formDataImg);
+      setMainImage(response.data.secure_url);
+    } catch (error) {
+      setUploadError('Có lỗi xảy ra khi tải ảnh lên.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleOtherImagesChange = async (e) => {
     const files = Array.from(e.target.files);
     setUploadError(null);
-
-    // Validate files
     for (const file of files) {
       if (file.size > 5 * 1024 * 1024) {
         setUploadError('Kích thước file không được vượt quá 5MB');
@@ -72,61 +102,35 @@ const RentYourCarForm = () => {
         return;
       }
     }
-
-    // Create preview URLs
     const newPreviewUrls = files.map(file => URL.createObjectURL(file));
-    setPreviewUrls(prev => [...prev, ...newPreviewUrls]);
-
-    // Upload to Cloudinary
+    setOtherPreviewUrls(prev => [...prev, ...newPreviewUrls]);
     setUploading(true);
     try {
       const uploadPromises = files.map(async (file) => {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('upload_preset', cloudinaryConfig.uploadPreset);
-        formData.append('api_key', cloudinaryConfig.apiKey);
-
+        const formDataImg = new FormData();
+        formDataImg.append('file', file);
+        formDataImg.append('upload_preset', cloudinaryConfig.uploadPreset);
+        formDataImg.append('api_key', cloudinaryConfig.apiKey);
         const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/upload`;
-        const response = await axios.post(cloudinaryUrl, formData);
+        const response = await axios.post(cloudinaryUrl, formDataImg);
         return response.data.secure_url;
       });
-
       const uploadedUrls = await Promise.all(uploadPromises);
-      
-      // Lưu URLs vào state (KHÔNG gọi API lưu vào DB ở đây)
-      setFormData(prevState => ({
-        ...prevState,
-        images: [...prevState.images, ...uploadedUrls]
-      }));
-
+      setOtherImages(prev => [...prev, ...uploadedUrls]);
     } catch (error) {
-      console.error('Error uploading images:', error);
       setUploadError('Có lỗi xảy ra khi tải ảnh lên.');
     } finally {
       setUploading(false);
     }
   };
 
-  const removeImage = async (index) => {
-    const imageToRemove = formData.images[index];
-    
-    // Xóa khỏi state
-    setFormData(prevState => ({
-      ...prevState,
-      images: prevState.images.filter((_, i) => i !== index)
-    }));
-    setPreviewUrls(prev => prev.filter((_, i) => i !== index));
-
-    // Nếu đã có licensePlate, xóa ảnh khỏi database
-    if (formData.licensePlate) {
-      try {
-        await axios.delete(`http://localhost:8080/api/cars/images/${formData.licensePlate}`, {
-          data: { imageUrl: imageToRemove }
-        });
-      } catch (error) {
-        console.error('Error removing image from database:', error);
-      }
-    }
+  const removeMainImage = () => {
+    setMainImage('');
+    setMainPreviewUrl('');
+  };
+  const removeOtherImage = (index) => {
+    setOtherImages(prev => prev.filter((_, i) => i !== index));
+    setOtherPreviewUrls(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
@@ -153,6 +157,7 @@ const RentYourCarForm = () => {
 
     try {
       // Tạo dữ liệu hợp đồng từ form
+      const allImages = mainImage ? [mainImage, ...otherImages] : [...otherImages];
       const contractData = {
         contractNumber: `HD${Date.now()}`, // Tạo số hợp đồng tự động
         startDate: new Date().toISOString().split('T')[0], // Ngày hiện tại
@@ -177,7 +182,7 @@ const RentYourCarForm = () => {
           transmission: formData.transmission,
           fuelType: formData.fuelType,
           fuelConsumption: parseFloat(formData.fuelConsumption),
-          images: formData.images
+          images: allImages
         }
       };
 
@@ -363,44 +368,47 @@ const RentYourCarForm = () => {
           <label>Car Images</label>
           <div className="image-upload-section">
             <div className="image-preview-grid">
-              {previewUrls.map((url, index) => (
+              {mainPreviewUrl && (
+                <div className="image-preview-item">
+                  <img src={mainPreviewUrl} alt="Main Preview" />
+                  <button type="button" className="remove-image-btn" onClick={removeMainImage}>×</button>
+                </div>
+              )}
+              {!mainPreviewUrl && (
+                <label className="upload-button" htmlFor="car-main-image">
+                  <i className="bi bi-plus-lg"></i>
+                  <span>Car Images</span>
+                  <input
+                    type="file"
+                    id="car-main-image"
+                    accept="image/*"
+                    onChange={handleMainImageChange}
+                    disabled={uploading}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+              )}
+            </div>
+            <label className="upload-button" htmlFor="car-other-images">
+              <i className="bi bi-plus-lg"></i>
+              <span>Other Images</span>
+              <input
+                type="file"
+                id="car-other-images"
+                accept="image/*"
+                multiple
+                onChange={handleOtherImagesChange}
+                disabled={uploading}
+                style={{ display: 'none' }}
+              />
+            </label>
+            <div className="image-preview-grid">
+              {otherPreviewUrls.map((url, index) => (
                 <div key={index} className="image-preview-item">
-                  <img src={url} alt={`Preview ${index + 1}`} />
-                  <button
-                    type="button"
-                    className="remove-image-btn"
-                    onClick={() => removeImage(index)}
-                  >
-                    ×
-                  </button>
+                  <img src={url} alt={`Other Preview ${index + 1}`} />
+                  <button type="button" className="remove-image-btn" onClick={() => removeOtherImage(index)}>×</button>
                 </div>
               ))}
-              <label className="upload-button" htmlFor="car-images">
-                <i className="bi bi-plus-lg"></i>
-                <span>Car Images</span>
-                <input
-                  type="file"
-                  id="car-images"
-                  accept="image/*"
-                  multiple
-                  onChange={handleImageChange}
-                  disabled={uploading}
-                  style={{ display: 'none' }}
-                />
-              </label>
-              <label className="upload-button" htmlFor="car-images">
-                <i className="bi bi-plus-lg"></i>
-                <span>Other Images</span>
-                <input
-                  type="file"
-                  id="car-images"
-                  accept="image/*"
-                  multiple
-                  onChange={handleImageChange}
-                  disabled={uploading}
-                  style={{ display: 'none' }}
-                />
-              </label>
             </div>
             {uploadError && (
               <div className="upload-error">{uploadError}</div>

@@ -8,6 +8,7 @@ const RentCar = () => {
   const [filters, setFilters] = useState({
     location: '',
     brand: '',
+    type: '',
   });
 
   const [search, setSearch] = useState("");
@@ -47,12 +48,31 @@ const RentCar = () => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
   };
 
+  // Thêm hàm chuyển đổi fuelType sang tiếng Việt
+  function getFuelTypeVi(fuelType) {
+    switch (fuelType) {
+      case 'gasoline': return 'xăng';
+      case 'diesel': return 'dầu';
+      case 'electric': return 'điện';
+      case 'hybrid': return 'hybrid';
+      default: return fuelType;
+    }
+  }
+
   const filteredCars = cars.filter(car => {
     const matchesSearch = car.brand.toLowerCase().includes(search.toLowerCase()) ||
                          car.model.toLowerCase().includes(search.toLowerCase()) ||
-                         car.location.toLowerCase().includes(search.toLowerCase());
+                         car.location.toLowerCase().includes(search.toLowerCase())||
+                         getFuelTypeVi(car.fuelType).includes(search.toLowerCase())||
+                         car.fuelType.toLowerCase().includes(search.toLowerCase())||
+                         car.transmission.toLowerCase().includes(search.toLowerCase())||
+                         car.seats.toString().includes(search.toLowerCase())||
+                         car.year.toString().includes(search.toLowerCase());
     const matchesBrand = !filters.brand || car.brand === filters.brand;
-    return matchesSearch && matchesBrand;
+    const matchesSeat = !filters.seat || car.seats.toString() === filters.seat;
+    const matchesFuel = !filters.fuel || car.fuelType === filters.fuel;
+    const matchesType = !filters.type || (car.type && car.type.toLowerCase() === filters.type.toLowerCase());
+    return matchesSearch && matchesBrand && matchesSeat && matchesFuel && matchesType;
   });
 
   if (loading) return <div className="loading">Loading...</div>;
@@ -82,14 +102,14 @@ const RentCar = () => {
           <option value="Ford">Ford</option>
           <option value="VinFast">VinFast</option>
         </select>
-        <select name="seat" className="filter-select">
-          <option>Số chỗ</option>
-          <option>2</option>
-          <option>4</option>
-          <option>5</option>
-          <option>7</option>
+        <select name="seat" value={filters.seat} onChange={handleChange} className="filter-select">
+          <option value="">Số chỗ</option>
+          <option value="2">2</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="7">7</option>
         </select>
-        <select name="fuel" className="filter-select">
+        <select name="fuel" value={filters.fuel} onChange={handleChange} className="filter-select">
           <option value="">Nhiên liệu</option>
           <option value="gasoline">Xăng</option>
           <option value="diesel">Dầu</option>
@@ -99,11 +119,12 @@ const RentCar = () => {
       </div>
       
       <div className="quick-filters">
-        <button className="btn-fast-search">SUV</button>
-        <button className="btn-fast-search">Hatchback</button>
-        <button className="btn-fast-search">Sedan</button>
-        <button className="btn-fast-search">MPV</button>
-        <button className="btn-fast-search">Pickup</button>
+        <button className="btn-fast-search" onClick={() => setFilters({ ...filters, type: 'suv' })}>SUV</button>
+        <button className="btn-fast-search" onClick={() => setFilters({ ...filters, type: 'hatchback' })}>Hatchback</button>
+        <button className="btn-fast-search" onClick={() => setFilters({ ...filters, type: 'sedan' })}>Sedan</button>
+        <button className="btn-fast-search" onClick={() => setFilters({ ...filters, type: 'mpv' })}>MPV</button>
+        <button className="btn-fast-search" onClick={() => setFilters({ ...filters, type: 'pickup' })}>Pickup</button>
+        <button className="btn-fast-search" onClick={() => setFilters({ ...filters, type: '' })}>Tất cả</button>
       </div>
 
       <div className="car-list">
