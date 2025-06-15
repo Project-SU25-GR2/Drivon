@@ -76,99 +76,184 @@ min-width: 110px;
 
 
 .car-grid {
-display: grid;
-grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-gap: 2rem;
-padding: 1rem 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.5rem;
+  padding: 1rem 0;
 }
 
 .car-card {
-border: 1px solid #ddd;
-border-radius: 8px;
-overflow: hidden;
-background: white;
-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-padding: 0;
+  border: 1px solid #e0e0e0; /* Light gray border for the entire card */
+  border-radius: 12px;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  padding: 0; /* Remove padding-bottom from here, will add to car-info */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
 .car-card:hover {
-transform: translateY(-5px);
-box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  transform: translateY(-8px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
 .car-image-container {
-display: block;
-width: 100%;
-height: 200px;
-overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 176px;
+  overflow: hidden;
+  border: none;
+  border-radius: 10px; /* Applied to all 4 corners */
+  margin: 0;
+  padding: 10px;
+  background-color: white;
+  position: relative;
 }
 
 .car-image {
-display: block;
-width: 100%;
-height: 100%;
-object-fit: cover;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-
 .no-image {
-width: 100%;
-height: 100%;
-display: flex;
-align-items: center;
-justify-content: center;
-background: #f0f0f0;
-color: #666;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  color: #666;
+  border-radius: 10px; /* Matching border radius */
+}
+
+.discount-tag {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #ff4d4f; /* Reddish color for discount */
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: bold;
 }
 
 .car-info {
-padding: 1rem;
+  padding: 1rem 1rem 0.5rem; /* Adjusted padding for top, sides, and bottom */
 }
 
-.car-info h3 {
-margin: 0 0 0.5rem 0;
-font-size: 1.2rem;
-color: #333;
+.car-name {
+  margin: 0 0 0.75rem 0;
+  font-size: 1.15rem;
+  color: #333;
+  font-weight: 600;
 }
 
-.car-year {
-color: #666;
-margin: 0.25rem 0;
+.car-specs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 1rem; /* Adjusted gap */
+  margin-bottom: 0.75rem;
+}
+
+.spec-item {
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.spec-item svg { /* Targeting React Icons SVGs */
+  margin-right: 8px;
+  color: #888;
 }
 
 .car-location {
-color: #666;
-margin: 0.25rem 0;
-font-size: 0.9rem;
+  color: #666;
+  margin: 0.25rem 0 0.5rem 0; /* Adjusted margin */
+  font-size: 0.9rem;
 }
 
-.car-description {
-color: #444;
-margin: 0.5rem 0;
-font-size: 0.9rem;
-line-height: 1.4;
+.car-rating-price {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 0.5rem; /* Adjusted margin-top */
 }
 
-.car-type {
-display: inline-block;
-padding: 0.25rem 0.5rem;
-background: #f0f0f0;
-border-radius: 4px;
-font-size: 0.8rem;
-color: #666;
-margin-top: 0.5rem;
+.rating-trips {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rating-stars {
+  font-size: 0.9rem;
+  color: #ffc107; /* Star color */
+}
+
+.rating-stars svg { /* Targeting React Icons SVGs */
+  margin-right: 3px;
+}
+
+.total-trips {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.total-trips svg { /* Targeting React Icons SVGs */
+  margin-right: 3px;
+}
+
+.car-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.old-price {
+  text-decoration: line-through;
+  color: #999;
+  font-size: 0.85rem;
+}
+
+.current-price {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #4a90e2; /* Primary price color */
+}
+
+.package-price {
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 5px; /* Added margin for separation */
+}
+
+.pickup-time-box {
+  background-color: #fff8e1;
+  border: none; /* No border for this box */
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  margin: 0 1rem 1rem; /* Adjusted margin for consistency with card padding */
+  font-size: 0.9rem;
+  color: #795548;
+  text-align: center;
 }
 
 .loading {
-text-align: center;
-padding: 2rem;
-font-size: 1.2rem;
-color: #666;
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2rem;
+  color: #666;
 }
 
 .error {
-text-align: center;
-padding: 2rem;
-color: #dc3545;
-font-size: 1.2rem;
+  text-align: center;
+  padding: 2rem;
+  color: #dc3545;
+  font-size: 1.2rem;
 }
