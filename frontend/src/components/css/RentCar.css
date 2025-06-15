@@ -76,17 +76,17 @@ min-width: 110px;
 
 
 .car-grid {
-  display: grid;
+display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 1.5rem;
-  padding: 1rem 0;
+padding: 1rem 0;
 }
 
 .car-card {
   border: 1px solid #e0e0e0; /* Light gray border for the entire card */
   border-radius: 12px;
-  overflow: hidden;
-  background: white;
+overflow: hidden;
+background: white;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   padding: 0; /* Remove padding-bottom from here, will add to car-info */
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
@@ -103,7 +103,7 @@ min-width: 110px;
   justify-content: center;
   width: calc(100% - 24px); /* 12px margin left + 12px margin right */
   height: 176px;
-  overflow: hidden;
+overflow: hidden;
   border: none;
   border-radius: 12px; /* All 4 corners rounded for the image container */
   margin: 12px; /* Creates 12px blank space on all sides from the car-card */
@@ -113,20 +113,20 @@ min-width: 110px;
 }
 
 .car-image {
-  display: block;
-  width: 100%;
-  height: 100%;
+display: block;
+width: 100%;
+height: 100%;
   object-fit: cover; /* Image fills the container */
 }
 
 .no-image {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f0f0f0;
-  color: #666;
+width: 100%;
+height: 100%;
+display: flex;
+align-items: center;
+justify-content: center;
+background: #f0f0f0;
+color: #666;
   border-radius: 12px; /* Match car-image-container's border-radius */
 }
 
@@ -149,7 +149,7 @@ min-width: 110px;
 .car-name {
   margin: 0 0 0.75rem 0;
   font-size: 1.15rem;
-  color: #333;
+color: #333;
   font-weight: 600;
 }
 
@@ -164,7 +164,7 @@ min-width: 110px;
   display: flex;
   align-items: center;
   font-size: 0.85rem;
-  color: #666;
+color: #666;
 }
 
 .spec-item svg { /* Targeting React Icons SVGs */
@@ -173,9 +173,9 @@ min-width: 110px;
 }
 
 .car-location {
-  color: #666;
+color: #666;
   margin: 0.25rem 0 0.5rem 0; /* Adjusted margin */
-  font-size: 0.9rem;
+font-size: 0.9rem;
 }
 
 .car-rating-price {
@@ -192,7 +192,7 @@ min-width: 110px;
 }
 
 .rating-stars {
-  font-size: 0.9rem;
+font-size: 0.9rem;
   color: #ffc107; /* Star color */
 }
 
@@ -212,7 +212,23 @@ min-width: 110px;
 .car-price {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.75rem;
+  padding: 0.4rem;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+  position: relative;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  text-align: center;
+}
+
+.car-price:hover {
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
 }
 
 .old-price {
@@ -223,12 +239,50 @@ min-width: 110px;
 
 .current-price {
   font-size: 1.1rem;
-  font-weight: bold;
-  color: #4a90e2; /* Primary price color */
+  font-weight: 700;
+  background: linear-gradient(45deg, #1a73e8, #34a853);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  padding: 0.3rem 0.8rem;
+  position: relative;
+  display: inline-block;
+  z-index: 1;
+  text-align: center;
+  width: 100%;
+}
+
+.current-price::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: linear-gradient(45deg, #1a73e8, #34a853);
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.car-price::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1.5px;
+  background: linear-gradient(45deg, #1a73e8, #34a853);
+  border-radius: 2px;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.3s ease;
+}
+
+.car-card:hover .car-price::after {
+  transform: scaleX(1);
+  transform-origin: left;
 }
 
 .package-price {
-  font-size: 0.8rem;
+font-size: 0.8rem;
   color: #888;
   margin-top: 5px; /* Added margin for separation */
 }
@@ -245,15 +299,15 @@ min-width: 110px;
 }
 
 .loading {
-  text-align: center;
-  padding: 2rem;
-  font-size: 1.2rem;
-  color: #666;
+text-align: center;
+padding: 2rem;
+font-size: 1.2rem;
+color: #666;
 }
 
 .error {
-  text-align: center;
-  padding: 2rem;
-  color: #dc3545;
-  font-size: 1.2rem;
+text-align: center;
+padding: 2rem;
+color: #dc3545;
+font-size: 1.2rem;
 }

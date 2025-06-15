@@ -14,6 +14,7 @@ const RentCar = () => {
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [carContracts, setCarContracts] = useState({});
 
   useEffect(() => {
     fetchCars();
@@ -23,6 +24,18 @@ const RentCar = () => {
     try {
       const response = await axios.get('http://localhost:8080/api/cars/active-lease');
       setCars(response.data);
+      
+      // Fetch contracts for each car
+      const contracts = {};
+      for (const car of response.data) {
+        try {
+          const contractResponse = await axios.get(`http://localhost:8080/api/contracts/by-car/${car.licensePlate}`);
+          contracts[car.licensePlate] = contractResponse.data;
+        } catch (err) {
+          console.error(`Error fetching contract for car ${car.licensePlate}:`, err);
+        }
+      }
+      setCarContracts(contracts);
       setLoading(false);
     } catch (err) {
       setError('Failed to fetch cars');
@@ -122,21 +135,20 @@ const RentCar = () => {
                       <p className="spec-item"><FaMapMarkerAlt /> {car.location}</p>
                       <p className="spec-item"><FaChair /> {car.seats} chỗ</p>
                   </div>
-                  {/* Re-enable rating and trips section */}
-                      
+                  
                   <div className="rating-trips">
                       <span className="rating-stars"><FaStar /> 5.0</span>
                       <span className="total-trips"><FaCarSide /> 100+ chuyến</span>
                   </div>
                       
                   <div className="car-price">
-                      <span className="current-price">{car.dailyRate ? car.dailyRate.toLocaleString('vi-VN') + 'K/ngày' : 'Liên hệ'}</span>
-                      {/* Re-enable 4-hour package price */}
-                      {/* <span className="package-price">585K gói 4 giờ</span> */}
+                      <span className="current-price">
+                        {carContracts[car.licensePlate]?.pricePerDay 
+                          ? carContracts[car.licensePlate].pricePerDay.toLocaleString('vi-VN') + ' VNĐ/ngày'
+                          : 'Liên hệ'}
+                      </span>
                   </div>
                 </div>
-                {/* Re-enable pickup time box */}
-                {/* <div className="pickup-time-box">Thời gian nhận xe: 6:00 - 13:00</div> */}
               </Link>
             ))}
           </div>
