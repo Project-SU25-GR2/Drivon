@@ -1,18 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { DateRange } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 import { Modal, Button, List, message } from 'antd';
 import 'antd/dist/reset.css';
-import { GiGearStickPattern } from "react-icons/gi";
-import { TbAutomaticGearboxFilled } from "react-icons/tb";
+import RentalForm from './RentalForm';
+
 import './viewCarDetail.css';
 
 const ViewCarDetail = () => {
   const { licensePlate } = useParams();
-  const navigate = useNavigate();
   const [car, setCar] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -32,18 +31,13 @@ const ViewCarDetail = () => {
   const [allCars, setAllCars] = useState([]);
   const [carFilter, setCarFilter] = useState('all');
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [carContracts, setCarContracts] = useState({});
+  const [showRentalForm, setShowRentalForm] = useState(false);
   const carsPerPage = 3;
-  const [selectedImages, setSelectedImages] = useState({ main: null, others: [] });
 
   useEffect(() => {
     axios.get(`http://localhost:8080/api/cars/${licensePlate}`)
       .then(res => {
         setCar(res.data);
-        setSelectedImages({
-          main: res.data.mainImage,
-          others: res.data.otherImages || []
-        });
         setLoading(false);
       })
       .catch(() => {
@@ -86,24 +80,8 @@ const ViewCarDetail = () => {
   }, [showCouponModal]);
 
   useEffect(() => {
-    axios.get('http://localhost:8080/api/cars/active-lease')
-      .then(res => {
-        setAllCars(res.data);
-        // Fetch contracts for all cars
-        const fetchContracts = res.data.map(car =>
-          axios.get(`http://localhost:8080/api/contracts/by-car/${car.licensePlate}`)
-            .then(res => ({ licensePlate: car.licensePlate, contract: res.data }))
-            .catch(() => ({ licensePlate: car.licensePlate, contract: null }))
-        );
-        Promise.all(fetchContracts)
-          .then(results => {
-            const contractsMap = {};
-            results.forEach(({ licensePlate, contract }) => {
-              contractsMap[licensePlate] = contract;
-            });
-            setCarContracts(contractsMap);
-          });
-      })
+    axios.get('http://localhost:8080/api/cars')
+      .then(res => setAllCars(res.data))
       .catch(() => setAllCars([]));
   }, []);
 
@@ -118,7 +96,8 @@ const ViewCarDetail = () => {
   };
 
   const handleSelectCar = (selectedCar) => {
-    navigate(`/cars/${selectedCar.licensePlate}`);
+    setCar(selectedCar);
+    setContract(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -138,15 +117,19 @@ const ViewCarDetail = () => {
 
   useEffect(() => { setCurrentIndex(0); }, [carFilter, allCars, car]);
 
-  const handleImageClick = (clickedImage, index) => {
-    setSelectedImages(prev => {
-      const newOthers = [...prev.others];
-      newOthers[index] = prev.main;
-      return {
-        main: clickedImage,
-        others: newOthers
-      };
-    });
+  const handleRentClick = () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+      message.warning('Vui lòng đăng nhập để thuê xe');
+      return;
+    }
+    setShowRentalForm(true);
+  };
+
+  const handleRentalSuccess = (rentalData) => {
+    message.success('Đặt xe thành công!');
+    setShowRentalForm(false);
+    // You can add additional logic here, such as redirecting to a confirmation page
   };
 
   if (loading) return <div>Đang tải...</div>;
@@ -158,29 +141,12 @@ const ViewCarDetail = () => {
       <div className="row car-detail-main container-fluid">
         <div className="col-12 col-md-8 car-detail-images ">
           <div className="car-detail-main-image">
-            {selectedImages.main && (
-              <img 
-                src={selectedImages.main} 
-                alt="car" 
-                style={{ cursor: 'pointer' }}
-              />
-            )}
+            <img src={car.mainImage} alt="car" />
           </div>
-          {selectedImages.others && selectedImages.others.length > 0 && (
+          {car.otherImages && car.otherImages.length > 0 && (
             <div className="car-detail-thumbnails">
-              {selectedImages.others.slice(0, 3).map((img, idx) => (
-                <img 
-                  key={idx} 
-                  src={img} 
-                  alt={`car-thumb-${idx + 1}`}
-                  onClick={() => handleImageClick(img, idx)}
-                  style={{ 
-                    cursor: 'pointer',
-                    transition: 'opacity 0.2s'
-                  }}
-                  onMouseOver={e => e.target.style.opacity = '0.8'}
-                  onMouseOut={e => e.target.style.opacity = '1'}
-                />
+              {car.otherImages.slice(0, 3).map((img, idx) => (
+                <img key={idx} src={img} alt={`car-thumb-${idx + 1}`} />
               ))}
             </div>
           )}
@@ -196,9 +162,9 @@ const ViewCarDetail = () => {
           </div>
           <div className="same-car">
             <div className="same-car-filter">
-              <button onClick={() => setCarFilter('all')} className={carFilter === 'all' ? 'active' : ''}>Tất cả</button>
-              <button onClick={() => setCarFilter('brand')} className={carFilter === 'brand' ? 'active' : ''}>Cùng hãng</button>
-              <button onClick={() => setCarFilter('type')} className={carFilter === 'type' ? 'active' : ''}>Cùng loại</button>
+              <button onClick={() => setCarFilter('all')} className={carFilter==='all' ? 'active' : ''}>Tất cả</button>
+              <button onClick={() => setCarFilter('brand')} className={carFilter==='brand' ? 'active' : ''}>Cùng hãng</button>
+              <button onClick={() => setCarFilter('type')} className={carFilter==='type' ? 'active' : ''}>Cùng loại</button>
             </div>
             <div className="same-car-slider-wrapper">
               {filteredCars.length > carsPerPage && (
@@ -213,19 +179,10 @@ const ViewCarDetail = () => {
                       <div className="same-car-info-overlay">
                         <div className="same-car-title">{item.brand} {item.model}</div>
                         <div className="same-car-specs">
-                          <span>{item.seats} chỗ</span> | <span>{item.transmission === 'manual' ? <GiGearStickPattern /> : <TbAutomaticGearboxFilled />}</span> | <span>
-                            {item.fuelType === 'gasoline' || item.fuelType === 'hybrid' ?
-                              <i style={{ marginRight: '3px' }} className="bi bi-fuel-pump"></i> :
-                              item.fuelType === 'diesel' ?
-                                <i style={{ marginRight: '3px' }} className="bi bi-fuel-pump-diesel"></i> :
-                                <i style={{ marginRight: '3px' }} className="bi bi-ev-station"></i>
-                            }
-                            | <span>{item.fuelConsumption} {item.fuelType === 'electric' ? 'kWh' : 'L'}</span>
-                          </span>
+                          <span>{item.seats} chỗ</span> | <span>{item.transmission === 'manual' ? 'Số sàn' : 'Số tự động'}</span> | <span>{item.fuelType === 'gasoline' ? 'Xăng' : item.fuelType}</span>
                         </div>
                         <div className="same-car-specs">
-                          <span></span>
-                          <p style={{ margin: '0', color: '#ffd700' }}>{carContracts[item.licensePlate]?.pricePerDay?.toLocaleString('vi-VN')} VNĐ/ngày</p>
+                          <span >{item.fuelConsumption} lít/100km <i className="bi bi-fuel-pump" style={{ color: '#ffd700' }}></i></span>
                         </div>
                       </div>
                     </div>
@@ -250,7 +207,7 @@ const ViewCarDetail = () => {
                   car.fuelType === 'electric' ? 'Điện' :
                     car.fuelType === 'hybrid' ? 'Hybrid' : car.fuelType
             }</p>
-            <p><b>Mức tiêu thụ:</b> {car.fuelConsumption} {car.fuelType === 'electric' ? 'kWh/100km' : 'L/100km'}</p>
+            <p><b>Mức tiêu thụ:</b> {car.fuelConsumption} lít/100km</p>
             <p><b>Địa điểm:</b> {car.location}</p>
             <p><b>Mô tả:</b> {car.description}</p>
           </div>
@@ -285,12 +242,14 @@ const ViewCarDetail = () => {
               </>
             )}
             <button className="btn-discount" onClick={() => setShowCouponModal(true)}><i className="bi bi-ticket-perforated-fill"></i>  Mã giảm giá</button>
-            <button className="btn-rent-car">Thuê xe</button>
+            <button className="btn-rent-car" onClick={handleRentClick}>Thuê xe</button>
             <div className="car-detail-rental-papers">
               <div className="car-rental-papers">
-                <h3>Giấy tờ thuê xe</h3>
-                <p>Giấy phép lái xe</p>
-                <p>Căn cước công dân || Hộ chiếu</p>
+                <h3>Ưu điểm khi thuê xe</h3>
+                <p>Nhận xe thuận tiện</p>
+                <p>Thanh toán nhanh chóng</p>
+                <p>Thủ tục đơn giản</p>
+                <p>Hỗ trợ 24/7</p>
               </div>
             </div>
             <Modal
@@ -326,6 +285,15 @@ const ViewCarDetail = () => {
         </div>
 
       </div>
+
+      <RentalForm
+        visible={showRentalForm}
+        onClose={() => setShowRentalForm(false)}
+        car={car}
+        user={JSON.parse(localStorage.getItem('user'))}
+        dateRange={dateRange}
+        onSuccess={handleRentalSuccess}
+      />
     </div>
   );
 };

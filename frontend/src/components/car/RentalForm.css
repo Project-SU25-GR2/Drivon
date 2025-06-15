@@ -1,0 +1,138 @@
+.rental-form-modal .ant-modal-content {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.rental-form-modal .ant-modal-header {
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  padding: 16px 24px;
+}
+
+.rental-form-modal .ant-modal-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.rental-form {
+  padding: 24px;
+}
+
+.form-section {
+  margin-bottom: 24px;
+}
+
+.form-section h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.form-section .ant-form-item {
+  margin-bottom: 16px;
+}
+
+.form-section .ant-form-item-label {
+  padding-bottom: 4px;
+}
+
+.form-section .ant-form-item-label > label {
+  font-weight: 500;
+  color: #555;
+}
+
+.form-section .ant-input,
+.form-section .ant-picker {
+  border-radius: 6px;
+  border: 1px solid #d9d9d9;
+  padding: 8px 12px;
+  transition: all 0.3s;
+}
+
+.form-section .ant-input:hover,
+.form-section .ant-picker:hover {
+  border-color: #40a9ff;
+}
+
+.form-section .ant-input:focus,
+.form-section .ant-picker-focused {
+  border-color: #40a9ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.form-section .ant-input[disabled] {
+  background-color: #f5f5f5;
+  color: rgba(0, 0, 0, 0.65);
+  cursor: not-allowed;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+  align-items: center;
+}
+
+.cancel-button,
+.submit-button {
+  height: 40px;
+  border-radius: 6px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cancel-button {
+  min-width: 100px;
+  background: #f5f5f5;
+  border: 1px solid #d9d9d9;
+  color: #333;
+}
+
+.cancel-button:hover {
+  background: #e8e8e8;
+  border-color: #d9d9d9;
+  color: #333;
+}
+
+.submit-button {
+  min-width: 120px;
+  background: #1890ff;
+  border: none;
+  color: white;
+}
+
+.submit-button:hover {
+  background: #40a9ff;
+  color: white;
+}
+
+/* Responsive styles */
+@media (max-width: 576px) {
+  .rental-form-modal .ant-modal-content {
+    margin: 16px;
+  }
+
+  .rental-form {
+    padding: 16px;
+  }
+
+  .form-actions {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+
+  .cancel-button,
+  .submit-button {
+    width: auto;
+    min-width: 100px;
+  }
+} 

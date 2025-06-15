@@ -280,7 +280,7 @@ margin: 3rem 2rem;
   }
   
   .car-rental-papers h3::before {
-    content: '📋';
+
     margin-right: 0.5rem;
     font-size: 1.5rem;
   }
