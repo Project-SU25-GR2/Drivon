@@ -101,14 +101,14 @@ min-width: 110px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  width: calc(100% - 24px); /* 12px margin left + 12px margin right */
   height: 176px;
   overflow: hidden;
   border: none;
-  border-radius: 10px; /* Applied to all 4 corners */
-  margin: 0;
-  padding: 10px;
-  background-color: white;
+  border-radius: 12px; /* All 4 corners rounded for the image container */
+  margin: 12px; /* Creates 12px blank space on all sides from the car-card */
+  padding: 0; /* No internal padding within this container */
+  background-color: white; /* The background for the blank space */
   position: relative;
 }
 
@@ -116,7 +116,7 @@ min-width: 110px;
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: cover; /* Image fills the container */
 }
 
 .no-image {
@@ -127,7 +127,7 @@ min-width: 110px;
   justify-content: center;
   background: #f0f0f0;
   color: #666;
-  border-radius: 10px; /* Matching border radius */
+  border-radius: 12px; /* Match car-image-container's border-radius */
 }
 
 .discount-tag {
