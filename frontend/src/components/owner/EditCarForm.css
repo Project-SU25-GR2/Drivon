@@ -45,6 +45,10 @@
   cursor: pointer;
   color: #888;
   transition: color 0.3s ease;
+  position: fixed;
+  top: 15px;
+  right: 20px;
+  z-index: 1001;
 }
 
 .close-modal-btn:hover {

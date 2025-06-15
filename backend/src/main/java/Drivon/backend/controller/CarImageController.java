@@ -6,6 +6,9 @@ import Drivon.backend.repository.CarRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.transaction.annotation.Transactional;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,13 +26,17 @@ public class CarImageController {
     @Autowired
     private CarRepository carRepository;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     @PostMapping
+    @Transactional
     public ResponseEntity<?> saveCarImages(@RequestBody Map<String, Object> request) {
         Map<String, Object> response = new HashMap<>();
         
         try {
             String carId = (String) request.get("carId");
-            String mainImageUrl = (String) request.get("mainImage");
+            // mainImageUrl will be ignored by this controller as mainImage is handled by CarController
             Object otherImageUrlsObj = request.get("otherImages");
             List<String> otherImageUrls = new ArrayList<>();
             
@@ -44,23 +51,21 @@ public class CarImageController {
                 return ResponseEntity.badRequest().body(response);
             }
 
-            // Lưu main image vào table cars
-            if (mainImageUrl != null && !mainImageUrl.isEmpty()) {
-                carRepository.findById(carId).ifPresent(car -> {
-                    car.setMainImage(mainImageUrl);
-                    carRepository.save(car);
-                });
+            // Delete existing other images first
+            List<CarImage> existingImages = carImageRepository.findByCarId(carId);
+            for (CarImage image : existingImages) {
+                carImageRepository.delete(image);
             }
+            entityManager.flush();
 
-            // Xóa other images cũ trước khi lưu mới
-            carImageRepository.deleteByCarId(carId);
-
-            // Lưu other images vào table car_images
-            for (String imageUrl : otherImageUrls) {
-                CarImage carImage = new CarImage();
-                carImage.setCarId(carId);
-                carImage.setImageUrl(imageUrl);
-                carImageRepository.save(carImage);
+            // Save new other images
+            if (otherImageUrls != null && !otherImageUrls.isEmpty()) {
+                for (String imageUrl : otherImageUrls) {
+                    CarImage carImage = new CarImage();
+                    carImage.setCarId(carId);
+                    carImage.setImageUrl(imageUrl);
+                    carImageRepository.save(carImage);
+                }
             }
 
             response.put("success", true);
@@ -78,12 +83,12 @@ public class CarImageController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            // Lấy main image từ table cars
+            // Get main image from cars table
             String mainImage = carRepository.findById(carId)
                 .map(car -> car.getMainImage())
                 .orElse(null);
             
-            // Lấy other images từ table car_images
+            // Get other images from car_images table
             List<CarImage> otherImages = carImageRepository.findByCarId(carId);
             List<String> otherImageUrls = new ArrayList<>();
             for (CarImage image : otherImages) {
@@ -102,18 +107,23 @@ public class CarImageController {
     }
 
     @DeleteMapping("/{carId}")
+    @Transactional
     public ResponseEntity<?> deleteCarImages(@PathVariable String carId) {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            // Xóa main image từ table cars
+            // Delete main image from cars table
             carRepository.findById(carId).ifPresent(car -> {
                 car.setMainImage(null);
                 carRepository.save(car);
             });
             
-            // Xóa other images từ table car_images
-            carImageRepository.deleteByCarId(carId);
+            // Delete other images from car_images table
+            List<CarImage> existingImages = carImageRepository.findByCarId(carId);
+            for (CarImage image : existingImages) {
+                carImageRepository.delete(image);
+            }
+            entityManager.flush();
             
             response.put("success", true);
             response.put("message", "Car images deleted successfully");

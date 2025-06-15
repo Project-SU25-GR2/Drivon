@@ -197,4 +197,64 @@ public class CarController {
             return ResponseEntity.badRequest().body(error);
         }
     }
+
+    @PutMapping("/{licensePlate}")
+    public ResponseEntity<?> updateCar(@PathVariable String licensePlate, @RequestBody Car updatedCar) {
+        try {
+            Car existingCar = carService.getCarById(licensePlate);
+            if (existingCar == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Update car information
+            existingCar.setBrand(updatedCar.getBrand());
+            existingCar.setModel(updatedCar.getModel());
+            existingCar.setYear(updatedCar.getYear());
+            existingCar.setSeats(updatedCar.getSeats());
+            existingCar.setDescription(updatedCar.getDescription());
+            existingCar.setType(updatedCar.getType());
+            existingCar.setTransmission(updatedCar.getTransmission());
+            existingCar.setFuelType(updatedCar.getFuelType());
+            existingCar.setFuelConsumption(updatedCar.getFuelConsumption());
+            existingCar.setLocation(updatedCar.getLocation());
+            if (updatedCar.getMainImage() != null) {
+                existingCar.setMainImage(updatedCar.getMainImage());
+            }
+
+            Car savedCar = carService.updateCar(existingCar);
+
+            // Prepare response with images
+            Map<String, Object> carData = new HashMap<>();
+            carData.put("licensePlate", savedCar.getLicensePlate());
+            carData.put("brand", savedCar.getBrand());
+            carData.put("model", savedCar.getModel());
+            carData.put("year", savedCar.getYear());
+            carData.put("seats", savedCar.getSeats());
+            carData.put("description", savedCar.getDescription());
+            carData.put("type", savedCar.getType());
+            carData.put("transmission", savedCar.getTransmission());
+            carData.put("fuelType", savedCar.getFuelType());
+            carData.put("fuelConsumption", savedCar.getFuelConsumption());
+            carData.put("status", savedCar.getStatus());
+            carData.put("location", savedCar.getLocation());
+            carData.put("ownerId", savedCar.getOwnerId());
+            carData.put("mainImage", savedCar.getMainImage());
+
+            // Get other images
+            List<CarImage> otherImages = carImageRepository.findByCarId(savedCar.getLicensePlate());
+            List<String> otherImageUrls = new ArrayList<>();
+            for (CarImage image : otherImages) {
+                otherImageUrls.add(image.getImageUrl());
+            }
+            carData.put("otherImages", otherImageUrls);
+
+            System.out.println("Backend returning carData: " + carData);
+
+            return ResponseEntity.ok(carData);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
 }
