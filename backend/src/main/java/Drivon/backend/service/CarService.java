@@ -30,4 +30,8 @@ public class CarService {
     public List<Car> getActiveLeaseCars() {
         return carRepository.findCarsByContractStatus("ACTIVE_LEASE");
     }
+
+    public Car updateCar(Car car) {
+        return carRepository.save(car);
+    }
 }

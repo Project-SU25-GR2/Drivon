@@ -22,8 +22,14 @@ const CarManagementPage = ({ user }) => {
         console.log("API Response:", response.data);
         console.log("User ID:", user.userId);
 
-        // No need to filter here since backend already handles the filtering
-        setCars(response.data);
+        // Combine mainImage and otherImages into a single images array for display
+        const carsWithCombinedImages = response.data.map((car) => ({
+          ...car,
+          images: car.mainImage
+            ? [car.mainImage, ...(car.otherImages || [])]
+            : car.otherImages || [],
+        }));
+        setCars(carsWithCombinedImages);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching cars:", error);
@@ -76,9 +82,24 @@ const CarManagementPage = ({ user }) => {
   };
 
   const handleSaveEditedCar = (updatedCar) => {
+    console.log(
+      "Updated car received from EditCarForm:",
+      JSON.stringify(updatedCar, null, 2)
+    );
+
+    // Combine mainImage and otherImages into a single images array for the updated car
+    const updatedCarWithImages = {
+      ...updatedCar,
+      images: updatedCar.mainImage
+        ? [updatedCar.mainImage, ...(updatedCar.otherImages || [])]
+        : updatedCar.otherImages || [],
+    };
+
     setCars(
       cars.map((car) =>
-        car.licensePlate === updatedCar.licensePlate ? updatedCar : car
+        car.licensePlate === updatedCarWithImages.licensePlate
+          ? updatedCarWithImages
+          : car
       )
     );
     setIsEditing(false);
@@ -116,12 +137,15 @@ const CarManagementPage = ({ user }) => {
       <div className="cars-grid">
         {console.log("Rendering cars:", cars)}
         {cars.map((car) => {
-          console.log("Rendering car:", car);
+          console.log("Car object before rendering image:", car);
           return (
             <div key={car.licensePlate} className="car-card">
               <div className="car-image">
                 {car.images && car.images.length > 0 ? (
-                  <img src={car.images[0]} alt={`${car.brand} ${car.model}`} />
+                  <img
+                    src={`${car.images[0]}?_t=${new Date().getTime()}`}
+                    alt={`${car.brand} ${car.model}`}
+                  />
                 ) : (
                   <div className="no-image">No Image Available</div>
                 )}

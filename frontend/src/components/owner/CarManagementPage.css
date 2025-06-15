@@ -35,6 +35,7 @@
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 20px;
   padding: 20px 0;
+  justify-content: center; /* căn giữa khi có ít xe */
 }
 
 .car-card {
@@ -43,6 +44,7 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   transition: transform 0.3s;
+  text-align: center;
 }
 
 .car-card:hover {
@@ -53,12 +55,21 @@
   position: relative;
   height: 200px;
   overflow: hidden;
+  width: 100%;
+  display: block;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
 }
 
 .car-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1.1);
 }
 
 .no-image {
@@ -158,8 +169,13 @@
 }
 
 .no-cars {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   padding: 40px;
+  height: 300px;
   background: white;
   border-radius: 10px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
