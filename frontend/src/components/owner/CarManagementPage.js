@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import EditCarForm from "./EditCarForm";
+import { useNavigate } from "react-router-dom";
 import "./CarManagementPage.css";
 
 const CarManagementPage = ({ user }) => {
@@ -9,13 +10,19 @@ const CarManagementPage = ({ user }) => {
   const [error, setError] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [currentCarToEdit, setCurrentCarToEdit] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCars = async () => {
       try {
+        // Fetch cars for the current owner
         const response = await axios.get(
           `http://localhost:8080/api/cars/owner/${user.userId}`
         );
+        console.log("API Response:", response.data);
+        console.log("User ID:", user.userId);
+
+        // No need to filter here since backend already handles the filtering
         setCars(response.data);
         setLoading(false);
       } catch (error) {
@@ -94,94 +101,102 @@ const CarManagementPage = ({ user }) => {
   return (
     <div className="car-management">
       <div className="car-management-header">
-        <h2>Car Management</h2>
-        <button className="add-car-btn">Add New Car</button>
+        <h2>Approved Cars Management</h2>
+        <button
+          className="add-car-btn"
+          onClick={() => {
+            console.log("Navigating to /rent-your-car");
+            navigate("/rent-your-car");
+          }}
+        >
+          Register New Car
+        </button>
       </div>
 
       <div className="cars-grid">
-        {cars.map((car) => (
-          <div key={car.licensePlate} className="car-card">
-            <div className="car-image">
-              {car.images && car.images.length > 0 ? (
-                <img src={car.images[0]} alt={`${car.brand} ${car.model}`} />
-              ) : (
-                <div className="no-image">No Image Available</div>
-              )}
-              <div
-                className="car-status-badge"
-                style={{
-                  backgroundColor:
-                    car.status === "AVAILABLE"
-                      ? "#4CAF50"
-                      : car.status === "RENTED"
-                      ? "#FFA726"
-                      : "#F44336",
-                }}
-              >
-                {car.status}
+        {console.log("Rendering cars:", cars)}
+        {cars.map((car) => {
+          console.log("Rendering car:", car);
+          return (
+            <div key={car.licensePlate} className="car-card">
+              <div className="car-image">
+                {car.images && car.images.length > 0 ? (
+                  <img src={car.images[0]} alt={`${car.brand} ${car.model}`} />
+                ) : (
+                  <div className="no-image">No Image Available</div>
+                )}
+                <div
+                  className="car-status-badge"
+                  style={{
+                    backgroundColor: "#4CAF50",
+                  }}
+                >
+                  ACTIVE_LEASE
+                </div>
+              </div>
+              <div className="car-info">
+                <h3>
+                  {car.brand} {car.model}
+                </h3>
+                <div className="car-details">
+                  <p className="license-plate">
+                    <i className="fas fa-car"></i> License: {car.licensePlate}
+                  </p>
+                  <p className="year">
+                    <i className="fas fa-calendar"></i> Year: {car.year}
+                  </p>
+                  <p className="type">
+                    <i className="fas fa-tag"></i> Type: {car.type}
+                  </p>
+                  <p className="price">
+                    <i className="fas fa-dollar-sign"></i> Price: $
+                    {car.pricePerDay}/day
+                  </p>
+                  <p className="location">
+                    <i className="fas fa-map-marker-alt"></i> Location:{" "}
+                    {car.location}
+                  </p>
+                  <p className="seats">
+                    <i className="fas fa-chair"></i> Seats: {car.seats}
+                  </p>
+                  <p className="transmission">
+                    <i className="fas fa-cog"></i> Transmission:{" "}
+                    {car.transmission}
+                  </p>
+                </div>
+              </div>
+              <div className="car-actions">
+                <button
+                  className="edit-btn"
+                  onClick={() => handleEditClick(car)}
+                >
+                  <i className="fas fa-edit"></i> Edit
+                </button>
+                <button
+                  className="delete-btn"
+                  onClick={() => handleDeleteCar(car.licensePlate)}
+                >
+                  <i className="fas fa-trash"></i> Delete
+                </button>
               </div>
             </div>
-            <div className="car-info">
-              <h3>
-                {car.brand} {car.model}
-              </h3>
-              <div className="car-details">
-                <p className="license-plate">
-                  <i className="fas fa-car"></i> License: {car.licensePlate}
-                </p>
-                <p className="year">
-                  <i className="fas fa-calendar"></i> Year: {car.year}
-                </p>
-                <p className="type">
-                  <i className="fas fa-tag"></i> Type: {car.type}
-                </p>
-                <p className="price">
-                  <i className="fas fa-dollar-sign"></i> Price: $
-                  {car.pricePerDay}/day
-                </p>
-                <p className="location">
-                  <i className="fas fa-map-marker-alt"></i> Location:{" "}
-                  {car.location}
-                </p>
-                <p className="seats">
-                  <i className="fas fa-chair"></i> Seats: {car.seats}
-                </p>
-                <p className="transmission">
-                  <i className="fas fa-cog"></i> Transmission:{" "}
-                  {car.transmission}
-                </p>
-              </div>
-            </div>
-            <div className="car-actions">
-              <select
-                className="status-select"
-                value={car.status}
-                onChange={(e) =>
-                  handleStatusChange(car.licensePlate, e.target.value)
-                }
-              >
-                <option value="AVAILABLE">Available</option>
-                <option value="RENTED">Rented</option>
-                <option value="MAINTENANCE">Maintenance</option>
-              </select>
-              <button className="edit-btn" onClick={() => handleEditClick(car)}>
-                <i className="fas fa-edit"></i> Edit
-              </button>
-              <button
-                className="delete-btn"
-                onClick={() => handleDeleteCar(car.licensePlate)}
-              >
-                <i className="fas fa-trash"></i> Delete
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {cars.length === 0 && (
         <div className="no-cars">
-          <p>You haven't added any cars yet.</p>
-          <button className="add-car-btn">Add Your First Car</button>
+          <p>You don't have any approved cars yet.</p>
+          <p>Register your car and wait for admin approval to start renting.</p>
+          <button
+            className="add-car-btn"
+            onClick={() => {
+              console.log("Navigating to /rent-your-car from empty state");
+              navigate("/rent-your-car");
+            }}
+          >
+            Register Your First Car
+          </button>
         </div>
       )}
 

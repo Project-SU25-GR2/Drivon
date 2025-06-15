@@ -22,7 +22,9 @@ public class CarService {
     }
 
     public List<Car> getCarsByOwnerId(Long ownerId) {
-        return carRepository.findByOwnerId(ownerId);
+        List<Car> cars = carRepository.findCarsByOwnerIdAndContractStatus(ownerId, "ACTIVE_LEASE");
+        System.out.println("Cars found for owner " + ownerId + " with ACTIVE_LEASE status: " + cars);
+        return cars;
     }
 
     public List<Car> getActiveLeaseCars() {

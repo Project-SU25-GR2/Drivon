@@ -134,7 +134,7 @@ public class CarController {
 
                 // Get main image from cars table
                 carData.put("mainImage", car.getMainImage());
-
+                System.out.println("Car data: " + car);
                 // Get other images from car_images table
                 List<CarImage> otherImages = carImageRepository.findByCarId(car.getLicensePlate());
                 List<String> otherImageUrls = new ArrayList<>();

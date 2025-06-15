@@ -113,12 +113,12 @@
 }
 
 .auth-input:focus {
-  border-color: #FFD700;
+  border-color: #ffd700;
   outline: none;
 }
 
 .auth-button {
-  background: #FFD700;
+  background: #ffd700;
   color: #222;
   padding: 12px 20px;
   border: none;
@@ -130,7 +130,7 @@
 }
 
 .auth-button:hover {
-  background: #FFA500;
+  background: #ffa500;
 }
 
 .auth-toggle {
@@ -141,7 +141,7 @@
 .auth-toggle button {
   background: none;
   border: none;
-  color: #FFD700;
+  color: #ffd700;
   font-weight: bold;
   cursor: pointer;
   padding: 0;
@@ -149,14 +149,14 @@
 }
 
 .auth-toggle button:hover {
-  color: #FFA500;
+  color: #ffa500;
 }
 
 /* Logo in auth page */
 .auth-logo {
   font-size: 2.5rem;
   font-weight: bold;
-  color: #FFD700;
+  color: #ffd700;
   margin-bottom: 20px;
 }
 
@@ -203,7 +203,7 @@
 }
 
 .HomeLayout .logo span {
-  color: #FFD700;
+  color: #ffd700;
   font-weight: bold;
 }
 
@@ -231,42 +231,42 @@
 }
 
 .HomeLayout .auth-payment-buttons a {
-    color: white;
-    text-decoration: none;
-    font-size: 1rem;
-    margin-right: 15px;
+  color: white;
+  text-decoration: none;
+  font-size: 1rem;
+  margin-right: 15px;
 }
 
 .HomeLayout .payment-button {
-    background: #222;
-    color: white;
-    padding: 10px 25px;
-    border-radius: 25px;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 1rem;
-    transition: background-color 0.3s ease;
+  background: #222;
+  color: white;
+  padding: 10px 25px;
+  border-radius: 25px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
 }
 
 .HomeLayout .payment-button:hover {
-    background: #444;
+  background: #444;
 }
 
 /* Contract button styles */
 .HomeLayout .contract-button {
-    background: #FFD700;
-    color: #222;
-    padding: 10px 25px;
-    border-radius: 25px;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 1rem;
-    margin-right: 15px;
-    transition: background-color 0.3s ease;
+  background: #ffd700;
+  color: #222;
+  padding: 10px 25px;
+  border-radius: 25px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 1rem;
+  margin-right: 15px;
+  transition: background-color 0.3s ease;
 }
 
 .HomeLayout .contract-button:hover {
-    background: #FFA500;
+  background: #ffa500;
 }
 
 .hero-section {
@@ -292,7 +292,11 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(to right, rgba(0,0,0,0.7) 40%, rgba(0,0,0,0) 100%); /* Lớp phủ gradient */
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.7) 40%,
+    rgba(0, 0, 0, 0) 100%
+  ); /* Lớp phủ gradient */
   z-index: 1;
 }
 
@@ -315,7 +319,7 @@
 }
 
 .hero-title span {
-    color: #FFD700; /* Màu vàng cho phần title */
+  color: #ffd700; /* Màu vàng cho phần title */
 }
 
 .cta-buttons {
@@ -325,7 +329,7 @@
 }
 
 .cta-button {
-  background: #FFD700;
+  background: #ffd700;
   color: #222;
   padding: 12px 30px;
   border-radius: 25px;
@@ -337,7 +341,7 @@
 }
 
 .cta-button:hover {
-  background: #FFA500;
+  background: #ffa500;
 }
 
 .how-it-works-link {
@@ -348,164 +352,164 @@
 
 /* Placeholder cho ảnh ô tô */
 .car-image-placeholder {
-    position: absolute;
-    bottom: 0;
-    right: 80px;
-    width: 500px; /* Kích thước tạm thời, cần điều chỉnh */
-    height: 300px; /* Kích thước tạm thời, cần điều chỉnh */
-    background: grey; /* Màu tạm, sẽ thay bằng ảnh */
-    z-index: 3;
-    /* *** Thêm ảnh ô tô tại đây *** */
-    /* background-image: url('/images/car-image.png'); */ /* <-- Thay đổi đường dẫn ảnh của bạn */
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: bottom right;
+  position: absolute;
+  bottom: 0;
+  right: 80px;
+  width: 500px; /* Kích thước tạm thời, cần điều chỉnh */
+  height: 300px; /* Kích thước tạm thời, cần điều chỉnh */
+  background: grey; /* Màu tạm, sẽ thay bằng ảnh */
+  z-index: 3;
+  /* *** Thêm ảnh ô tô tại đây *** */
+  /* background-image: url('/images/car-image.png'); */ /* <-- Thay đổi đường dẫn ảnh của bạn */
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: bottom right;
 }
 
 /* Placeholder cho hiệu ứng sóng vàng */
 .wave-placeholder {
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    width: 100%;
-    height: 150px; /* Chiều cao tạm thời, cần điều chỉnh */
-    background: #FFD700; /* Màu tạm, sẽ thay bằng hình sóng hoặc SVG */
-    z-index: 4;
-    /* *** Thêm hình sóng tại đây *** */
-    /* background: url('/images/wave.svg') no-repeat bottom center; */ /* <-- Thay đổi đường dẫn ảnh/svg của bạn */
-    /* background-size: cover; */ /* Hoặc contain tùy hình ảnh/svg */
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 150px; /* Chiều cao tạm thời, cần điều chỉnh */
+  background: #ffd700; /* Màu tạm, sẽ thay bằng hình sóng hoặc SVG */
+  z-index: 4;
+  /* *** Thêm hình sóng tại đây *** */
+  /* background: url('/images/wave.svg') no-repeat bottom center; */ /* <-- Thay đổi đường dẫn ảnh/svg của bạn */
+  /* background-size: cover; */ /* Hoặc contain tùy hình ảnh/svg */
 }
 
 /* Content below Hero (White section) */
 .content-below-hero {
-    position: relative;
-    height: 300px; /* Chiều cao tạm thời */
-    background: white;
-    z-index: 5;
+  position: relative;
+  height: 300px; /* Chiều cao tạm thời */
+  background: white;
+  z-index: 5;
 }
 
 /* Basic styling for the profile page */
 .profile-page-container {
-    max-width: 800px; /* Limit width for better readability */
-    margin: 20px auto; /* Center the container */
-    padding: 20px; /* Add some padding inside */
-    background-color: #fff; /* White background */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-    border-radius: 8px; /* Rounded corners */
+  max-width: 800px; /* Limit width for better readability */
+  margin: 20px auto; /* Center the container */
+  padding: 20px; /* Add some padding inside */
+  background-color: #fff; /* White background */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  border-radius: 8px; /* Rounded corners */
 }
 
 .profile-details-box {
-    border: 1px solid #ccc; /* Border around details */
-    padding: 15px; /* Padding inside the box */
-    border-radius: 5px; /* Slightly rounded corners for the box */
-    margin-bottom: 20px; /* Space below details box */
+  border: 1px solid #ccc; /* Border around details */
+  padding: 15px; /* Padding inside the box */
+  border-radius: 5px; /* Slightly rounded corners for the box */
+  margin-bottom: 20px; /* Space below details box */
 }
 
 .profile-info-item {
-    margin-bottom: 10px; /* Space between info items */
-    font-size: 1rem; /* Default font size */
-    line-height: 1.5; /* Improve readability */
+  margin-bottom: 10px; /* Space between info items */
+  font-size: 1rem; /* Default font size */
+  line-height: 1.5; /* Improve readability */
 }
 
 .profile-info-item strong {
-    display: inline-block; /* Allows setting a width if needed */
-    min-width: 120px; /* Ensure labels align */
+  display: inline-block; /* Allows setting a width if needed */
+  min-width: 120px; /* Ensure labels align */
 }
 
 .edit-profile-button {
-    display: block; /* Make button take full width or center */
-    margin-top: 15px; /* Space above the button */
-    padding: 10px 15px; /* Button padding */
-    background-color: #007bff; /* Example button color */
-    color: white; /* White text */
-    border: none; /* No border */
-    border-radius: 5px; /* Rounded button corners */
-    cursor: pointer; /* Indicate it's clickable */
-    font-size: 1rem; /* Button text size */
+  display: block; /* Make button take full width or center */
+  margin-top: 15px; /* Space above the button */
+  padding: 10px 15px; /* Button padding */
+  background-color: #007bff; /* Example button color */
+  color: white; /* White text */
+  border: none; /* No border */
+  border-radius: 5px; /* Rounded button corners */
+  cursor: pointer; /* Indicate it's clickable */
+  font-size: 1rem; /* Button text size */
 }
 
 .edit-profile-button:hover {
-    background-color: #0056b3; /* Darker color on hover */
+  background-color: #0056b3; /* Darker color on hover */
 }
 
 .profile-actions-section {
-    margin-top: 20px; /* Space above the actions section */
-    padding-top: 20px; /* Padding at the top */
-    border-top: 1px solid #eee; /* Separator line */
+  margin-top: 20px; /* Space above the actions section */
+  padding-top: 20px; /* Padding at the top */
+  border-top: 1px solid #eee; /* Separator line */
 }
 
 .profile-actions-heading {
-    margin-top: 0; /* Remove default top margin */
-    margin-bottom: 15px; /* Space below heading */
-    font-size: 1.2rem; /* Heading size */
-    color: #333; /* Dark grey color */
+  margin-top: 0; /* Remove default top margin */
+  margin-bottom: 15px; /* Space below heading */
+  font-size: 1.2rem; /* Heading size */
+  color: #333; /* Dark grey color */
 }
 
 .profile-action-link {
-    display: block; /* Make links block level */
-    margin-bottom: 8px; /* Space between links */
-    color: #007bff; /* Link color */
-    text-decoration: none; /* Remove underline */
+  display: block; /* Make links block level */
+  margin-bottom: 8px; /* Space between links */
+  color: #007bff; /* Link color */
+  text-decoration: none; /* Remove underline */
 }
 
 .profile-action-link:hover {
-    text-decoration: underline; /* Underline on hover */
+  text-decoration: underline; /* Underline on hover */
 }
 
 /* User info in header */
 .user-info-header {
-    display: flex;
-    align-items: center;
-    text-decoration: none;
-    margin-right: 15px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  margin-right: 15px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  transition: background 0.2s;
 }
 .user-info-header:hover {
-    background: #33333344;
+  background: #33333344;
 }
 .user-avatar-header {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-right: 10px;
-    border: 2px solid #FFD700;
-    background: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 10px;
+  border: 2px solid #ffd700;
+  background: #fff;
 }
 .user-name-header {
-    color: #fff;
-    font-weight: bold;
-    font-size: 1rem;
-    letter-spacing: 0.5px;
+  color: #fff;
+  font-weight: bold;
+  font-size: 1rem;
+  letter-spacing: 0.5px;
 }
 
 /* Error message styles */
 .error-message {
-    color: #dc3545;
-    background-color: #f8d7da;
-    border: 1px solid #f5c6cb;
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 4px;
-    font-size: 0.9rem;
+  color: #dc3545;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  font-size: 0.9rem;
 }
 
 .field-error {
-    color: #dc3545;
-    font-size: 0.8rem;
-    margin-top: 5px;
-    margin-bottom: 10px;
+  color: #dc3545;
+  font-size: 0.8rem;
+  margin-top: 5px;
+  margin-bottom: 10px;
 }
 
 .auth-input.error {
-    border-color: #dc3545;
+  border-color: #dc3545;
 }
 
 .auth-input.error:focus {
-    border-color: #dc3545;
-    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+  border-color: #dc3545;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
 }
 
 /* Contract Form Styles */
@@ -718,17 +722,17 @@
 
 /* Optional: Styles for action buttons */
 .users-table td button:not([disabled]) {
-    background-color: #4CAF50; /* Green */
-    color: white;
-    border: none;
-    border-radius: 4px;
+  background-color: #4caf50; /* Green */
+  color: white;
+  border: none;
+  border-radius: 4px;
 }
 
 .users-table td button:not([disabled]):hover {
-    opacity: 0.8;
+  opacity: 0.8;
 }
 
 /* Style for Delete button */
 .users-table td button:not([disabled]):last-child {
-    background-color: #f44336; /* Red */
+  background-color: #f44336; /* Red */
 }

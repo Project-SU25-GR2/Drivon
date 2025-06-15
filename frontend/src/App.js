@@ -18,7 +18,7 @@ import CarLeaseContractForm from "./components/contract/CarLeaseContractForm";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import RentCar from "./components/rent/RentCar";
 import ViewCarDetail from "./components/car/viewCarDetail";
-import 'bootstrap-icons/font/bootstrap-icons.css';
+import "bootstrap-icons/font/bootstrap-icons.css";
 import ManagerOwnerPage from "./components/owner/ManagerOwnerPage";
 // import CarRental404 from "./components/others/404";
 function App() {
@@ -215,13 +215,9 @@ function App() {
         <Route
           path="/rent-your-car"
           element={
-            user ? (
-              <MainLayout user={user} handleLogout={handleLogout}>
-                <RentYourCarForm />
-              </MainLayout>
-            ) : (
-              <Navigate to="/auth" replace />
-            )
+            <MainLayout user={user} handleLogout={handleLogout}>
+              <RentYourCarForm />
+            </MainLayout>
           }
         />
 
