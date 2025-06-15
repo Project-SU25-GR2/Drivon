@@ -6,7 +6,8 @@ import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 import { Modal, Button, List, message } from 'antd';
 import 'antd/dist/reset.css';
-
+import { GiGearStickPattern } from "react-icons/gi";
+import { TbAutomaticGearboxFilled } from "react-icons/tb";
 import './viewCarDetail.css';
 
 const ViewCarDetail = () => {
@@ -30,6 +31,7 @@ const ViewCarDetail = () => {
   const [allCars, setAllCars] = useState([]);
   const [carFilter, setCarFilter] = useState('all');
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [carContracts, setCarContracts] = useState({});
   const carsPerPage = 3;
 
   useEffect(() => {
@@ -78,8 +80,24 @@ const ViewCarDetail = () => {
   }, [showCouponModal]);
 
   useEffect(() => {
-    axios.get('http://localhost:8080/api/cars')
-      .then(res => setAllCars(res.data))
+    axios.get('http://localhost:8080/api/cars/active-lease')
+      .then(res => {
+        setAllCars(res.data);
+        // Fetch contracts for all cars
+        const fetchContracts = res.data.map(car =>
+          axios.get(`http://localhost:8080/api/contracts/by-car/${car.licensePlate}`)
+            .then(res => ({ licensePlate: car.licensePlate, contract: res.data }))
+            .catch(() => ({ licensePlate: car.licensePlate, contract: null }))
+        );
+        Promise.all(fetchContracts)
+          .then(results => {
+            const contractsMap = {};
+            results.forEach(({ licensePlate, contract }) => {
+              contractsMap[licensePlate] = contract;
+            });
+            setCarContracts(contractsMap);
+          });
+      })
       .catch(() => setAllCars([]));
   }, []);
 
@@ -145,9 +163,9 @@ const ViewCarDetail = () => {
           </div>
           <div className="same-car">
             <div className="same-car-filter">
-              <button onClick={() => setCarFilter('all')} className={carFilter==='all' ? 'active' : ''}>Tất cả</button>
-              <button onClick={() => setCarFilter('brand')} className={carFilter==='brand' ? 'active' : ''}>Cùng hãng</button>
-              <button onClick={() => setCarFilter('type')} className={carFilter==='type' ? 'active' : ''}>Cùng loại</button>
+              <button onClick={() => setCarFilter('all')} className={carFilter === 'all' ? 'active' : ''}>Tất cả</button>
+              <button onClick={() => setCarFilter('brand')} className={carFilter === 'brand' ? 'active' : ''}>Cùng hãng</button>
+              <button onClick={() => setCarFilter('type')} className={carFilter === 'type' ? 'active' : ''}>Cùng loại</button>
             </div>
             <div className="same-car-slider-wrapper">
               {filteredCars.length > carsPerPage && (
@@ -162,10 +180,19 @@ const ViewCarDetail = () => {
                       <div className="same-car-info-overlay">
                         <div className="same-car-title">{item.brand} {item.model}</div>
                         <div className="same-car-specs">
-                          <span>{item.seats} chỗ</span> | <span>{item.transmission === 'manual' ? 'Số sàn' : 'Số tự động'}</span> | <span>{item.fuelType === 'gasoline' ? 'Xăng' : item.fuelType}</span>
+                          <span>{item.seats} chỗ</span> | <span>{item.transmission === 'manual' ? <GiGearStickPattern /> : <TbAutomaticGearboxFilled />}</span> | <span>
+                            {item.fuelType === 'gasoline' || item.fuelType === 'hybrid' ?
+                              <i style={{ marginRight: '3px' }} className="bi bi-fuel-pump"></i> :
+                              item.fuelType === 'diesel' ?
+                                <i style={{ marginRight: '3px' }} className="bi bi-fuel-pump-diesel"></i> :
+                                <i style={{ marginRight: '3px' }} className="bi bi-ev-station"></i>
+                            }
+                            | <span>{item.fuelConsumption} {item.fuelType === 'electric' ? 'kWh' : 'L'}</span>
+                          </span>
                         </div>
                         <div className="same-car-specs">
-                          <span >{item.fuelConsumption} lít/100km <i className="bi bi-fuel-pump" style={{ color: '#ffd700' }}></i></span>
+                          <span></span>
+                          <p style={{ margin: '0', color: '#ffd700' }}>{carContracts[item.licensePlate]?.pricePerDay?.toLocaleString('vi-VN')} VNĐ/ngày</p>
                         </div>
                       </div>
                     </div>
@@ -190,7 +217,7 @@ const ViewCarDetail = () => {
                   car.fuelType === 'electric' ? 'Điện' :
                     car.fuelType === 'hybrid' ? 'Hybrid' : car.fuelType
             }</p>
-            <p><b>Mức tiêu thụ:</b> {car.fuelConsumption} lít/100km</p>
+            <p><b>Mức tiêu thụ:</b> {car.fuelConsumption} {car.fuelType === 'electric' ? 'kWh/100km' : 'L/100km'}</p>
             <p><b>Địa điểm:</b> {car.location}</p>
             <p><b>Mô tả:</b> {car.description}</p>
           </div>
