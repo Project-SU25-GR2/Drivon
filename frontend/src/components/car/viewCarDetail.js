@@ -6,6 +6,7 @@ import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 import { Modal, Button, List, message } from 'antd';
 import 'antd/dist/reset.css';
+import RentalForm from './RentalForm';
 
 import './viewCarDetail.css';
 
@@ -30,6 +31,7 @@ const ViewCarDetail = () => {
   const [allCars, setAllCars] = useState([]);
   const [carFilter, setCarFilter] = useState('all');
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [showRentalForm, setShowRentalForm] = useState(false);
   const carsPerPage = 3;
 
   useEffect(() => {
@@ -114,6 +116,21 @@ const ViewCarDetail = () => {
   const handleNext = () => setCurrentIndex(idx => Math.min(maxIndex, idx + 1));
 
   useEffect(() => { setCurrentIndex(0); }, [carFilter, allCars, car]);
+
+  const handleRentClick = () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+      message.warning('Vui lòng đăng nhập để thuê xe');
+      return;
+    }
+    setShowRentalForm(true);
+  };
+
+  const handleRentalSuccess = (rentalData) => {
+    message.success('Đặt xe thành công!');
+    setShowRentalForm(false);
+    // You can add additional logic here, such as redirecting to a confirmation page
+  };
 
   if (loading) return <div>Đang tải...</div>;
   if (error) return <div>{error}</div>;
@@ -225,12 +242,14 @@ const ViewCarDetail = () => {
               </>
             )}
             <button className="btn-discount" onClick={() => setShowCouponModal(true)}><i className="bi bi-ticket-perforated-fill"></i>  Mã giảm giá</button>
-            <button className="btn-rent-car">Thuê xe</button>
+            <button className="btn-rent-car" onClick={handleRentClick}>Thuê xe</button>
             <div className="car-detail-rental-papers">
               <div className="car-rental-papers">
-                <h3>Giấy tờ thuê xe</h3>
-                <p>Giấy phép lái xe</p>
-                <p>Căn cước công dân || Hộ chiếu</p>
+                <h3>Ưu điểm khi thuê xe</h3>
+                <p>Nhận xe thuận tiện</p>
+                <p>Thanh toán nhanh chóng</p>
+                <p>Thủ tục đơn giản</p>
+                <p>Hỗ trợ 24/7</p>
               </div>
             </div>
             <Modal
@@ -266,6 +285,15 @@ const ViewCarDetail = () => {
         </div>
 
       </div>
+
+      <RentalForm
+        visible={showRentalForm}
+        onClose={() => setShowRentalForm(false)}
+        car={car}
+        user={JSON.parse(localStorage.getItem('user'))}
+        dateRange={dateRange}
+        onSuccess={handleRentalSuccess}
+      />
     </div>
   );
 };
