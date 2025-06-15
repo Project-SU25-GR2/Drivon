@@ -5,7 +5,7 @@ import pdfFonts from "pdfmake/build/vfs_fonts";
 import { useLocation } from "react-router-dom";
 import "../css/ContractForm.css";
 import cloudinaryConfig from "../../config/cloudinary";
-import Button from "../others/Button";
+import SimpleButton from "../others/SimpleButton";
 
 // Initialize pdfMake with fonts
 pdfMake.vfs = pdfFonts.pdfMake ? pdfFonts.pdfMake.vfs : pdfFonts.vfs;
@@ -623,14 +623,13 @@ const CarLeaseContractForm = ({ user }) => {
           </label>
         </div>
 
-        <Button
+        <SimpleButton
           type="submit"
-          className="submit-button"
           disabled={!formData.terms || isContractCreated}
           isLoading={isSubmitting}
         >
           Create Contract
-        </Button>
+        </SimpleButton>
       </form>
     </div>
   );

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
-import Button from "../others/Button";
+import SimpleButton from "../others/SimpleButton";
 import { Link } from "react-router-dom";
 
 const Login = ({ onLoginSuccess }) => {
@@ -103,9 +103,9 @@ const Login = ({ onLoginSuccess }) => {
             Quên mật khẩu?
           </Link>
         </div> */}
-        <Button type="submit" isLoading={isLoading} className="auth-button">
+        <SimpleButton type="submit" isLoading={isLoading}>
           Login
-        </Button>
+        </SimpleButton>
 
         <div style={{ marginTop: "20px", textAlign: "center" }}>
           <p>Or login with:</p>

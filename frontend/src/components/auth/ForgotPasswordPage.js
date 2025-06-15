@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import Button from "../others/Button";
+import SimpleButton from "../others/SimpleButton";
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");
@@ -120,9 +120,9 @@ const ForgotPasswordPage = () => {
 
           {error && <div className="error-message">{error}</div>}
 
-          <Button type="submit" isLoading={isLoading} className="auth-button">
+          <SimpleButton type="submit" isLoading={isLoading}>
             Gửi mã xác thực
-          </Button>
+          </SimpleButton>
         </form>
       )}
 
@@ -144,18 +144,17 @@ const ForgotPasswordPage = () => {
 
           {error && <div className="error-message">{error}</div>}
 
-          <Button type="submit" isLoading={isLoading} className="auth-button">
+          <SimpleButton type="submit" isLoading={isLoading}>
             Xác thực
-          </Button>
+          </SimpleButton>
 
-          <Button
+          <SimpleButton
             type="button"
             onClick={handleSendCode}
-            className="auth-button secondary"
-            style={{ marginTop: "10px" }}
+            style={{ marginTop: "10px", backgroundColor: "#6c757d" }}
           >
             Gửi lại mã
-          </Button>
+          </SimpleButton>
         </form>
       )}
 
@@ -197,9 +196,9 @@ const ForgotPasswordPage = () => {
 
           {error && <div className="error-message">{error}</div>}
 
-          <Button type="submit" isLoading={isLoading} className="auth-button">
+          <SimpleButton type="submit" isLoading={isLoading}>
             Đặt lại mật khẩu
-          </Button>
+          </SimpleButton>
         </form>
       )}
 

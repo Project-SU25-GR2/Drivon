@@ -8,6 +8,7 @@ const PartnerPage = () => {
   const [error, setError] = useState(null);
   const [selectedPartner, setSelectedPartner] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [selectedImages, setSelectedImages] = useState({ main: null, others: [] });
 
   useEffect(() => {
     const fetchPartners = async () => {
@@ -39,7 +40,24 @@ const PartnerPage = () => {
 
   const handleSeeMore = (partner) => {
     setSelectedPartner(partner);
+    if (partner.car) {
+      setSelectedImages({
+        main: partner.car.mainImage,
+        others: partner.car.otherImages || []
+      });
+    }
     setShowModal(true);
+  };
+
+  const handleImageClick = (clickedImage, index) => {
+    setSelectedImages(prev => {
+      const newOthers = [...prev.others];
+      newOthers[index] = prev.main;
+      return {
+        main: clickedImage,
+        others: newOthers
+      };
+    });
   };
 
   const closeModal = () => {
@@ -71,14 +89,12 @@ const PartnerPage = () => {
               <th>Car Year</th>
               <th>Price/Day</th>
               <th>Deposit</th>
-              <th>Description</th>
               <th>Status</th>
-              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {partners.map((partner) => (
-              <tr key={partner.id}>
+              <tr key={partner.id} onClick={() => handleSeeMore(partner)} style={{ cursor: 'pointer' }}>
                 <td>{partner.name}</td>
                 <td>{partner.phone}</td>
                 <td>{partner.email}</td>
@@ -88,7 +104,6 @@ const PartnerPage = () => {
                 <td>{partner.car?.year}</td>
                 <td>{partner.pricePerDay?.toLocaleString('vi-VN')} VND</td>
                 <td>{partner.deposit?.toLocaleString('vi-VN')} VND</td>
-                <td>{partner.car?.description}</td>
                 <td>
                   <select
                     value={partner.status || ""}
@@ -99,20 +114,13 @@ const PartnerPage = () => {
                       partner.status === 'EXPIRED_LEASE' ? 'status-expired' :
                       partner.status === 'PENDING_LEASE' ? 'status-pending' : ''
                     }
+                    onClick={e => e.stopPropagation()}
                   >
                     <option value="PENDING_LEASE">PENDING</option>
                     <option value="ACTIVE_LEASE">ACTIVE</option>
                     <option value="CANCELLED_LEASE">CANCELLED</option>
                     <option value="EXPIRED_LEASE">EXPIRED</option>
                   </select>
-                </td>
-                <td>
-                  <button 
-                    className="see-more-btn"
-                    onClick={() => handleSeeMore(partner)}
-                  >
-                    See More
-                  </button>
                 </td>
               </tr>
             ))}
@@ -128,25 +136,67 @@ const PartnerPage = () => {
               <button className="close-btn" onClick={closeModal}>&times;</button>
             </div>
             <div className="modal-body">
-              <div className="car-images">
-                {selectedPartner.car?.images?.map((image, index) => (
-                  <img 
-                    key={index} 
-                    src={image} 
-                    alt={`Car ${index + 1}`} 
-                    className="car-image"
-                  />
-                ))}
+              {/* Container cho ảnh */}
+              <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
+                {/* Cột trái - Ảnh chính */}
+                <div style={{ flex: '1' }}>
+                  {selectedImages.main && (
+                    <img 
+                      src={selectedImages.main} 
+                      alt="Main" 
+                      style={{ 
+                        width: '100%',
+                        height: '300px',
+                        objectFit: 'cover',
+                        borderRadius: '8px',
+                        cursor: 'pointer'
+                      }} 
+                    />
+                  )}
+                </div>
+                
+                {/* Cột phải - 3 ảnh phụ */}
+                <div style={{ flex: '1', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {selectedImages.others.slice(0, 3).map((img, idx) => (
+                    <img 
+                      key={idx} 
+                      src={img} 
+                      alt={`Other ${idx + 1}`} 
+                      onClick={() => handleImageClick(img, idx)}
+                      style={{ 
+                        width: '100%',
+                        height: '92px',
+                        objectFit: 'cover',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        transition: 'opacity 0.2s'
+                      }}
+                      onMouseOver={e => e.target.style.opacity = '0.8'}
+                      onMouseOut={e => e.target.style.opacity = '1'}
+                    />
+                  ))}
+                </div>
               </div>
+
               <div className="car-details">
                 <h3>Car Information</h3>
                 <p><strong>Brand:</strong> {selectedPartner.car?.brand}</p>
                 <p><strong>Model:</strong> {selectedPartner.car?.model}</p>
                 <p><strong>Year:</strong> {selectedPartner.car?.year}</p>
                 <p><strong>License Plate:</strong> {selectedPartner.carId}</p>
+                <p><strong>Seats:</strong> {selectedPartner.car?.seats}</p>
+                <p><strong>Transmission:</strong> {selectedPartner.car?.transmission === 'manual' ? 'Số sàn' : selectedPartner.car?.transmission === 'automatic' ? 'Số tự động' : selectedPartner.car?.transmission}</p>
+                <p><strong>Fuel Type:</strong> {
+                  selectedPartner.car?.fuelType === 'gasoline' ? 'Xăng' :
+                  selectedPartner.car?.fuelType === 'diesel' ? 'Dầu' :
+                  selectedPartner.car?.fuelType === 'electric' ? 'Điện' :
+                  selectedPartner.car?.fuelType === 'hybrid' ? 'Hybrid' : selectedPartner.car?.fuelType
+                }</p>
+                <p><strong>Fuel Consumption:</strong> {selectedPartner.car?.fuelConsumption} {selectedPartner.car?.fuelType === 'electric' ? 'kWh/100km' : 'L/100km'}</p>
+                <p><strong>Location:</strong> {selectedPartner.car?.location}</p>
+                <p><strong>Description:</strong> {selectedPartner.car?.description}</p>
                 <p><strong>Price per Day:</strong> {selectedPartner.pricePerDay?.toLocaleString('vi-VN')} VND</p>
                 <p><strong>Deposit:</strong> {selectedPartner.deposit?.toLocaleString('vi-VN')} VND</p>
-                <p><strong>Description:</strong> {selectedPartner.car?.description}</p>
               </div>
               <div className="partner-details">
                 <h3>Partner Information</h3>

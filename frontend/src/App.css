@@ -105,16 +105,20 @@
 }
 
 .auth-input {
-  padding: 12px 15px;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: border-color 0.3s ease;
+  width: 100% !important;
+  padding: 12px 15px !important;
+  border: 2px solid #ddd !important;
+  border-radius: 8px !important;
+  font-size: 1rem !important;
+  transition: border-color 0.3s ease !important;
+  box-sizing: border-box !important;
+  min-height: 48px !important;
+  height: 48px !important;
 }
 
 .auth-input:focus {
-  border-color: #ffd700;
-  outline: none;
+  border: 2px solid #ffd700 !important;
+  outline: none !important;
 }
 
 .auth-button {
@@ -504,11 +508,11 @@
 }
 
 .auth-input.error {
-  border-color: #dc3545;
+  border: 2px solid #dc3545 !important;
 }
 
 .auth-input.error:focus {
-  border-color: #dc3545;
+  border: 2px solid #dc3545 !important;
   box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
 }
 

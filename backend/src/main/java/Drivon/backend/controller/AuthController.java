@@ -115,7 +115,7 @@ public class AuthController {
             user.setFullName(signupRequest.getFullName());
             user.setAddress(signupRequest.getAddress());
             user.setEmailVerified(false);
-            user.setStatus(UserStatus.pending);
+            user.setStatus(UserStatus.inactive);
 
             user = userRepository.save(user);
 

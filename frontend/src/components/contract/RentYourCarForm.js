@@ -3,7 +3,7 @@ import axios from 'axios';
 import cloudinaryConfig  from '../../config/cloudinary';
 import '../css/RentYourCarForm.css';
 import { useNavigate } from 'react-router-dom';
-import Button from '../others/Button';
+import SimpleButton from '../others/SimpleButton';
 
 const RentYourCarForm = () => {
   const navigate = useNavigate();
@@ -420,14 +420,13 @@ const RentYourCarForm = () => {
           </div>
         </div>
 
-        <Button
+        <SimpleButton
           type="submit"
-          className="submit-button"
           disabled={uploading}
           isLoading={uploading}
         >
           {uploading ? 'Uploading...' : 'Submit'}
-        </Button>
+        </SimpleButton>
       </form>
       {message && (
         <div className="form-message">{message}</div>

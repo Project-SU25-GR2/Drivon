@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
-import Button from "../others/Button";
+import SimpleButton from "../others/SimpleButton";
 
 const ResetPasswordPage = () => {
   const [newPassword, setNewPassword] = useState("");
@@ -105,9 +105,9 @@ const ResetPasswordPage = () => {
           </div>
         )}
 
-        <Button type="submit" isLoading={isLoading} className="auth-button">
+        <SimpleButton type="submit" isLoading={isLoading}>
           Đặt lại mật khẩu
-        </Button>
+        </SimpleButton>
       </form>
     </div>
   );

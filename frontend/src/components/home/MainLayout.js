@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Login from '../auth/Login';
 import Signup from '../auth/Signup';
 import ForgotPasswordPage from '../auth/ForgotPasswordPage';
 import Footer from '../layout/footer';
-import '../css/MainLayout.css';
+import './MainLayout.css';
 
 const MainLayout = ({ user, handleLogout, children }) => {
   const [authMode, setAuthMode] = useState("login"); // 'login', 'signup', or 'forgot'
@@ -18,6 +18,26 @@ const MainLayout = ({ user, handleLogout, children }) => {
       "&background=FFD700&color=222&size=64";
 
   const showAuthForm = location.pathname === "/auth";
+
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  // Đóng menu khi click ra ngoài
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setMenuOpen(false);
+      }
+    };
+    if (menuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [menuOpen]);
 
   const handleAuthSuccess = (userData) => {
     if (userData) {
@@ -55,31 +75,53 @@ const MainLayout = ({ user, handleLogout, children }) => {
           {user && user.role === "ADMIN" && <Link to="/admin">Admin</Link>}
           {user && user.role === "OWNER" && <Link to="/owner">Manager Car</Link>}
         </nav>
-        <div className="auth-payment-buttons">
+        <div
+          className="user-menu-container"
+          style={{ position: 'relative', display: 'inline-block' }}
+          ref={menuRef}
+        >
           {user ? (
-            <>
-              <Link to="/profile" className="user-info-header">
-                <img
-                  src={avatarUrl}
-                  alt="avatar"
-                  className="user-avatar-header"
-                />
-                <span className="user-name-header">
-                  {user.fullName || user.email || "User"}
-                </span>
-              </Link>
-              <button onClick={handleLogout} className="logout-button">
-                Logout
-              </button>
-            </>
+            <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => setMenuOpen((open) => !open)}>
+              <img
+                src={avatarUrl}
+                alt="avatar"
+                className="user-avatar-header"
+                style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', marginRight: 8 }}
+              />
+              <span style={{ fontWeight: 500, color: '#fff', fontSize: 16 }}>{user.fullName || user.email || "User"}</span>
+            </div>
           ) : (
-            <Link to="/auth" className="auth-button">
-              Login/Signup
-            </Link>
+            <i
+              className="bi bi-person-circle"
+              style={{ fontSize: 32, cursor: 'pointer' }}
+              onClick={() => setMenuOpen((open) => !open)}
+            />
           )}
-          <Link to="/payment" className="payment-button">
-            Payment
-          </Link>
+          {menuOpen && (
+            <div
+              className="user-dropdown-menu"
+            >
+              {user ? (
+                <>
+                  <Link to="/profile" className="dropdown-item" style={{ display: 'flex', alignItems: 'center', padding: '10px', textDecoration: 'none', color: '#222' }}>
+                    <img
+                      src={avatarUrl}
+                      alt="avatar"
+                      className="user-avatar-header"
+                      style={{ width: 28, height: 28, borderRadius: '50%', marginRight: 8 }}
+                    />
+                    <span>{user.fullName || user.email || "User"}</span>
+                  </Link>
+                  <Link to="/payment" className="dropdown-item" style={{ padding: '10px', display: 'block', textDecoration: 'none', color: '#222' }}>Payment</Link>
+                  <button onClick={handleLogout} className="dropdown-item logout-button" style={{ padding: '10px', width: '100%', textAlign: 'left', border: 'none', cursor: 'pointer' }}>Logout</button>
+                </>
+              ) : (
+                <>
+                  <Link to="/auth" className="dropdown-item" style={{ padding: '10px', display: 'block', textDecoration: 'none', color: '#222' }}>Login/Signup</Link>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </header>
 
@@ -148,6 +190,13 @@ const MainLayout = ({ user, handleLogout, children }) => {
 
       <div className="page-content">{children}</div>
       <Footer />
+      <style>{`
+        .user-dropdown-menu .dropdown-item:hover, .user-dropdown-menu .dropdown-item:focus {
+          background: #f5f5f5;
+          color: #1a73e8;
+          outline: none;
+        }
+      `}</style>
     </div>
   );
 };

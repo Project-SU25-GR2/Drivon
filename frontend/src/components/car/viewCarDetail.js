@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { DateRange } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
@@ -12,6 +12,7 @@ import './viewCarDetail.css';
 
 const ViewCarDetail = () => {
   const { licensePlate } = useParams();
+  const navigate = useNavigate();
   const [car, setCar] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -33,11 +34,16 @@ const ViewCarDetail = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [carContracts, setCarContracts] = useState({});
   const carsPerPage = 3;
+  const [selectedImages, setSelectedImages] = useState({ main: null, others: [] });
 
   useEffect(() => {
     axios.get(`http://localhost:8080/api/cars/${licensePlate}`)
       .then(res => {
         setCar(res.data);
+        setSelectedImages({
+          main: res.data.mainImage,
+          others: res.data.otherImages || []
+        });
         setLoading(false);
       })
       .catch(() => {
@@ -112,8 +118,7 @@ const ViewCarDetail = () => {
   };
 
   const handleSelectCar = (selectedCar) => {
-    setCar(selectedCar);
-    setContract(null);
+    navigate(`/cars/${selectedCar.licensePlate}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -133,6 +138,17 @@ const ViewCarDetail = () => {
 
   useEffect(() => { setCurrentIndex(0); }, [carFilter, allCars, car]);
 
+  const handleImageClick = (clickedImage, index) => {
+    setSelectedImages(prev => {
+      const newOthers = [...prev.others];
+      newOthers[index] = prev.main;
+      return {
+        main: clickedImage,
+        others: newOthers
+      };
+    });
+  };
+
   if (loading) return <div>Đang tải...</div>;
   if (error) return <div>{error}</div>;
   if (!car) return <div>Không có dữ liệu xe</div>;
@@ -142,12 +158,29 @@ const ViewCarDetail = () => {
       <div className="row car-detail-main container-fluid">
         <div className="col-12 col-md-8 car-detail-images ">
           <div className="car-detail-main-image">
-            <img src={car.mainImage} alt="car" />
+            {selectedImages.main && (
+              <img 
+                src={selectedImages.main} 
+                alt="car" 
+                style={{ cursor: 'pointer' }}
+              />
+            )}
           </div>
-          {car.otherImages && car.otherImages.length > 0 && (
+          {selectedImages.others && selectedImages.others.length > 0 && (
             <div className="car-detail-thumbnails">
-              {car.otherImages.slice(0, 3).map((img, idx) => (
-                <img key={idx} src={img} alt={`car-thumb-${idx + 1}`} />
+              {selectedImages.others.slice(0, 3).map((img, idx) => (
+                <img 
+                  key={idx} 
+                  src={img} 
+                  alt={`car-thumb-${idx + 1}`}
+                  onClick={() => handleImageClick(img, idx)}
+                  style={{ 
+                    cursor: 'pointer',
+                    transition: 'opacity 0.2s'
+                  }}
+                  onMouseOver={e => e.target.style.opacity = '0.8'}
+                  onMouseOut={e => e.target.style.opacity = '1'}
+                />
               ))}
             </div>
           )}
