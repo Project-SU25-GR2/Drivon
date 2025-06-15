@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../css/RentCar.css';
 import { Link } from 'react-router-dom';
+import { FaCog, FaGasPump, FaRoad, FaWrench, FaMapMarkerAlt, FaChair, FaStar, FaCarSide, FaBrain } from 'react-icons/fa';
 
 const RentCar = () => {
   const [filters, setFilters] = useState({
@@ -13,6 +14,7 @@ const RentCar = () => {
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [carContracts, setCarContracts] = useState({});
 
   useEffect(() => {
     fetchCars();
@@ -22,6 +24,18 @@ const RentCar = () => {
     try {
       const response = await axios.get('http://localhost:8080/api/cars/active-lease');
       setCars(response.data);
+      
+      // Fetch contracts for each car
+      const contracts = {};
+      for (const car of response.data) {
+        try {
+          const contractResponse = await axios.get(`http://localhost:8080/api/contracts/by-car/${car.licensePlate}`);
+          contracts[car.licensePlate] = contractResponse.data;
+        } catch (err) {
+          console.error(`Error fetching contract for car ${car.licensePlate}:`, err);
+        }
+      }
+      setCarContracts(contracts);
       setLoading(false);
     } catch (err) {
       setError('Failed to fetch cars');
@@ -76,8 +90,11 @@ const RentCar = () => {
           <option>7</option>
         </select>
         <select name="fuel" className="filter-select">
-          <option>Nhiên liệu</option>
-          {/* Thêm các option nhiên liệu nếu cần */}
+          <option value="">Nhiên liệu</option>
+          <option value="gasoline">Xăng</option>
+          <option value="diesel">Dầu</option>
+          <option value="electric">Điện</option>
+          <option value="hybrid">Hybrid</option>
         </select>
       </div>
       
@@ -107,12 +124,30 @@ const RentCar = () => {
                     <div className="no-image">No Image Available</div>
                   )}
                 </div>
+
                 <div className="car-info">
-                  <h3>{car.brand} {car.model}</h3>
-                  <p className="car-year">{car.year}</p>
-                  <p className="car-location">{car.location}</p>
-                  <p className="car-description">{car.description}</p>
-                  <div className="car-type">{car.type}</div>
+                  <h3 className="car-name">{car.brand} {car.model} {car.year}</h3>
+                  <div className="car-specs-grid">
+                      <p className="spec-item"><FaCog /> {car.transmission === 'automatic' ? 'Số tự động' : 'Số sàn'}</p>
+                      <p className="spec-item"><FaGasPump /> {car.fuelType === 'gasoline' ? 'Xăng' : car.fuelType === 'diesel' ? 'Dầu diesel' : car.fuelType}</p>
+                      <p className="spec-item"><FaRoad /> {car.fuelConsumption}l/100km</p>
+                      <p className="spec-item"><FaWrench /> Sản xuất {car.year}</p>
+                      <p className="spec-item"><FaMapMarkerAlt /> {car.location}</p>
+                      <p className="spec-item"><FaChair /> {car.seats} chỗ</p>
+                  </div>
+                  
+                  <div className="rating-trips">
+                      <span className="rating-stars"><FaStar /> 5.0</span>
+                      <span className="total-trips"><FaCarSide /> 100+ chuyến</span>
+                  </div>
+                      
+                  <div className="car-price">
+                      <span className="current-price">
+                        {carContracts[car.licensePlate]?.pricePerDay 
+                          ? carContracts[car.licensePlate].pricePerDay.toLocaleString('vi-VN') + ' VNĐ/ngày'
+                          : 'Liên hệ'}
+                      </span>
+                  </div>
                 </div>
               </Link>
             ))}

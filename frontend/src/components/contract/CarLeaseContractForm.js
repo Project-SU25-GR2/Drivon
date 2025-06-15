@@ -307,7 +307,7 @@ const CarLeaseContractForm = ({ user }) => {
       startDate: formData.startDate,
       endDate: formData.endDate,
       carId: formData.carId.toString(),
-      customerId: formData.customerId, // Use a default customer ID
+      customerId: formData.ownerId,
       deposit: parseFloat(formData.deposit) || 0,
       name: formData.name,
       phone: formData.phone,
