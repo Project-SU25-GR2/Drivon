@@ -105,15 +105,21 @@ CREATE TABLE bookings (
 
 -- 7. Bảng payments
 CREATE TABLE payments (
-    payment_id INT PRIMARY KEY AUTO_INCREMENT,
-    booking_id INT,
-    user_id INT,
-    amount DECIMAL(10,2),
-    payment_method ENUM('credit_card', 'bank', 'e_wallet'),
-    status ENUM('paid', 'refunded', 'pending') DEFAULT 'pending',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (booking_id) REFERENCES bookings(booking_id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL ON UPDATE CASCADE
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    payment_id VARCHAR(255) NOT NULL,
+    order_code VARCHAR(255) NOT NULL,
+    amount DOUBLE NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    payment_method VARCHAR(50),
+    payment_date DATETIME,
+    user_id BIGINT NOT NULL,
+    car_id VARCHAR(255) NOT NULL,
+    additional_requirements TEXT,
+    rental_start_date DATETIME,
+    rental_end_date DATETIME,
+    created_at DATETIME,
+    UNIQUE KEY uk_payment_id (payment_id),
+    UNIQUE KEY uk_order_code (order_code)
 );
 
 -- 8. Bảng reviews

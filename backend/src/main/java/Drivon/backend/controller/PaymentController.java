@@ -1,6 +1,8 @@
 package Drivon.backend.controller;
 
 import Drivon.backend.model.PaymentRequest;
+import Drivon.backend.dto.CashPaymentRequest;
+import Drivon.backend.model.Payment;
 import Drivon.backend.service.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -8,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/payments")
@@ -75,6 +78,71 @@ public class PaymentController {
         } catch (Exception e) {
             logger.error("Error processing webhook", e);
             return ResponseEntity.internalServerError().body("Error processing webhook: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/cash")
+    public ResponseEntity<?> createCashPayment(@RequestBody CashPaymentRequest request) {
+        try {
+            logger.info("Received cash payment request: {}", request);
+            logger.info(
+                    "Request details - orderCode: {}, amount: {}, userId: {}, carId: {}, startDate: {}, endDate: {}",
+                    request.getOrderCode(),
+                    request.getAmount(),
+                    request.getUserId(),
+                    request.getCarId(),
+                    request.getRentalStartDate(),
+                    request.getRentalEndDate());
+
+            // Validate request data
+            if (request.getOrderCode() == null) {
+                logger.error("Order code is null");
+                return ResponseEntity.badRequest().body(Map.of("error", "Order code is required"));
+            }
+            if (request.getAmount() == null || request.getAmount() <= 0) {
+                logger.error("Invalid amount: {}", request.getAmount());
+                return ResponseEntity.badRequest().body(Map.of("error", "Amount must be greater than 0"));
+            }
+            if (request.getUserId() == null) {
+                logger.error("User ID is null");
+                return ResponseEntity.badRequest().body(Map.of("error", "User ID is required"));
+            }
+            if (request.getCarId() == null) {
+                logger.error("Car ID is null");
+                return ResponseEntity.badRequest().body(Map.of("error", "Car ID is required"));
+            }
+
+            logger.info("Request validation passed, calling payment service...");
+            Map<String, Object> response = paymentService.createCashPayment(request);
+
+            if (response.containsKey("error")) {
+                logger.error("Error creating cash payment: {}", response.get("error"));
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            logger.info("Cash payment created successfully: {}", response);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Unexpected error creating cash payment: {}", e.getMessage(), e);
+            Map<String, String> error = Map.of("error", e.getMessage());
+            return ResponseEntity.internalServerError().body(error);
+        }
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<?> getUserRentals(@PathVariable String userId) {
+        try {
+            logger.info("Fetching rentals for user: {}", userId);
+            Long userIdLong = Long.parseLong(userId);
+            List<Payment> rentals = paymentService.getUserRentals(userIdLong);
+            logger.info("Found {} rentals for user {}", rentals.size(), userId);
+            return ResponseEntity.ok(rentals);
+        } catch (NumberFormatException e) {
+            logger.error("Invalid user ID format: {}", userId);
+            return ResponseEntity.badRequest().body(Map.of("error", "Invalid user ID format"));
+        } catch (Exception e) {
+            logger.error("Error fetching user rentals: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
     }
 }

@@ -2,6 +2,9 @@ package Drivon.backend.service;
 
 import Drivon.backend.config.PayOSConfig;
 import Drivon.backend.model.PaymentRequest;
+import Drivon.backend.model.Payment;
+import Drivon.backend.dto.CashPaymentRequest;
+import Drivon.backend.repository.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import vn.payos.PayOS;
@@ -9,8 +12,13 @@ import vn.payos.type.CheckoutResponseData;
 import vn.payos.type.PaymentData;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.time.LocalDateTime;
+import Drivon.backend.model.PaymentMethod;
+import Drivon.backend.model.PaymentStatus;
+import java.util.List;
 
 @Service
 public class PaymentService {
@@ -21,6 +29,9 @@ public class PaymentService {
 
     @Autowired
     private WebSocketService webSocketService;
+
+    @Autowired
+    private PaymentRepository paymentRepository;
 
     private PayOS payOS;
 
@@ -37,6 +48,60 @@ public class PaymentService {
         } catch (Exception e) {
             logger.error("Error initializing PayOS", e);
             throw e;
+        }
+    }
+
+    public Map<String, Object> createCashPayment(CashPaymentRequest request) {
+        try {
+            // Validate request
+            if (request.getOrderCode() == null || request.getAmount() == null ||
+                    request.getUserId() == null || request.getCarId() == null) {
+                throw new IllegalArgumentException("Missing required fields");
+            }
+
+            // Create payment record
+            Payment payment = new Payment();
+            payment.setPaymentId("CASH_" + System.currentTimeMillis());
+            payment.setOrderCode(request.getOrderCode());
+            payment.setAmount(request.getAmount());
+            payment.setStatus("PENDING");
+            payment.setPaymentMethod("cash");
+            payment.setPaymentDate(LocalDateTime.now());
+            payment.setUserId(request.getUserId());
+            payment.setCarId(request.getCarId());
+            payment.setAdditionalRequirements(request.getAdditionalRequirements());
+
+            // Convert ISO string dates to LocalDateTime
+            if (request.getRentalStartDate() != null) {
+                payment.setRentalStartDate(request.getRentalStartDate());
+            }
+            if (request.getRentalEndDate() != null) {
+                payment.setRentalEndDate(request.getRentalEndDate());
+            }
+
+            // Save to database
+            payment = paymentRepository.save(payment);
+            logger.info("Created cash payment: {}", payment);
+
+            // Return response
+            Map<String, Object> response = new HashMap<>();
+            response.put("paymentId", payment.getPaymentId());
+            response.put("orderCode", payment.getOrderCode());
+            response.put("amount", payment.getAmount());
+            response.put("status", payment.getStatus());
+            response.put("paymentMethod", payment.getPaymentMethod());
+            response.put("paymentDate", payment.getPaymentDate());
+            response.put("userId", payment.getUserId());
+            response.put("carId", payment.getCarId());
+            response.put("additionalRequirements", payment.getAdditionalRequirements());
+            response.put("rentalStartDate", payment.getRentalStartDate());
+            response.put("rentalEndDate", payment.getRentalEndDate());
+            response.put("createdAt", payment.getCreatedAt());
+
+            return response;
+        } catch (Exception e) {
+            logger.error("Error creating cash payment", e);
+            throw new RuntimeException("Failed to create cash payment: " + e.getMessage());
         }
     }
 
@@ -121,6 +186,21 @@ public class PaymentService {
         } catch (Exception e) {
             logger.error("Error processing webhook", e);
             throw new RuntimeException("Error processing webhook: " + e.getMessage());
+        }
+    }
+
+    public List<Payment> getUserRentals(Long userId) {
+        try {
+            logger.info("Getting rentals for user: {}", userId);
+            if (userId == null) {
+                throw new IllegalArgumentException("User ID cannot be null");
+            }
+            List<Payment> rentals = paymentRepository.findByUserIdOrderByCreatedAtDesc(userId);
+            logger.info("Found {} rentals for user {}", rentals.size(), userId);
+            return rentals;
+        } catch (Exception e) {
+            logger.error("Error getting user rentals: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to get user rentals: " + e.getMessage());
         }
     }
 }
