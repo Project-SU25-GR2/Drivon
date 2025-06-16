@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
-import cloudinaryConfig from "../../config/cloudinary"; // Import Cloudinary config
-import "./EditCarForm.css"; // We will create this CSS file next
+import cloudinaryConfig from "../../config/cloudinary";
+import "./EditCarForm.css"; // Reusing the same CSS as EditCarForm
 
-const EditCarForm = ({ car, onSave, onClose }) => {
+const AddCarForm = ({ onSave, onClose }) => {
   const [formData, setFormData] = useState({
     licensePlate: "",
     brand: "",
@@ -16,36 +16,15 @@ const EditCarForm = ({ car, onSave, onClose }) => {
     fuelType: "",
     fuelConsumption: "",
     location: "",
-    status: "",
+    pricePerDay: "",
     mainImage: "",
     otherImages: [],
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [selectedMainImageFile, setSelectedMainImageFile] = useState(null); // State for selected main image file object
-  const [selectedOtherImageFiles, setSelectedOtherImageFiles] = useState([]); // State for selected other image files array
-  const [uploadingImage, setUploadingImage] = useState(false); // State to indicate image is being uploaded
-
-  useEffect(() => {
-    if (car) {
-      setFormData({
-        licensePlate: car.licensePlate || "",
-        brand: car.brand || "",
-        model: car.model || "",
-        year: car.year || "",
-        type: car.type || "",
-        description: car.description || "",
-        seats: car.seats || "",
-        transmission: car.transmission?.toLowerCase() || "",
-        fuelType: car.fuelType?.toLowerCase() || "",
-        fuelConsumption: car.fuelConsumption || "",
-        location: car.location || "",
-        status: car.status || "",
-        mainImage: car.mainImage || "",
-        otherImages: car.otherImages || [],
-      });
-    }
-  }, [car]);
+  const [selectedMainImageFile, setSelectedMainImageFile] = useState(null);
+  const [selectedOtherImageFiles, setSelectedOtherImageFiles] = useState([]);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -64,17 +43,7 @@ const EditCarForm = ({ car, onSave, onClose }) => {
     }
   };
 
-  const handleRemoveImage = (indexToRemove) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      otherImages: prevData.otherImages.filter(
-        (_, index) => index !== indexToRemove
-      ),
-    }));
-  };
-
   const handleImageUpload = async () => {
-    // This is for the main image (single file upload)
     if (!selectedMainImageFile) {
       alert("Please select a main image file to upload.");
       return;
@@ -108,7 +77,6 @@ const EditCarForm = ({ car, onSave, onClose }) => {
   };
 
   const handleOtherImageUpload = async () => {
-    // This is for other images (multiple file upload)
     if (selectedOtherImageFiles.length === 0) {
       alert(
         "Please select at least one image file to upload for other images."
@@ -143,7 +111,7 @@ const EditCarForm = ({ car, onSave, onClose }) => {
         ...prevData,
         otherImages: [...prevData.otherImages, ...uploadedUrls],
       }));
-      setSelectedOtherImageFiles([]); // Clear selected files
+      setSelectedOtherImageFiles([]);
       alert("Other images uploaded and added successfully!");
     } catch (err) {
       console.error("Error uploading other images to Cloudinary:", err);
@@ -153,14 +121,23 @@ const EditCarForm = ({ car, onSave, onClose }) => {
     }
   };
 
+  const handleRemoveImage = (indexToRemove) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      otherImages: prevData.otherImages.filter(
+        (_, index) => index !== indexToRemove
+      ),
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      // Validate required fields
       const requiredFields = [
+        "licensePlate",
         "brand",
         "model",
         "year",
@@ -170,6 +147,7 @@ const EditCarForm = ({ car, onSave, onClose }) => {
         "fuelType",
         "fuelConsumption",
         "location",
+        "pricePerDay",
       ];
       const missingFields = requiredFields.filter((field) => !formData[field]);
 
@@ -179,25 +157,18 @@ const EditCarForm = ({ car, onSave, onClose }) => {
         return;
       }
 
-      // Convert enum values to match backend expectations
       const transmissionMap = {
-        MANUAL: "manual",
-        AUTOMATIC: "automatic",
+        manual: "MANUAL",
+        automatic: "AUTOMATIC",
       };
 
       const fuelTypeMap = {
-        GASOLINE: "gasoline",
-        DIESEL: "diesel",
-        ELECTRIC: "electric",
-        HYBRID: "hybrid",
+        gasoline: "GASOLINE",
+        diesel: "DIESEL",
+        electric: "ELECTRIC",
+        hybrid: "HYBRID",
       };
 
-      console.log(
-        "formData.mainImage before sending to backend:",
-        formData.mainImage
-      ); // New debug log
-
-      // First update the car data
       const carData = {
         licensePlate: formData.licensePlate,
         brand: formData.brand,
@@ -206,53 +177,28 @@ const EditCarForm = ({ car, onSave, onClose }) => {
         type: formData.type,
         description: formData.description || "",
         seats: parseInt(formData.seats),
-        transmission:
-          transmissionMap[formData.transmission] ||
-          formData.transmission.toLowerCase(),
-        fuelType:
-          fuelTypeMap[formData.fuelType] || formData.fuelType.toLowerCase(),
+        transmission: transmissionMap[formData.transmission.toLowerCase()],
+        fuelType: fuelTypeMap[formData.fuelType.toLowerCase()],
         fuelConsumption: parseFloat(formData.fuelConsumption),
         location: formData.location,
-        status: formData.status || "available",
+        pricePerDay: parseFloat(formData.pricePerDay),
+        status: "PENDING",
         mainImage: formData.mainImage || "",
+        otherImages: formData.otherImages || [],
       };
 
-      console.log("Sending car data:", carData); // Debug log
-
-      const response = await axios.put(
-        `http://localhost:8080/api/cars/${formData.licensePlate}`,
+      const response = await axios.post(
+        "http://localhost:8080/api/cars",
         carData
       );
-
-      console.log("Update response:", response.data); // Debug log
-
-      // Then update the images if they've changed
-      if (
-        formData.mainImage ||
-        (formData.otherImages && formData.otherImages.length > 0)
-      ) {
-        const imageData = {
-          carId: formData.licensePlate,
-          mainImage: formData.mainImage || "",
-          otherImages: formData.otherImages || [],
-        };
-        console.log("Sending image data:", imageData); // Debug log
-
-        await axios.post("http://localhost:8080/api/cars/images", imageData);
-      }
+      console.log("New car created:", response.data);
 
       onSave(response.data);
-      alert("Car updated successfully!");
+      alert("Car registered successfully! Waiting for admin approval.");
     } catch (err) {
-      console.error("Error updating car:", err);
-      console.error("Error details:", {
-        message: err.message,
-        response: err.response?.data,
-        status: err.response?.status,
-        requestData: err.config?.data,
-      });
+      console.error("Error registering car:", err);
       setError(
-        `Failed to update car: ${err.response?.data?.error || err.message}`
+        `Failed to register car: ${err.response?.data?.error || err.message}`
       );
     } finally {
       setLoading(false);
@@ -263,13 +209,24 @@ const EditCarForm = ({ car, onSave, onClose }) => {
     <div className="edit-car-modal-overlay" onClick={onClose}>
       <div className="edit-car-modal" onClick={(e) => e.stopPropagation()}>
         <div className="edit-car-modal-header">
-          <h2>Edit Car Information</h2>
+          <h2>Register New Car</h2>
         </div>
 
-        {loading && <div className="loading">Updating car...</div>}
+        {loading && <div className="loading">Registering car...</div>}
         {error && <div className="error-message">{error}</div>}
 
         <form onSubmit={handleSubmit} className="edit-car-form">
+          <div className="form-group">
+            <label htmlFor="licensePlate">License Plate:</label>
+            <input
+              type="text"
+              id="licensePlate"
+              name="licensePlate"
+              value={formData.licensePlate}
+              onChange={handleChange}
+              required
+            />
+          </div>
           <div className="form-group">
             <label htmlFor="brand">Brand:</label>
             <input
@@ -311,6 +268,18 @@ const EditCarForm = ({ car, onSave, onClose }) => {
               name="type"
               value={formData.type}
               onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="pricePerDay">Price per Day (VND):</label>
+            <input
+              type="number"
+              id="pricePerDay"
+              name="pricePerDay"
+              value={formData.pricePerDay}
+              onChange={handleChange}
+              required
             />
           </div>
           <div className="form-group full-width">
@@ -321,6 +290,7 @@ const EditCarForm = ({ car, onSave, onClose }) => {
               value={formData.description}
               onChange={handleChange}
               rows="4"
+              required
             ></textarea>
           </div>
           <div className="form-group">
@@ -331,6 +301,7 @@ const EditCarForm = ({ car, onSave, onClose }) => {
               name="seats"
               value={formData.seats}
               onChange={handleChange}
+              required
             />
           </div>
           <div className="form-group">
@@ -340,6 +311,7 @@ const EditCarForm = ({ car, onSave, onClose }) => {
               name="transmission"
               value={formData.transmission}
               onChange={handleChange}
+              required
             >
               <option value="">Select...</option>
               <option value="manual">Manual</option>
@@ -353,6 +325,7 @@ const EditCarForm = ({ car, onSave, onClose }) => {
               name="fuelType"
               value={formData.fuelType}
               onChange={handleChange}
+              required
             >
               <option value="">Select...</option>
               <option value="gasoline">Gasoline</option>
@@ -362,13 +335,15 @@ const EditCarForm = ({ car, onSave, onClose }) => {
             </select>
           </div>
           <div className="form-group">
-            <label htmlFor="fuelConsumption">Fuel Consumption:</label>
+            <label htmlFor="fuelConsumption">Fuel Consumption (L/100km):</label>
             <input
               type="number"
+              step="0.1"
               id="fuelConsumption"
               name="fuelConsumption"
               value={formData.fuelConsumption}
               onChange={handleChange}
+              required
             />
           </div>
           <div className="form-group">
@@ -379,20 +354,8 @@ const EditCarForm = ({ car, onSave, onClose }) => {
               name="location"
               value={formData.location}
               onChange={handleChange}
+              required
             />
-          </div>
-          <div className="form-group">
-            <label htmlFor="status">Status:</label>
-            <select
-              id="status"
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-            >
-              <option value="AVAILABLE">Available</option>
-              <option value="RENTED">Rented</option>
-              <option value="MAINTENANCE">Maintenance</option>
-            </select>
           </div>
 
           <div className="form-group image-upload-section full-width">
@@ -469,7 +432,7 @@ const EditCarForm = ({ car, onSave, onClose }) => {
               className="save-btn"
               disabled={loading || uploadingImage}
             >
-              {loading ? "Saving..." : "Save Changes"}
+              {loading ? "Registering..." : "Register Car"}
             </button>
             <button
               type="button"
@@ -486,4 +449,4 @@ const EditCarForm = ({ car, onSave, onClose }) => {
   );
 };
 
-export default EditCarForm;
+export default AddCarForm;

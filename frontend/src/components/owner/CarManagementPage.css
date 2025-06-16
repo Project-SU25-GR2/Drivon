@@ -35,7 +35,7 @@
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 20px;
   padding: 20px 0;
-  justify-content: center; /* căn giữa khi có ít xe */
+  justify-content: center;
 }
 
 .car-card {
@@ -56,7 +56,9 @@
   height: 200px;
   overflow: hidden;
   width: 100%;
-  display: block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
 }
@@ -69,7 +71,8 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) scale(1.1);
+  transform: translate(-50%, -50%) scale(1.05);
+  padding-left: 30px;
 }
 
 .no-image {

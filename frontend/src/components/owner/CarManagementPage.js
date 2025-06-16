@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import EditCarForm from "./EditCarForm";
-import { useNavigate } from "react-router-dom";
+import AddCarForm from "./AddCarForm";
 import "./CarManagementPage.css";
 
 const CarManagementPage = ({ user }) => {
@@ -9,8 +9,8 @@ const CarManagementPage = ({ user }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
   const [currentCarToEdit, setCurrentCarToEdit] = useState(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCars = async () => {
@@ -111,6 +111,24 @@ const CarManagementPage = ({ user }) => {
     setCurrentCarToEdit(null);
   };
 
+  const handleAddNewCar = (newCar) => {
+    // Add the new car to the list with PENDING status
+    setCars([
+      ...cars,
+      {
+        ...newCar,
+        images: newCar.mainImage
+          ? [newCar.mainImage, ...(newCar.otherImages || [])]
+          : newCar.otherImages || [],
+      },
+    ]);
+    setIsAdding(false); // Close the add form
+  };
+
+  const handleCloseAddModal = () => {
+    setIsAdding(false);
+  };
+
   if (loading) {
     return <div className="loading">Loading...</div>;
   }
@@ -123,13 +141,7 @@ const CarManagementPage = ({ user }) => {
     <div className="car-management">
       <div className="car-management-header">
         <h2>Approved Cars Management</h2>
-        <button
-          className="add-car-btn"
-          onClick={() => {
-            console.log("Navigating to /rent-your-car");
-            navigate("/rent-your-car");
-          }}
-        >
+        <button className="add-car-btn" onClick={() => setIsAdding(true)}>
           Register New Car
         </button>
       </div>
@@ -212,13 +224,7 @@ const CarManagementPage = ({ user }) => {
         <div className="no-cars">
           <p>You don't have any approved cars yet.</p>
           <p>Register your car and wait for admin approval to start renting.</p>
-          <button
-            className="add-car-btn"
-            onClick={() => {
-              console.log("Navigating to /rent-your-car from empty state");
-              navigate("/rent-your-car");
-            }}
-          >
+          <button className="add-car-btn" onClick={() => setIsAdding(true)}>
             Register Your First Car
           </button>
         </div>
@@ -230,6 +236,10 @@ const CarManagementPage = ({ user }) => {
           onSave={handleSaveEditedCar}
           onClose={handleCloseEditModal}
         />
+      )}
+
+      {isAdding && (
+        <AddCarForm onSave={handleAddNewCar} onClose={handleCloseAddModal} />
       )}
     </div>
   );
