@@ -106,8 +106,12 @@ const ViewCarDetail = () => {
 
   useEffect(() => {
     const fetchContracts = async () => {
+      // Lấy danh sách xe cần fetch contract (chưa có trong carContracts)
+      const carsToFetch = filteredCars.filter(item => !carContracts[item.licensePlate]);
+      if (carsToFetch.length === 0) return; // Không có xe mới, không setState
+
       const newContracts = {};
-      await Promise.all(filteredCars.map(async (item) => {
+      await Promise.all(carsToFetch.map(async (item) => {
         try {
           const res = await axios.get(`http://localhost:8080/api/contracts/by-car/${item.licensePlate}`);
           newContracts[item.licensePlate] = res.data;
@@ -115,10 +119,14 @@ const ViewCarDetail = () => {
           newContracts[item.licensePlate] = null;
         }
       }));
-      setCarContracts(newContracts);
+      // Chỉ setCarContracts nếu có contract mới
+      if (Object.keys(newContracts).length > 0) {
+        setCarContracts(prev => ({ ...prev, ...newContracts }));
+      }
     };
     if (filteredCars.length > 0) fetchContracts();
-  }, [filteredCars]);
+    // eslint-disable-next-line
+  }, [filteredCars, carContracts]);
 
   const handleApplyCoupon = (coupon) => {
     if (selectedCoupon && selectedCoupon.code === coupon.code) {
