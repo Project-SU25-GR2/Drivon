@@ -20,6 +20,7 @@ import RentCar from "./components/rent/RentCar";
 import ViewCarDetail from "./components/car/viewCarDetail";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import ManagerOwnerPage from "./components/owner/ManagerOwnerPage";
+import RentalSuccess from "./components/car/RentalSuccess";
 // import CarRental404 from "./components/others/404";
 function App() {
   const [user, setUser] = useState(null);
@@ -242,6 +243,14 @@ function App() {
           element={
             <MainLayout user={user} handleLogout={handleLogout}>
               <ManagerOwnerPage user={user} />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/rental-success"
+          element={
+            <MainLayout user={user} handleLogout={handleLogout}>
+              <RentalSuccess />
             </MainLayout>
           }
         />

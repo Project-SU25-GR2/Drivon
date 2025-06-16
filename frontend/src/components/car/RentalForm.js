@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Modal, Form, Input, Button, message, List } from 'antd';
+import { Modal, Form, Input, Button, message, List, Radio } from 'antd';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { DateRange } from 'react-date-range';
@@ -25,6 +25,7 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
   const [showCouponModal, setShowCouponModal] = useState(false);
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   const [couponList, setCouponList] = useState([]);
+  const [paymentMethod, setPaymentMethod] = useState('bank'); // 'bank' or 'cash'
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -109,6 +110,8 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
   const handleSubmit = async (values) => {
     try {
       setLoading(true);
+      console.log('Form submitted with values:', values);
+      console.log('Payment method:', paymentMethod);
 
       // Validate car data
       if (!car || !contract || !contract.pricePerDay) {
@@ -127,10 +130,30 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
         message.error('Số tiền thanh toán không hợp lệ. Vui lòng kiểm tra lại thông tin xe và ngày thuê.');
         return;
       }
-      
-      console.log("Calculated amount:", amount);
 
-      // Create payment request
+      if (paymentMethod === 'cash') {
+        console.log('Processing cash payment');
+        // Prepare data to pass to RentalSuccess page
+        const rentalData = {
+          orderCode: Date.now(),
+          carLicensePlate: car.licensePlate,
+          rentalStartDate: dateRange[0].startDate.toISOString(),
+          rentalEndDate: dateRange[0].endDate.toISOString(),
+          amount: amount,
+          promotionCode: selectedCoupon ? selectedCoupon.code : null,
+          discountPercent: selectedCoupon ? selectedCoupon.discount_percent : 0,
+          additionalRequirements: values.requirements,
+        };
+        
+        // Close the current modal and navigate to success page
+        onClose();
+        navigate('/rental-success', { state: { rentalData } });
+
+        setLoading(false);
+        return;
+      }
+
+      // Handle bank transfer payment (existing code)
       const paymentRequest = {
         orderCode: Date.now(),
         amount: amount,
@@ -184,13 +207,13 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
           console.error('Error message:', error.message);
           message.error('Có lỗi xảy ra khi tạo thanh toán. Vui lòng thử lại.');
         }
-      } finally {
-        setLoading(false);
       }
 
     } catch (error) {
-      console.error('Error creating rental:', error);
+      console.error('Error in handleSubmit:', error);
       message.error('Có lỗi xảy ra khi đặt xe. Vui lòng thử lại.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -251,6 +274,21 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
         </div>
 
         <div className="form-section">
+          <h3>Phương thức thanh toán</h3>
+          <Form.Item name="paymentMethod" initialValue="bank">
+            <Radio.Group 
+              onChange={(e) => {
+                console.log('Payment method changed to:', e.target.value);
+                setPaymentMethod(e.target.value);
+              }}
+            >
+              <Radio value="bank">Chuyển khoản</Radio>
+              <Radio value="cash">Tiền mặt</Radio>
+            </Radio.Group>
+          </Form.Item>
+        </div>
+
+        <div className="form-section">
           <h3>Ngày thuê và trả</h3>
           <div className="date-range-container">
             <div className="date-range-display" onClick={() => setShowCalendar(!showCalendar)}>
@@ -307,8 +345,14 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
           <Button onClick={onClose} className="cancel-button">
             Hủy
           </Button>
-          <Button type="primary" htmlType="submit" loading={loading} className="submit-button">
-            Thanh toán
+          <Button 
+            type="primary" 
+            htmlType="submit" 
+            loading={loading} 
+            className="submit-button"
+            onClick={() => console.log('Submit button clicked')}
+          >
+            {paymentMethod === 'cash' ? 'Đặt xe' : 'Thanh toán'}
           </Button>
         </div>
       </Form>
