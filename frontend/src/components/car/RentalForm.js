@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, DatePicker, Button, message } from 'antd';
+import { Modal, Form, Input, Button, message } from 'antd';
 import axios from 'axios';
-import dayjs from 'dayjs';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './RentalForm.css';
 
-const RentalForm = ({ visible, onClose, car, user, dateRange, onSuccess }) => {
+const RentalForm = ({ visible, onClose, car, user, dateRange, onSuccess, totalAmount }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const location = useLocation();
@@ -29,11 +28,9 @@ const RentalForm = ({ visible, onClose, car, user, dateRange, onSuccess }) => {
         email: user.email,
         phone: user.phone,
         address: user.address,
-        startDate: dayjs(dateRange[0].startDate),
-        endDate: dayjs(dateRange[0].endDate),
       });
     }
-  }, [visible, user, form, dateRange]);
+  }, [visible, user, form]);
 
   const handleSubmit = async (values) => {
     try {
@@ -45,28 +42,10 @@ const RentalForm = ({ visible, onClose, car, user, dateRange, onSuccess }) => {
         return;
       }
 
-      // Validate dates
-      if (!values.startDate || !values.endDate) {
-        message.error('Vui lòng chọn ngày bắt đầu và kết thúc.');
-        return;
-      }
-
-      // Calculate total amount
-      const daysDiff = values.endDate.diff(values.startDate, 'day');
-      const amount = Math.round(car.pricePerDay * (daysDiff + 1));
-      
-      console.log("Calculated amount:", amount);
-
-      // Validate amount
-      if (isNaN(amount) || amount <= 0) {
-        message.error('Số tiền thanh toán không hợp lệ. Vui lòng kiểm tra lại thông tin xe và ngày thuê.');
-        return;
-      }
-
       // Create payment request
       const paymentRequest = {
         orderCode: Date.now(),
-        amount: amount,
+        amount: totalAmount,
         description: `Thuê xe ${car.licensePlate}`,
         returnUrl: "http://localhost:3000/payment-success",
         cancelUrl: `http://localhost:3000/rent-car/`,
@@ -144,7 +123,7 @@ const RentalForm = ({ visible, onClose, car, user, dateRange, onSuccess }) => {
             label="Họ và tên"
             rules={[{ required: true, message: 'Vui lòng nhập họ và tên' }]}
           >
-            <Input />
+            <Input disabled />
           </Form.Item>
 
           <Form.Item
@@ -176,34 +155,6 @@ const RentalForm = ({ visible, onClose, car, user, dateRange, onSuccess }) => {
           >
             <Input />
           </Form.Item>
-        </div>
-
-        <div className="form-section">
-          <h3>Thông tin thuê xe</h3>
-          <Form.Item
-            name="startDate"
-            label="Ngày bắt đầu"
-            rules={[{ required: true, message: 'Vui lòng chọn ngày bắt đầu' }]}
-          >
-            <DatePicker 
-              style={{ width: '100%' }}
-              disabledDate={current => current && current < dayjs().startOf('day')}
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="endDate"
-            label="Ngày kết thúc"
-            rules={[{ required: true, message: 'Vui lòng chọn ngày kết thúc' }]}
-          >
-            <DatePicker 
-              style={{ width: '100%' }}
-              disabledDate={current => {
-                const startDate = form.getFieldValue('startDate');
-                return current && startDate && current < startDate;
-              }}
-            />
-          </Form.Item>
 
           <Form.Item
             name="requirements"
@@ -218,7 +169,7 @@ const RentalForm = ({ visible, onClose, car, user, dateRange, onSuccess }) => {
             Hủy
           </Button>
           <Button type="primary" htmlType="submit" loading={loading} className="submit-button">
-            Thanh toán
+            Thanh toán {totalAmount?.toLocaleString()} VNĐ
           </Button>
         </div>
       </Form>

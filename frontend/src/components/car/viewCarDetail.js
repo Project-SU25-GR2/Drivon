@@ -41,6 +41,7 @@ const ViewCarDetail = () => {
   const [mainImage, setMainImage] = useState('');
   const [otherImages, setOtherImages] = useState([]);
   const [carContracts, setCarContracts] = useState({});
+  const [totalAmount, setTotalAmount] = useState(0);
 
   // Đặt filteredCars lên trên các useEffect để tránh lỗi ReferenceError
   const filteredCars = allCars.filter(item => {
@@ -127,6 +128,25 @@ const ViewCarDetail = () => {
     if (filteredCars.length > 0) fetchContracts();
     // eslint-disable-next-line
   }, [filteredCars, carContracts]);
+
+  // Calculate total amount whenever dateRange or selectedCoupon changes
+  useEffect(() => {
+    if (contract && dateRange[0].startDate && dateRange[0].endDate) {
+      const daysDiff = Math.ceil((dateRange[0].endDate - dateRange[0].startDate) / (1000 * 60 * 60 * 24)) + 1;
+      let amount = contract.pricePerDay * daysDiff;
+      
+      // Apply coupon discount if selected
+      if (selectedCoupon) {
+        const discount = (amount * selectedCoupon.discount_percent) / 100;
+        amount = amount - discount;
+      }
+      
+      // Add deposit to total amount
+      amount = amount + (contract.deposit || 0);
+      
+      setTotalAmount(Math.round(amount));
+    }
+  }, [dateRange, selectedCoupon, contract]);
 
   const handleApplyCoupon = (coupon) => {
     if (selectedCoupon && selectedCoupon.code === coupon.code) {
@@ -303,10 +323,20 @@ const ViewCarDetail = () => {
                     />
                   </div>
                 )}
-                <p style={{ margin: '0.5rem 0' }}><b>Tổng tiền:</b> {contract.total ? contract.total.toLocaleString() : '---'} VNĐ</p>
+                <p style={{ margin: '0.5rem 0' }}>
+                  <b>Tổng tiền:</b> {totalAmount.toLocaleString()} VNĐ
+                  {selectedCoupon && (
+                    <span style={{ color: '#52c41a', marginLeft: '8px' }}>
+                      (Đã giảm {selectedCoupon.discount_percent}% + tiền cọc)
+                    </span>
+                  )}
+                </p>
               </>
             )}
-            <button className="btn-discount" onClick={() => setShowCouponModal(true)}><i className="bi bi-ticket-perforated-fill"></i>  Mã giảm giá</button>
+            <button className="btn-discount" onClick={() => setShowCouponModal(true)}>
+              <i className="bi bi-ticket-perforated-fill"></i>  
+              {selectedCoupon ? `Mã giảm giá: ${selectedCoupon.code}` : 'Mã giảm giá'}
+            </button>
             <button className="btn-rent-car" onClick={handleRentClick}>Thuê xe</button>
             <div className="car-detail-rental-papers">
               <div className="car-rental-papers">
@@ -317,39 +347,40 @@ const ViewCarDetail = () => {
                 <p>Hỗ trợ 24/7</p>
               </div>
             </div>
-            <Modal
-              title="Chọn mã khuyến mãi"
-              open={showCouponModal}
-              onCancel={() => setShowCouponModal(false)}
-              footer={null}
-            >
-              <List
-                dataSource={couponList}
-                renderItem={item => (
-                  <List.Item
-                    actions={[
-                      <Button
-                        type={selectedCoupon && selectedCoupon.code === item.code ? 'primary' : 'default'}
-                        style={selectedCoupon && selectedCoupon.code === item.code ? { backgroundColor: '#52c41a', borderColor: '#52c41a', color: '#fff' } : {}}
-                        disabled={selectedCoupon && selectedCoupon.code !== item.code}
-                        onClick={() => handleApplyCoupon(item)}
-                      >
-                        {selectedCoupon && selectedCoupon.code === item.code ? 'Đã áp dụng' : 'Áp dụng'}
-                      </Button>
-                    ]}
-                  >
-                    <List.Item.Meta
-                      title={item.code}
-                      description={`Giảm ${item.discount_percent}%`}
-                    />
-                  </List.Item>
-                )}
-              />
-            </Modal>
           </div>
         </div>
 
       </div>
+
+      <Modal
+        title="Chọn mã khuyến mãi"
+        open={showCouponModal}
+        onCancel={() => setShowCouponModal(false)}
+        footer={null}
+      >
+        <List
+          dataSource={couponList}
+          renderItem={item => (
+            <List.Item
+              actions={[
+                <Button
+                  type={selectedCoupon && selectedCoupon.code === item.code ? 'primary' : 'default'}
+                  style={selectedCoupon && selectedCoupon.code === item.code ? { backgroundColor: '#52c41a', borderColor: '#52c41a', color: '#fff' } : {}}
+                  disabled={selectedCoupon && selectedCoupon.code !== item.code}
+                  onClick={() => handleApplyCoupon(item)}
+                >
+                  {selectedCoupon && selectedCoupon.code === item.code ? 'Đã áp dụng' : 'Áp dụng'}
+                </Button>
+              ]}
+            >
+              <List.Item.Meta
+                title={item.code}
+                description={`Giảm ${item.discount_percent}%`}
+              />
+            </List.Item>
+          )}
+        />
+      </Modal>
 
       <RentalForm
         visible={showRentalForm}
@@ -361,6 +392,7 @@ const ViewCarDetail = () => {
         user={JSON.parse(localStorage.getItem('user'))}
         dateRange={dateRange}
         onSuccess={handleRentalSuccess}
+        totalAmount={totalAmount}
       />
     </div>
   );
