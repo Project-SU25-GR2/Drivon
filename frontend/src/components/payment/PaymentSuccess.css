@@ -1,0 +1,33 @@
+.payment-success-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f0f2f5;
+  padding: 20px;
+}
+
+.payment-success-container .ant-result {
+  background: white;
+  padding: 48px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.payment-success-container .ant-result-title {
+  font-size: 24px;
+  margin-bottom: 16px;
+}
+
+.payment-success-container .ant-result-subtitle {
+  font-size: 16px;
+  color: #666;
+}
+
+.payment-success-container .ant-result-extra {
+  margin-top: 24px;
+}
+
+.payment-success-container .ant-btn {
+  margin: 0 8px;
+} 

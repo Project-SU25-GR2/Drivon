@@ -49,7 +49,11 @@ const RentalForm = ({ visible, onClose, car, user, dateRange, onSuccess, totalAm
         description: `Thuê xe ${car.licensePlate}`,
         returnUrl: "http://localhost:3000/payment-success",
         cancelUrl: `http://localhost:3000/rent-car/`,
-        userId: user.userId
+        userId: user.userId,
+        carId: car.id,
+        additionalRequirements: values.requirements,
+        rentalStartDate: dateRange[0].startDate.toISOString(),
+        rentalEndDate: dateRange[0].endDate.toISOString()
       };
 
       console.log("Payment request data:", paymentRequest);
