@@ -239,6 +239,9 @@ const ViewCarDetail = () => {
                             {item.fuelType === 'gasoline' || item.fuelType === 'hybrid' ? <FaGasPump className="same-car-icon"/> :
                               item.fuelType === 'diesel' ? <BsFillFuelPumpDieselFill className="same-car-icon"/> :
                               item.fuelType === 'electric' ? <BsEvStationFill className="same-car-icon"/> : null}
+                          </span>
+                          <span style={{margin: '0 6px', color: '#fff'}}>|</span>
+                          <span>
                             {item.fuelType === 'electric' ? ` ${item.fuelConsumption}kWh` : ` ${item.fuelConsumption}L`}
                           </span>
                         </div>
@@ -281,32 +284,8 @@ const ViewCarDetail = () => {
               <>
                 <p><b>Giá:</b> {contract.pricePerDay?.toLocaleString()} VNĐ/ngày</p>
                 <p><b>Deposit:</b> {contract.deposit?.toLocaleString()} VNĐ</p>
-                <p>
-                  <b>Ngày thuê & trả:</b>
-                </p>
-                <button
-                  className='calendar-range-button'
-                  onClick={() => setShowCalendar(!showCalendar)}
-                  style={{ border: 'none', background: 'none' }}
-                >
-                  <i className="bi bi-calendar-range"></i>
-                </button>
-                {dateRange[0].startDate.toLocaleDateString()} - {dateRange[0].endDate.toLocaleDateString()}
-                {showCalendar && (
-                  <div ref={calendarRef} style={{ position: 'absolute', zIndex: 100 }}>
-                    <DateRange
-                      editableDateInputs={true}
-                      onChange={item => setDateRange([item.selection])}
-                      moveRangeOnFirstSelection={false}
-                      ranges={dateRange}
-                      minDate={new Date()}
-                    />
-                  </div>
-                )}
-                <p style={{ margin: '0.5rem 0' }}><b>Tổng tiền:</b> {contract.total ? contract.total.toLocaleString() : '---'} VNĐ</p>
-              </>
+                           </>
             )}
-            <button className="btn-discount" onClick={() => setShowCouponModal(true)}><i className="bi bi-ticket-perforated-fill"></i>  Mã giảm giá</button>
             <button className="btn-rent-car" onClick={handleRentClick}>Thuê xe</button>
             <div className="car-detail-rental-papers">
               <div className="car-rental-papers">
@@ -317,51 +296,23 @@ const ViewCarDetail = () => {
                 <p>Hỗ trợ 24/7</p>
               </div>
             </div>
-            <Modal
-              title="Chọn mã khuyến mãi"
-              open={showCouponModal}
-              onCancel={() => setShowCouponModal(false)}
-              footer={null}
-            >
-              <List
-                dataSource={couponList}
-                renderItem={item => (
-                  <List.Item
-                    actions={[
-                      <Button
-                        type={selectedCoupon && selectedCoupon.code === item.code ? 'primary' : 'default'}
-                        style={selectedCoupon && selectedCoupon.code === item.code ? { backgroundColor: '#52c41a', borderColor: '#52c41a', color: '#fff' } : {}}
-                        disabled={selectedCoupon && selectedCoupon.code !== item.code}
-                        onClick={() => handleApplyCoupon(item)}
-                      >
-                        {selectedCoupon && selectedCoupon.code === item.code ? 'Đã áp dụng' : 'Áp dụng'}
-                      </Button>
-                    ]}
-                  >
-                    <List.Item.Meta
-                      title={item.code}
-                      description={`Giảm ${item.discount_percent}%`}
-                    />
-                  </List.Item>
-                )}
-              />
-            </Modal>
+            
           </div>
         </div>
 
       </div>
 
-      <RentalForm
-        visible={showRentalForm}
-        onClose={() => setShowRentalForm(false)}
-        car={{
-          ...car,
-          pricePerDay: contract?.pricePerDay
-        }}
-        user={JSON.parse(localStorage.getItem('user'))}
-        dateRange={dateRange}
-        onSuccess={handleRentalSuccess}
-      />
+      {showRentalForm && (
+        <RentalForm
+          visible={showRentalForm}
+          onClose={() => setShowRentalForm(false)}
+          car={car}
+          user={JSON.parse(localStorage.getItem('user'))}
+          dateRange={dateRange}
+          contract={contract}
+          onSuccess={handleRentalSuccess}
+        />
+      )}
     </div>
   );
 };
