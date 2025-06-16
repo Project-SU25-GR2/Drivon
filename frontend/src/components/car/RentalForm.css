@@ -1,6 +1,5 @@
 .rental-form-modal .ant-modal-content {
-  border-radius: 12px;
-  overflow: hidden;
+  border-radius: 8px;
 }
 
 .rental-form-modal .ant-modal-header {
@@ -16,7 +15,7 @@
 }
 
 .rental-form {
-  padding: 24px;
+  padding: 20px;
 }
 
 .form-section {
@@ -24,12 +23,9 @@
 }
 
 .form-section h3 {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #333;
   margin-bottom: 16px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid #f0f0f0;
+  color: #333;
+  font-size: 18px;
 }
 
 .form-section .ant-form-item {
@@ -75,9 +71,6 @@
   justify-content: flex-end;
   gap: 12px;
   margin-top: 24px;
-  padding-top: 16px;
-  border-top: 1px solid #f0f0f0;
-  align-items: center;
 }
 
 .cancel-button,
@@ -104,7 +97,7 @@
 }
 
 .submit-button {
-  min-width: 120px;
+  min-width: 100px;
   background: #1890ff;
   border: none;
   color: white;
@@ -115,24 +108,138 @@
   color: white;
 }
 
+.date-range-container {
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.date-range-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.date-range-display:hover {
+  border-color: #40a9ff;
+}
+
+.date-range-display i {
+  font-size: 14px;
+  color: #666;
+}
+
+.calendar-container {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  margin-top: 8px;
+  max-width: 100%;
+  overflow-x: auto;
+  box-sizing: border-box;
+}
+
+/* Override react-date-range styles to ensure responsiveness */
+.rdrDateRangeWrapper,
+.rdrCalendarWrapper {
+  width: 100% !important;
+  min-width: unset !important;
+  box-sizing: border-box;
+}
+
+.rdrMonths {
+  display: flex;
+  flex-wrap: nowrap;
+  width: 100%;
+  justify-content: center;
+  min-width: unset !important;
+  box-sizing: border-box;
+}
+
+.rdrMonth {
+  flex-shrink: 0;
+  width: 100%;
+  min-width: unset !important;
+  box-sizing: border-box;
+  padding: 12px;
+}
+
+/* Adjust month navigation and names for better fit on small screens */
+.rdrMonthName,
+.rdrWeekDays,
+.rdrDays {
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+.rdrWeekDay,
+.rdrDay {
+  width: calc(100% / 7) !important;
+  height: 36px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.rdrDayNumber span {
+  font-size: 13px;
+}
+
+.rdrDayToday .rdrDayNumber span:after {
+  background: #1890ff;
+}
+
+.rdrStartEdge,
+.rdrEndEdge,
+.rdrInRange {
+  background: #1890ff !important;
+}
+
+.rdrDayHovered {
+  border-color: #1890ff !important;
+}
+
+.rdrDayToday:not(.rdrDayPassive) .rdrInRange ~ .rdrDayNumber span:after,
+.rdrDayToday:not(.rdrDayPassive) .rdrStartEdge ~ .rdrDayNumber span:after,
+.rdrDayToday:not(.rdrDayPassive) .rdrEndEdge ~ .rdrDayNumber span:after {
+  background: #1890ff;
+}
+
 /* Responsive styles */
-@media (max-width: 576px) {
-  .rental-form-modal .ant-modal-content {
-    margin: 16px;
+@media (max-width: 768px) {
+  .rental-form-modal {
+    width: 95% !important;
+    max-width: 95% !important;
   }
 
-  .rental-form {
-    padding: 16px;
+  .rental-form-modal .ant-modal-body {
+    padding: 10px;
   }
 
-  .form-actions {
-    flex-direction: row;
-    justify-content: flex-end;
+  .calendar-container {
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 100%;
   }
-
-  .cancel-button,
-  .submit-button {
-    width: auto;
-    min-width: 100px;
+  
+  .rdrMonths {
+    flex-direction: column;
+  }
+  
+  .rdrMonth {
+    width: 100%;
   }
 } 

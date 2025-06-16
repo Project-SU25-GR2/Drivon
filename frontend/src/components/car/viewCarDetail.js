@@ -1,6 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { DateRange } from 'react-date-range';
+import 'react-date-range/dist/styles.css';
+import 'react-date-range/dist/theme/default.css';
 import { Modal, Button, List, message } from 'antd';
 import 'antd/dist/reset.css';
 import RentalForm from './RentalForm';
@@ -18,6 +21,7 @@ const ViewCarDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [contract, setContract] = useState(null);
+  const [showCalendar, setShowCalendar] = useState(false);
   const [dateRange, setDateRange] = useState([
     {
       startDate: new Date(),
@@ -25,6 +29,7 @@ const ViewCarDetail = () => {
       key: 'selection'
     }
   ]);
+  const calendarRef = useRef(null);
   const [showCouponModal, setShowCouponModal] = useState(false);
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   const [couponList, setCouponList] = useState([]);
@@ -66,6 +71,34 @@ const ViewCarDetail = () => {
   }, [licensePlate]);
 
   useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        calendarRef.current &&
+        !calendarRef.current.contains(event.target) &&
+        event.target.className !== 'bi bi-calendar-range'
+      ) {
+        setShowCalendar(false);
+      }
+    }
+    if (showCalendar) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showCalendar]);
+
+  useEffect(() => {
+    if (showCouponModal) {
+      axios.get('http://localhost:8080/api/promotions')
+        .then(res => setCouponList(res.data))
+        .catch(() => setCouponList([]));
+    }
+  }, [showCouponModal]);
+
+  useEffect(() => {
     axios.get('http://localhost:8080/api/cars')
       .then(res => setAllCars(res.data))
       .catch(() => setAllCars([]));
@@ -73,12 +106,8 @@ const ViewCarDetail = () => {
 
   useEffect(() => {
     const fetchContracts = async () => {
-      // Lấy danh sách xe cần fetch contract (chưa có trong carContracts)
-      const carsToFetch = filteredCars.filter(item => !carContracts[item.licensePlate]);
-      if (carsToFetch.length === 0) return; // Không có xe mới, không setState
-
       const newContracts = {};
-      await Promise.all(carsToFetch.map(async (item) => {
+      await Promise.all(filteredCars.map(async (item) => {
         try {
           const res = await axios.get(`http://localhost:8080/api/contracts/by-car/${item.licensePlate}`);
           newContracts[item.licensePlate] = res.data;
@@ -86,14 +115,10 @@ const ViewCarDetail = () => {
           newContracts[item.licensePlate] = null;
         }
       }));
-      // Chỉ setCarContracts nếu có contract mới
-      if (Object.keys(newContracts).length > 0) {
-        setCarContracts(prev => ({ ...prev, ...newContracts }));
-      }
+      setCarContracts(newContracts);
     };
     if (filteredCars.length > 0) fetchContracts();
-    // eslint-disable-next-line
-  }, [filteredCars, carContracts]);
+  }, [filteredCars]);
 
   const handleApplyCoupon = (coupon) => {
     if (selectedCoupon && selectedCoupon.code === coupon.code) {
@@ -140,7 +165,6 @@ const ViewCarDetail = () => {
   const handleRentalSuccess = (rentalData) => {
     message.success('Đặt xe thành công!');
     setShowRentalForm(false);
-    // You can add additional logic here, such as redirecting to a confirmation page
   };
 
   if (loading) return <div>Đang tải...</div>;
@@ -251,7 +275,25 @@ const ViewCarDetail = () => {
                 <p>
                   <b>Ngày thuê & trả:</b>
                 </p>
+                <button
+                  className='calendar-range-button'
+                  onClick={() => setShowCalendar(!showCalendar)}
+                  style={{ border: 'none', background: 'none' }}
+                >
+                  <i className="bi bi-calendar-range"></i>
+                </button>
                 {dateRange[0].startDate.toLocaleDateString()} - {dateRange[0].endDate.toLocaleDateString()}
+                {showCalendar && (
+                  <div ref={calendarRef} style={{ position: 'absolute', zIndex: 100 }}>
+                    <DateRange
+                      editableDateInputs={true}
+                      onChange={item => setDateRange([item.selection])}
+                      moveRangeOnFirstSelection={false}
+                      ranges={dateRange}
+                      minDate={new Date()}
+                    />
+                  </div>
+                )}
                 <p style={{ margin: '0.5rem 0' }}><b>Tổng tiền:</b> {contract.total ? contract.total.toLocaleString() : '---'} VNĐ</p>
               </>
             )}
@@ -300,17 +342,16 @@ const ViewCarDetail = () => {
 
       </div>
 
-      <RentalForm
-        visible={showRentalForm}
-        onClose={() => setShowRentalForm(false)}
-        car={{
-          ...car,
-          pricePerDay: contract?.pricePerDay
-        }}
-        user={JSON.parse(localStorage.getItem('user'))}
-        dateRange={dateRange}
-        onSuccess={handleRentalSuccess}
-      />
+      {showRentalForm && (
+        <RentalForm
+          visible={showRentalForm}
+          onClose={() => setShowRentalForm(false)}
+          car={car}
+          user={JSON.parse(localStorage.getItem('user'))}
+          dateRange={dateRange}
+          onSuccess={handleRentalSuccess}
+        />
+      )}
     </div>
   );
 };

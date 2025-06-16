@@ -1,15 +1,47 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, DatePicker, Button, message } from 'antd';
+import React, { useState, useEffect, useRef } from 'react';
+import { Modal, Form, Input, Button, message } from 'antd';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { DateRange } from 'react-date-range';
+import 'react-date-range/dist/styles.css';
+import 'react-date-range/dist/theme/default.css';
 import './RentalForm.css';
 
-const RentalForm = ({ visible, onClose, car, user, dateRange, onSuccess }) => {
+const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, onSuccess }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [dateRange, setDateRange] = useState(initialDateRange || [
+    {
+      startDate: new Date(),
+      endDate: new Date(),
+      key: 'selection'
+    }
+  ]);
+  const calendarRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        calendarRef.current &&
+        !calendarRef.current.contains(event.target) &&
+        event.target.className !== 'bi bi-calendar-range'
+      ) {
+        setShowCalendar(false);
+      }
+    }
+    if (showCalendar) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showCalendar]);
 
   useEffect(() => {
     // Check for payment cancellation
@@ -29,11 +61,9 @@ const RentalForm = ({ visible, onClose, car, user, dateRange, onSuccess }) => {
         email: user.email,
         phone: user.phone,
         address: user.address,
-        startDate: dayjs(dateRange[0].startDate),
-        endDate: dayjs(dateRange[0].endDate),
       });
     }
-  }, [visible, user, form, dateRange]);
+  }, [visible, user, form]);
 
   const handleSubmit = async (values) => {
     try {
@@ -46,13 +76,15 @@ const RentalForm = ({ visible, onClose, car, user, dateRange, onSuccess }) => {
       }
 
       // Validate dates
-      if (!values.startDate || !values.endDate) {
+      if (!dateRange[0].startDate || !dateRange[0].endDate) {
         message.error('Vui lòng chọn ngày bắt đầu và kết thúc.');
         return;
       }
 
       // Calculate total amount
-      const daysDiff = values.endDate.diff(values.startDate, 'day');
+      const startDate = new Date(dateRange[0].startDate);
+      const endDate = new Date(dateRange[0].endDate);
+      const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
       const amount = Math.round(car.pricePerDay * (daysDiff + 1));
       
       console.log("Calculated amount:", amount);
@@ -180,30 +212,26 @@ const RentalForm = ({ visible, onClose, car, user, dateRange, onSuccess }) => {
 
         <div className="form-section">
           <h3>Thông tin thuê xe</h3>
-          <Form.Item
-            name="startDate"
-            label="Ngày bắt đầu"
-            rules={[{ required: true, message: 'Vui lòng chọn ngày bắt đầu' }]}
-          >
-            <DatePicker 
-              style={{ width: '100%' }}
-              disabledDate={current => current && current < dayjs().startOf('day')}
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="endDate"
-            label="Ngày kết thúc"
-            rules={[{ required: true, message: 'Vui lòng chọn ngày kết thúc' }]}
-          >
-            <DatePicker 
-              style={{ width: '100%' }}
-              disabledDate={current => {
-                const startDate = form.getFieldValue('startDate');
-                return current && startDate && current < startDate;
-              }}
-            />
-          </Form.Item>
+          <div className="date-range-container">
+            <div className="date-range-display" onClick={() => setShowCalendar(!showCalendar)}>
+              <i className="bi bi-calendar-range"></i>
+              <span>
+                {dateRange[0].startDate.toLocaleDateString()} - {dateRange[0].endDate.toLocaleDateString()}
+              </span>
+            </div>
+            {showCalendar && (
+              <div ref={calendarRef} className="calendar-container">
+                <DateRange
+                  onChange={item => setDateRange([item.selection])}
+                  moveRangeOnFirstSelection={false}
+                  months={1}
+                  ranges={dateRange}
+                  direction="horizontal"
+                  minDate={new Date()}
+                />
+              </div>
+            )}
+          </div>
 
           <Form.Item
             name="requirements"
