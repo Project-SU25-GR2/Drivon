@@ -220,6 +220,19 @@ CREATE TABLE rental_contracts (
     FOREIGN KEY (owner_id) REFERENCES users(user_id),
     FOREIGN KEY (booking_id) REFERENCES bookings(booking_id)
 );
+-- 17. Bảng messages:
+CREATE TABLE messages (
+    message_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    sender_id BIGINT NOT NULL,
+    receiver_id BIGINT NOT NULL,
+    content TEXT NOT NULL,
+    sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    is_read BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (sender_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (receiver_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+
 
 -- VIEW: income_report
 CREATE VIEW income_report AS
