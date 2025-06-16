@@ -9,9 +9,16 @@ public class PaymentRequest {
     private String description;
     private String returnUrl;
     private String cancelUrl;
+    private String userId;
 
-    public void setOrderCode(String orderCode) {
-        this.orderCode = Long.parseLong(orderCode);
+    public void setOrderCode(Object orderCode) {
+        if (orderCode instanceof String) {
+            this.orderCode = Long.parseLong((String) orderCode);
+        } else if (orderCode instanceof Number) {
+            this.orderCode = ((Number) orderCode).longValue();
+        } else {
+            throw new IllegalArgumentException("Order code must be a string or number");
+        }
     }
 
     public Long getOrderCode() {
@@ -48,5 +55,13 @@ public class PaymentRequest {
 
     public void setCancelUrl(String cancelUrl) {
         this.cancelUrl = cancelUrl;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 }

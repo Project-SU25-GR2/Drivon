@@ -1,35 +1,72 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { Modal, Spin, message } from 'antd';
+import SockJS from 'sockjs-client';
+import { Client } from '@stomp/stompjs';
+import './QR_Bank.css';
 
-function QR_Bank({ user, onLogout }) {
+const QR_Bank = ({ visible, onClose, qrCode, orderCode, userId }) => {
+    const [loading, setLoading] = useState(false);
+    const [stompClient, setStompClient] = useState(null);
+
+    useEffect(() => {
+        if (visible && userId) {
+            // Initialize WebSocket connection
+            const socket = new SockJS('http://localhost:8080/ws');
+            const client = new Client({
+                webSocketFactory: () => socket,
+                onConnect: () => {
+                    console.log('Connected to WebSocket');
+                    client.subscribe(`/topic/payment/${userId}`, (message) => {
+                        const data = JSON.parse(message.body);
+                        if (data.status === 'SUCCESS') {
+                            message.success('Thanh toán thành công!');
+                            onClose(true); // Pass true to indicate success
+                        } else if (data.status === 'FAILED') {
+                            message.error('Thanh toán thất bại!');
+                            onClose(false);
+                        }
+                    });
+                },
+                onDisconnect: () => {
+                    console.log('Disconnected from WebSocket');
+                }
+            });
+
+            client.activate();
+            setStompClient(client);
+
+            return () => {
+                if (client) {
+                    client.deactivate();
+                }
+            };
+        }
+    }, [visible, userId]);
+
     return (
-        <div className="qr-bank">
-            <header className="qr-bank-header">
-                <h1>QR Bank</h1>
-                <div className="user-info">
-                    <span>Welcome, {user.fullName}</span>
-                    <button
-                        onClick={onLogout}
-                        style={{
-                            padding: '8px 16px',
-                            backgroundColor: '#dc3545',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            marginLeft: '10px'
-                        }}
-                    >
-                        Logout
-                    </button>
-                </div>
-            </header>
-            <main className="qr-bank-content">
-                {/* Add your QR Bank content here */}
-                <h2>QR Bank Dashboard</h2>
-                {/* Add more components and features as needed */}
-            </main>
-        </div>
+        <Modal
+            title="Thanh toán qua QR Code"
+            open={visible}
+            onCancel={() => onClose(false)}
+            footer={null}
+            width={400}
+            className="qr-bank-modal"
+        >
+            <div className="qr-container">
+                {loading ? (
+                    <Spin size="large" />
+                ) : (
+                    <>
+                        <img src={qrCode} alt="QR Code" className="qr-code" />
+                        <p className="payment-id">Mã đơn hàng: {orderCode}</p>
+                        <p className="instruction">
+                            Vui lòng quét mã QR bằng ứng dụng ngân hàng của bạn để thanh toán
+                        </p>
+                    </>
+                )}
+            </div>
+        </Modal>
     );
-}
+};
 
 export default QR_Bank; 

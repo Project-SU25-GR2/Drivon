@@ -2,11 +2,24 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, DatePicker, Button, message } from 'antd';
 import axios from 'axios';
 import dayjs from 'dayjs';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './RentalForm.css';
 
 const RentalForm = ({ visible, onClose, car, user, dateRange, onSuccess }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check for payment cancellation
+    const searchParams = new URLSearchParams(location.search);
+    if (searchParams.get('cancel') === 'true') {
+      message.info('Thanh toán đã bị hủy');
+      // Clear the URL parameters
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location, navigate]);
 
   useEffect(() => {
     if (visible && user) {
@@ -25,31 +38,87 @@ const RentalForm = ({ visible, onClose, car, user, dateRange, onSuccess }) => {
   const handleSubmit = async (values) => {
     try {
       setLoading(true);
-      const rentalData = {
-        userId: user.userId,
-        carId: car.licensePlate,
-        startDate: values.startDate.toISOString(),
-        endDate: values.endDate.toISOString(),
-        fullName: values.fullName,
-        email: values.email,
-        phone: values.phone,
-        address: values.address,
-        requirements: values.requirements,
-        totalPrice: car.pricePerDay * values.endDate.diff(values.startDate, 'day'),
+
+      // Validate car data
+      if (!car || !car.pricePerDay) {
+        message.error('Thông tin xe không hợp lệ. Vui lòng thử lại.');
+        return;
+      }
+
+      // Validate dates
+      if (!values.startDate || !values.endDate) {
+        message.error('Vui lòng chọn ngày bắt đầu và kết thúc.');
+        return;
+      }
+
+      // Calculate total amount
+      const daysDiff = values.endDate.diff(values.startDate, 'day');
+      const amount = Math.round(car.pricePerDay * (daysDiff + 1));
+      
+      console.log("Calculated amount:", amount);
+
+      // Validate amount
+      if (isNaN(amount) || amount <= 0) {
+        message.error('Số tiền thanh toán không hợp lệ. Vui lòng kiểm tra lại thông tin xe và ngày thuê.');
+        return;
+      }
+
+      // Create payment request
+      const paymentRequest = {
+        orderCode: Date.now(),
+        amount: amount,
+        description: `Thuê xe ${car.licensePlate}`,
+        returnUrl: "http://localhost:3000/payment-success",
+        cancelUrl: `http://localhost:3000/rent-car/`,
+        userId: user.userId
       };
 
-      const response = await axios.post('http://localhost:8080/api/rentals', rentalData);
-      
-      if (response.data) {
-        message.success('Đặt xe thành công!');
-        onSuccess(response.data);
-        onClose();
+      console.log("Payment request data:", paymentRequest);
+
+      try {
+        const response = await axios.post('http://localhost:8080/api/payments/create', paymentRequest, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        console.log("Payment response:", response.data);
+        
+        if (response.data.error) {
+          message.error(response.data.error);
+          return;
+        }
+
+        // Redirect to PayOS payment page
+        if (response.data.data && response.data.data.checkoutUrl) {
+          console.log("Redirecting to PayOS payment page:", response.data.data.checkoutUrl);
+          window.location.href = response.data.data.checkoutUrl;
+        } else {
+          console.error("No checkout URL in response:", response.data);
+          message.error('Không thể chuyển hướng đến trang thanh toán. Vui lòng thử lại.');
+        }
+
+      } catch (error) {
+        console.error('Error creating payment:', error);
+        if (error.response) {
+          console.error('Error response data:', error.response.data);
+          console.error('Error response status:', error.response.status);
+          console.error('Error response headers:', error.response.headers);
+          message.error(error.response.data.error || 'Có lỗi xảy ra khi tạo thanh toán. Vui lòng thử lại.');
+        } else if (error.request) {
+          console.error('Error request:', error.request);
+          message.error('Không thể kết nối đến server. Vui lòng thử lại sau.');
+        } else {
+          console.error('Error message:', error.message);
+          message.error('Có lỗi xảy ra khi tạo thanh toán. Vui lòng thử lại.');
+        }
+      } finally {
+        setLoading(false);
       }
+
     } catch (error) {
       console.error('Error creating rental:', error);
       message.error('Có lỗi xảy ra khi đặt xe. Vui lòng thử lại.');
-    } finally {
-      setLoading(false);
     }
   };
 
