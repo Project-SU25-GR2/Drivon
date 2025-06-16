@@ -1,9 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { DateRange } from 'react-date-range';
-import 'react-date-range/dist/styles.css';
-import 'react-date-range/dist/theme/default.css';
 import { Modal, Button, List, message } from 'antd';
 import 'antd/dist/reset.css';
 import RentalForm from './RentalForm';
@@ -21,7 +18,6 @@ const ViewCarDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [contract, setContract] = useState(null);
-  const [showCalendar, setShowCalendar] = useState(false);
   const [dateRange, setDateRange] = useState([
     {
       startDate: new Date(),
@@ -29,10 +25,6 @@ const ViewCarDetail = () => {
       key: 'selection'
     }
   ]);
-  const calendarRef = useRef(null);
-  const [showCouponModal, setShowCouponModal] = useState(false);
-  const [selectedCoupon, setSelectedCoupon] = useState(null);
-  const [couponList, setCouponList] = useState([]);
   const [allCars, setAllCars] = useState([]);
   const [carFilter, setCarFilter] = useState('all');
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -71,34 +63,6 @@ const ViewCarDetail = () => {
   }, [licensePlate]);
 
   useEffect(() => {
-    function handleClickOutside(event) {
-      if (
-        calendarRef.current &&
-        !calendarRef.current.contains(event.target) &&
-        event.target.className !== 'bi bi-calendar-range'
-      ) {
-        setShowCalendar(false);
-      }
-    }
-    if (showCalendar) {
-      document.addEventListener('mousedown', handleClickOutside);
-    } else {
-      document.removeEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showCalendar]);
-
-  useEffect(() => {
-    if (showCouponModal) {
-      axios.get('http://localhost:8080/api/promotions')
-        .then(res => setCouponList(res.data))
-        .catch(() => setCouponList([]));
-    }
-  }, [showCouponModal]);
-
-  useEffect(() => {
     axios.get('http://localhost:8080/api/cars')
       .then(res => setAllCars(res.data))
       .catch(() => setAllCars([]));
@@ -119,16 +83,6 @@ const ViewCarDetail = () => {
     };
     if (filteredCars.length > 0) fetchContracts();
   }, [filteredCars]);
-
-  const handleApplyCoupon = (coupon) => {
-    if (selectedCoupon && selectedCoupon.code === coupon.code) {
-      setSelectedCoupon(null);
-      message.info('Đã bỏ áp dụng mã khuyến mãi');
-    } else {
-      setSelectedCoupon(coupon);
-      message.success(`Đã áp dụng mã: ${coupon.code}`);
-    }
-  };
 
   const handleSelectCar = (selectedCar) => {
     navigate(`/cars/${selectedCar.licensePlate}`);
@@ -272,32 +226,8 @@ const ViewCarDetail = () => {
               <>
                 <p><b>Giá:</b> {contract.pricePerDay?.toLocaleString()} VNĐ/ngày</p>
                 <p><b>Deposit:</b> {contract.deposit?.toLocaleString()} VNĐ</p>
-                <p>
-                  <b>Ngày thuê & trả:</b>
-                </p>
-                <button
-                  className='calendar-range-button'
-                  onClick={() => setShowCalendar(!showCalendar)}
-                  style={{ border: 'none', background: 'none' }}
-                >
-                  <i className="bi bi-calendar-range"></i>
-                </button>
-                {dateRange[0].startDate.toLocaleDateString()} - {dateRange[0].endDate.toLocaleDateString()}
-                {showCalendar && (
-                  <div ref={calendarRef} style={{ position: 'absolute', zIndex: 100 }}>
-                    <DateRange
-                      editableDateInputs={true}
-                      onChange={item => setDateRange([item.selection])}
-                      moveRangeOnFirstSelection={false}
-                      ranges={dateRange}
-                      minDate={new Date()}
-                    />
-                  </div>
-                )}
-                <p style={{ margin: '0.5rem 0' }}><b>Tổng tiền:</b> {contract.total ? contract.total.toLocaleString() : '---'} VNĐ</p>
-              </>
+                </>
             )}
-            <button className="btn-discount" onClick={() => setShowCouponModal(true)}><i className="bi bi-ticket-perforated-fill"></i>  Mã giảm giá</button>
             <button className="btn-rent-car" onClick={handleRentClick}>Thuê xe</button>
             <div className="car-detail-rental-papers">
               <div className="car-rental-papers">
@@ -308,35 +238,6 @@ const ViewCarDetail = () => {
                 <p>Hỗ trợ 24/7</p>
               </div>
             </div>
-            <Modal
-              title="Chọn mã khuyến mãi"
-              open={showCouponModal}
-              onCancel={() => setShowCouponModal(false)}
-              footer={null}
-            >
-              <List
-                dataSource={couponList}
-                renderItem={item => (
-                  <List.Item
-                    actions={[
-                      <Button
-                        type={selectedCoupon && selectedCoupon.code === item.code ? 'primary' : 'default'}
-                        style={selectedCoupon && selectedCoupon.code === item.code ? { backgroundColor: '#52c41a', borderColor: '#52c41a', color: '#fff' } : {}}
-                        disabled={selectedCoupon && selectedCoupon.code !== item.code}
-                        onClick={() => handleApplyCoupon(item)}
-                      >
-                        {selectedCoupon && selectedCoupon.code === item.code ? 'Đã áp dụng' : 'Áp dụng'}
-                      </Button>
-                    ]}
-                  >
-                    <List.Item.Meta
-                      title={item.code}
-                      description={`Giảm ${item.discount_percent}%`}
-                    />
-                  </List.Item>
-                )}
-              />
-            </Modal>
           </div>
         </div>
 
@@ -349,6 +250,7 @@ const ViewCarDetail = () => {
           car={car}
           user={JSON.parse(localStorage.getItem('user'))}
           dateRange={dateRange}
+          contract={contract}
           onSuccess={handleRentalSuccess}
         />
       )}

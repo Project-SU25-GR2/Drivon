@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Modal, Form, Input, Button, message } from 'antd';
+import { Modal, Form, Input, Button, message, List } from 'antd';
 import axios from 'axios';
-import dayjs from 'dayjs';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { DateRange } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 import './RentalForm.css';
 
-const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, onSuccess }) => {
+const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, onSuccess, contract }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const location = useLocation();
@@ -22,6 +21,10 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
     }
   ]);
   const calendarRef = useRef(null);
+  const [amount, setAmount] = useState(0);
+  const [showCouponModal, setShowCouponModal] = useState(false);
+  const [selectedCoupon, setSelectedCoupon] = useState(null);
+  const [couponList, setCouponList] = useState([]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -42,6 +45,26 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showCalendar]);
+
+  useEffect(() => {
+    if (contract && contract.pricePerDay && dateRange[0].startDate && dateRange[0].endDate) {
+      const startDate = new Date(dateRange[0].startDate);
+      const endDate = new Date(dateRange[0].endDate);
+      const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+      let calculatedAmount = contract.pricePerDay * daysDiff;
+
+      // Apply coupon discount if selected
+      if (selectedCoupon) {
+        const discount = (calculatedAmount * selectedCoupon.discount_percent) / 100;
+        calculatedAmount = calculatedAmount - discount;
+      }
+      
+      // Add deposit to total amount, assuming contract has a deposit property
+      calculatedAmount = calculatedAmount + (contract.deposit || 0);
+      
+      setAmount(Math.round(calculatedAmount));
+    }
+  }, [contract, dateRange, selectedCoupon]);
 
   useEffect(() => {
     // Check for payment cancellation
@@ -65,13 +88,31 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
     }
   }, [visible, user, form]);
 
+  useEffect(() => {
+    if (showCouponModal) {
+      axios.get('http://localhost:8080/api/promotions')
+        .then(res => setCouponList(res.data))
+        .catch(() => setCouponList([]));
+    }
+  }, [showCouponModal]);
+
+  const handleApplyCoupon = (coupon) => {
+    if (selectedCoupon && selectedCoupon.code === coupon.code) {
+      setSelectedCoupon(null);
+      message.info('Đã bỏ áp dụng mã khuyến mãi');
+    } else {
+      setSelectedCoupon(coupon);
+      message.success(`Đã áp dụng mã: ${coupon.code}`);
+    }
+  };
+
   const handleSubmit = async (values) => {
     try {
       setLoading(true);
 
       // Validate car data
-      if (!car || !car.pricePerDay) {
-        message.error('Thông tin xe không hợp lệ. Vui lòng thử lại.');
+      if (!car || !contract || !contract.pricePerDay) {
+        message.error('Thông tin xe hoặc hợp đồng không hợp lệ. Vui lòng thử lại.');
         return;
       }
 
@@ -81,19 +122,13 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
         return;
       }
 
-      // Calculate total amount
-      const startDate = new Date(dateRange[0].startDate);
-      const endDate = new Date(dateRange[0].endDate);
-      const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-      const amount = Math.round(car.pricePerDay * (daysDiff + 1));
-      
-      console.log("Calculated amount:", amount);
-
       // Validate amount
       if (isNaN(amount) || amount <= 0) {
         message.error('Số tiền thanh toán không hợp lệ. Vui lòng kiểm tra lại thông tin xe và ngày thuê.');
         return;
       }
+      
+      console.log("Calculated amount:", amount);
 
       // Create payment request
       const paymentRequest = {
@@ -102,7 +137,12 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
         description: `Thuê xe ${car.licensePlate}`,
         returnUrl: "http://localhost:3000/payment-success",
         cancelUrl: `http://localhost:3000/rent-car/`,
-        userId: user.userId
+        userId: user.userId,
+        carId: car.id,
+        additionalRequirements: values.requirements,
+        rentalStartDate: dateRange[0].startDate.toISOString(),
+        rentalEndDate: dateRange[0].endDate.toISOString(),
+        promotionCode: selectedCoupon ? selectedCoupon.code : null
       };
 
       console.log("Payment request data:", paymentRequest);
@@ -176,7 +216,7 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
             label="Họ và tên"
             rules={[{ required: true, message: 'Vui lòng nhập họ và tên' }]}
           >
-            <Input />
+            <Input disabled />
           </Form.Item>
 
           <Form.Item
@@ -211,11 +251,10 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
         </div>
 
         <div className="form-section">
-          <h3>Thông tin thuê xe</h3>
+          <h3>Ngày thuê và trả</h3>
           <div className="date-range-container">
             <div className="date-range-display" onClick={() => setShowCalendar(!showCalendar)}>
-              <i className="bi bi-calendar-range"></i>
-              <span>
+              <i className="bi bi-calendar-range"></i><span>
                 {dateRange[0].startDate.toLocaleDateString()} - {dateRange[0].endDate.toLocaleDateString()}
               </span>
             </div>
@@ -239,6 +278,29 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
           >
             <Input.TextArea rows={4} placeholder="Nhập các yêu cầu thêm của bạn (nếu có)" />
           </Form.Item>
+
+          <div className="form-item-row" style={{ marginBottom: '16px' }}>
+            <Button className="btn-discount" onClick={() => setShowCouponModal(true)}>
+              <i className="bi bi-ticket-perforated-fill"></i>
+              <span>{selectedCoupon ? `Mã giảm giá: ${selectedCoupon.code}` : 'Mã giảm giá'}</span>
+            </Button>
+          </div>
+
+          <div className="form-item-row" style={{ marginBottom: '24px' }}>
+            <p style={{ margin: '0', fontWeight: 'bold' }}>
+              Tổng tiền: {amount.toLocaleString()} VNĐ
+              {contract && contract.deposit && (
+                <span style={{ marginLeft: '8px', fontSize: '0.8em', color: '#666' }}>
+                  (+{contract.deposit.toLocaleString()} VNĐ tiền cọc)
+                </span>
+              )}
+              {selectedCoupon && (
+                <span style={{ color: '#52c41a', marginLeft: '8px', fontSize: '0.8em' }}>
+                  (Đã giảm {selectedCoupon.discount_percent}%) 
+                </span>
+              )}
+            </p>
+          </div>
         </div>
 
         <div className="form-actions">
@@ -250,6 +312,34 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
           </Button>
         </div>
       </Form>
+
+      <Modal
+        title="Chọn mã khuyến mãi"
+        open={showCouponModal}
+        onCancel={() => setShowCouponModal(false)}
+        footer={null}
+      >
+        <List
+          dataSource={couponList}
+          renderItem={coupon => (
+            <List.Item
+              actions={[
+                <Button
+                  type={selectedCoupon && selectedCoupon.code === coupon.code ? 'danger' : 'primary'}
+                  onClick={() => handleApplyCoupon(coupon)}
+                >
+                  {selectedCoupon && selectedCoupon.code === coupon.code ? 'Bỏ áp dụng' : 'Áp dụng'}
+                </Button>
+              ]}
+            >
+              <List.Item.Meta
+                title={coupon.code}
+                description={coupon.description + ` (Giảm giá: ${coupon.discount_percent}%)`}
+              />
+            </List.Item>
+          )}
+        />
+      </Modal>
     </Modal>
   );
 };

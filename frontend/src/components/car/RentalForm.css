@@ -69,6 +69,7 @@
 .form-actions {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: 12px;
   margin-top: 24px;
 }
@@ -116,7 +117,6 @@
 .date-range-display {
   display: flex;
   align-items: center;
-  gap: 8px;
   padding: 4px 8px;
   border: 1px solid #d9d9d9;
   border-radius: 6px;
@@ -124,15 +124,32 @@
   transition: all 0.3s;
   font-size: 13px;
   box-sizing: border-box;
-}
-
-.date-range-display:hover {
-  border-color: #40a9ff;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  gap: 0;
 }
 
 .date-range-display i {
   font-size: 14px;
   color: #666;
+  margin: 0;
+  padding: 0;
+  line-height: 1;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.date-range-display span {
+  white-space: nowrap;
+  padding: 0;
+  margin: 0;
+  line-height: 1;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.date-range-display:hover {
+  border-color: #40a9ff;
 }
 
 .calendar-container {
@@ -145,7 +162,7 @@
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   margin-top: 8px;
-  max-width: 100%;
+  max-width: calc(100% - 40px);
   overflow-x: auto;
   box-sizing: border-box;
 }
@@ -168,7 +185,8 @@
 }
 
 .rdrMonth {
-  flex-shrink: 0;
+  flex-shrink: 1;
+  flex-basis: auto;
   width: 100%;
   min-width: unset !important;
   box-sizing: border-box;
@@ -242,4 +260,30 @@
   .rdrMonth {
     width: 100%;
   }
+}
+
+.btn-discount {
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 150px;
+  justify-content: center;
+}
+
+.btn-discount span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-discount:hover {
+  background-color: #e0e0e0;
 } 
