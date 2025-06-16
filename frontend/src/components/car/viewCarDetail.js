@@ -289,7 +289,10 @@ const ViewCarDetail = () => {
       <RentalForm
         visible={showRentalForm}
         onClose={() => setShowRentalForm(false)}
-        car={car}
+        car={{
+          ...car,
+          pricePerDay: contract?.pricePerDay
+        }}
         user={JSON.parse(localStorage.getItem('user'))}
         dateRange={dateRange}
         onSuccess={handleRentalSuccess}
