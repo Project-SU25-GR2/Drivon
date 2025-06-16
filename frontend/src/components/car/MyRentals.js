@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Typography, Button, Spin, Empty, Tag, message } from 'antd';
+import { Card, Row, Col, Typography, Button, Spin, Empty, Tag, message, Modal, Descriptions, Divider } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import MainLayout from '../home/MainLayout';
@@ -11,6 +11,8 @@ const MyRentals = () => {
     const [rentals, setRentals] = useState([]);
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
+    const [selectedRental, setSelectedRental] = useState(null);
+    const [isModalVisible, setIsModalVisible] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -61,6 +63,16 @@ const MyRentals = () => {
         });
     };
 
+    const handleViewDetails = (rental) => {
+        setSelectedRental(rental);
+        setIsModalVisible(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalVisible(false);
+        setSelectedRental(null);
+    };
+
     const renderRentalCard = (rental) => (
         <Col xs={24} sm={24} md={12} lg={8} xl={8} key={rental.id}>
             <Card className="rental-card">
@@ -78,13 +90,51 @@ const MyRentals = () => {
                     <Text>Ngày đặt: {formatDate(rental.createdAt)}</Text>
                 </div>
                 <div className="rental-actions">
-                    <Button type="primary" onClick={() => navigate(`/rental-details/${rental.id}`)}>
+                    <Button type="primary" onClick={() => handleViewDetails(rental)}>
                         Xem chi tiết
                     </Button>
                 </div>
             </Card>
         </Col>
     );
+
+    const renderRentalDetails = () => {
+        if (!selectedRental) return null;
+
+        return (
+            <Descriptions bordered column={1} className="rental-details">
+                <Descriptions.Item label="Mã đơn hàng">
+                    <Text strong>{selectedRental.orderCode}</Text>
+                </Descriptions.Item>
+                <Descriptions.Item label="Trạng thái">
+                    <Tag color={getStatusColor(selectedRental.status)}>
+                        {selectedRental.status}
+                    </Tag>
+                </Descriptions.Item>
+                <Descriptions.Item label="Biển số xe">
+                    {selectedRental.carId}
+                </Descriptions.Item>
+                <Descriptions.Item label="Thời gian thuê">
+                    {formatDate(selectedRental.rentalStartDate)} - {formatDate(selectedRental.rentalEndDate)}
+                </Descriptions.Item>
+                <Descriptions.Item label="Phương thức thanh toán">
+                    {selectedRental.paymentMethod}
+                </Descriptions.Item>
+                <Descriptions.Item label="Số tiền">
+                    {selectedRental.amount?.toLocaleString('vi-VN')} VNĐ
+                </Descriptions.Item>
+                <Descriptions.Item label="Yêu cầu thêm">
+                    {selectedRental.additionalRequirements || 'Không có'}
+                </Descriptions.Item>
+                <Descriptions.Item label="Ngày đặt">
+                    {formatDate(selectedRental.createdAt)}
+                </Descriptions.Item>
+                <Descriptions.Item label="Ngày cập nhật">
+                    {formatDate(selectedRental.updatedAt)}
+                </Descriptions.Item>
+            </Descriptions>
+        );
+    };
 
     if (!user) {
         return null;
@@ -111,6 +161,20 @@ const MyRentals = () => {
                     )}
                 </div>
             </div>
+
+            <Modal
+                title="Chi tiết đơn hàng"
+                open={isModalVisible}
+                onCancel={handleCloseModal}
+                footer={[
+                    <Button key="close" onClick={handleCloseModal}>
+                        Đóng
+                    </Button>
+                ]}
+                width={800}
+            >
+                {renderRentalDetails()}
+            </Modal>
         </MainLayout>
     );
 };
