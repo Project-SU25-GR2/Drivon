@@ -1,9 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { DateRange } from 'react-date-range';
-import 'react-date-range/dist/styles.css';
-import 'react-date-range/dist/theme/default.css';
 import { Modal, Button, List, message } from 'antd';
 import 'antd/dist/reset.css';
 import RentalForm from './RentalForm';
@@ -21,7 +18,6 @@ const ViewCarDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [contract, setContract] = useState(null);
-  const [showCalendar, setShowCalendar] = useState(false);
   const [dateRange, setDateRange] = useState([
     {
       startDate: new Date(),
@@ -29,7 +25,6 @@ const ViewCarDetail = () => {
       key: 'selection'
     }
   ]);
-  const calendarRef = useRef(null);
   const [showCouponModal, setShowCouponModal] = useState(false);
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   const [couponList, setCouponList] = useState([]);
@@ -69,34 +64,6 @@ const ViewCarDetail = () => {
       .then(res => setContract(res.data))
       .catch(() => setContract(null));
   }, [licensePlate]);
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (
-        calendarRef.current &&
-        !calendarRef.current.contains(event.target) &&
-        event.target.className !== 'bi bi-calendar-range'
-      ) {
-        setShowCalendar(false);
-      }
-    }
-    if (showCalendar) {
-      document.addEventListener('mousedown', handleClickOutside);
-    } else {
-      document.removeEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showCalendar]);
-
-  useEffect(() => {
-    if (showCouponModal) {
-      axios.get('http://localhost:8080/api/promotions')
-        .then(res => setCouponList(res.data))
-        .catch(() => setCouponList([]));
-    }
-  }, [showCouponModal]);
 
   useEffect(() => {
     axios.get('http://localhost:8080/api/cars')
@@ -276,25 +243,7 @@ const ViewCarDetail = () => {
                 <p>
                   <b>Ngày thuê & trả:</b>
                 </p>
-                <button
-                  className='calendar-range-button'
-                  onClick={() => setShowCalendar(!showCalendar)}
-                  style={{ border: 'none', background: 'none' }}
-                >
-                  <i className="bi bi-calendar-range"></i>
-                </button>
                 {dateRange[0].startDate.toLocaleDateString()} - {dateRange[0].endDate.toLocaleDateString()}
-                {showCalendar && (
-                  <div ref={calendarRef} style={{ position: 'absolute', zIndex: 100 }}>
-                    <DateRange
-                      editableDateInputs={true}
-                      onChange={item => setDateRange([item.selection])}
-                      moveRangeOnFirstSelection={false}
-                      ranges={dateRange}
-                      minDate={new Date()}
-                    />
-                  </div>
-                )}
                 <p style={{ margin: '0.5rem 0' }}><b>Tổng tiền:</b> {contract.total ? contract.total.toLocaleString() : '---'} VNĐ</p>
               </>
             )}
