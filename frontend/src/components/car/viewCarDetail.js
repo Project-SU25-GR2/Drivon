@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { DateRange } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
@@ -7,11 +7,16 @@ import 'react-date-range/dist/theme/default.css';
 import { Modal, Button, List, message } from 'antd';
 import 'antd/dist/reset.css';
 import RentalForm from './RentalForm';
-
+import { GiGearStickPattern } from "react-icons/gi";
 import './viewCarDetail.css';
+import { TbAutomaticGearboxFilled } from "react-icons/tb";
+import { FaGasPump } from "react-icons/fa";
+import { BsEvStationFill } from "react-icons/bs";
+import { BsFillFuelPumpDieselFill } from "react-icons/bs";
 
 const ViewCarDetail = () => {
   const { licensePlate } = useParams();
+  const navigate = useNavigate();
   const [car, setCar] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -33,11 +38,25 @@ const ViewCarDetail = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showRentalForm, setShowRentalForm] = useState(false);
   const carsPerPage = 3;
+  const [mainImage, setMainImage] = useState('');
+  const [otherImages, setOtherImages] = useState([]);
+  const [carContracts, setCarContracts] = useState({});
+
+  // Đặt filteredCars lên trên các useEffect để tránh lỗi ReferenceError
+  const filteredCars = allCars.filter(item => {
+    if (!car) return false;
+    if (item.licensePlate === car.licensePlate) return false;
+    if (carFilter === 'brand') return item.brand === car.brand;
+    if (carFilter === 'type') return item.type === car.type;
+    return true;
+  });
 
   useEffect(() => {
     axios.get(`http://localhost:8080/api/cars/${licensePlate}`)
       .then(res => {
         setCar(res.data);
+        setMainImage(res.data.mainImage);
+        setOtherImages(res.data.otherImages || []);
         setLoading(false);
       })
       .catch(() => {
@@ -85,6 +104,22 @@ const ViewCarDetail = () => {
       .catch(() => setAllCars([]));
   }, []);
 
+  useEffect(() => {
+    const fetchContracts = async () => {
+      const newContracts = {};
+      await Promise.all(filteredCars.map(async (item) => {
+        try {
+          const res = await axios.get(`http://localhost:8080/api/contracts/by-car/${item.licensePlate}`);
+          newContracts[item.licensePlate] = res.data;
+        } catch {
+          newContracts[item.licensePlate] = null;
+        }
+      }));
+      setCarContracts(newContracts);
+    };
+    if (filteredCars.length > 0) fetchContracts();
+  }, [filteredCars]);
+
   const handleApplyCoupon = (coupon) => {
     if (selectedCoupon && selectedCoupon.code === coupon.code) {
       setSelectedCoupon(null);
@@ -96,18 +131,19 @@ const ViewCarDetail = () => {
   };
 
   const handleSelectCar = (selectedCar) => {
-    setCar(selectedCar);
+    navigate(`/cars/${selectedCar.licensePlate}`);
     setContract(null);
+    setMainImage(selectedCar.mainImage);
+    setOtherImages(selectedCar.otherImages || []);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const filteredCars = allCars.filter(item => {
-    if (!car) return false;
-    if (item.licensePlate === car.licensePlate) return false;
-    if (carFilter === 'brand') return item.brand === car.brand;
-    if (carFilter === 'type') return item.type === car.type;
-    return true;
-  });
+  const handleThumbnailClick = (img, idx) => {
+    const newOtherImages = [...otherImages];
+    newOtherImages[idx] = mainImage;
+    setMainImage(img);
+    setOtherImages(newOtherImages);
+  };
 
   const maxIndex = Math.max(0, filteredCars.length - carsPerPage);
   const translateX = -(currentIndex * (240 + 24)); // 240px width + 24px gap
@@ -141,12 +177,18 @@ const ViewCarDetail = () => {
       <div className="row car-detail-main container-fluid">
         <div className="col-12 col-md-8 car-detail-images ">
           <div className="car-detail-main-image">
-            <img src={car.mainImage} alt="car" />
+            <img src={mainImage} alt="car" />
           </div>
-          {car.otherImages && car.otherImages.length > 0 && (
+          {otherImages && otherImages.length > 0 && (
             <div className="car-detail-thumbnails">
-              {car.otherImages.slice(0, 3).map((img, idx) => (
-                <img key={idx} src={img} alt={`car-thumb-${idx + 1}`} />
+              {otherImages.slice(0, 3).map((img, idx) => (
+                <img
+                  key={idx}
+                  src={img}
+                  alt={`car-thumb-${idx + 1}`}
+                  onClick={() => handleThumbnailClick(img, idx)}
+                  style={{ cursor: 'pointer' }}
+                />
               ))}
             </div>
           )}
@@ -179,10 +221,25 @@ const ViewCarDetail = () => {
                       <div className="same-car-info-overlay">
                         <div className="same-car-title">{item.brand} {item.model}</div>
                         <div className="same-car-specs">
-                          <span>{item.seats} chỗ</span> | <span>{item.transmission === 'manual' ? 'Số sàn' : 'Số tự động'}</span> | <span>{item.fuelType === 'gasoline' ? 'Xăng' : item.fuelType}</span>
+                          <span>{item.seats} chỗ</span>
+                          <span style={{margin: '0 6px', color: '#fff'}}>|</span>
+                          <span>
+                            {item.transmission === 'manual' ? <GiGearStickPattern className="same-car-icon"/> : <TbAutomaticGearboxFilled className="same-car-icon"/>}
+                          </span>
+                          <span style={{margin: '0 6px', color: '#fff'}}>|</span>
+                          <span>
+                            {item.fuelType === 'gasoline' || item.fuelType === 'hybrid' ? <FaGasPump className="same-car-icon"/> :
+                              item.fuelType === 'diesel' ? <BsFillFuelPumpDieselFill className="same-car-icon"/> :
+                              item.fuelType === 'electric' ? <BsEvStationFill className="same-car-icon"/> : null}
+                            {item.fuelType === 'electric' ? ` ${item.fuelConsumption}kWh` : ` ${item.fuelConsumption}L`}
+                          </span>
                         </div>
                         <div className="same-car-specs">
-                          <span >{item.fuelConsumption} lít/100km <i className="bi bi-fuel-pump" style={{ color: '#ffd700' }}></i></span>
+                          <span style={{color: '#ffd700'}}>
+                            {carContracts[item.licensePlate]?.pricePerDay
+                              ? `${carContracts[item.licensePlate].pricePerDay.toLocaleString()} VNĐ/ngày`
+                              : ''}
+                          </span>
                         </div>
                       </div>
                     </div>
