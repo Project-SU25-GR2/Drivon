@@ -120,6 +120,12 @@
   flex: 1;
 }
 
+.chat-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .chat-avatar {
   width: 40px;
   height: 40px;
@@ -131,6 +137,29 @@
   margin: 0;
   font-size: 1.1rem;
   color: #333;
+}
+
+.delete-chat-btn {
+  background: none;
+  border: none;
+  color: #dc3545;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-chat-btn:hover {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.delete-chat-btn:active {
+  transform: scale(0.95);
 }
 
 .close-chat-btn {
