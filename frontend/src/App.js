@@ -22,6 +22,7 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import ManagerOwnerPage from "./components/owner/ManagerOwnerPage";
 import RentalSuccess from "./components/car/RentalSuccess";
 import Messages from "./components/chat/Messages";
+import MyRentals from "./components/car/MyRentals";
 // import CarRental404 from "./components/others/404";
 function App() {
   const [user, setUser] = useState(null);
@@ -255,6 +256,7 @@ function App() {
             </MainLayout>
           }
         />
+        <Route path="/my-rentals" element={<MyRentals />} />
         {/* <Route
           path="*"
           element={

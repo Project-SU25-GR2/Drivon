@@ -150,6 +150,9 @@ const Messages = () => {
       const success = webSocketService.sendMessage(newMessage);
       if (!success) throw new Error('Failed to send message');
 
+      // Thêm tin nhắn mới vào state messages ngay lập tức
+      setMessages(prev => [...prev, newMessage]);
+
       setConversations(prev => {
         return prev.map(conv =>
           conv.id === selectedUser.id

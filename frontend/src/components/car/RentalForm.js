@@ -133,23 +133,60 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
 
       if (paymentMethod === 'cash') {
         console.log('Processing cash payment');
-        // Prepare data to pass to RentalSuccess page
-        const rentalData = {
-          orderCode: Date.now(),
-          carLicensePlate: car.licensePlate,
-          rentalStartDate: dateRange[0].startDate.toISOString(),
-          rentalEndDate: dateRange[0].endDate.toISOString(),
-          amount: amount,
-          promotionCode: selectedCoupon ? selectedCoupon.code : null,
-          discountPercent: selectedCoupon ? selectedCoupon.discount_percent : 0,
-          additionalRequirements: values.requirements,
-        };
-        
-        // Close the current modal and navigate to success page
-        onClose();
-        navigate('/rental-success', { state: { rentalData } });
+        try {
+          const orderCode = Date.now().toString();
+          const paymentData = {
+            orderCode: orderCode,
+            amount: amount,
+            userId: parseInt(user.userId),
+            carId: car.licensePlate,
+            additionalRequirements: values.requirements,
+            rentalStartDate: new Date(dateRange[0].startDate).toISOString(),
+            rentalEndDate: new Date(dateRange[0].endDate).toISOString()
+          };
 
-        setLoading(false);
+          console.log('Sending payment data:', paymentData);
+
+          // Call API to create cash payment
+          const response = await axios.post('http://localhost:8080/api/payments/cash', paymentData, {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+          console.log('Cash payment response:', response.data);
+
+          if (response.data.error) {
+            message.error(response.data.error);
+            return;
+          }
+
+          // Prepare data to pass to RentalSuccess page
+          const rentalData = {
+            orderCode: paymentData.orderCode,
+            carLicensePlate: car.licensePlate,
+            rentalStartDate: dateRange[0].startDate.toISOString(),
+            rentalEndDate: dateRange[0].endDate.toISOString(),
+            amount: amount,
+            promotionCode: selectedCoupon ? selectedCoupon.code : null,
+            discountPercent: selectedCoupon ? selectedCoupon.discount_percent : 0,
+            additionalRequirements: values.requirements,
+          };
+          
+          // Close the current modal and navigate to success page
+          onClose();
+          navigate('/rental-success', { state: { rentalData } });
+        } catch (error) {
+          console.error('Error creating cash payment:', error);
+          if (error.response) {
+            console.error('Error response data:', error.response.data);
+            console.error('Error response status:', error.response.status);
+            message.error(error.response.data.error || 'Có lỗi xảy ra khi tạo thanh toán. Vui lòng thử lại.');
+          } else {
+            message.error('Có lỗi xảy ra khi tạo thanh toán. Vui lòng thử lại.');
+          }
+        } finally {
+          setLoading(false);
+        }
         return;
       }
 
