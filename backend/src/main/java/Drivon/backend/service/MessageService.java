@@ -43,14 +43,15 @@ public class MessageService {
                     Long unreadCount = messageRepository.countUnreadMessages(userId);
 
                     Map<String, Object> conversation = Map.of(
-                        "id", partner.getUserId(),
-                        "name", partner.getFullName(),
-                        "avatar", partner.getAvatarUrl() != null ? partner.getAvatarUrl() : 
-                                "https://ui-avatars.com/api/?name=" + partner.getFullName() + "&background=random",
-                        "lastMessage", lastMessage.getContent(),
-                        "time", lastMessage.getSent_at().toString(),
-                        "unread", unreadCount
-                    );
+                            "id", partner.getUserId(),
+                            "name", partner.getFullName(),
+                            "avatar",
+                            partner.getAvatarUrl() != null ? partner.getAvatarUrl()
+                                    : "https://ui-avatars.com/api/?name=" + partner.getFullName()
+                                            + "&background=random",
+                            "lastMessage", lastMessage.getContent(),
+                            "time", lastMessage.getSent_at().toString(),
+                            "unread", unreadCount);
                     conversations.add(conversation);
                 }
             }
@@ -64,7 +65,12 @@ public class MessageService {
         messageRepository.markMessagesAsRead(senderId, receiverId);
     }
 
+    @Transactional
+    public void deleteConversation(Long userId1, Long userId2) {
+        messageRepository.deleteConversation(userId1, userId2);
+    }
+
     public Message saveMessage(Message message) {
         return messageRepository.save(message);
     }
-} 
+}

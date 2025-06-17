@@ -24,21 +24,19 @@ public class MessController {
     @PostMapping
     public ResponseEntity<Message> sendMessage(@RequestBody Message message) {
         Message savedMessage = messageService.sendMessage(message);
-        
+
         // Send to sender's personal queue
         messagingTemplate.convertAndSendToUser(
-            String.valueOf(message.getSender_id()),
-            "/topic/messages",
-            savedMessage
-        );
-        
+                String.valueOf(message.getSender_id()),
+                "/topic/messages",
+                savedMessage);
+
         // Send to receiver's personal queue
         messagingTemplate.convertAndSendToUser(
-            String.valueOf(message.getReceiver_id()),
-            "/topic/messages",
-            savedMessage
-        );
-        
+                String.valueOf(message.getReceiver_id()),
+                "/topic/messages",
+                savedMessage);
+
         return ResponseEntity.ok(savedMessage);
     }
 
@@ -59,6 +57,14 @@ public class MessController {
             @PathVariable Long senderId,
             @PathVariable Long receiverId) {
         messageService.markMessagesAsRead(senderId, receiverId);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/conversation/{userId1}/{userId2}")
+    public ResponseEntity<Void> deleteConversation(
+            @PathVariable Long userId1,
+            @PathVariable Long userId2) {
+        messageService.deleteConversation(userId1, userId2);
         return ResponseEntity.ok().build();
     }
 }

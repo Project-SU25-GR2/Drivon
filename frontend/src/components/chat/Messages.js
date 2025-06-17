@@ -304,6 +304,31 @@ const Messages = () => {
     }
   };
 
+  // Hàm xóa cuộc trò chuyện
+  const handleDeleteConversation = async () => {
+    if (!selectedUser) return;
+    
+    const confirmDelete = window.confirm(`Bạn có chắc chắn muốn xóa cuộc trò chuyện với ${selectedUser.name}?`);
+    if (!confirmDelete) return;
+    
+    try {
+      await axios.delete(`http://localhost:8080/api/messages/conversation/${currentUser.userId}/${selectedUser.id}`);
+      console.log('Conversation deleted successfully');
+      
+      // Xóa khỏi danh sách conversations
+      setConversations(prev => prev.filter(conv => conv.id !== selectedUser.id));
+      
+      // Đóng chat
+      setSelectedUser(null);
+      setMessages([]);
+      
+      alert('Cuộc trò chuyện đã được xóa thành công!');
+    } catch (error) {
+      console.error('Error deleting conversation:', error);
+      alert('Có lỗi xảy ra khi xóa cuộc trò chuyện. Vui lòng thử lại!');
+    }
+  };
+
   return (
     <div className="messages-container">
       <div className="messages-sidebar">
@@ -341,13 +366,22 @@ const Messages = () => {
                 <img src={selectedUser.avatar} alt={selectedUser.name} className="chat-avatar" />
                 <h3>{selectedUser.name}</h3>
               </div>
-              <button 
-                className="close-chat-btn"
-                onClick={handleCloseChat}
-                title="Đóng cuộc trò chuyện"
-              >
-                ✕
-              </button>
+              <div className="chat-header-actions">
+                <button 
+                  className="delete-chat-btn"
+                  onClick={handleDeleteConversation}
+                  title="Xóa cuộc trò chuyện"
+                >
+                  🗑️
+                </button>
+                <button 
+                  className="close-chat-btn"
+                  onClick={handleCloseChat}
+                  title="Đóng cuộc trò chuyện"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
             <div className="chat-messages" ref={chatMessagesRef}>
               {messages.map((msg, index) => (
