@@ -54,14 +54,26 @@ const Messages = () => {
     }
   
     const handleNewMessage = (newMessage) => {
+      console.log('=== NEW MESSAGE RECEIVED ===');
       console.log('Received new message:', newMessage);
       console.log('Current selectedUser:', selectedUser);
       console.log('Current user:', currentUser);
+      console.log('Message sender_id:', newMessage.sender_id, 'type:', typeof newMessage.sender_id);
+      console.log('Message receiver_id:', newMessage.receiver_id, 'type:', typeof newMessage.receiver_id);
+      console.log('Current user ID:', currentUser.userId, 'type:', typeof currentUser.userId);
+      console.log('Selected user ID:', selectedUser?.id, 'type:', typeof selectedUser?.id);
+      
+      // Chuyển đổi sang number để so sánh chính xác
+      const senderId = Number(newMessage.sender_id);
+      const receiverId = Number(newMessage.receiver_id);
+      const currentUserId = Number(currentUser.userId);
+      const selectedUserId = Number(selectedUser?.id);
       
       const isCurrentConversation =
-        (newMessage.sender_id === currentUser.userId && newMessage.receiver_id === selectedUser?.id) ||
-        (newMessage.receiver_id === currentUser.userId && newMessage.sender_id === selectedUser?.id);
+        (senderId === currentUserId && receiverId === selectedUserId) ||
+        (receiverId === currentUserId && senderId === selectedUserId);
   
+      console.log('Converted IDs - senderId:', senderId, 'receiverId:', receiverId, 'currentUserId:', currentUserId, 'selectedUserId:', selectedUserId);
       console.log('Is current conversation:', isCurrentConversation);
 
       // Cập nhật preview hội thoại
@@ -87,60 +99,37 @@ const Messages = () => {
   
       // Nếu đang xem đúng đoạn hội thoại → thêm tin nhắn vào chat
       if (isCurrentConversation) {
+        console.log('Adding message to current conversation');
+        // Tạm thời bỏ logic phức tạp, chỉ thêm tin nhắn mới
         setMessages((prev) => {
-          // Kiểm tra xem có tin nhắn tạm thời tương ứng không
-          const tempMessageIndex = prev.findIndex(
-            (msg) => msg.temp && 
-                     msg.content === newMessage.content &&
-                     msg.sender_id === newMessage.sender_id &&
-                     msg.receiver_id === newMessage.receiver_id &&
-                     Math.abs(new Date(msg.sent_at) - new Date(newMessage.sent_at)) < 5000
-          );
-          
-          if (tempMessageIndex !== -1) {
-            // Thay thế tin nhắn tạm thời bằng tin nhắn thật
-            console.log('Replacing temporary message with real message');
-            const updatedMessages = [...prev];
-            updatedMessages[tempMessageIndex] = newMessage;
-            return updatedMessages;
-          }
-          
-          // Kiểm tra trùng lặp dựa trên message_id hoặc nội dung + thời gian
+          // Kiểm tra trùng lặp đơn giản
           const messageExists = prev.some(
-            (msg) => {
-              // Nếu cả hai đều có message_id, so sánh message_id
-              if (msg.message_id && newMessage.message_id) {
-                return msg.message_id === newMessage.message_id;
-              }
-              // Nếu không có message_id, so sánh nội dung và thời gian
-              return msg.content === newMessage.content &&
-                     msg.sender_id === newMessage.sender_id &&
-                     msg.receiver_id === newMessage.receiver_id &&
-                     Math.abs(new Date(msg.sent_at) - new Date(newMessage.sent_at)) < 3000;
-            }
+            (msg) => msg.message_id === newMessage.message_id
           );
-          
-          console.log('Message exists:', messageExists);
-          console.log('Current messages count:', prev.length);
           
           if (messageExists) {
-            console.log('Skipping duplicate message');
+            console.log('Message already exists, skipping');
             return prev;
           } else {
-            console.log('Adding new message from WebSocket to chat');
+            console.log('Adding new message to chat');
             return [...prev, newMessage];
           }
         });
+      } else {
+        console.log('Not current conversation, skipping message display');
       }
     };
   
     const setupWebSocket = () => {
+      console.log('Setting up WebSocket subscription');
       webSocketService.subscribe('messages', handleNewMessage);
     };
   
     if (!webSocketService.isWebSocketConnected()) {
+      console.log('WebSocket not connected, connecting...');
       webSocketService.connect(currentUser.userId, setupWebSocket);
     } else {
+      console.log('WebSocket already connected, setting up subscription');
       setupWebSocket();
     }
   
@@ -170,6 +159,17 @@ const Messages = () => {
       }
     }
   }, [selectedUser?.id]);
+
+  // Thêm polling để cập nhật tin nhắn mới
+  useEffect(() => {
+    if (!selectedUser) return;
+
+    const pollInterval = setInterval(() => {
+      fetchMessages(currentUser.userId, selectedUser.id);
+    }, 3000); // Poll mỗi 3 giây
+
+    return () => clearInterval(pollInterval);
+  }, [selectedUser?.id, currentUser?.userId]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -234,6 +234,8 @@ const Messages = () => {
   };
 
   const handleUserSelect = (user) => {
+    console.log('Selecting user:', user);
+    console.log('User ID:', user.id, 'type:', typeof user.id);
     setSelectedUser(user);
     axios.put(`http://localhost:8080/api/messages/read/${currentUser.userId}/${user.id}`);
     setConversations(prev =>
