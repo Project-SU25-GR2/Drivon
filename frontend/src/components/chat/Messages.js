@@ -40,13 +40,19 @@ const Messages = () => {
       const currentSelectedUser = selectedUserRef.current;
 
       if (
-        currentSelectedUser &&
-        (
-          (newMessage.sender_id === currentSelectedUser.id && newMessage.receiver_id === currentUser.userId) ||
-          (newMessage.receiver_id === currentSelectedUser.id && newMessage.sender_id === currentUser.userId)
-        )
+        (newMessage.sender_id === currentUser.userId && newMessage.receiver_id === currentSelectedUser?.id) ||
+        (newMessage.receiver_id === currentUser.userId && newMessage.sender_id === currentSelectedUser?.id)
       ) {
-        setMessages(prev => [...prev, newMessage]);
+        setMessages(prev => {
+          const exists = prev.some(msg => 
+            msg.sender_id === newMessage.sender_id && 
+            msg.receiver_id === newMessage.receiver_id && 
+            msg.content === newMessage.content &&
+            new Date(msg.sent_at).getTime() === new Date(newMessage.sent_at).getTime()
+          );
+          if (exists) return prev;
+          return [...prev, newMessage];
+        });
       }
 
       setConversations(prev => {
