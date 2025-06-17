@@ -237,6 +237,10 @@ const Messages = () => {
     setSelectedUser(user);
     // Mark messages as read
     axios.put(`http://localhost:8080/api/messages/read/${currentUser.userId}/${user.id}`);
+    // Reset unread count in conversations
+    setConversations(prev => prev.map(conv => 
+      conv.id === user.id ? { ...conv, unread: 0 } : conv
+    ));
   };
 
   return (
