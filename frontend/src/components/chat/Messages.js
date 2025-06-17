@@ -46,57 +46,58 @@ const Messages = () => {
       navigate('/auth');
       return;
     }
-
+  
     const handleNewMessage = (newMessage) => {
-      const currentSelectedUser = selectedUserRef.current;
-
-      setConversations(prev => {
-        const updated = prev.map(conv => {
-          if (conv.id === newMessage.sender_id || conv.id === newMessage.receiver_id) {
-            const isCurrentUser = conv.id === currentUser.userId;
-            const isSelected = currentSelectedUser && conv.id === currentSelectedUser.id;
-            return {
-              ...conv,
-              lastMessage: newMessage.content,
-              time: new Date(newMessage.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-              unread: !isSelected && !isCurrentUser ? (conv.unread || 0) + 1 : conv.unread
-            };
-          }
-          return conv;
-        });
-        return updated;
-      });
-
-      if (
-        (newMessage.sender_id === currentUser.userId && newMessage.receiver_id === currentSelectedUser?.id) ||
-        (newMessage.receiver_id === currentUser.userId && newMessage.sender_id === currentSelectedUser?.id)
-      ) {
-        setMessages(prev => {
-          const messageExists = prev.some(msg => 
-            msg.content === newMessage.content && 
-            msg.sender_id === newMessage.sender_id && 
-            msg.receiver_id === newMessage.receiver_id &&
-            Math.abs(new Date(msg.sent_at) - new Date(newMessage.sent_at)) < 1000 // Within 1 second
+      const isCurrentConversation =
+        (newMessage.sender_id === currentUser.userId && newMessage.receiver_id === selectedUser?.id) ||
+        (newMessage.receiver_id === currentUser.userId && newMessage.sender_id === selectedUser?.id);
+  
+      // Cập nhật preview hội thoại
+      setConversations((prev) =>
+        prev.map((conv) => {
+          const isCurrentConv = conv.id === newMessage.sender_id || conv.id === newMessage.receiver_id;
+          if (!isCurrentConv) return conv;
+  
+          const isCurrentUser = conv.id === currentUser.userId;
+          const isSelected = conv.id === selectedUser?.id;
+  
+          return {
+            ...conv,
+            lastMessage: newMessage.content,
+            time: new Date(newMessage.sent_at).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            }),
+            unread: !isSelected && !isCurrentUser ? (conv.unread || 0) + 1 : conv.unread,
+          };
+        })
+      );
+  
+      // Nếu đang xem đúng đoạn hội thoại → thêm tin nhắn vào chat
+      if (isCurrentConversation) {
+        setMessages((prev) => {
+          const messageExists = prev.some(
+            (msg) =>
+              msg.content === newMessage.content &&
+              msg.sender_id === newMessage.sender_id &&
+              msg.receiver_id === newMessage.receiver_id &&
+              Math.abs(new Date(msg.sent_at) - new Date(newMessage.sent_at)) < 1000
           );
-          
-          if (messageExists) {
-            return prev;
-          }
-          return [...prev, newMessage];
+          return messageExists ? prev : [...prev, newMessage];
         });
       }
     };
-
+  
     const setupWebSocket = () => {
       webSocketService.subscribe('messages', handleNewMessage);
     };
-
+  
     if (!webSocketService.isWebSocketConnected()) {
       webSocketService.connect(currentUser.userId, setupWebSocket);
     } else {
       setupWebSocket();
     }
-
+  
     const fetchConversations = async () => {
       try {
         const response = await axios.get(`http://localhost:8080/api/messages/conversations/${currentUser.userId}`);
@@ -105,13 +106,14 @@ const Messages = () => {
         console.error('Error fetching conversations:', error);
       }
     };
-
+  
     fetchConversations();
-
+  
     return () => {
       webSocketService.unsubscribe('messages', handleNewMessage);
     };
-  }, [currentUser?.userId]);
+  }, [currentUser?.userId, selectedUser?.id]);
+  
 
   useEffect(() => {
     if (selectedUser) {
