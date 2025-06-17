@@ -37,8 +37,10 @@ const Messages = () => {
       return;
     }
 
-    // Connect to WebSocket
-    webSocketService.connect(currentUser.userId);
+    // Connect to WebSocket if not already connected
+    if (!webSocketService.isWebSocketConnected()) {
+      webSocketService.connect(currentUser.userId);
+    }
 
     // Subscribe to messages
     const handleNewMessage = (newMessage) => {
@@ -132,6 +134,14 @@ const Messages = () => {
 
       console.log('Sending message:', newMessage);
       
+      // Check WebSocket connection before sending
+      if (!webSocketService.isWebSocketConnected()) {
+        console.log('WebSocket not connected, attempting to reconnect...');
+        webSocketService.connect(currentUser.userId);
+        // Wait for connection
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+
       const success = webSocketService.sendMessage(newMessage);
       if (!success) {
         throw new Error('Failed to send message');

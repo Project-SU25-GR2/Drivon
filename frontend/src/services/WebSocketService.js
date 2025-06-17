@@ -11,12 +11,17 @@ class WebSocketService {
   }
 
   connect(userId) {
+    if (!userId) {
+      console.error('Cannot connect WebSocket: userId is required');
+      return;
+    }
+
     if (this.stompClient?.connected) {
       console.log('WebSocket already connected');
       return;
     }
 
-    console.log('Initializing WebSocket connection...');
+    console.log('Initializing WebSocket connection for user:', userId);
     const socket = new SockJS('http://localhost:8080/ws');
     
     this.stompClient = new Client({
@@ -32,18 +37,18 @@ class WebSocketService {
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
       onConnect: () => {
-        console.log('WebSocket Connected!');
+        console.log('WebSocket Connected for user:', userId);
         this.isConnected = true;
         this.reconnectAttempts = 0;
         this.subscribeToTopics(userId);
       },
       onDisconnect: () => {
-        console.log('WebSocket Disconnected');
+        console.log('WebSocket Disconnected for user:', userId);
         this.isConnected = false;
         this.handleReconnect(userId);
       },
       onStompError: (frame) => {
-        console.error('STOMP error:', frame);
+        console.error('STOMP error for user:', userId, frame);
         this.isConnected = false;
       }
     });
@@ -125,6 +130,22 @@ class WebSocketService {
       this.isConnected = false;
       this.subscribers.clear();
     }
+  }
+
+  // Add method to handle user logout
+  handleLogout() {
+    console.log('Handling user logout, disconnecting WebSocket...');
+    this.disconnect();
+  }
+
+  // Add method to check connection status
+  isWebSocketConnected() {
+    return this.isConnected && this.stompClient?.connected;
+  }
+
+  // Add method to get current user ID
+  getCurrentUserId() {
+    return this.stompClient?.connectHeaders?.login;
   }
 }
 
