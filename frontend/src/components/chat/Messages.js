@@ -100,19 +100,37 @@ const Messages = () => {
       // Nếu đang xem đúng đoạn hội thoại → thêm tin nhắn vào chat
       if (isCurrentConversation) {
         console.log('Adding message to current conversation');
-        // Tạm thời bỏ logic phức tạp, chỉ thêm tin nhắn mới
+        
+        // Đánh dấu tin nhắn đã đọc nếu tin nhắn từ người khác
+        if (newMessage.sender_id !== currentUser.userId) {
+          markMessagesAsRead(newMessage.sender_id);
+        }
+        
         setMessages((prev) => {
-          // Kiểm tra trùng lặp đơn giản
-          const messageExists = prev.some(
-            (msg) => msg.message_id === newMessage.message_id
+          // Kiểm tra xem có tin nhắn tạm thời tương ứng không
+          const tempMessageIndex = prev.findIndex(
+            (msg) => msg.temp && 
+                     msg.content === newMessage.content &&
+                     msg.sender_id === newMessage.sender_id &&
+                     msg.receiver_id === newMessage.receiver_id &&
+                     Math.abs(new Date(msg.sent_at) - new Date(newMessage.sent_at)) < 5000
           );
           
-          if (messageExists) {
-            console.log('Message already exists, skipping');
-            return prev;
-          } else {
-            console.log('Adding new message to chat');
+          if (tempMessageIndex !== -1) {
+            // Thay thế tin nhắn tạm thời bằng tin nhắn thật
+            console.log('Replacing temporary message with real message');
+            const updatedMessages = [...prev];
+            updatedMessages[tempMessageIndex] = newMessage;
+            return updatedMessages;
+          }
+          
+          // Nếu không có tin nhắn tạm thời tương ứng, chỉ thêm tin nhắn mới nếu không phải từ người gửi hiện tại
+          if (newMessage.sender_id !== currentUser.userId) {
+            console.log('Adding new message from other user');
             return [...prev, newMessage];
+          } else {
+            console.log('Skipping message from current user (should be handled by temp message)');
+            return prev;
           }
         });
       } else {
@@ -153,6 +171,9 @@ const Messages = () => {
   useEffect(() => {
     if (selectedUser) {
       fetchMessages(currentUser.userId, selectedUser.id);
+      
+      // Đánh dấu tin nhắn đã đọc khi vào cuộc trò chuyện
+      markMessagesAsRead(selectedUser.id);
 
       if (location.state?.initialMessage) {
         handleSendMessage(new Event('submit'));
@@ -204,11 +225,33 @@ const Messages = () => {
       const tempMessage = {
         ...newMessage,
         temp: true, // Flag để đánh dấu tin nhắn tạm thời
-        tempId: Date.now() // ID tạm thời
+        tempId: Date.now(), // ID tạm thời
+        message_id: null // Đảm bảo không có message_id
       };
       
       console.log('Adding temporary message to state');
-      setMessages(prevMessages => [...prevMessages, tempMessage]);
+      setMessages(prevMessages => {
+        console.log('Previous messages count:', prevMessages.length);
+        const updatedMessages = [...prevMessages, tempMessage];
+        console.log('Updated messages count:', updatedMessages.length);
+        return updatedMessages;
+      });
+
+      // Thêm timeout để xử lý trường hợp tin nhắn tạm thời không được thay thế
+      setTimeout(() => {
+        setMessages(prevMessages => {
+          const tempMessageIndex = prevMessages.findIndex(
+            msg => msg.tempId === tempMessage.tempId
+          );
+          if (tempMessageIndex !== -1) {
+            console.log('Removing temporary message after timeout');
+            const updatedMessages = [...prevMessages];
+            updatedMessages.splice(tempMessageIndex, 1);
+            return updatedMessages;
+          }
+          return prevMessages;
+        });
+      }, 10000); // 10 giây timeout
 
       setConversations(prev => {
         return prev.map(conv =>
@@ -237,10 +280,28 @@ const Messages = () => {
     console.log('Selecting user:', user);
     console.log('User ID:', user.id, 'type:', typeof user.id);
     setSelectedUser(user);
-    axios.put(`http://localhost:8080/api/messages/read/${currentUser.userId}/${user.id}`);
+    
+    // Đánh dấu tất cả tin nhắn với người này là đã đọc
+    markMessagesAsRead(user.id);
+    
     setConversations(prev =>
       prev.map(conv => (conv.id === user.id ? { ...conv, unread: 0 } : conv))
     );
+  };
+
+  const handleCloseChat = () => {
+    setSelectedUser(null);
+    setMessages([]);
+  };
+
+  // Hàm đánh dấu tin nhắn đã đọc
+  const markMessagesAsRead = async (otherUserId) => {
+    try {
+      await axios.put(`http://localhost:8080/api/messages/read/${currentUser.userId}/${otherUserId}`);
+      console.log('Marked messages as read for user:', otherUserId);
+    } catch (error) {
+      console.error('Error marking messages as read:', error);
+    }
   };
 
   return (
@@ -276,8 +337,17 @@ const Messages = () => {
         {selectedUser ? (
           <>
             <div className="chat-header">
-              <img src={selectedUser.avatar} alt={selectedUser.name} className="chat-avatar" />
-              <h3>{selectedUser.name}</h3>
+              <div className="chat-header-info">
+                <img src={selectedUser.avatar} alt={selectedUser.name} className="chat-avatar" />
+                <h3>{selectedUser.name}</h3>
+              </div>
+              <button 
+                className="close-chat-btn"
+                onClick={handleCloseChat}
+                title="Đóng cuộc trò chuyện"
+              >
+                ✕
+              </button>
             </div>
             <div className="chat-messages" ref={chatMessagesRef}>
               {messages.map((msg, index) => (
