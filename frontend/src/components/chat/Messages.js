@@ -55,6 +55,7 @@ const Messages = () => {
       onConnect: () => {
         console.log('WebSocket Connected!');
         setIsConnected(true);
+        
         // Subscribe to personal messages
         const subscription = stompClientRef.current.subscribe(
           `/user/${currentUser.userId}/topic/messages`,
@@ -65,6 +66,8 @@ const Messages = () => {
 
             // Always use the latest selectedUser
             const currentSelectedUser = selectedUserRef.current;
+            
+            // Update messages if the message is relevant to current conversation
             if (
               currentSelectedUser &&
               (
@@ -78,7 +81,7 @@ const Messages = () => {
               });
             }
 
-            // Update conversation list
+            // Always update conversation list for new messages
             setConversations(prev => {
               const updated = prev.map(conv => {
                 if (conv.id === newMessage.sender_id || conv.id === newMessage.receiver_id) {
@@ -97,7 +100,33 @@ const Messages = () => {
             });
           }
         );
+
+        // Subscribe to broadcast messages
+        const broadcastSubscription = stompClientRef.current.subscribe(
+          '/topic/broadcast',
+          (message) => {
+            console.log('Received broadcast message:', message);
+            const newMessage = JSON.parse(message.body);
+            
+            // Update conversation list for broadcast messages
+            setConversations(prev => {
+              const updated = prev.map(conv => {
+                if (conv.id === newMessage.sender_id || conv.id === newMessage.receiver_id) {
+                  return {
+                    ...conv,
+                    lastMessage: newMessage.content,
+                    time: new Date(newMessage.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                  };
+                }
+                return conv;
+              });
+              return updated;
+            });
+          }
+        );
+
         console.log('Subscribed to messages with subscription:', subscription);
+        console.log('Subscribed to broadcast with subscription:', broadcastSubscription);
       },
       onDisconnect: () => {
         console.log('WebSocket Disconnected');
