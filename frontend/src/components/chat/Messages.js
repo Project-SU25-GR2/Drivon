@@ -11,6 +11,7 @@ const Messages = () => {
   const [selectedUser, setSelectedUser] = useState(location.state?.selectedUser || null);
   const [message, setMessage] = useState(location.state?.initialMessage || '');
   const [messages, setMessages] = useState([]);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const currentUser = JSON.parse(localStorage.getItem('user'));
   const chatMessagesRef = useRef(null);
   const selectedUserRef = useRef(selectedUser);
@@ -30,6 +31,15 @@ const Messages = () => {
       setMessages(response.data);
     } catch (error) {
       console.error('Error fetching messages:', error);
+    }
+  };
+
+  const fetchConversations = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8080/api/messages/conversations/${currentUser.userId}`);
+      setConversations(response.data);
+    } catch (error) {
+      console.error('Error fetching conversations:', error);
     }
   };
 
@@ -77,14 +87,18 @@ const Messages = () => {
       console.log('Is current conversation:', isCurrentConversation);
 
       // Cập nhật preview hội thoại
-      setConversations((prev) =>
-        prev.map((conv) => {
+      setConversations((prev) => {
+        const updatedConversations = prev.map((conv) => {
+          // Xác định cuộc trò chuyện cần cập nhật
+          // conv.id là ID của người dùng khác trong cuộc trò chuyện
           const isCurrentConv = conv.id === newMessage.sender_id || conv.id === newMessage.receiver_id;
           if (!isCurrentConv) return conv;
-
-          const isCurrentUser = conv.id === currentUser.userId;
+    
+          // Kiểm tra xem người dùng hiện tại có phải là người gửi không
+          const isCurrentUserSender = newMessage.sender_id === currentUser.userId;
+          const isCurrentUserReceiver = newMessage.receiver_id === currentUser.userId;
           const isSelected = conv.id === selectedUser?.id;
-
+    
           return {
             ...conv,
             lastMessage: newMessage.content,
@@ -92,20 +106,23 @@ const Messages = () => {
               hour: '2-digit',
               minute: '2-digit',
             }),
-            unread: !isSelected && !isCurrentUser ? (conv.unread || 0) + 1 : conv.unread,
+            lastMessageTime: new Date(newMessage.sent_at).getTime(), // Thêm timestamp để sắp xếp
+            // Tăng unread count nếu người dùng hiện tại là người nhận và không đang xem cuộc trò chuyện này
+            unread: isCurrentUserReceiver && !isSelected ? (conv.unread || 0) + 1 : conv.unread,
           };
-        })
-      );
+        });
 
+        // Sắp xếp conversations theo thời gian tin nhắn mới nhất
+        return updatedConversations.sort((a, b) => {
+          const timeA = a.lastMessageTime || 0;
+          const timeB = b.lastMessageTime || 0;
+          return timeB - timeA; // Sắp xếp giảm dần (mới nhất lên đầu)
+        });
+      });
+  
       // Nếu đang xem đúng đoạn hội thoại → thêm tin nhắn vào chat
       if (isCurrentConversation) {
         console.log('Adding message to current conversation');
-        
-        // Đánh dấu tin nhắn đã đọc nếu tin nhắn từ người khác
-        if (newMessage.sender_id !== currentUser.userId) {
-          markMessagesAsRead(newMessage.sender_id);
-        }
-        
         setMessages((prev) => {
           // Kiểm tra xem có tin nhắn tạm thời tương ứng không
           const tempMessageIndex = prev.findIndex(
@@ -150,16 +167,15 @@ const Messages = () => {
       console.log('WebSocket already connected, setting up subscription');
       setupWebSocket();
     }
-
-    const fetchConversations = async () => {
-      try {
-        const response = await axios.get(`http://localhost:8080/api/messages/conversations/${currentUser.userId}`);
-        setConversations(response.data);
-      } catch (error) {
-        console.error('Error fetching conversations:', error);
-      }
-    };
-
+  
+    if (!webSocketService.isWebSocketConnected()) {
+      console.log('WebSocket not connected, connecting...');
+      webSocketService.connect(currentUser.userId, setupWebSocket);
+    } else {
+      console.log('WebSocket already connected, setting up subscription');
+      setupWebSocket();
+    }
+  
     fetchConversations();
 
     return () => {
@@ -171,9 +187,6 @@ const Messages = () => {
   useEffect(() => {
     if (selectedUser) {
       fetchMessages(currentUser.userId, selectedUser.id);
-      
-      // Đánh dấu tin nhắn đã đọc khi vào cuộc trò chuyện
-      markMessagesAsRead(selectedUser.id);
 
       if (location.state?.initialMessage) {
         handleSendMessage(new Event('submit'));
@@ -191,6 +204,29 @@ const Messages = () => {
 
     return () => clearInterval(pollInterval);
   }, [selectedUser?.id, currentUser?.userId]);
+
+  // Thêm polling để cập nhật conversations
+  useEffect(() => {
+    const pollConversationsInterval = setInterval(() => {
+      fetchConversations();
+    }, 5000); // Poll conversations mỗi 5 giây
+
+    return () => clearInterval(pollConversationsInterval);
+  }, [currentUser?.userId]);
+
+  // Xử lý click outside để đóng dialog xác nhận xóa
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showDeleteConfirm && !event.target.closest('.delete-confirm') && !event.target.closest('.delete-btn')) {
+        setShowDeleteConfirm(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showDeleteConfirm]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -253,17 +289,7 @@ const Messages = () => {
         });
       }, 10000); // 10 giây timeout
 
-      setConversations(prev => {
-        return prev.map(conv =>
-          conv.id === selectedUser.id
-            ? {
-              ...conv,
-              lastMessage: message,
-              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            }
-            : conv
-        );
-      });
+      updateConversationPreview(selectedUser.id, message, true);
 
       setMessage('');
 
@@ -280,10 +306,8 @@ const Messages = () => {
     console.log('Selecting user:', user);
     console.log('User ID:', user.id, 'type:', typeof user.id);
     setSelectedUser(user);
-    
-    // Đánh dấu tất cả tin nhắn với người này là đã đọc
-    markMessagesAsRead(user.id);
-    
+    setShowDeleteConfirm(false); // Reset delete confirm khi chọn user mới
+    axios.put(`http://localhost:8080/api/messages/read/${currentUser.userId}/${user.id}`);
     setConversations(prev =>
       prev.map(conv => (conv.id === user.id ? { ...conv, unread: 0 } : conv))
     );
@@ -292,41 +316,55 @@ const Messages = () => {
   const handleCloseChat = () => {
     setSelectedUser(null);
     setMessages([]);
+    setShowDeleteConfirm(false);
   };
 
-  // Hàm đánh dấu tin nhắn đã đọc
-  const markMessagesAsRead = async (otherUserId) => {
-    try {
-      await axios.put(`http://localhost:8080/api/messages/read/${currentUser.userId}/${otherUserId}`);
-      console.log('Marked messages as read for user:', otherUserId);
-    } catch (error) {
-      console.error('Error marking messages as read:', error);
-    }
-  };
-
-  // Hàm xóa cuộc trò chuyện
-  const handleDeleteConversation = async () => {
+  const handleDeleteChat = async () => {
     if (!selectedUser) return;
-    
-    const confirmDelete = window.confirm(`Bạn có chắc chắn muốn xóa cuộc trò chuyện với ${selectedUser.name}?`);
-    if (!confirmDelete) return;
-    
+
     try {
+      // Gọi API để xóa tất cả tin nhắn trong cuộc trò chuyện
       await axios.delete(`http://localhost:8080/api/messages/conversation/${currentUser.userId}/${selectedUser.id}`);
-      console.log('Conversation deleted successfully');
       
       // Xóa khỏi danh sách conversations
       setConversations(prev => prev.filter(conv => conv.id !== selectedUser.id));
       
-      // Đóng chat
-      setSelectedUser(null);
-      setMessages([]);
+      // Đóng chat hiện tại
+      handleCloseChat();
       
-      alert('Cuộc trò chuyện đã được xóa thành công!');
+      console.log('Chat deleted successfully');
     } catch (error) {
-      console.error('Error deleting conversation:', error);
-      alert('Có lỗi xảy ra khi xóa cuộc trò chuyện. Vui lòng thử lại!');
+      console.error('Error deleting chat:', error);
+      alert('Failed to delete chat. Please try again.');
     }
+  };
+
+  const toggleDeleteConfirm = () => {
+    setShowDeleteConfirm(!showDeleteConfirm);
+  };
+
+  const updateConversationPreview = (userId, lastMessage, isFromCurrentUser = false) => {
+    setConversations(prev => {
+      const updatedConversations = prev.map(conv =>
+        conv.id === userId
+          ? {
+              ...conv,
+              lastMessage: lastMessage,
+              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              lastMessageTime: Date.now(), // Thêm timestamp hiện tại
+              // Reset unread count nếu người dùng hiện tại gửi tin nhắn
+              unread: isFromCurrentUser ? 0 : conv.unread
+            }
+          : conv
+      );
+
+      // Sắp xếp conversations theo thời gian tin nhắn mới nhất
+      return updatedConversations.sort((a, b) => {
+        const timeA = a.lastMessageTime || 0;
+        const timeB = b.lastMessageTime || 0;
+        return timeB - timeA; // Sắp xếp giảm dần (mới nhất lên đầu)
+      });
+    });
   };
 
   return (
@@ -334,6 +372,15 @@ const Messages = () => {
       <div className="messages-sidebar">
         <div className="messages-header">
           <h2>Messages</h2>
+          {selectedUser && (
+            <button 
+              className="sidebar-close-btn" 
+              onClick={handleCloseChat}
+              title="Đóng chat"
+            >
+              <i className="bi bi-x-lg"></i>
+            </button>
+          )}
         </div>
         <div className="conversations-list">
           {conversations.map((conv) => (
@@ -362,26 +409,43 @@ const Messages = () => {
         {selectedUser ? (
           <>
             <div className="chat-header">
-              <div className="chat-header-info">
-                <img src={selectedUser.avatar} alt={selectedUser.name} className="chat-avatar" />
-                <h3>{selectedUser.name}</h3>
-              </div>
-              <div className="chat-header-actions">
+              <img src={selectedUser.avatar} alt={selectedUser.name} className="chat-avatar" />
+              <h3>{selectedUser.name}</h3>
+              <div className="chat-actions">
                 <button 
-                  className="delete-chat-btn"
-                  onClick={handleDeleteConversation}
-                  title="Xóa cuộc trò chuyện"
-                >
-                  🗑️
-                </button>
-                <button 
-                  className="close-chat-btn"
+                  className="chat-action-btn close-btn" 
                   onClick={handleCloseChat}
-                  title="Đóng cuộc trò chuyện"
+                  title="Đóng chat"
                 >
-                  ✕
+                  <i className="bi bi-x-lg"></i>
+                </button>
+                <button 
+                  className="chat-action-btn delete-btn" 
+                  onClick={toggleDeleteConfirm}
+                  title="Xóa đoạn chat"
+                >
+                  <i className="bi bi-trash"></i>
                 </button>
               </div>
+              {showDeleteConfirm && (
+                <div className="delete-confirm">
+                  <p>Bạn có chắc muốn xóa đoạn chat này?</p>
+                  <div className="delete-confirm-buttons">
+                    <button 
+                      className="confirm-btn confirm-delete" 
+                      onClick={handleDeleteChat}
+                    >
+                      Xóa
+                    </button>
+                    <button 
+                      className="confirm-btn cancel-delete" 
+                      onClick={toggleDeleteConfirm}
+                    >
+                      Hủy
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
             <div className="chat-messages" ref={chatMessagesRef}>
               {messages.map((msg, index) => (
