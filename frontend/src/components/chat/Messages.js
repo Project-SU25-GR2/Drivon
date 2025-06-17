@@ -71,7 +71,7 @@ const Messages = () => {
         (newMessage.sender_id === currentUser.userId && newMessage.receiver_id === currentSelectedUser?.id) ||
         (newMessage.receiver_id === currentUser.userId && newMessage.sender_id === currentSelectedUser?.id)
       ) {
-        fetchMessages(currentUser.userId, currentSelectedUser.id);
+        setMessages(prev => [...prev, newMessage]);
       }
     };
 
@@ -144,6 +144,8 @@ const Messages = () => {
             : conv
         );
       });
+
+      setMessages(prev => [...prev, newMessage]);
 
       setMessage('');
 
