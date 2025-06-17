@@ -71,7 +71,19 @@ const Messages = () => {
         (newMessage.sender_id === currentUser.userId && newMessage.receiver_id === currentSelectedUser?.id) ||
         (newMessage.receiver_id === currentUser.userId && newMessage.sender_id === currentSelectedUser?.id)
       ) {
-        setMessages(prev => [...prev, newMessage]);
+        setMessages(prev => {
+          const messageExists = prev.some(msg => 
+            msg.content === newMessage.content && 
+            msg.sender_id === newMessage.sender_id && 
+            msg.receiver_id === newMessage.receiver_id &&
+            Math.abs(new Date(msg.sent_at) - new Date(newMessage.sent_at)) < 1000 // Within 1 second
+          );
+          
+          if (messageExists) {
+            return prev;
+          }
+          return [...prev, newMessage];
+        });
       }
     };
 
@@ -144,8 +156,6 @@ const Messages = () => {
             : conv
         );
       });
-
-      setMessages(prev => [...prev, newMessage]);
 
       setMessage('');
 
