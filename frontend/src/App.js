@@ -21,7 +21,8 @@ import ViewCarDetail from "./components/car/viewCarDetail";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import ManagerOwnerPage from "./components/owner/ManagerOwnerPage";
 import RentalSuccess from "./components/car/RentalSuccess";
-import MyRentals from './components/car/MyRentals';
+import Messages from "./components/chat/Messages";
+import MyRentals from "./components/car/MyRentals";
 // import CarRental404 from "./components/others/404";
 function App() {
   const [user, setUser] = useState(null);
@@ -264,6 +265,14 @@ function App() {
             </MainLayout>
           }
         /> */}
+        <Route
+          path="/messages"
+          element={
+            <MainLayout user={user} handleLogout={handleLogout}>
+              <Messages />
+            </MainLayout>
+          }
+        />
       </Routes>
     </GoogleOAuthProvider>
   );

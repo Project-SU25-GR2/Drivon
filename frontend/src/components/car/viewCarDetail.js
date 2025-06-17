@@ -41,6 +41,7 @@ const ViewCarDetail = () => {
   const [mainImage, setMainImage] = useState('');
   const [otherImages, setOtherImages] = useState([]);
   const [carContracts, setCarContracts] = useState({});
+  const [ownerInfo, setOwnerInfo] = useState(null);
 
   // Đặt filteredCars lên trên các useEffect để tránh lỗi ReferenceError
   const filteredCars = allCars.filter(item => {
@@ -54,20 +55,37 @@ const ViewCarDetail = () => {
   useEffect(() => {
     axios.get(`http://localhost:8080/api/cars/${licensePlate}`)
       .then(res => {
+        console.log('Car data:', res.data);
         setCar(res.data);
         setMainImage(res.data.mainImage);
         setOtherImages(res.data.otherImages || []);
         setLoading(false);
       })
-      .catch(() => {
+      .catch(error => {
+        console.error('Error fetching car:', error);
         setError('Không tìm thấy xe');
         setLoading(false);
       });
 
     // Fetch hợp đồng gần nhất của xe
     axios.get(`http://localhost:8080/api/contracts/by-car/${licensePlate}`)
-      .then(res => setContract(res.data))
-      .catch(() => setContract(null));
+      .then(res => {
+        console.log('Contract data:', res.data);
+        setContract(res.data);
+        // Set owner info from contract data
+        if (res.data) {
+          setOwnerInfo({
+            userId: res.data.customerId,
+            fullName: res.data.name,
+            email: res.data.email,
+            phone: res.data.phone
+          });
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching contract:', error);
+        setContract(null);
+      });
   }, [licensePlate]);
 
   useEffect(() => {
@@ -174,6 +192,58 @@ const ViewCarDetail = () => {
     message.success('Đặt xe thành công!');
     setShowRentalForm(false);
     // You can add additional logic here, such as redirecting to a confirmation page
+  };
+
+  const handleContactOwner = () => {
+    console.log('Contact owner clicked');
+    const user = JSON.parse(localStorage.getItem('user'));
+    console.log('Current user:', user);
+    console.log('Owner info:', ownerInfo);
+
+    if (!user) {
+      message.warning('Vui lòng đăng nhập để liên hệ với chủ xe');
+      navigate('/auth');
+      return;
+    }
+
+    if (!ownerInfo) {
+      message.error('Không thể lấy thông tin chủ xe');
+      return;
+    }
+
+    // Kiểm tra nếu người dùng đang cố gắng liên hệ với chính họ
+    if (user.userId === ownerInfo.userId) {
+      message.warning('Bạn không thể liên hệ với chính mình');
+      return;
+    }
+
+    // Tạo tin nhắn mặc định
+    const defaultMessage = `Xin chào, tôi quan tâm đến xe ${car.brand} ${car.model} của bạn`;
+
+    console.log('Navigating to messages with:', {
+      selectedUser: {
+        id: ownerInfo.userId,
+        name: ownerInfo.fullName,
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(ownerInfo.fullName)}&background=random`,
+        lastMessage: defaultMessage,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      },
+      initialMessage: defaultMessage
+    });
+
+    // Điều hướng đến trang messages với thông tin chủ xe
+    navigate('/messages', { 
+      state: { 
+        selectedUser: {
+          id: ownerInfo.userId,
+          name: ownerInfo.fullName,
+          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(ownerInfo.fullName)}&background=random`,
+          lastMessage: defaultMessage,
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        },
+        initialMessage: defaultMessage
+      }
+    });
   };
 
   if (loading) return <div>Đang tải...</div>;
@@ -284,8 +354,15 @@ const ViewCarDetail = () => {
               <>
                 <p><b>Giá:</b> {contract.pricePerDay?.toLocaleString()} VNĐ/ngày</p>
                 <p><b>Deposit:</b> {contract.deposit?.toLocaleString()} VNĐ</p>
-                           </>
+              </>
             )}
+            <button 
+              className="btn-contact-owner" 
+              onClick={handleContactOwner}
+              
+            >
+              Liên hệ với chủ xe
+            </button>
             <button className="btn-rent-car" onClick={handleRentClick}>Thuê xe</button>
             <div className="car-detail-rental-papers">
               <div className="car-rental-papers">

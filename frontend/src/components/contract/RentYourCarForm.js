@@ -182,6 +182,7 @@ const RentYourCarForm = () => {
           transmission: formData.transmission,
           fuelType: formData.fuelType,
           fuelConsumption: parseFloat(formData.fuelConsumption),
+          mainImage: mainImage, // Add mainImage separately
           images: allImages
         }
       };
