@@ -8,22 +8,27 @@ class WebSocketService {
     this.isConnected = false;
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 5;
+    this.currentUserId = null;
+    this.pendingSubscriptions = new Set();
   }
 
-  connect(userId) {
+  connect(userId, onConnected) {
     if (!userId) {
       console.error('Cannot connect WebSocket: userId is required');
       return;
     }
 
+    this.currentUserId = userId;
+  
     if (this.stompClient?.connected) {
       console.log('WebSocket already connected');
+      onConnected?.();
       return;
     }
-
+  
     console.log('Initializing WebSocket connection for user:', userId);
     const socket = new SockJS('http://localhost:8080/ws');
-    
+  
     this.stompClient = new Client({
       webSocketFactory: () => socket,
       connectHeaders: {
@@ -41,6 +46,12 @@ class WebSocketService {
         this.isConnected = true;
         this.reconnectAttempts = 0;
         this.subscribeToTopics(userId);
+        // Resubscribe any pending subscriptions
+        this.pendingSubscriptions.forEach(topic => {
+          this.subscribeToTopics(userId);
+        });
+        this.pendingSubscriptions.clear();
+        onConnected?.();
       },
       onDisconnect: () => {
         console.log('WebSocket Disconnected for user:', userId);
@@ -52,9 +63,10 @@ class WebSocketService {
         this.isConnected = false;
       }
     });
-
+  
     this.stompClient.activate();
   }
+  
 
   handleReconnect(userId) {
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
@@ -63,15 +75,27 @@ class WebSocketService {
       setTimeout(() => this.connect(userId), 5000);
     } else {
       console.error('Max reconnection attempts reached');
+      // Reset reconnect attempts after a longer delay
+      setTimeout(() => {
+        this.reconnectAttempts = 0;
+        this.connect(userId);
+      }, 30000);
     }
   }
 
   subscribeToTopics(userId) {
+    if (!this.stompClient?.connected) {
+      console.log('WebSocket not connected, adding to pending subscriptions');
+      this.pendingSubscriptions.add(userId);
+      return;
+    }
+
     // Subscribe to personal messages
     this.stompClient.subscribe(
       `/user/${userId}/topic/messages`,
       (message) => {
         const newMessage = JSON.parse(message.body);
+        console.log('Received new message:', newMessage);
         this.notifySubscribers('messages', newMessage);
       }
     );
@@ -81,6 +105,7 @@ class WebSocketService {
       '/topic/broadcast',
       (message) => {
         const broadcastMessage = JSON.parse(message.body);
+        console.log('Received broadcast message:', broadcastMessage);
         this.notifySubscribers('broadcast', broadcastMessage);
       }
     );
@@ -91,6 +116,11 @@ class WebSocketService {
       this.subscribers.set(topic, new Set());
     }
     this.subscribers.get(topic).add(callback);
+    
+    // If we have a current user ID, ensure we're subscribed to their topics
+    if (this.currentUserId) {
+      this.subscribeToTopics(this.currentUserId);
+    }
   }
 
   unsubscribe(topic, callback) {

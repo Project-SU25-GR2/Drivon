@@ -15,7 +15,6 @@ const Messages = () => {
   const chatMessagesRef = useRef(null);
   const selectedUserRef = useRef(selectedUser);
 
-  // Scroll to bottom of messages
   const scrollToBottom = () => {
     const chatBox = chatMessagesRef.current;
     if (chatBox) {
@@ -37,16 +36,9 @@ const Messages = () => {
       return;
     }
 
-    // Connect to WebSocket if not already connected
-    if (!webSocketService.isWebSocketConnected()) {
-      webSocketService.connect(currentUser.userId);
-    }
-
-    // Subscribe to messages
     const handleNewMessage = (newMessage) => {
       const currentSelectedUser = selectedUserRef.current;
-      
-      // Update messages if the message is relevant to current conversation
+
       if (
         currentSelectedUser &&
         (
@@ -57,7 +49,6 @@ const Messages = () => {
         setMessages(prev => [...prev, newMessage]);
       }
 
-      // Update conversation list
       setConversations(prev => {
         const updated = prev.map(conv => {
           if (conv.id === newMessage.sender_id || conv.id === newMessage.receiver_id) {
@@ -76,13 +67,19 @@ const Messages = () => {
       });
     };
 
-    webSocketService.subscribe('messages', handleNewMessage);
+    const setupWebSocket = () => {
+      webSocketService.subscribe('messages', handleNewMessage);
+    };
 
-    // Fetch conversations
+    if (!webSocketService.isWebSocketConnected()) {
+      webSocketService.connect(currentUser.userId, setupWebSocket);
+    } else {
+      setupWebSocket();
+    }
+
     const fetchConversations = async () => {
       try {
         const response = await axios.get(`http://localhost:8080/api/messages/conversations/${currentUser.userId}`);
-        console.log('Fetched conversations:', response.data);
         setConversations(response.data);
       } catch (error) {
         console.error('Error fetching conversations:', error);
@@ -91,13 +88,11 @@ const Messages = () => {
 
     fetchConversations();
 
-    // Cleanup on unmount
     return () => {
       webSocketService.unsubscribe('messages', handleNewMessage);
     };
   }, [currentUser?.userId]);
 
-  // Add effect to fetch messages when selected user changes
   useEffect(() => {
     if (selectedUser) {
       const fetchMessages = async () => {
@@ -107,7 +102,6 @@ const Messages = () => {
           );
           setMessages(response.data);
 
-          // If there's an initial message and no messages yet, send it automatically
           if (location.state?.initialMessage && response.data.length === 0) {
             handleSendMessage(new Event('submit'));
           }
@@ -132,39 +126,30 @@ const Messages = () => {
         sent_at: new Date().toISOString()
       };
 
-      console.log('Sending message:', newMessage);
-      
-      // Check WebSocket connection before sending
       if (!webSocketService.isWebSocketConnected()) {
-        console.log('WebSocket not connected, attempting to reconnect...');
-        webSocketService.connect(currentUser.userId);
-        // Wait for connection
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log('WebSocket not connected, reconnecting...');
+        await new Promise((resolve) => {
+          webSocketService.connect(currentUser.userId, resolve);
+        });
       }
 
       const success = webSocketService.sendMessage(newMessage);
-      if (!success) {
-        throw new Error('Failed to send message');
-      }
+      if (!success) throw new Error('Failed to send message');
 
-      // Update conversation list immediately
       setConversations(prev => {
-        const updated = prev.map(conv => {
-          if (conv.id === selectedUser.id) {
-            return {
-              ...conv,
-              lastMessage: message,
-              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            };
-          }
-          return conv;
-        });
-        return updated;
+        return prev.map(conv =>
+          conv.id === selectedUser.id
+            ? {
+                ...conv,
+                lastMessage: message,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+              }
+            : conv
+        );
       });
 
       setMessage('');
 
-      // Clear initial message state after sending
       if (location.state?.initialMessage) {
         navigate('/messages', { state: { selectedUser } });
       }
@@ -176,12 +161,10 @@ const Messages = () => {
 
   const handleUserSelect = (user) => {
     setSelectedUser(user);
-    // Mark messages as read
     axios.put(`http://localhost:8080/api/messages/read/${currentUser.userId}/${user.id}`);
-    // Reset unread count in conversations
-    setConversations(prev => prev.map(conv => 
-      conv.id === user.id ? { ...conv, unread: 0 } : conv
-    ));
+    setConversations(prev =>
+      prev.map(conv => (conv.id === user.id ? { ...conv, unread: 0 } : conv))
+    );
   };
 
   return (
@@ -232,7 +215,7 @@ const Messages = () => {
                   </span>
                 </div>
               ))}
-              <div/>
+              <div />
             </div>
             <form className="message-input" onSubmit={handleSendMessage}>
               <input
@@ -257,4 +240,4 @@ const Messages = () => {
   );
 };
 
-export default Messages; 
+export default Messages;
