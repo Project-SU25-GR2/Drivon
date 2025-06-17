@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +52,7 @@ public class MessageService {
                                     : "https://ui-avatars.com/api/?name=" + partner.getFullName()
                                             + "&background=random",
                             "lastMessage", lastMessage.getContent(),
-                            "time", lastMessage.getSent_at().toString(),
+                            "time", lastMessage.getSent_at().format(DateTimeFormatter.ofPattern("HH:mm")),
                             "unread", unreadCount);
                     conversations.add(conversation);
                 }
