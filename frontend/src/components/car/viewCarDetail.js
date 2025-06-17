@@ -41,7 +41,7 @@ const ViewCarDetail = () => {
   const [mainImage, setMainImage] = useState('');
   const [otherImages, setOtherImages] = useState([]);
   const [carContracts, setCarContracts] = useState({});
-  const [totalAmount, setTotalAmount] = useState(0);
+  const [ownerInfo, setOwnerInfo] = useState(null);
 
   // Đặt filteredCars lên trên các useEffect để tránh lỗi ReferenceError
   const filteredCars = allCars.filter(item => {
@@ -55,20 +55,37 @@ const ViewCarDetail = () => {
   useEffect(() => {
     axios.get(`http://localhost:8080/api/cars/${licensePlate}`)
       .then(res => {
+        console.log('Car data:', res.data);
         setCar(res.data);
         setMainImage(res.data.mainImage);
         setOtherImages(res.data.otherImages || []);
         setLoading(false);
       })
-      .catch(() => {
+      .catch(error => {
+        console.error('Error fetching car:', error);
         setError('Không tìm thấy xe');
         setLoading(false);
       });
 
     // Fetch hợp đồng gần nhất của xe
     axios.get(`http://localhost:8080/api/contracts/by-car/${licensePlate}`)
-      .then(res => setContract(res.data))
-      .catch(() => setContract(null));
+      .then(res => {
+        console.log('Contract data:', res.data);
+        setContract(res.data);
+        // Set owner info from contract data
+        if (res.data) {
+          setOwnerInfo({
+            userId: res.data.customerId,
+            fullName: res.data.name,
+            email: res.data.email,
+            phone: res.data.phone
+          });
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching contract:', error);
+        setContract(null);
+      });
   }, [licensePlate]);
 
   useEffect(() => {
@@ -129,25 +146,6 @@ const ViewCarDetail = () => {
     // eslint-disable-next-line
   }, [filteredCars, carContracts]);
 
-  // Calculate total amount whenever dateRange or selectedCoupon changes
-  useEffect(() => {
-    if (contract && dateRange[0].startDate && dateRange[0].endDate) {
-      const daysDiff = Math.ceil((dateRange[0].endDate - dateRange[0].startDate) / (1000 * 60 * 60 * 24)) + 1;
-      let amount = contract.pricePerDay * daysDiff;
-      
-      // Apply coupon discount if selected
-      if (selectedCoupon) {
-        const discount = (amount * selectedCoupon.discount_percent) / 100;
-        amount = amount - discount;
-      }
-      
-      // Add deposit to total amount
-      amount = amount + (contract.deposit || 0);
-      
-      setTotalAmount(Math.round(amount));
-    }
-  }, [dateRange, selectedCoupon, contract]);
-
   const handleApplyCoupon = (coupon) => {
     if (selectedCoupon && selectedCoupon.code === coupon.code) {
       setSelectedCoupon(null);
@@ -194,6 +192,58 @@ const ViewCarDetail = () => {
     message.success('Đặt xe thành công!');
     setShowRentalForm(false);
     // You can add additional logic here, such as redirecting to a confirmation page
+  };
+
+  const handleContactOwner = () => {
+    console.log('Contact owner clicked');
+    const user = JSON.parse(localStorage.getItem('user'));
+    console.log('Current user:', user);
+    console.log('Owner info:', ownerInfo);
+
+    if (!user) {
+      message.warning('Vui lòng đăng nhập để liên hệ với chủ xe');
+      navigate('/auth');
+      return;
+    }
+
+    if (!ownerInfo) {
+      message.error('Không thể lấy thông tin chủ xe');
+      return;
+    }
+
+    // Kiểm tra nếu người dùng đang cố gắng liên hệ với chính họ
+    if (user.userId === ownerInfo.userId) {
+      message.warning('Bạn không thể liên hệ với chính mình');
+      return;
+    }
+
+    // Tạo tin nhắn mặc định
+    const defaultMessage = `Xin chào, tôi quan tâm đến xe ${car.brand} ${car.model} của bạn`;
+
+    console.log('Navigating to messages with:', {
+      selectedUser: {
+        id: ownerInfo.userId,
+        name: ownerInfo.fullName,
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(ownerInfo.fullName)}&background=random`,
+        lastMessage: defaultMessage,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      },
+      initialMessage: defaultMessage
+    });
+
+    // Điều hướng đến trang messages với thông tin chủ xe
+    navigate('/messages', { 
+      state: { 
+        selectedUser: {
+          id: ownerInfo.userId,
+          name: ownerInfo.fullName,
+          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(ownerInfo.fullName)}&background=random`,
+          lastMessage: defaultMessage,
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        },
+        initialMessage: defaultMessage
+      }
+    });
   };
 
   if (loading) return <div>Đang tải...</div>;
@@ -259,6 +309,9 @@ const ViewCarDetail = () => {
                             {item.fuelType === 'gasoline' || item.fuelType === 'hybrid' ? <FaGasPump className="same-car-icon"/> :
                               item.fuelType === 'diesel' ? <BsFillFuelPumpDieselFill className="same-car-icon"/> :
                               item.fuelType === 'electric' ? <BsEvStationFill className="same-car-icon"/> : null}
+                          </span>
+                          <span style={{margin: '0 6px', color: '#fff'}}>|</span>
+                          <span>
                             {item.fuelType === 'electric' ? ` ${item.fuelConsumption}kWh` : ` ${item.fuelConsumption}L`}
                           </span>
                         </div>
@@ -301,41 +354,14 @@ const ViewCarDetail = () => {
               <>
                 <p><b>Giá:</b> {contract.pricePerDay?.toLocaleString()} VNĐ/ngày</p>
                 <p><b>Deposit:</b> {contract.deposit?.toLocaleString()} VNĐ</p>
-                <p>
-                  <b>Ngày thuê & trả:</b>
-                </p>
-                <button
-                  className='calendar-range-button'
-                  onClick={() => setShowCalendar(!showCalendar)}
-                  style={{ border: 'none', background: 'none' }}
-                >
-                  <i className="bi bi-calendar-range"></i>
-                </button>
-                {dateRange[0].startDate.toLocaleDateString()} - {dateRange[0].endDate.toLocaleDateString()}
-                {showCalendar && (
-                  <div ref={calendarRef} style={{ position: 'absolute', zIndex: 100 }}>
-                    <DateRange
-                      editableDateInputs={true}
-                      onChange={item => setDateRange([item.selection])}
-                      moveRangeOnFirstSelection={false}
-                      ranges={dateRange}
-                      minDate={new Date()}
-                    />
-                  </div>
-                )}
-                <p style={{ margin: '0.5rem 0' }}>
-                  <b>Tổng tiền:</b> {totalAmount.toLocaleString()} VNĐ
-                  {selectedCoupon && (
-                    <span style={{ color: '#52c41a', marginLeft: '8px' }}>
-                      (Đã giảm {selectedCoupon.discount_percent}% + tiền cọc)
-                    </span>
-                  )}
-                </p>
               </>
             )}
-            <button className="btn-discount" onClick={() => setShowCouponModal(true)}>
-              <i className="bi bi-ticket-perforated-fill"></i>  
-              {selectedCoupon ? `Mã giảm giá: ${selectedCoupon.code}` : 'Mã giảm giá'}
+            <button 
+              className="btn-contact-owner" 
+              onClick={handleContactOwner}
+              
+            >
+              Liên hệ với chủ xe
             </button>
             <button className="btn-rent-car" onClick={handleRentClick}>Thuê xe</button>
             <div className="car-detail-rental-papers">
@@ -347,53 +373,23 @@ const ViewCarDetail = () => {
                 <p>Hỗ trợ 24/7</p>
               </div>
             </div>
+            
           </div>
         </div>
 
       </div>
 
-      <Modal
-        title="Chọn mã khuyến mãi"
-        open={showCouponModal}
-        onCancel={() => setShowCouponModal(false)}
-        footer={null}
-      >
-        <List
-          dataSource={couponList}
-          renderItem={item => (
-            <List.Item
-              actions={[
-                <Button
-                  type={selectedCoupon && selectedCoupon.code === item.code ? 'primary' : 'default'}
-                  style={selectedCoupon && selectedCoupon.code === item.code ? { backgroundColor: '#52c41a', borderColor: '#52c41a', color: '#fff' } : {}}
-                  disabled={selectedCoupon && selectedCoupon.code !== item.code}
-                  onClick={() => handleApplyCoupon(item)}
-                >
-                  {selectedCoupon && selectedCoupon.code === item.code ? 'Đã áp dụng' : 'Áp dụng'}
-                </Button>
-              ]}
-            >
-              <List.Item.Meta
-                title={item.code}
-                description={`Giảm ${item.discount_percent}%`}
-              />
-            </List.Item>
-          )}
+      {showRentalForm && (
+        <RentalForm
+          visible={showRentalForm}
+          onClose={() => setShowRentalForm(false)}
+          car={car}
+          user={JSON.parse(localStorage.getItem('user'))}
+          dateRange={dateRange}
+          contract={contract}
+          onSuccess={handleRentalSuccess}
         />
-      </Modal>
-
-      <RentalForm
-        visible={showRentalForm}
-        onClose={() => setShowRentalForm(false)}
-        car={{
-          ...car,
-          pricePerDay: contract?.pricePerDay
-        }}
-        user={JSON.parse(localStorage.getItem('user'))}
-        dateRange={dateRange}
-        onSuccess={handleRentalSuccess}
-        totalAmount={totalAmount}
-      />
+      )}
     </div>
   );
 };

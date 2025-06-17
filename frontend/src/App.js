@@ -20,7 +20,8 @@ import RentCar from "./components/rent/RentCar";
 import ViewCarDetail from "./components/car/viewCarDetail";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import ManagerOwnerPage from "./components/owner/ManagerOwnerPage";
-import PaymentSuccess from "./components/payment/PaymentSuccess";
+import RentalSuccess from "./components/car/RentalSuccess";
+import Messages from "./components/chat/Messages";
 // import CarRental404 from "./components/others/404";
 function App() {
   const [user, setUser] = useState(null);
@@ -247,10 +248,10 @@ function App() {
           }
         />
         <Route
-          path="/payment-success"
+          path="/rental-success"
           element={
             <MainLayout user={user} handleLogout={handleLogout}>
-              <PaymentSuccess />
+              <RentalSuccess />
             </MainLayout>
           }
         />
@@ -262,6 +263,14 @@ function App() {
             </MainLayout>
           }
         /> */}
+        <Route
+          path="/messages"
+          element={
+            <MainLayout user={user} handleLogout={handleLogout}>
+              <Messages />
+            </MainLayout>
+          }
+        />
       </Routes>
     </GoogleOAuthProvider>
   );
