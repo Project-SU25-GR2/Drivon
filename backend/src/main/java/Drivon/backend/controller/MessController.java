@@ -4,6 +4,7 @@ import Drivon.backend.entity.Message;
 import Drivon.backend.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,9 +18,28 @@ public class MessController {
     @Autowired
     private MessageService messageService;
 
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
     @PostMapping
     public ResponseEntity<Message> sendMessage(@RequestBody Message message) {
-        return ResponseEntity.ok(messageService.sendMessage(message));
+        Message savedMessage = messageService.sendMessage(message);
+        
+        // Send to sender's personal queue
+        messagingTemplate.convertAndSendToUser(
+            String.valueOf(message.getSender_id()),
+            "/topic/messages",
+            savedMessage
+        );
+        
+        // Send to receiver's personal queue
+        messagingTemplate.convertAndSendToUser(
+            String.valueOf(message.getReceiver_id()),
+            "/topic/messages",
+            savedMessage
+        );
+        
+        return ResponseEntity.ok(savedMessage);
     }
 
     @GetMapping("/{userId1}/{userId2}")
