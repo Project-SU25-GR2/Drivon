@@ -22,6 +22,17 @@ const Messages = () => {
     }
   };
 
+  const fetchMessages = async (userId1, userId2) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8080/api/messages/${userId1}/${userId2}`
+      );
+      setMessages(response.data);
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+    }
+  };
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -39,22 +50,6 @@ const Messages = () => {
     const handleNewMessage = (newMessage) => {
       const currentSelectedUser = selectedUserRef.current;
 
-      if (
-        (newMessage.sender_id === currentUser.userId && newMessage.receiver_id === currentSelectedUser?.id) ||
-        (newMessage.receiver_id === currentUser.userId && newMessage.sender_id === currentSelectedUser?.id)
-      ) {
-        setMessages(prev => {
-          const exists = prev.some(msg => 
-            msg.sender_id === newMessage.sender_id && 
-            msg.receiver_id === newMessage.receiver_id && 
-            msg.content === newMessage.content &&
-            new Date(msg.sent_at).getTime() === new Date(newMessage.sent_at).getTime()
-          );
-          if (exists) return prev;
-          return [...prev, newMessage];
-        });
-      }
-
       setConversations(prev => {
         const updated = prev.map(conv => {
           if (conv.id === newMessage.sender_id || conv.id === newMessage.receiver_id) {
@@ -71,6 +66,13 @@ const Messages = () => {
         });
         return updated;
       });
+
+      if (
+        (newMessage.sender_id === currentUser.userId && newMessage.receiver_id === currentSelectedUser?.id) ||
+        (newMessage.receiver_id === currentUser.userId && newMessage.sender_id === currentSelectedUser?.id)
+      ) {
+        fetchMessages(currentUser.userId, currentSelectedUser.id);
+      }
     };
 
     const setupWebSocket = () => {
@@ -101,22 +103,11 @@ const Messages = () => {
 
   useEffect(() => {
     if (selectedUser) {
-      const fetchMessages = async () => {
-        try {
-          const response = await axios.get(
-            `http://localhost:8080/api/messages/${currentUser.userId}/${selectedUser.id}`
-          );
-          setMessages(response.data);
+      fetchMessages(currentUser.userId, selectedUser.id);
 
-          if (location.state?.initialMessage && response.data.length === 0) {
-            handleSendMessage(new Event('submit'));
-          }
-        } catch (error) {
-          console.error('Error fetching messages:', error);
-        }
-      };
-
-      fetchMessages();
+      if (location.state?.initialMessage) {
+        handleSendMessage(new Event('submit'));
+      }
     }
   }, [selectedUser?.id]);
 
