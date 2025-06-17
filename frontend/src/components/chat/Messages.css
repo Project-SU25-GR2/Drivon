@@ -15,6 +15,9 @@
 .messages-header {
   padding: 20px;
   border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .messages-header h2 {
@@ -111,19 +114,7 @@
   border-bottom: 1px solid #e0e0e0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-}
-
-.chat-header-info {
-  display: flex;
-  align-items: center;
-  flex: 1;
-}
-
-.chat-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  position: relative;
 }
 
 .chat-avatar {
@@ -137,52 +128,130 @@
   margin: 0;
   font-size: 1.1rem;
   color: #333;
+  flex: 1;
 }
 
-.delete-chat-btn {
+/* Chat actions */
+.chat-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.chat-action-btn {
   background: none;
   border: none;
-  color: #dc3545;
-  font-size: 1.1rem;
-  cursor: pointer;
   padding: 8px;
   border-radius: 50%;
-  transition: all 0.2s ease;
+  cursor: pointer;
+  transition: background-color 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 36px;
+  height: 36px;
 }
 
-.delete-chat-btn:hover {
+.chat-action-btn:hover {
+  background-color: #f0f0f0;
+}
+
+.chat-action-btn.close-btn {
+  color: #666;
+}
+
+.chat-action-btn.close-btn:hover {
+  color: #333;
+}
+
+.chat-action-btn.delete-btn {
+  color: #dc3545;
+}
+
+.chat-action-btn.delete-btn:hover {
   background-color: #f8d7da;
   color: #721c24;
 }
 
-.delete-chat-btn:active {
-  transform: scale(0.95);
+.chat-action-btn i {
+  font-size: 14px;
 }
 
-.close-chat-btn {
-  background: none;
-  border: none;
-  color: #666;
-  font-size: 1.2rem;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 50%;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* Delete confirmation dialog */
+.delete-confirm {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 16px;
+  min-width: 250px;
+  z-index: 1000;
+  margin-top: 8px;
 }
 
-.close-chat-btn:hover {
-  background-color: #f0f0f0;
+.delete-confirm::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  right: 20px;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid white;
+}
+
+.delete-confirm::after {
+  content: '';
+  position: absolute;
+  top: -9px;
+  right: 20px;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid #e0e0e0;
+}
+
+.delete-confirm p {
+  margin: 0 0 16px 0;
   color: #333;
+  font-size: 14px;
 }
 
-.close-chat-btn:active {
-  transform: scale(0.95);
+.delete-confirm-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.confirm-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.confirm-btn.confirm-delete {
+  background-color: #dc3545;
+  color: white;
+}
+
+.confirm-btn.confirm-delete:hover {
+  background-color: #c82333;
+}
+
+.confirm-btn.cancel-delete {
+  background-color: #6c757d;
+  color: white;
+}
+
+.confirm-btn.cancel-delete:hover {
+  background-color: #5a6268;
 }
 
 .chat-messages {
@@ -315,4 +384,28 @@
 .no-chat-selected p {
   font-size: 1.1rem;
   margin: 0;
+}
+
+.sidebar-close-btn {
+  background: none;
+  border: none;
+  padding: 8px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: #666;
+}
+
+.sidebar-close-btn:hover {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.sidebar-close-btn i {
+  font-size: 12px;
 } 
