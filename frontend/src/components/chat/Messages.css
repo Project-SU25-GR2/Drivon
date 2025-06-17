@@ -160,6 +160,16 @@
   border-bottom-left-radius: 5px;
 }
 
+/* Styling cho tin nhắn tạm thời */
+.message.temp-message {
+  opacity: 0.7;
+}
+
+.temp-indicator {
+  font-style: italic;
+  color: #999;
+}
+
 .message p {
   margin: 0;
   font-size: 0.95rem;

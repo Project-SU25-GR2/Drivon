@@ -37,6 +37,12 @@ const Messages = () => {
     scrollToBottom();
   }, [messages]);
 
+  // Debug useEffect để theo dõi thay đổi messages
+  useEffect(() => {
+    console.log('Messages state changed:', messages);
+    console.log('Messages count:', messages.length);
+  }, [messages]);
+
   useEffect(() => {
     selectedUserRef.current = selectedUser;
   }, [selectedUser]);
@@ -48,10 +54,16 @@ const Messages = () => {
     }
   
     const handleNewMessage = (newMessage) => {
+      console.log('Received new message:', newMessage);
+      console.log('Current selectedUser:', selectedUser);
+      console.log('Current user:', currentUser);
+      
       const isCurrentConversation =
         (newMessage.sender_id === currentUser.userId && newMessage.receiver_id === selectedUser?.id) ||
         (newMessage.receiver_id === currentUser.userId && newMessage.sender_id === selectedUser?.id);
   
+      console.log('Is current conversation:', isCurrentConversation);
+
       // Cập nhật preview hội thoại
       setConversations((prev) =>
         prev.map((conv) => {
@@ -76,14 +88,48 @@ const Messages = () => {
       // Nếu đang xem đúng đoạn hội thoại → thêm tin nhắn vào chat
       if (isCurrentConversation) {
         setMessages((prev) => {
-          const messageExists = prev.some(
-            (msg) =>
-              msg.content === newMessage.content &&
-              msg.sender_id === newMessage.sender_id &&
-              msg.receiver_id === newMessage.receiver_id &&
-              Math.abs(new Date(msg.sent_at) - new Date(newMessage.sent_at)) < 1000
+          // Kiểm tra xem có tin nhắn tạm thời tương ứng không
+          const tempMessageIndex = prev.findIndex(
+            (msg) => msg.temp && 
+                     msg.content === newMessage.content &&
+                     msg.sender_id === newMessage.sender_id &&
+                     msg.receiver_id === newMessage.receiver_id &&
+                     Math.abs(new Date(msg.sent_at) - new Date(newMessage.sent_at)) < 5000
           );
-          return messageExists ? prev : [...prev, newMessage];
+          
+          if (tempMessageIndex !== -1) {
+            // Thay thế tin nhắn tạm thời bằng tin nhắn thật
+            console.log('Replacing temporary message with real message');
+            const updatedMessages = [...prev];
+            updatedMessages[tempMessageIndex] = newMessage;
+            return updatedMessages;
+          }
+          
+          // Kiểm tra trùng lặp dựa trên message_id hoặc nội dung + thời gian
+          const messageExists = prev.some(
+            (msg) => {
+              // Nếu cả hai đều có message_id, so sánh message_id
+              if (msg.message_id && newMessage.message_id) {
+                return msg.message_id === newMessage.message_id;
+              }
+              // Nếu không có message_id, so sánh nội dung và thời gian
+              return msg.content === newMessage.content &&
+                     msg.sender_id === newMessage.sender_id &&
+                     msg.receiver_id === newMessage.receiver_id &&
+                     Math.abs(new Date(msg.sent_at) - new Date(newMessage.sent_at)) < 3000;
+            }
+          );
+          
+          console.log('Message exists:', messageExists);
+          console.log('Current messages count:', prev.length);
+          
+          if (messageExists) {
+            console.log('Skipping duplicate message');
+            return prev;
+          } else {
+            console.log('Adding new message from WebSocket to chat');
+            return [...prev, newMessage];
+          }
         });
       }
     };
@@ -129,6 +175,9 @@ const Messages = () => {
     e.preventDefault();
     if (!message.trim() || !selectedUser) return;
 
+    console.log('Sending message:', message);
+    console.log('To user:', selectedUser);
+
     try {
       const newMessage = {
         sender_id: currentUser.userId,
@@ -136,6 +185,8 @@ const Messages = () => {
         content: message,
         sent_at: new Date().toISOString()
       };
+
+      console.log('Created message object:', newMessage);
 
       if (!webSocketService.isWebSocketConnected()) {
         console.log('WebSocket not connected, reconnecting...');
@@ -145,10 +196,19 @@ const Messages = () => {
       }
 
       const success = webSocketService.sendMessage(newMessage);
+      console.log('WebSocket send success:', success);
+      
       if (!success) throw new Error('Failed to send message');
 
-      // Thêm tin nhắn mới vào state messages ngay lập tức
-      setMessages(prev => [...prev, newMessage]);
+      // Thêm tin nhắn tạm thời với flag để tránh trùng lặp
+      const tempMessage = {
+        ...newMessage,
+        temp: true, // Flag để đánh dấu tin nhắn tạm thời
+        tempId: Date.now() // ID tạm thời
+      };
+      
+      console.log('Adding temporary message to state');
+      setMessages(prevMessages => [...prevMessages, tempMessage]);
 
       setConversations(prev => {
         return prev.map(conv =>
@@ -220,12 +280,13 @@ const Messages = () => {
             <div className="chat-messages" ref={chatMessagesRef}>
               {messages.map((msg, index) => (
                 <div
-                  key={index}
-                  className={`message ${msg.sender_id === currentUser.userId ? 'sent' : 'received'}`}
+                  key={`${msg.sender_id}-${msg.receiver_id}-${msg.sent_at}-${index}`}
+                  className={`message ${msg.sender_id === currentUser.userId ? 'sent' : 'received'} ${msg.temp ? 'temp-message' : ''}`}
                 >
                   <p>{msg.content}</p>
                   <span className="message-time">
                     {new Date(msg.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {msg.temp && <span className="temp-indicator"> (Đang gửi...)</span>}
                   </span>
                 </div>
               ))}
