@@ -48,4 +48,10 @@ public class Payment {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "promotion_code")
+    private String promotionCode;
+
+    @Column(name = "discount_percent")
+    private Integer discountPercent;
 }

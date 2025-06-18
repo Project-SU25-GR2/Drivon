@@ -198,11 +198,12 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
         returnUrl: "http://localhost:3000/payment-success",
         cancelUrl: `http://localhost:3000/rent-car/`,
         userId: user.userId,
-        carId: car.id,
+        carId: car.licensePlate,
         additionalRequirements: values.requirements,
         rentalStartDate: dateRange[0].startDate.toISOString(),
         rentalEndDate: dateRange[0].endDate.toISOString(),
-        promotionCode: selectedCoupon ? selectedCoupon.code : null
+        promotionCode: selectedCoupon ? selectedCoupon.code : null,
+        discountPercent: selectedCoupon ? selectedCoupon.discount_percent : 0,
       };
 
       console.log("Payment request data:", paymentRequest);

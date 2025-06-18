@@ -255,6 +255,14 @@ function App() {
             </MainLayout>
           }
         />
+        <Route
+          path="/payment-success"
+          element={
+            <MainLayout user={user} handleLogout={handleLogout}>
+              <RentalSuccess />
+            </MainLayout>
+          }
+        />
         <Route path="/my-rentals" element={<MyRentals />} />
         {/* <Route
           path="*"

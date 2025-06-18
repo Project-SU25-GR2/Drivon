@@ -79,8 +79,8 @@ public class PaymentService {
                 payment.setRentalEndDate(request.getRentalEndDate());
             }
 
-            // Save to database
-            payment = paymentRepository.save(payment);
+            // Save to database (dùng hàm dùng chung)
+            payment = savePayment(payment);
             logger.info("Created cash payment: {}", payment);
 
             // Return response
@@ -150,6 +150,58 @@ public class PaymentService {
 
             logger.info("Received response from PayOS: {}", response);
 
+            // Lưu luôn bản ghi Payment trạng thái PENDING
+            try {
+                Payment payment = paymentRepository.findByOrderCode(String.valueOf(request.getOrderCode()));
+                if (payment == null) {
+                    payment = new Payment();
+                    payment.setPaymentId("PAYOS_" + System.currentTimeMillis());
+                    payment.setOrderCode(String.valueOf(request.getOrderCode()));
+                    payment.setAmount(Double.valueOf(request.getAmount()));
+                    payment.setStatus("PAID");
+                    payment.setPaymentMethod("bank");
+                    payment.setPaymentDate(LocalDateTime.now());
+                    payment.setUserId(Long.valueOf(request.getUserId()));
+                    payment.setCarId(request.getCarId());
+                    payment.setAdditionalRequirements(request.getAdditionalRequirements());
+                    if (request.getRentalStartDate() != null) {
+                        try {
+                            payment.setRentalStartDate(LocalDateTime.parse(request.getRentalStartDate()));
+                        } catch (Exception e) {
+                            try {
+                                payment.setRentalStartDate(java.time.Instant.parse(request.getRentalStartDate())
+                                        .atZone(java.time.ZoneId.systemDefault()).toLocalDateTime());
+                            } catch (Exception e2) {
+                                logger.warn("Cannot parse rentalStartDate (ISO): {}", request.getRentalStartDate());
+                            }
+                        }
+                    }
+                    if (request.getRentalEndDate() != null) {
+                        try {
+                            payment.setRentalEndDate(LocalDateTime.parse(request.getRentalEndDate()));
+                        } catch (Exception e) {
+                            try {
+                                payment.setRentalEndDate(java.time.Instant.parse(request.getRentalEndDate())
+                                        .atZone(java.time.ZoneId.systemDefault()).toLocalDateTime());
+                            } catch (Exception e2) {
+                                logger.warn("Cannot parse rentalEndDate (ISO): {}", request.getRentalEndDate());
+                            }
+                        }
+                    }
+                    payment.setPromotionCode(request.getPromotionCode());
+                    payment.setDiscountPercent(request.getDiscountPercent());
+                    if (request.getDiscountPercent() != null) {
+                        payment.setAdditionalRequirements((payment.getAdditionalRequirements() != null
+                                ? payment.getAdditionalRequirements() + ", "
+                                : "") + "Giảm " + request.getDiscountPercent() + "%");
+                    }
+                    savePayment(payment);
+                    logger.info("Saved PAID PayOS payment: {}", payment);
+                }
+            } catch (Exception ex) {
+                logger.error("Error saving PAID payment to DB: {}", ex.getMessage(), ex);
+            }
+
             // Create response with payment info
             Map<String, Object> formattedResponse = new HashMap<>();
             formattedResponse.put("data", response);
@@ -172,12 +224,34 @@ public class PaymentService {
             String orderCode = (String) webhookData.get("orderCode");
             String status = (String) webhookData.get("status");
             String userId = (String) webhookData.get("userId");
+            Double amount = webhookData.get("amount") instanceof Number
+                    ? ((Number) webhookData.get("amount")).doubleValue()
+                    : null;
+            String carId = webhookData.get("carId") != null ? webhookData.get("carId").toString() : null;
 
             if (orderCode == null || status == null || userId == null) {
+                logger.error("Webhook missing required data: orderCode={}, status={}, userId={}", orderCode, status,
+                        userId);
                 throw new IllegalArgumentException("Missing required webhook data");
             }
 
-            // Verify webhook signature here if needed
+            // Nếu status là SUCCESS thì update trạng thái giao dịch
+            if ("SUCCESS".equalsIgnoreCase(status)) {
+                try {
+                    Payment payment = paymentRepository.findByOrderCode(orderCode);
+                    if (payment != null) {
+                        payment.setStatus("SUCCESS");
+                        logger.info("Updating PayOS payment status to SUCCESS: {}", payment);
+                        savePayment(payment);
+                        logger.info("Updated PayOS payment status to SUCCESS: {}", payment);
+                    } else {
+                        logger.error("No PAID payment found for orderCode {}. Webhook ignored.", orderCode);
+                    }
+                } catch (Exception ex) {
+                    logger.error("Error updating payment to SUCCESS. Webhook data: {}. Error: {}", webhookData,
+                            ex.getMessage(), ex);
+                }
+            }
 
             // Send payment status update via WebSocket
             String message = "Payment " + status.toLowerCase();
@@ -202,5 +276,15 @@ public class PaymentService {
             logger.error("Error getting user rentals: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to get user rentals: " + e.getMessage());
         }
+    }
+
+    // Hàm dùng chung để lưu Payment
+    public Payment savePayment(Payment payment) {
+        return paymentRepository.save(payment);
+    }
+
+    // API lấy chi tiết payment theo orderCode
+    public Payment getPaymentByOrderCode(String orderCode) {
+        return paymentRepository.findByOrderCode(orderCode);
     }
 }

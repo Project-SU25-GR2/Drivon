@@ -145,4 +145,17 @@ public class PaymentController {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
     }
+
+    @GetMapping("/order/{orderCode}")
+    public ResponseEntity<?> getPaymentByOrderCode(@PathVariable String orderCode) {
+        try {
+            Payment payment = paymentService.getPaymentByOrderCode(orderCode);
+            if (payment == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(payment);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
 }
