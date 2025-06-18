@@ -126,6 +126,33 @@
   color: #333;
 }
 
+.polling-indicator {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  color: #28a745;
+}
+
+.polling-indicator i {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 .chat-messages {
   flex: 1;
   padding: 20px;

@@ -15,6 +15,18 @@ const Messages = () => {
   const currentUser = JSON.parse(localStorage.getItem('user'));
   const chatMessagesRef = useRef(null);
   const selectedUserRef = useRef(selectedUser);
+  
+  // Polling intervals (in milliseconds)
+  const MESSAGES_POLL_INTERVAL = 3000; // 3 seconds
+  const CONVERSATIONS_POLL_INTERVAL = 5000; // 5 seconds
+  
+  // Refs for polling intervals
+  const messagesPollingRef = useRef(null);
+  const conversationsPollingRef = useRef(null);
+  
+  // State to track if tab is active
+  const [isTabActive, setIsTabActive] = useState(true);
+  const [lastPollTime, setLastPollTime] = useState(null);
 
   const scrollToBottom = () => {
     const chatBox = chatMessagesRef.current;
@@ -28,7 +40,33 @@ const Messages = () => {
       const response = await axios.get(
         `http://localhost:8080/api/messages/conversation/${userId1}/${userId2}`
       );
-      setMessages(response.data);
+      
+      // Merge new messages with existing ones to avoid duplicates
+      setMessages(prevMessages => {
+        const newMessages = response.data;
+        
+        // Create a map of existing messages by content and sender for quick lookup
+        const existingMessagesMap = new Map();
+        prevMessages.forEach(msg => {
+          const key = `${msg.sender_id}-${msg.content}-${new Date(msg.sent_at).getTime()}`;
+          existingMessagesMap.set(key, msg);
+        });
+        
+        // Filter out messages that already exist
+        const uniqueNewMessages = newMessages.filter(newMsg => {
+          const key = `${newMsg.sender_id}-${newMsg.content}-${new Date(newMsg.sent_at).getTime()}`;
+          return !existingMessagesMap.has(key);
+        });
+        
+        // If we have new messages, merge them
+        if (uniqueNewMessages.length > 0) {
+          console.log('Adding new messages from polling:', uniqueNewMessages.length);
+          return [...prevMessages, ...uniqueNewMessages];
+        }
+        
+        // If no new messages, just return the server data (in case messages were reordered)
+        return newMessages;
+      });
       
       // Get the conversation ID for this user pair
       const conversation = conversations.find(conv => conv.id === userId2);
@@ -40,6 +78,91 @@ const Messages = () => {
     }
   };
 
+  const fetchConversations = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8080/api/messages/conversations/${currentUser.userId}`);
+      
+      // Merge new conversations with existing ones to preserve unread counts and other state
+      setConversations(prevConversations => {
+        const newConversations = response.data;
+        
+        // Create a map of existing conversations by ID
+        const existingConversationsMap = new Map();
+        prevConversations.forEach(conv => {
+          existingConversationsMap.set(conv.id, conv);
+        });
+        
+        // Merge conversations, preserving existing state like unread counts
+        const mergedConversations = newConversations.map(newConv => {
+          const existingConv = existingConversationsMap.get(newConv.id);
+          if (existingConv) {
+            // Preserve unread count and other state from existing conversation
+            return {
+              ...newConv,
+              unread: existingConv.unread || newConv.unread || 0
+            };
+          }
+          return newConv;
+        });
+        
+        // Check if we have any new conversations
+        const hasNewConversations = newConversations.some(newConv => 
+          !existingConversationsMap.has(newConv.id)
+        );
+        
+        if (hasNewConversations) {
+          console.log('New conversations found via polling');
+        }
+        
+        return mergedConversations;
+      });
+    } catch (error) {
+      console.error('Error fetching conversations:', error);
+    }
+  };
+
+  // Start polling for messages
+  const startMessagesPolling = () => {
+    if (messagesPollingRef.current) {
+      clearInterval(messagesPollingRef.current);
+    }
+    
+    messagesPollingRef.current = setInterval(() => {
+      if (selectedUser && currentUser && isTabActive) {
+        console.log('Polling for messages...');
+        setLastPollTime(new Date());
+        fetchMessages(currentUser.userId, selectedUser.id);
+      }
+    }, MESSAGES_POLL_INTERVAL);
+  };
+
+  // Start polling for conversations
+  const startConversationsPolling = () => {
+    if (conversationsPollingRef.current) {
+      clearInterval(conversationsPollingRef.current);
+    }
+    
+    conversationsPollingRef.current = setInterval(() => {
+      if (currentUser && isTabActive) {
+        console.log('Polling for conversations...');
+        setLastPollTime(new Date());
+        fetchConversations();
+      }
+    }, CONVERSATIONS_POLL_INTERVAL);
+  };
+
+  // Stop all polling
+  const stopPolling = () => {
+    if (messagesPollingRef.current) {
+      clearInterval(messagesPollingRef.current);
+      messagesPollingRef.current = null;
+    }
+    if (conversationsPollingRef.current) {
+      clearInterval(conversationsPollingRef.current);
+      conversationsPollingRef.current = null;
+    }
+  };
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -48,6 +171,33 @@ const Messages = () => {
     selectedUserRef.current = selectedUser;
   }, [selectedUser]);
 
+  // Handle tab visibility changes
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      const isVisible = !document.hidden;
+      console.log('Tab visibility changed:', isVisible);
+      setIsTabActive(isVisible);
+      
+      // If tab becomes visible, immediately fetch latest data
+      if (isVisible) {
+        if (selectedUser && currentUser) {
+          console.log('Tab became visible, fetching latest messages...');
+          fetchMessages(currentUser.userId, selectedUser.id);
+        }
+        if (currentUser) {
+          console.log('Tab became visible, fetching latest conversations...');
+          fetchConversations();
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [selectedUser, currentUser]);
+
   useEffect(() => {
     if (!currentUser) {
       navigate('/auth');
@@ -55,7 +205,7 @@ const Messages = () => {
     }
   
     const handleNewMessage = (newMessage) => {
-      console.log('Received new message:', newMessage);
+      console.log('Received new message via WebSocket:', newMessage);
       console.log('Current state:', {
         selectedConversationId,
         selectedUser: selectedUser?.id,
@@ -222,19 +372,18 @@ const Messages = () => {
       setupWebSocket();
     }
   
-    const fetchConversations = async () => {
-      try {
-        const response = await axios.get(`http://localhost:8080/api/messages/conversations/${currentUser.userId}`);
-        setConversations(response.data);
-      } catch (error) {
-        console.error('Error fetching conversations:', error);
-      }
-    };
-  
+    // Initial fetch
     fetchConversations();
+    
+    // Start polling
+    startConversationsPolling();
+    if (selectedUser) {
+      startMessagesPolling();
+    }
   
     return () => {
       webSocketService.unsubscribe('messages', handleNewMessage);
+      stopPolling();
     };
   }, [currentUser?.userId, selectedConversationId, selectedUser]);
   
@@ -244,6 +393,15 @@ const Messages = () => {
 
       if (location.state?.initialMessage) {
         handleSendMessage(new Event('submit'));
+      }
+      
+      // Start polling for messages when a user is selected
+      startMessagesPolling();
+    } else {
+      // Stop polling for messages when no user is selected
+      if (messagesPollingRef.current) {
+        clearInterval(messagesPollingRef.current);
+        messagesPollingRef.current = null;
       }
     }
   }, [selectedUser?.id]);
@@ -363,6 +521,9 @@ const Messages = () => {
     setConversations(prev =>
       prev.map(conv => (conv.id === user.id ? { ...conv, unread: 0 } : conv))
     );
+    
+    // Restart polling for messages with the new user
+    startMessagesPolling();
   };
 
   return (
@@ -400,6 +561,11 @@ const Messages = () => {
             <div className="chat-header">
               <img src={selectedUser.avatar} alt={selectedUser.name} className="chat-avatar" />
               <h3>{selectedUser.name}</h3>
+              {isTabActive && (
+                <div className="polling-indicator" title="Live updates active">
+                  <i className="bi bi-circle-fill" style={{ color: '#28a745', fontSize: '8px' }}></i>
+                </div>
+              )}
             </div>
             <div className="chat-messages" ref={chatMessagesRef}>
               {messages.map((msg, index) => (
