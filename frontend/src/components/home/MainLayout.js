@@ -4,7 +4,6 @@ import Login from '../auth/Login';
 import Signup from '../auth/Signup';
 import ForgotPasswordPage from '../auth/ForgotPasswordPage';
 import Footer from '../layout/footer';
-import ChatBubble from '../chat/ChatBubble';
 import './MainLayout.css';
 
 const MainLayout = ({ user, handleLogout, children }) => {
@@ -195,7 +194,6 @@ const MainLayout = ({ user, handleLogout, children }) => {
 
       <div className="page-content">{children}</div>
       <Footer />
-      {user && <ChatBubble />}
       <style>{`
         .user-dropdown-menu .dropdown-item:hover, .user-dropdown-menu .dropdown-item:focus {
           background: #f5f5f5;

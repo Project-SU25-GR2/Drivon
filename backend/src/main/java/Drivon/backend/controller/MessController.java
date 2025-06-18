@@ -22,29 +22,50 @@ public class MessController {
     private SimpMessagingTemplate messagingTemplate;
 
     @PostMapping
+<<<<<<< HEAD
     public ResponseEntity<Message> sendMessage(@RequestBody Message message) {
         Message savedMessage = messageService.sendMessage(message);
 
         // Send to sender's personal queue
         messagingTemplate.convertAndSendToUser(
                 String.valueOf(message.getSender_id()),
+=======
+    public ResponseEntity<Message> sendMessage(@RequestBody Map<String, Object> request) {
+        Long senderId = Long.valueOf(request.get("sender_id").toString());
+        Long receiverId = Long.valueOf(request.get("receiver_id").toString());
+        String content = request.get("content").toString();
+
+        Message savedMessage = messageService.sendMessage(senderId, receiverId, content);
+
+        // Send to sender's personal queue
+        messagingTemplate.convertAndSendToUser(
+                String.valueOf(senderId),
+>>>>>>> a9984380f711087bf45d3999e75e5b6f06f9f60d
                 "/topic/messages",
                 savedMessage);
 
         // Send to receiver's personal queue
         messagingTemplate.convertAndSendToUser(
+<<<<<<< HEAD
                 String.valueOf(message.getReceiver_id()),
+=======
+                String.valueOf(receiverId),
+>>>>>>> a9984380f711087bf45d3999e75e5b6f06f9f60d
                 "/topic/messages",
                 savedMessage);
 
         return ResponseEntity.ok(savedMessage);
     }
 
-    @GetMapping("/{userId1}/{userId2}")
+    @GetMapping("/conversation/{userId1}/{userId2}")
     public ResponseEntity<List<Message>> getConversation(
             @PathVariable Long userId1,
             @PathVariable Long userId2) {
-        return ResponseEntity.ok(messageService.getConversation(userId1, userId2));
+        Long conversationId = messageService.getConversationId(userId1, userId2);
+        if (conversationId == null) {
+            return ResponseEntity.ok(List.of());
+        }
+        return ResponseEntity.ok(messageService.getConversationMessages(conversationId));
     }
 
     @GetMapping("/conversations/{userId}")
@@ -52,11 +73,11 @@ public class MessController {
         return ResponseEntity.ok(messageService.getConversations(userId));
     }
 
-    @PutMapping("/read/{senderId}/{receiverId}")
-    public ResponseEntity<Void> markMessagesAsRead(
-            @PathVariable Long senderId,
-            @PathVariable Long receiverId) {
-        messageService.markMessagesAsRead(senderId, receiverId);
+    @PutMapping("/read/{userId}/{conversationId}")
+    public ResponseEntity<Void> markConversationAsRead(
+            @PathVariable Long userId,
+            @PathVariable Long conversationId) {
+        messageService.markConversationAsRead(userId, conversationId);
         return ResponseEntity.ok().build();
     }
 

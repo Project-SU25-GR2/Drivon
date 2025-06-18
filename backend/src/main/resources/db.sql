@@ -238,7 +238,7 @@ CREATE TABLE rental_contracts (
     FOREIGN KEY (owner_id) REFERENCES users(user_id),
     FOREIGN KEY (booking_id) REFERENCES bookings(booking_id)
 );
--- 17. Bảng messages:
+/* 17. Bảng messages:
 CREATE TABLE messages (
     message_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     sender_id BIGINT NOT NULL,
@@ -248,8 +248,63 @@ CREATE TABLE messages (
     is_read BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (sender_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (receiver_id) REFERENCES users(user_id) ON DELETE CASCADE
+); */
+
+
+-- Drop existing tables if they exist (in correct order due to foreign keys)
+DROP TABLE IF EXISTS conversations;
+DROP TABLE IF EXISTS messages;
+DROP TABLE IF EXISTS user_conversations;
+
+-- Recreate conversations table with correct structure
+CREATE TABLE conversations (
+    conversation_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user1_id BIGINT NOT NULL,
+    user2_id BIGINT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user1_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (user2_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
+-- 19. Recreate messages table
+CREATE TABLE messages (
+    message_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    conversation_id BIGINT NOT NULL,
+    sender_id BIGINT NOT NULL,
+    content TEXT NOT NULL,
+    sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (conversation_id) REFERENCES conversations(conversation_id) ON DELETE CASCADE,
+    FOREIGN KEY (sender_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- 20. Recreate user_conversations table
+CREATE TABLE user_conversations (
+    user_id BIGINT NOT NULL,
+    conversation_id BIGINT NOT NULL,
+    last_seen_message_id BIGINT,
+    is_deleted BOOLEAN DEFAULT FALSE,
+    joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, conversation_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (conversation_id) REFERENCES conversations(conversation_id) ON DELETE CASCADE,
+    FOREIGN KEY (last_seen_message_id) REFERENCES messages(message_id) ON DELETE SET NULL
+);
+select*from messages;
+select*from conversations;
+select*from user_conversations;
+-- Verify the structure
+SELECT 'conversations table structure:' as info;
+DESCRIBE conversations;
+
+SELECT 'messages table structure:' as info;
+DESCRIBE messages;
+
+SELECT 'user_conversations table structure:' as info;
+DESCRIBE user_conversations;
+
+-- Test insert
+INSERT INTO conversations (user1_id, user2_id) VALUES (1, 2);
+SELECT 'Test conversation created successfully' as result; 
 
 
 -- VIEW: income_report

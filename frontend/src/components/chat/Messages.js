@@ -11,7 +11,11 @@ const Messages = () => {
   const [selectedUser, setSelectedUser] = useState(location.state?.selectedUser || null);
   const [message, setMessage] = useState(location.state?.initialMessage || '');
   const [messages, setMessages] = useState([]);
+<<<<<<< HEAD
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+=======
+  const [selectedConversationId, setSelectedConversationId] = useState(null);
+>>>>>>> a9984380f711087bf45d3999e75e5b6f06f9f60d
   const currentUser = JSON.parse(localStorage.getItem('user'));
   const chatMessagesRef = useRef(null);
   const selectedUserRef = useRef(selectedUser);
@@ -26,9 +30,15 @@ const Messages = () => {
   const fetchMessages = async (userId1, userId2) => {
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/messages/${userId1}/${userId2}`
+        `http://localhost:8080/api/messages/conversation/${userId1}/${userId2}`
       );
       setMessages(response.data);
+      
+      // Get the conversation ID for this user pair
+      const conversation = conversations.find(conv => conv.id === userId2);
+      if (conversation) {
+        setSelectedConversationId(conversation.conversationId);
+      }
     } catch (error) {
       console.error('Error fetching messages:', error);
     }
@@ -64,6 +74,7 @@ const Messages = () => {
     }
 
     const handleNewMessage = (newMessage) => {
+<<<<<<< HEAD
       console.log('=== NEW MESSAGE RECEIVED ===');
       console.log('Received new message:', newMessage);
       console.log('Current selectedUser:', selectedUser);
@@ -119,11 +130,34 @@ const Messages = () => {
           return timeB - timeA; // Sắp xếp giảm dần (mới nhất lên đầu)
         });
       });
+=======
+      // Check if this message belongs to the current conversation
+      const isCurrentConversation = selectedConversationId === newMessage.conversation_id;
   
-      // Nếu đang xem đúng đoạn hội thoại → thêm tin nhắn vào chat
+      // Update conversations list
+      setConversations((prev) =>
+        prev.map((conv) => {
+          if (conv.conversationId === newMessage.conversation_id) {
+            return {
+              ...conv,
+              lastMessage: newMessage.content,
+              time: new Date(newMessage.sent_at).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              }),
+              unread: !isCurrentConversation ? (conv.unread || 0) + 1 : conv.unread,
+            };
+          }
+          return conv;
+        })
+      );
+>>>>>>> a9984380f711087bf45d3999e75e5b6f06f9f60d
+  
+      // If currently viewing this conversation, add message to chat
       if (isCurrentConversation) {
         console.log('Adding message to current conversation');
         setMessages((prev) => {
+<<<<<<< HEAD
           // Kiểm tra xem có tin nhắn tạm thời tương ứng không
           const tempMessageIndex = prev.findIndex(
             (msg) => msg.temp && 
@@ -149,6 +183,39 @@ const Messages = () => {
             console.log('Skipping message from current user (should be handled by temp message)');
             return prev;
           }
+=======
+          // Check if message already exists (to avoid duplicates)
+          const messageExists = prev.some(
+            (msg) => {
+              // Check by content and sender (for sent messages)
+              if (msg.sender_id === newMessage.sender_id && 
+                  msg.content === newMessage.content) {
+                // For messages we just sent, check by temporary ID or time
+                if (msg.sender_id === currentUser.userId) {
+                  return Math.abs(new Date(msg.sent_at) - new Date(newMessage.sent_at)) < 2000;
+                }
+                // For received messages, check by message_id if available
+                return msg.message_id === newMessage.message_id;
+              }
+              return false;
+            }
+          );
+          
+          if (messageExists) {
+            // Update the existing message with the real message_id if it's a sent message
+            return prev.map(msg => {
+              if (msg.sender_id === newMessage.sender_id && 
+                  msg.content === newMessage.content &&
+                  msg.sender_id === currentUser.userId &&
+                  Math.abs(new Date(msg.sent_at) - new Date(newMessage.sent_at)) < 2000) {
+                return { ...msg, message_id: newMessage.message_id };
+              }
+              return msg;
+            });
+          }
+          
+          return [...prev, newMessage];
+>>>>>>> a9984380f711087bf45d3999e75e5b6f06f9f60d
         });
       } else {
         console.log('Not current conversation, skipping message display');
@@ -181,9 +248,14 @@ const Messages = () => {
     return () => {
       webSocketService.unsubscribe('messages', handleNewMessage);
     };
+<<<<<<< HEAD
   }, [currentUser?.userId, selectedUser?.id]);
 
 
+=======
+  }, [currentUser?.userId, selectedConversationId]);
+  
+>>>>>>> a9984380f711087bf45d3999e75e5b6f06f9f60d
   useEffect(() => {
     if (selectedUser) {
       fetchMessages(currentUser.userId, selectedUser.id);
@@ -194,6 +266,7 @@ const Messages = () => {
     }
   }, [selectedUser?.id]);
 
+<<<<<<< HEAD
   // Thêm polling để cập nhật tin nhắn mới
   useEffect(() => {
     if (!selectedUser) return;
@@ -227,23 +300,63 @@ const Messages = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showDeleteConfirm]);
+=======
+  // Update selectedConversationId when conversations are loaded and we have a selectedUser
+  useEffect(() => {
+    if (selectedUser && conversations.length > 0) {
+      const conversation = conversations.find(conv => conv.id === selectedUser.id);
+      if (conversation && conversation.conversationId) {
+        setSelectedConversationId(conversation.conversationId);
+      }
+    }
+  }, [conversations, selectedUser]);
+>>>>>>> a9984380f711087bf45d3999e75e5b6f06f9f60d
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!message.trim() || !selectedUser) return;
 
+<<<<<<< HEAD
     console.log('Sending message:', message);
     console.log('To user:', selectedUser);
+=======
+    const messageContent = message.trim();
+    setMessage(''); // Clear input immediately
+>>>>>>> a9984380f711087bf45d3999e75e5b6f06f9f60d
 
     try {
       const newMessage = {
         sender_id: currentUser.userId,
         receiver_id: selectedUser.id,
-        content: message,
+        content: messageContent,
         sent_at: new Date().toISOString()
       };
 
+<<<<<<< HEAD
       console.log('Created message object:', newMessage);
+=======
+      // Add the message to the current chat immediately for better UX
+      const messageToAdd = {
+        ...newMessage,
+        conversation_id: selectedConversationId,
+        message_id: Date.now() // Temporary ID until we get the real one from server
+      };
+      
+      setMessages(prev => [...prev, messageToAdd]);
+
+      // Update conversations list immediately
+      setConversations(prev => {
+        return prev.map(conv =>
+          conv.id === selectedUser.id
+            ? {
+                ...conv,
+                lastMessage: messageContent,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+              }
+            : conv
+        );
+      });
+>>>>>>> a9984380f711087bf45d3999e75e5b6f06f9f60d
 
       if (!webSocketService.isWebSocketConnected()) {
         console.log('WebSocket not connected, reconnecting...');
@@ -253,6 +366,7 @@ const Messages = () => {
       }
 
       const success = webSocketService.sendMessage(newMessage);
+<<<<<<< HEAD
       console.log('WebSocket send success:', success);
       
       if (!success) throw new Error('Failed to send message');
@@ -292,6 +406,11 @@ const Messages = () => {
       updateConversationPreview(selectedUser.id, message, true);
 
       setMessage('');
+=======
+      if (!success) {
+        throw new Error('Failed to send message');
+      }
+>>>>>>> a9984380f711087bf45d3999e75e5b6f06f9f60d
 
       if (location.state?.initialMessage) {
         navigate('/messages', { state: { selectedUser } });
@@ -299,6 +418,9 @@ const Messages = () => {
     } catch (error) {
       console.error('Error sending message:', error);
       alert('Failed to send message. Please try again.');
+      
+      // Put the message back in the input field so user can try again
+      setMessage(messageContent);
     }
   };
 
@@ -306,8 +428,18 @@ const Messages = () => {
     console.log('Selecting user:', user);
     console.log('User ID:', user.id, 'type:', typeof user.id);
     setSelectedUser(user);
+<<<<<<< HEAD
     setShowDeleteConfirm(false); // Reset delete confirm khi chọn user mới
     axios.put(`http://localhost:8080/api/messages/read/${currentUser.userId}/${user.id}`);
+=======
+    setSelectedConversationId(user.conversationId);
+    
+    // Mark conversation as read
+    if (user.conversationId) {
+      axios.put(`http://localhost:8080/api/messages/read/${currentUser.userId}/${user.conversationId}`);
+    }
+    
+>>>>>>> a9984380f711087bf45d3999e75e5b6f06f9f60d
     setConversations(prev =>
       prev.map(conv => (conv.id === user.id ? { ...conv, unread: 0 } : conv))
     );
