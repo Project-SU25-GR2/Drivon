@@ -27,6 +27,7 @@ public class SecurityConfig {
                 .and()
                 .authorizeHttpRequests()
                 .requestMatchers("/api/auth/**", "/api/contracts/**", "/api/**").permitAll()
+                .requestMatchers("/ws/**", "/topic/**", "/user/**", "/app/**").permitAll()
                 .anyRequest().permitAll();
 
         return http.build();
