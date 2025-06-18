@@ -11,6 +11,7 @@ const Messages = () => {
   const [selectedUser, setSelectedUser] = useState(location.state?.selectedUser || null);
   const [message, setMessage] = useState(location.state?.initialMessage || '');
   const [messages, setMessages] = useState([]);
+  const [selectedConversationId, setSelectedConversationId] = useState(null);
   const currentUser = JSON.parse(localStorage.getItem('user'));
   const chatMessagesRef = useRef(null);
   const selectedUserRef = useRef(selectedUser);
@@ -25,9 +26,15 @@ const Messages = () => {
   const fetchMessages = async (userId1, userId2) => {
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/messages/${userId1}/${userId2}`
+        `http://localhost:8080/api/messages/conversation/${userId1}/${userId2}`
       );
       setMessages(response.data);
+      
+      // Get the conversation ID for this user pair
+      const conversation = conversations.find(conv => conv.id === userId2);
+      if (conversation) {
+        setSelectedConversationId(conversation.conversationId);
+      }
     } catch (error) {
       console.error('Error fetching messages:', error);
     }
@@ -48,42 +55,61 @@ const Messages = () => {
     }
   
     const handleNewMessage = (newMessage) => {
-      const isCurrentConversation =
-        (newMessage.sender_id === currentUser.userId && newMessage.receiver_id === selectedUser?.id) ||
-        (newMessage.receiver_id === currentUser.userId && newMessage.sender_id === selectedUser?.id);
+      // Check if this message belongs to the current conversation
+      const isCurrentConversation = selectedConversationId === newMessage.conversation_id;
   
-      // Cập nhật preview hội thoại
+      // Update conversations list
       setConversations((prev) =>
         prev.map((conv) => {
-          const isCurrentConv = conv.id === newMessage.sender_id || conv.id === newMessage.receiver_id;
-          if (!isCurrentConv) return conv;
-  
-          const isCurrentUser = conv.id === currentUser.userId;
-          const isSelected = conv.id === selectedUser?.id;
-  
-          return {
-            ...conv,
-            lastMessage: newMessage.content,
-            time: new Date(newMessage.sent_at).toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit',
-            }),
-            unread: !isSelected && !isCurrentUser ? (conv.unread || 0) + 1 : conv.unread,
-          };
+          if (conv.conversationId === newMessage.conversation_id) {
+            return {
+              ...conv,
+              lastMessage: newMessage.content,
+              time: new Date(newMessage.sent_at).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              }),
+              unread: !isCurrentConversation ? (conv.unread || 0) + 1 : conv.unread,
+            };
+          }
+          return conv;
         })
       );
   
-      // Nếu đang xem đúng đoạn hội thoại → thêm tin nhắn vào chat
+      // If currently viewing this conversation, add message to chat
       if (isCurrentConversation) {
         setMessages((prev) => {
+          // Check if message already exists (to avoid duplicates)
           const messageExists = prev.some(
-            (msg) =>
-              msg.content === newMessage.content &&
-              msg.sender_id === newMessage.sender_id &&
-              msg.receiver_id === newMessage.receiver_id &&
-              Math.abs(new Date(msg.sent_at) - new Date(newMessage.sent_at)) < 1000
+            (msg) => {
+              // Check by content and sender (for sent messages)
+              if (msg.sender_id === newMessage.sender_id && 
+                  msg.content === newMessage.content) {
+                // For messages we just sent, check by temporary ID or time
+                if (msg.sender_id === currentUser.userId) {
+                  return Math.abs(new Date(msg.sent_at) - new Date(newMessage.sent_at)) < 2000;
+                }
+                // For received messages, check by message_id if available
+                return msg.message_id === newMessage.message_id;
+              }
+              return false;
+            }
           );
-          return messageExists ? prev : [...prev, newMessage];
+          
+          if (messageExists) {
+            // Update the existing message with the real message_id if it's a sent message
+            return prev.map(msg => {
+              if (msg.sender_id === newMessage.sender_id && 
+                  msg.content === newMessage.content &&
+                  msg.sender_id === currentUser.userId &&
+                  Math.abs(new Date(msg.sent_at) - new Date(newMessage.sent_at)) < 2000) {
+                return { ...msg, message_id: newMessage.message_id };
+              }
+              return msg;
+            });
+          }
+          
+          return [...prev, newMessage];
         });
       }
     };
@@ -112,9 +138,8 @@ const Messages = () => {
     return () => {
       webSocketService.unsubscribe('messages', handleNewMessage);
     };
-  }, [currentUser?.userId, selectedUser?.id]);
+  }, [currentUser?.userId, selectedConversationId]);
   
-
   useEffect(() => {
     if (selectedUser) {
       fetchMessages(currentUser.userId, selectedUser.id);
@@ -125,17 +150,52 @@ const Messages = () => {
     }
   }, [selectedUser?.id]);
 
+  // Update selectedConversationId when conversations are loaded and we have a selectedUser
+  useEffect(() => {
+    if (selectedUser && conversations.length > 0) {
+      const conversation = conversations.find(conv => conv.id === selectedUser.id);
+      if (conversation && conversation.conversationId) {
+        setSelectedConversationId(conversation.conversationId);
+      }
+    }
+  }, [conversations, selectedUser]);
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!message.trim() || !selectedUser) return;
+
+    const messageContent = message.trim();
+    setMessage(''); // Clear input immediately
 
     try {
       const newMessage = {
         sender_id: currentUser.userId,
         receiver_id: selectedUser.id,
-        content: message,
+        content: messageContent,
         sent_at: new Date().toISOString()
       };
+
+      // Add the message to the current chat immediately for better UX
+      const messageToAdd = {
+        ...newMessage,
+        conversation_id: selectedConversationId,
+        message_id: Date.now() // Temporary ID until we get the real one from server
+      };
+      
+      setMessages(prev => [...prev, messageToAdd]);
+
+      // Update conversations list immediately
+      setConversations(prev => {
+        return prev.map(conv =>
+          conv.id === selectedUser.id
+            ? {
+                ...conv,
+                lastMessage: messageContent,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+              }
+            : conv
+        );
+      });
 
       if (!webSocketService.isWebSocketConnected()) {
         console.log('WebSocket not connected, reconnecting...');
@@ -145,21 +205,9 @@ const Messages = () => {
       }
 
       const success = webSocketService.sendMessage(newMessage);
-      if (!success) throw new Error('Failed to send message');
-
-      setConversations(prev => {
-        return prev.map(conv =>
-          conv.id === selectedUser.id
-            ? {
-                ...conv,
-                lastMessage: message,
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-              }
-            : conv
-        );
-      });
-
-      setMessage('');
+      if (!success) {
+        throw new Error('Failed to send message');
+      }
 
       if (location.state?.initialMessage) {
         navigate('/messages', { state: { selectedUser } });
@@ -167,12 +215,21 @@ const Messages = () => {
     } catch (error) {
       console.error('Error sending message:', error);
       alert('Failed to send message. Please try again.');
+      
+      // Put the message back in the input field so user can try again
+      setMessage(messageContent);
     }
   };
 
   const handleUserSelect = (user) => {
     setSelectedUser(user);
-    axios.put(`http://localhost:8080/api/messages/read/${currentUser.userId}/${user.id}`);
+    setSelectedConversationId(user.conversationId);
+    
+    // Mark conversation as read
+    if (user.conversationId) {
+      axios.put(`http://localhost:8080/api/messages/read/${currentUser.userId}/${user.conversationId}`);
+    }
+    
     setConversations(prev =>
       prev.map(conv => (conv.id === user.id ? { ...conv, unread: 0 } : conv))
     );
