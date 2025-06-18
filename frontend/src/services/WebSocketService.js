@@ -1,5 +1,6 @@
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
+import { BACKEND_URL } from '../api/config';
 
 class WebSocketService {
   constructor() {
@@ -21,13 +22,18 @@ class WebSocketService {
     this.currentUserId = userId;
   
     if (this.stompClient?.connected) {
-      console.log('WebSocket already connected');
+      console.log('WebSocket already connected for user:', userId);
       onConnected?.();
       return;
     }
   
     console.log('Initializing WebSocket connection for user:', userId);
-    const socket = new SockJS('http://localhost:8080/ws');
+    
+    // Use BACKEND_URL from config
+    const wsUrl = `${BACKEND_URL}/ws`;
+    console.log('WebSocket URL:', wsUrl);
+    
+    const socket = new SockJS(wsUrl);
   
     this.stompClient = new Client({
       webSocketFactory: () => socket,
@@ -85,30 +91,57 @@ class WebSocketService {
 
   subscribeToTopics(userId) {
     if (!this.stompClient?.connected) {
-      console.log('WebSocket not connected, adding to pending subscriptions');
+      console.log('WebSocket not connected, adding to pending subscriptions for user:', userId);
       this.pendingSubscriptions.add(userId);
       return;
     }
 
+    console.log('Subscribing to topics for user:', userId);
+
     // Subscribe to personal messages
-    this.stompClient.subscribe(
+    const messageSubscription = this.stompClient.subscribe(
       `/user/${userId}/topic/messages`,
       (message) => {
         const newMessage = JSON.parse(message.body);
-        console.log('Received new message:', newMessage);
+        console.log('Received new message for user:', userId, newMessage);
         this.notifySubscribers('messages', newMessage);
+      },
+      (error) => {
+        console.error('Error subscribing to messages for user:', userId, error);
       }
     );
 
+    console.log('Subscribed to messages topic for user:', userId);
+
     // Subscribe to broadcast messages
-    this.stompClient.subscribe(
+    const broadcastSubscription = this.stompClient.subscribe(
       '/topic/broadcast',
       (message) => {
         const broadcastMessage = JSON.parse(message.body);
         console.log('Received broadcast message:', broadcastMessage);
         this.notifySubscribers('broadcast', broadcastMessage);
+      },
+      (error) => {
+        console.error('Error subscribing to broadcast:', error);
       }
     );
+
+    console.log('Subscribed to broadcast topic');
+
+    // Subscribe to error messages
+    const errorSubscription = this.stompClient.subscribe(
+      `/user/${userId}/topic/errors`,
+      (message) => {
+        const errorMessage = JSON.parse(message.body);
+        console.error('Received error message for user:', userId, errorMessage);
+        this.notifySubscribers('errors', errorMessage);
+      },
+      (error) => {
+        console.error('Error subscribing to errors for user:', userId, error);
+      }
+    );
+
+    console.log('Subscribed to errors topic for user:', userId);
   }
 
   subscribe(topic, callback) {
@@ -137,18 +170,25 @@ class WebSocketService {
 
   sendMessage(message) {
     if (!this.isConnected) {
-      console.error('WebSocket not connected');
+      console.error('WebSocket not connected, cannot send message');
+      return false;
+    }
+
+    if (!this.stompClient?.connected) {
+      console.error('STOMP client not connected, cannot send message');
       return false;
     }
 
     try {
+      console.log('Sending message via WebSocket:', message);
       this.stompClient.publish({
         destination: '/app/chat.send',
         body: JSON.stringify(message)
       });
+      console.log('Message sent successfully via WebSocket');
       return true;
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('Error sending message via WebSocket:', error);
       return false;
     }
   }

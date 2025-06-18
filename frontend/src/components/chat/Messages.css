@@ -135,10 +135,20 @@
   border-radius: 12px;
   font-size: 0.8rem;
   color: #28a745;
+  gap: 4px;
+}
+
+.polling-indicator.optimized {
+  color: #ffc107;
+  background-color: #fff3cd;
 }
 
 .polling-indicator i {
   animation: pulse 2s infinite;
+}
+
+.polling-indicator.optimized i {
+  animation: none;
 }
 
 @keyframes pulse {
@@ -255,4 +265,83 @@
 .no-chat-selected p {
   font-size: 1.1rem;
   margin: 0;
+}
+
+/* Online Status Styles */
+.chat-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.user-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-indicator.online {
+  color: #28a745;
+}
+
+.status-indicator.offline {
+  color: #6c757d;
+}
+
+.status-indicator i.online {
+  color: #28a745;
+  font-size: 8px;
+}
+
+.status-indicator i.offline {
+  color: #6c757d;
+  font-size: 8px;
+}
+
+.conversation-avatar-container {
+  position: relative;
+  display: inline-block;
+}
+
+.online-status-dot {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.online-status-dot.online {
+  background-color: #28a745;
+}
+
+.online-status-dot.offline {
+  background-color: #6c757d;
+}
+
+/* Optimized polling indicator */
+.polling-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.polling-status.optimized {
+  color: #ffc107;
+}
+
+.polling-status.offline {
+  color: #dc3545;
 } 
