@@ -219,4 +219,12 @@ public class MessageService {
     public Message saveMessage(Message message) {
         return messageRepository.save(message);
     }
+
+    @Transactional
+    public void deleteConversationForUser(Long userId, Long otherUserId) {
+        Long conversationId = getConversationId(userId, otherUserId);
+        if (conversationId != null) {
+            userConversationRepository.markAsDeleted(userId, conversationId);
+        }
+    }
 }

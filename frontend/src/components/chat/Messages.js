@@ -35,6 +35,9 @@ const Messages = () => {
   const [selectedUserOnline, setSelectedUserOnline] = useState(false);
   const [onlineStatusCache, setOnlineStatusCache] = useState(new Map());
 
+  // Thêm state để điều khiển hiển thị sidebar khi đang trong đoạn chat
+  const [showSidebar, setShowSidebar] = useState(false);
+
   const scrollToBottom = () => {
     const chatBox = chatMessagesRef.current;
     if (chatBox) {
@@ -113,32 +116,8 @@ const Messages = () => {
         `http://localhost:8080/api/messages/conversation/${userId1}/${userId2}`
       );
       
-      // Merge new messages with existing ones to avoid duplicates
-      setMessages(prevMessages => {
-        const newMessages = response.data;
-        
-        // Create a map of existing messages by content and sender for quick lookup
-        const existingMessagesMap = new Map();
-        prevMessages.forEach(msg => {
-          const key = `${msg.sender_id}-${msg.content}-${new Date(msg.sent_at).getTime()}`;
-          existingMessagesMap.set(key, msg);
-        });
-        
-        // Filter out messages that already exist
-        const uniqueNewMessages = newMessages.filter(newMsg => {
-          const key = `${newMsg.sender_id}-${newMsg.content}-${new Date(newMsg.sent_at).getTime()}`;
-          return !existingMessagesMap.has(key);
-        });
-        
-        // If we have new messages, merge them
-        if (uniqueNewMessages.length > 0) {
-          console.log('Adding new messages from polling:', uniqueNewMessages.length);
-          return [...prevMessages, ...uniqueNewMessages];
-        }
-        
-        // If no new messages, just return the server data (in case messages were reordered)
-        return newMessages;
-      });
+      // Thay vì merge, set luôn danh sách tin nhắn mới từ server
+      setMessages(response.data);
       
       // Get the conversation ID for this user pair
       const conversation = conversations.find(conv => conv.id === userId2);
@@ -375,16 +354,17 @@ const Messages = () => {
           shouldShowInCurrentChat = true;
           // Add the message to chat immediately since we're now viewing this conversation
           setMessages(prev => {
-            const messageExists = prev.some(msg => 
-              msg.sender_id === newMessage.sender_id && 
-              msg.content === newMessage.content &&
-              msg.message_id === newMessage.message_id
+            const exists = prev.some(
+              (msg) =>
+                (msg.message_id && newMessage.message_id && msg.message_id === newMessage.message_id) ||
+                (
+                  msg.sender_id === newMessage.sender_id &&
+                  msg.content === newMessage.content &&
+                  Math.abs(new Date(msg.sent_at) - new Date(newMessage.sent_at)) < 2000
+                )
             );
-            if (!messageExists) {
-              console.log('Adding message to chat after selecting conversation:', newMessage);
-              return [...prev, newMessage];
-            }
-            return prev;
+            if (exists) return prev;
+            return [...prev, newMessage];
           });
         } else {
           // If conversation not found in current list, we need to fetch conversations first
@@ -402,16 +382,17 @@ const Messages = () => {
                 shouldShowInCurrentChat = true;
                 // Add the message to chat immediately since we're now viewing this conversation
                 setMessages(prev => {
-                  const messageExists = prev.some(msg => 
-                    msg.sender_id === newMessage.sender_id && 
-                    msg.content === newMessage.content &&
-                    msg.message_id === newMessage.message_id
+                  const exists = prev.some(
+                    (msg) =>
+                      (msg.message_id && newMessage.message_id && msg.message_id === newMessage.message_id) ||
+                      (
+                        msg.sender_id === newMessage.sender_id &&
+                        msg.content === newMessage.content &&
+                        Math.abs(new Date(msg.sent_at) - new Date(newMessage.sent_at)) < 2000
+                      )
                   );
-                  if (!messageExists) {
-                    console.log('Adding message to chat after selecting conversation:', newMessage);
-                    return [...prev, newMessage];
-                  }
-                  return prev;
+                  if (exists) return prev;
+                  return [...prev, newMessage];
                 });
               }
             } catch (error) {
@@ -444,26 +425,17 @@ const Messages = () => {
       if (shouldShowInCurrentChat && selectedUser) {
         console.log('Adding message to current chat:', newMessage);
         setMessages((prev) => {
-          const TIME_WINDOW = 5000; // 5 seconds
-          let found = false;
-          const updated = prev.map(msg => {
-            if (
-              msg.sender_id === newMessage.sender_id &&
-              msg.content === newMessage.content &&
-              msg.sender_id === currentUser.userId &&
-              Math.abs(new Date(msg.sent_at) - new Date(newMessage.sent_at)) < TIME_WINDOW &&
-              msg.pending
-            ) {
-              found = true;
-              // Update pending message to confirmed
-              return { ...newMessage, pending: false, error: false };
-            }
-            return msg;
-          });
-          if (!found) {
-            return [...updated, newMessage];
-          }
-          return updated;
+          const exists = prev.some(
+            (msg) =>
+              (msg.message_id && newMessage.message_id && msg.message_id === newMessage.message_id) ||
+              (
+                msg.sender_id === newMessage.sender_id &&
+                msg.content === newMessage.content &&
+                Math.abs(new Date(msg.sent_at) - new Date(newMessage.sent_at)) < 2000
+              )
+          );
+          if (exists) return prev;
+          return [...prev, newMessage];
         });
       } else {
         console.log('Message not for current conversation:', {
@@ -560,47 +532,10 @@ const Messages = () => {
     console.log('Current user:', currentUser);
   }, [selectedConversationId, selectedUser, currentUser]);
 
-  // Check online status periodically
-  const startOnlineStatusChecking = () => {
-    console.log('🔄 startOnlineStatusChecking called', {
-      currentInterval: onlineStatusPollingRef.current
-    });
-    
-    // Clear existing interval if any
-    if (onlineStatusPollingRef.current) {
-      clearInterval(onlineStatusPollingRef.current);
-      console.log('🔄 Cleared existing online status interval');
-    }
-    
-    // Check online status every 10 seconds
-    onlineStatusPollingRef.current = setInterval(() => {
-      if (selectedUser && currentUser && isTabActive) {
-        console.log('🔄 Checking online status...');
-        checkSelectedUserOnlineStatus();
-      }
-    }, 10000); // 10 seconds
-
-    console.log('🔄 Started online status checking');
-    return onlineStatusPollingRef.current;
-  };
-
-  // Effect to manage messages polling based on online status
+  // Khi chọn user, sidebar sẽ ẩn, nhưng có thể mở lại bằng icon menu
   useEffect(() => {
-    console.log('🔄 selectedUserOnline changed:', selectedUserOnline);
-    
-    if (selectedUser) {
-      if (selectedUserOnline) {
-        console.log('🔄 User is online, starting messages polling');
-        startMessagesPolling();
-      } else {
-        console.log('🔄 User is offline, stopping messages polling');
-        if (messagesPollingRef.current) {
-          clearInterval(messagesPollingRef.current);
-          messagesPollingRef.current = null;
-        }
-      }
-    }
-  }, [selectedUserOnline, selectedUser?.id]);
+    if (selectedUser) setShowSidebar(false);
+  }, [selectedUser]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -616,17 +551,6 @@ const Messages = () => {
         content: messageContent,
         sent_at: new Date().toISOString()
       };
-
-      // Add the message to the current chat immediately for better UX
-      const messageToAdd = {
-        ...newMessage,
-        conversation_id: selectedConversationId,
-        message_id: Date.now(), // Temporary ID until we get the real one from server
-        pending: true, // Mark as pending
-        error: false
-      };
-      
-      setMessages(prev => [...prev, messageToAdd]);
 
       // Update conversations list immediately
       setConversations(prev => {
@@ -659,14 +583,6 @@ const Messages = () => {
     } catch (error) {
       console.error('Error sending message:', error);
       alert('Failed to send message. Please try again.');
-      // Mark the pending message as error
-      setMessages(prev =>
-        prev.map(msg =>
-          msg.pending && msg.content === messageContent && msg.sender_id === currentUser.userId
-            ? { ...msg, pending: false, error: true }
-            : msg
-        )
-      );
       // Put the message back in the input field so user can try again
       setMessage(messageContent);
     }
@@ -715,29 +631,20 @@ const Messages = () => {
 
   return (
     <div className="messages-container">
-      <div className="messages-sidebar">
-        <div className="messages-header">
-          <h2>Messages</h2>
-          <div className="heartbeat-status">
-            <span className="heartbeat-indicator">
-              <i className="bi bi-circle-fill" style={{ color: '#28a745', fontSize: '8px' }}></i>
-              Heartbeat Active
-            </span>
+      {/* Hiển thị sidebar nếu chưa chọn user hoặc showSidebar = true */}
+      {(!selectedUser || showSidebar) && (
+        <div className="messages-sidebar">
+          <div className="messages-header">
+            <h2>Messages</h2>
           </div>
-        </div>
-        <div className="conversations-list">
-          {conversations.map((conv) => {
-            const isUserOnline = getCachedOnlineStatus(conv.id);
-            return (
+          <div className="conversations-list">
+            {conversations.map((conv) => (
               <div
                 key={conv.id}
                 className={`conversation-item ${selectedUser?.id === conv.id ? 'active' : ''}`}
-                onClick={() => handleUserSelect(conv)}
+                onClick={() => { setShowSidebar(false); handleUserSelect(conv); }}
               >
-                <div className="conversation-avatar-container">
-                  <img src={conv.avatar} alt={conv.name} className="conversation-avatar" />
-                  <span className={`online-status-dot ${isUserOnline ? 'online' : 'offline'}`}></span>
-                </div>
+                <img src={conv.avatar} alt={conv.name} className="conversation-avatar" />
                 <div className="conversation-info">
                   <div className="conversation-header">
                     <h3>{conv.name}</h3>
@@ -749,35 +656,56 @@ const Messages = () => {
                   <div className="unread-badge">{conv.unread}</div>
                 )}
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="messages-main">
         {selectedUser ? (
           <>
             <div className="chat-header">
+              {/* Icon menu để mở/tắt sidebar */}
+              <button
+                className="menu-btn"
+                title="Hiện/tắt danh sách hội thoại"
+                onClick={() => setShowSidebar((prev) => !prev)}
+                style={{ background: 'none', border: 'none', marginRight: 8, fontSize: 22, cursor: 'pointer' }}
+              >
+                <i className="bi bi-list"></i>
+              </button>
               <img src={selectedUser.avatar} alt={selectedUser.name} className="chat-avatar" />
-              <div className="chat-user-info">
-                <h3>{selectedUser.name}</h3>
-                <div className="user-status">
-                  <span className={`status-indicator ${selectedUserOnline ? 'online' : 'offline'}`}>
-                    <i className={`bi bi-circle-fill ${selectedUserOnline ? 'online' : 'offline'}`}></i>
-                    {selectedUserOnline ? 'Online' : 'Offline'}
-                  </span>
-                </div>
+              <h3>{selectedUser.name}</h3>
+              {/* Nút icon đóng và xóa đoạn chat */}
+              <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+                <button
+                  className="close-chat-btn"
+                  title="Đóng đoạn chat"
+                  onClick={() => setSelectedUser(null)}
+                  style={{ padding: '4px', borderRadius: '4px', border: 'none', background: '#eee', cursor: 'pointer', fontSize: 20 }}
+                >
+                  <i className="bi bi-x"></i>
+                </button>
+                <button
+                  className="delete-chat-btn"
+                  title="Xóa đoạn chat"
+                  onClick={async () => {
+                    if (window.confirm('Bạn có chắc muốn xóa toàn bộ đoạn chat này?')) {
+                      try {
+                        await axios.delete(`http://localhost:8080/api/messages/conversation/${currentUser.userId}/${selectedUser.id}`);
+                        setMessages([]);
+                        setSelectedUser(null);
+                        fetchConversations();
+                      } catch (err) {
+                        alert('Xóa đoạn chat thất bại!');
+                      }
+                    }
+                  }}
+                  style={{ padding: '4px', borderRadius: '4px', border: 'none', background: '#ffdddd', color: '#c00', cursor: 'pointer', fontSize: 20 }}
+                >
+                  <i className="bi bi-trash"></i>
+                </button>
               </div>
-              {isTabActive && (
-                <div className={`polling-indicator ${!selectedUserOnline ? 'optimized' : ''}`} 
-                     title={selectedUserOnline ? 'Live updates active' : 'Polling stopped (user offline)'}>
-                  <i className="bi bi-circle-fill" style={{ 
-                    color: selectedUserOnline ? '#28a745' : '#dc3545', 
-                    fontSize: '8px' 
-                  }}></i>
-                  {!selectedUserOnline && <span>Polling Stopped</span>}
-                </div>
-              )}
             </div>
             <div className="chat-messages" ref={chatMessagesRef}>
               {messages.filter(msg => !msg.pending).map((msg, index) => (
