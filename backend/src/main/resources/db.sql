@@ -416,3 +416,17 @@ set model ='Morning'
 WHERE model ='Q3';
 DELETE FROM users
 WHERE email = 'binhvuong6868999@gmail.comdsadasdasdasd';
+
+-- 21. Bảng user_online_status để theo dõi trạng thái online của user
+CREATE TABLE user_online_status (
+    user_id BIGINT PRIMARY KEY,
+    is_online BOOLEAN DEFAULT FALSE,
+    last_heartbeat DATETIME DEFAULT CURRENT_TIMESTAMP,
+    last_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- Index để tối ưu query theo trạng thái online
+CREATE INDEX idx_user_online_status ON user_online_status(is_online, last_heartbeat);

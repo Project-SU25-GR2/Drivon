@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import webSocketService from '../../services/WebSocketService';
+import onlineStatusService from '../../services/OnlineStatusService';
 import './Messages.css';
 
 const Messages = () => {
@@ -15,10 +16,11 @@ const Messages = () => {
   const currentUser = JSON.parse(localStorage.getItem('user'));
   const chatMessagesRef = useRef(null);
   const selectedUserRef = useRef(selectedUser);
-  //binhvuong
+  
   // Polling intervals (in milliseconds)
   const MESSAGES_POLL_INTERVAL = 3000; // 3 seconds
   const CONVERSATIONS_POLL_INTERVAL = 5000; // 5 seconds
+  const OFFLINE_POLL_INTERVAL = 30000; // 30 seconds khi user offline
   
   // Refs for polling intervals
   const messagesPollingRef = useRef(null);
@@ -27,12 +29,81 @@ const Messages = () => {
   // State to track if tab is active
   const [isTabActive, setIsTabActive] = useState(true);
   const [lastPollTime, setLastPollTime] = useState(null);
+  
+  // Online status state
+  const [selectedUserOnline, setSelectedUserOnline] = useState(false);
+  const [onlineStatusCache, setOnlineStatusCache] = useState(new Map());
 
   const scrollToBottom = () => {
     const chatBox = chatMessagesRef.current;
     if (chatBox) {
       chatBox.scrollTop = chatBox.scrollHeight;
     }
+  };
+
+  // Kiểm tra online status của selected user
+  const checkSelectedUserOnlineStatus = async () => {
+    if (!selectedUser) return;
+    
+    try {
+      // Clear cache trước để lấy data mới nhất
+      setOnlineStatusCache(prev => {
+        const newCache = new Map(prev);
+        newCache.delete(selectedUser.id);
+        return newCache;
+      });
+      
+      const isOnline = await onlineStatusService.checkUserOnlineStatus(selectedUser.id);
+      setSelectedUserOnline(isOnline);
+      
+      // Cập nhật cache
+      setOnlineStatusCache(prev => new Map(prev.set(selectedUser.id, isOnline)));
+      
+      console.log(`Selected user ${selectedUser.name} online status:`, isOnline);
+    } catch (error) {
+      console.error('Error checking selected user online status:', error);
+    }
+  };
+
+  // Kiểm tra online status của tất cả users trong conversations
+  const checkConversationsOnlineStatus = async () => {
+    if (conversations.length === 0) return;
+    
+    try {
+      const userIds = conversations.map(conv => conv.id);
+      
+      // Clear cache cho các user này
+      setOnlineStatusCache(prev => {
+        const newCache = new Map(prev);
+        userIds.forEach(userId => newCache.delete(userId));
+        return newCache;
+      });
+      
+      const onlineStatus = await onlineStatusService.checkUsersOnlineStatus(userIds);
+      
+      // Cập nhật cache
+      setOnlineStatusCache(prev => {
+        const newCache = new Map(prev);
+        Object.entries(onlineStatus).forEach(([userId, isOnline]) => {
+          newCache.set(parseInt(userId), isOnline);
+        });
+        return newCache;
+      });
+      
+      console.log('Conversations online status updated:', onlineStatus);
+    } catch (error) {
+      console.error('Error checking conversations online status:', error);
+    }
+  };
+
+  // Lấy online status từ cache
+  const getCachedOnlineStatus = (userId) => {
+    return onlineStatusCache.get(userId) || false;
+  };
+
+  // Tối ưu polling interval dựa trên online status
+  const getOptimizedPollingInterval = (isUserOnline) => {
+    return isUserOnline ? MESSAGES_POLL_INTERVAL : OFFLINE_POLL_INTERVAL;
   };
 
   const fetchMessages = async (userId1, userId2) => {
@@ -133,7 +204,7 @@ const Messages = () => {
         setLastPollTime(new Date());
         fetchMessages(currentUser.userId, selectedUser.id);
       }
-    }, MESSAGES_POLL_INTERVAL);
+    }, getOptimizedPollingInterval(selectedUserOnline));
   };
 
   // Start polling for conversations
@@ -203,6 +274,9 @@ const Messages = () => {
       navigate('/auth');
       return;
     }
+
+    // Bắt đầu heartbeat cho current user
+    onlineStatusService.startHeartbeat(currentUser.userId);
   
     const handleNewMessage = (newMessage) => {
       console.log('Received new message via WebSocket:', newMessage);
@@ -380,10 +454,15 @@ const Messages = () => {
     if (selectedUser) {
       startMessagesPolling();
     }
+
+    // Check online status initially
+    checkConversationsOnlineStatus();
   
     return () => {
       webSocketService.unsubscribe('messages', handleNewMessage);
       stopPolling();
+      // Cleanup online status service
+      onlineStatusService.cleanup();
     };
   }, [currentUser?.userId, selectedConversationId, selectedUser]);
   
@@ -394,6 +473,9 @@ const Messages = () => {
       if (location.state?.initialMessage) {
         handleSendMessage(new Event('submit'));
       }
+      
+      // Check online status of selected user
+      checkSelectedUserOnlineStatus();
       
       // Start polling for messages when a user is selected
       startMessagesPolling();
@@ -533,25 +615,31 @@ const Messages = () => {
           <h2>Messages</h2>
         </div>
         <div className="conversations-list">
-          {conversations.map((conv) => (
-            <div
-              key={conv.id}
-              className={`conversation-item ${selectedUser?.id === conv.id ? 'active' : ''}`}
-              onClick={() => handleUserSelect(conv)}
-            >
-              <img src={conv.avatar} alt={conv.name} className="conversation-avatar" />
-              <div className="conversation-info">
-                <div className="conversation-header">
-                  <h3>{conv.name}</h3>
-                  <span className="conversation-time">{conv.time}</span>
+          {conversations.map((conv) => {
+            const isUserOnline = getCachedOnlineStatus(conv.id);
+            return (
+              <div
+                key={conv.id}
+                className={`conversation-item ${selectedUser?.id === conv.id ? 'active' : ''}`}
+                onClick={() => handleUserSelect(conv)}
+              >
+                <div className="conversation-avatar-container">
+                  <img src={conv.avatar} alt={conv.name} className="conversation-avatar" />
+                  <span className={`online-status-dot ${isUserOnline ? 'online' : 'offline'}`}></span>
                 </div>
-                <p className="conversation-last-message">{conv.lastMessage}</p>
+                <div className="conversation-info">
+                  <div className="conversation-header">
+                    <h3>{conv.name}</h3>
+                    <span className="conversation-time">{conv.time}</span>
+                  </div>
+                  <p className="conversation-last-message">{conv.lastMessage}</p>
+                </div>
+                {conv.unread > 0 && (
+                  <div className="unread-badge">{conv.unread}</div>
+                )}
               </div>
-              {conv.unread > 0 && (
-                <div className="unread-badge">{conv.unread}</div>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -560,10 +648,23 @@ const Messages = () => {
           <>
             <div className="chat-header">
               <img src={selectedUser.avatar} alt={selectedUser.name} className="chat-avatar" />
-              <h3>{selectedUser.name}</h3>
+              <div className="chat-user-info">
+                <h3>{selectedUser.name}</h3>
+                <div className="user-status">
+                  <span className={`status-indicator ${selectedUserOnline ? 'online' : 'offline'}`}>
+                    <i className={`bi bi-circle-fill ${selectedUserOnline ? 'online' : 'offline'}`}></i>
+                    {selectedUserOnline ? 'Online' : 'Offline'}
+                  </span>
+                </div>
+              </div>
               {isTabActive && (
-                <div className="polling-indicator" title="Live updates active">
-                  <i className="bi bi-circle-fill" style={{ color: '#28a745', fontSize: '8px' }}></i>
+                <div className={`polling-indicator ${!selectedUserOnline ? 'optimized' : ''}`} 
+                     title={selectedUserOnline ? 'Live updates active' : 'Optimized polling (user offline)'}>
+                  <i className="bi bi-circle-fill" style={{ 
+                    color: selectedUserOnline ? '#28a745' : '#ffc107', 
+                    fontSize: '8px' 
+                  }}></i>
+                  {!selectedUserOnline && <span>Optimized</span>}
                 </div>
               )}
             </div>

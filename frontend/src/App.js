@@ -22,6 +22,8 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import ManagerOwnerPage from "./components/owner/ManagerOwnerPage";
 import RentalSuccess from "./components/car/RentalSuccess";
 import Messages from "./components/chat/Messages";
+import onlineStatusService from "./services/OnlineStatusService";
+import TestOnlineStatus from "./components/others/TestOnlineStatus";
 // import CarRental404 from "./components/others/404";
 function App() {
   const [user, setUser] = useState(null);
@@ -50,6 +52,9 @@ function App() {
   };
 
   const handleLogout = () => {
+    // Cleanup online status service
+    onlineStatusService.cleanup();
+    
     setUser(null);
     localStorage.removeItem("user");
   };
@@ -268,6 +273,14 @@ function App() {
           element={
             <MainLayout user={user} handleLogout={handleLogout}>
               <Messages />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/test-online-status"
+          element={
+            <MainLayout user={user} handleLogout={handleLogout}>
+              <TestOnlineStatus />
             </MainLayout>
           }
         />
