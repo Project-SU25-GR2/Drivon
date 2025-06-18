@@ -41,32 +41,8 @@ const Messages = () => {
         `http://localhost:8080/api/messages/conversation/${userId1}/${userId2}`
       );
       
-      // Merge new messages with existing ones to avoid duplicates
-      setMessages(prevMessages => {
-        const newMessages = response.data;
-        
-        // Create a map of existing messages by content and sender for quick lookup
-        const existingMessagesMap = new Map();
-        prevMessages.forEach(msg => {
-          const key = `${msg.sender_id}-${msg.content}-${new Date(msg.sent_at).getTime()}`;
-          existingMessagesMap.set(key, msg);
-        });
-        
-        // Filter out messages that already exist
-        const uniqueNewMessages = newMessages.filter(newMsg => {
-          const key = `${newMsg.sender_id}-${newMsg.content}-${new Date(newMsg.sent_at).getTime()}`;
-          return !existingMessagesMap.has(key);
-        });
-        
-        // If we have new messages, merge them
-        if (uniqueNewMessages.length > 0) {
-          console.log('Adding new messages from polling:', uniqueNewMessages.length);
-          return [...prevMessages, ...uniqueNewMessages];
-        }
-        
-        // If no new messages, just return the server data (in case messages were reordered)
-        return newMessages;
-      });
+      // Thay vì merge, set luôn danh sách tin nhắn mới từ server
+      setMessages(response.data);
       
       // Get the conversation ID for this user pair
       const conversation = conversations.find(conv => conv.id === userId2);
@@ -246,16 +222,17 @@ const Messages = () => {
           shouldShowInCurrentChat = true;
           // Add the message to chat immediately since we're now viewing this conversation
           setMessages(prev => {
-            const messageExists = prev.some(msg => 
-              msg.sender_id === newMessage.sender_id && 
-              msg.content === newMessage.content &&
-              msg.message_id === newMessage.message_id
+            const exists = prev.some(
+              (msg) =>
+                (msg.message_id && newMessage.message_id && msg.message_id === newMessage.message_id) ||
+                (
+                  msg.sender_id === newMessage.sender_id &&
+                  msg.content === newMessage.content &&
+                  Math.abs(new Date(msg.sent_at) - new Date(newMessage.sent_at)) < 2000
+                )
             );
-            if (!messageExists) {
-              console.log('Adding message to chat after selecting conversation:', newMessage);
-              return [...prev, newMessage];
-            }
-            return prev;
+            if (exists) return prev;
+            return [...prev, newMessage];
           });
         } else {
           // If conversation not found in current list, we need to fetch conversations first
@@ -273,16 +250,17 @@ const Messages = () => {
                 shouldShowInCurrentChat = true;
                 // Add the message to chat immediately since we're now viewing this conversation
                 setMessages(prev => {
-                  const messageExists = prev.some(msg => 
-                    msg.sender_id === newMessage.sender_id && 
-                    msg.content === newMessage.content &&
-                    msg.message_id === newMessage.message_id
+                  const exists = prev.some(
+                    (msg) =>
+                      (msg.message_id && newMessage.message_id && msg.message_id === newMessage.message_id) ||
+                      (
+                        msg.sender_id === newMessage.sender_id &&
+                        msg.content === newMessage.content &&
+                        Math.abs(new Date(msg.sent_at) - new Date(newMessage.sent_at)) < 2000
+                      )
                   );
-                  if (!messageExists) {
-                    console.log('Adding message to chat after selecting conversation:', newMessage);
-                    return [...prev, newMessage];
-                  }
-                  return prev;
+                  if (exists) return prev;
+                  return [...prev, newMessage];
                 });
               }
             } catch (error) {
@@ -315,37 +293,16 @@ const Messages = () => {
       if (shouldShowInCurrentChat && selectedUser) {
         console.log('Adding message to current chat:', newMessage);
         setMessages((prev) => {
-          // Check if message already exists (to avoid duplicates)
-          const messageExists = prev.some(
-            (msg) => {
-              // Check by content and sender (for sent messages)
-              if (msg.sender_id === newMessage.sender_id && 
-                  msg.content === newMessage.content) {
-                // For messages we just sent, check by temporary ID or time
-                if (msg.sender_id === currentUser.userId) {
-                  return Math.abs(new Date(msg.sent_at) - new Date(newMessage.sent_at)) < 2000;
-                }
-                // For received messages, check by message_id if available
-                return msg.message_id === newMessage.message_id;
-              }
-              return false;
-            }
+          const exists = prev.some(
+            (msg) =>
+              (msg.message_id && newMessage.message_id && msg.message_id === newMessage.message_id) ||
+              (
+                msg.sender_id === newMessage.sender_id &&
+                msg.content === newMessage.content &&
+                Math.abs(new Date(msg.sent_at) - new Date(newMessage.sent_at)) < 2000
+              )
           );
-          
-          if (messageExists) {
-            // Update the existing message with the real message_id if it's a sent message
-            return prev.map(msg => {
-              if (msg.sender_id === newMessage.sender_id && 
-                  msg.content === newMessage.content &&
-                  msg.sender_id === currentUser.userId &&
-                  Math.abs(new Date(msg.sent_at) - new Date(newMessage.sent_at)) < 2000) {
-                return { ...msg, message_id: newMessage.message_id };
-              }
-              return msg;
-            });
-          }
-          
-          console.log('Adding new message to chat:', newMessage);
+          if (exists) return prev;
           return [...prev, newMessage];
         });
       } else {
@@ -457,15 +414,6 @@ const Messages = () => {
         sent_at: new Date().toISOString()
       };
 
-      // Add the message to the current chat immediately for better UX
-      const messageToAdd = {
-        ...newMessage,
-        conversation_id: selectedConversationId,
-        message_id: Date.now() // Temporary ID until we get the real one from server
-      };
-      
-      setMessages(prev => [...prev, messageToAdd]);
-
       // Update conversations list immediately
       setConversations(prev => {
         return prev.map(conv =>
@@ -497,7 +445,6 @@ const Messages = () => {
     } catch (error) {
       console.error('Error sending message:', error);
       alert('Failed to send message. Please try again.');
-      
       // Put the message back in the input field so user can try again
       setMessage(messageContent);
     }
