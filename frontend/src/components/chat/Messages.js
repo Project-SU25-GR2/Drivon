@@ -55,20 +55,94 @@ const Messages = () => {
     }
   
     const handleNewMessage = (newMessage) => {
+      console.log('Received new message:', newMessage);
+      console.log('Current state:', {
+        selectedConversationId,
+        selectedUser: selectedUser?.id,
+        currentUser: currentUser?.userId
+      });
+
       // Check if this message belongs to the current conversation
-      // We need to check both conversationId and user IDs to handle all cases
-      const isCurrentConversation = selectedConversationId === newMessage.conversation_id ||
-        (selectedUser && (
-          (newMessage.sender_id === selectedUser.id && newMessage.receiver_id === currentUser.userId) ||
-          (newMessage.sender_id === currentUser.userId && newMessage.receiver_id === selectedUser.id)
-        ));
-      
-      // If this is a message for the current conversation but selectedConversationId is not set,
-      // update it with the conversation_id from the message
-      if (isCurrentConversation && !selectedConversationId && newMessage.conversation_id) {
+      // First, check if we have a selectedUser and the message involves this user
+      const isMessageForSelectedUser = selectedUser && (
+        (newMessage.sender_id === selectedUser.id && newMessage.receiver_id === currentUser.userId) ||
+        (newMessage.sender_id === currentUser.userId && newMessage.receiver_id === selectedUser.id)
+      );
+
+      // Also check by conversation ID
+      const isMessageForCurrentConversation = selectedConversationId === newMessage.conversation_id;
+
+      // Determine if this message should be shown in the current chat
+      let shouldShowInCurrentChat = isMessageForSelectedUser || isMessageForCurrentConversation;
+
+      // If this is a message for the selected user but we don't have the conversation ID set,
+      // we need to find the conversation and update it
+      if (isMessageForSelectedUser && !selectedConversationId && newMessage.conversation_id) {
+        console.log('Updating selectedConversationId to:', newMessage.conversation_id);
         setSelectedConversationId(newMessage.conversation_id);
       }
-  
+
+      // If we don't have a selectedUser but this message is for us, we should find the sender
+      // and select that conversation
+      if (!selectedUser && newMessage.receiver_id === currentUser.userId) {
+        console.log('No selected user, but received message from:', newMessage.sender_id);
+        // Find the conversation for this sender
+        const conversation = conversations.find(conv => conv.id === newMessage.sender_id);
+        if (conversation) {
+          console.log('Found conversation for sender, selecting it');
+          setSelectedUser(conversation);
+          setSelectedConversationId(newMessage.conversation_id);
+          // Since we're now selecting this conversation, we should show the message
+          shouldShowInCurrentChat = true;
+          // Add the message to chat immediately since we're now viewing this conversation
+          setMessages(prev => {
+            const messageExists = prev.some(msg => 
+              msg.sender_id === newMessage.sender_id && 
+              msg.content === newMessage.content &&
+              msg.message_id === newMessage.message_id
+            );
+            if (!messageExists) {
+              console.log('Adding message to chat after selecting conversation:', newMessage);
+              return [...prev, newMessage];
+            }
+            return prev;
+          });
+        } else {
+          // If conversation not found in current list, we need to fetch conversations first
+          console.log('Conversation not found in current list, fetching conversations...');
+          const fetchAndSelectConversation = async () => {
+            try {
+              const response = await axios.get(`http://localhost:8080/api/messages/conversations/${currentUser.userId}`);
+              const updatedConversations = response.data;
+              const foundConversation = updatedConversations.find(conv => conv.id === newMessage.sender_id);
+              if (foundConversation) {
+                console.log('Found conversation after fetching, selecting it');
+                setSelectedUser(foundConversation);
+                setSelectedConversationId(newMessage.conversation_id);
+                // Since we're now selecting this conversation, we should show the message
+                shouldShowInCurrentChat = true;
+                // Add the message to chat immediately since we're now viewing this conversation
+                setMessages(prev => {
+                  const messageExists = prev.some(msg => 
+                    msg.sender_id === newMessage.sender_id && 
+                    msg.content === newMessage.content &&
+                    msg.message_id === newMessage.message_id
+                  );
+                  if (!messageExists) {
+                    console.log('Adding message to chat after selecting conversation:', newMessage);
+                    return [...prev, newMessage];
+                  }
+                  return prev;
+                });
+              }
+            } catch (error) {
+              console.error('Error fetching conversations for new message:', error);
+            }
+          };
+          fetchAndSelectConversation();
+        }
+      }
+
       // Update conversations list
       setConversations((prev) =>
         prev.map((conv) => {
@@ -80,15 +154,16 @@ const Messages = () => {
                 hour: '2-digit',
                 minute: '2-digit',
               }),
-              unread: !isCurrentConversation ? (conv.unread || 0) + 1 : conv.unread,
+              unread: !shouldShowInCurrentChat ? (conv.unread || 0) + 1 : conv.unread,
             };
           }
           return conv;
         })
       );
-  
+
       // If currently viewing this conversation, add message to chat
-      if (isCurrentConversation) {
+      if (shouldShowInCurrentChat && selectedUser) {
+        console.log('Adding message to current chat:', newMessage);
         setMessages((prev) => {
           // Check if message already exists (to avoid duplicates)
           const messageExists = prev.some(
@@ -130,7 +205,9 @@ const Messages = () => {
           selectedUser: selectedUser?.id,
           messageSender: newMessage.sender_id,
           messageReceiver: newMessage.receiver_id,
-          currentUser: currentUser?.userId
+          currentUser: currentUser?.userId,
+          isMessageForSelectedUser,
+          isMessageForCurrentConversation
         });
       }
     };
@@ -159,7 +236,7 @@ const Messages = () => {
     return () => {
       webSocketService.unsubscribe('messages', handleNewMessage);
     };
-  }, [currentUser?.userId, selectedConversationId]);
+  }, [currentUser?.userId, selectedConversationId, selectedUser]);
   
   useEffect(() => {
     if (selectedUser) {
@@ -176,10 +253,29 @@ const Messages = () => {
     if (selectedUser && conversations.length > 0) {
       const conversation = conversations.find(conv => conv.id === selectedUser.id);
       if (conversation && conversation.conversationId) {
+        console.log('Found conversation for selected user, setting conversationId:', conversation.conversationId);
         setSelectedConversationId(conversation.conversationId);
+      } else {
+        console.log('No conversation found for selected user:', selectedUser.id);
       }
     }
   }, [conversations, selectedUser]);
+
+  // Refetch messages when selectedConversationId changes
+  useEffect(() => {
+    if (selectedUser && selectedConversationId) {
+      console.log('Refetching messages for conversation:', selectedConversationId);
+      fetchMessages(currentUser.userId, selectedUser.id);
+    }
+  }, [selectedConversationId]);
+
+  // Handle when selectedUser changes (e.g., when receiving a message from a new user)
+  useEffect(() => {
+    if (selectedUser && selectedConversationId) {
+      console.log('Selected user changed, fetching messages for:', selectedUser.id);
+      fetchMessages(currentUser.userId, selectedUser.id);
+    }
+  }, [selectedUser?.id, selectedConversationId]);
 
   // Debug logging to help track the issue
   useEffect(() => {
@@ -250,8 +346,14 @@ const Messages = () => {
   };
 
   const handleUserSelect = (user) => {
+    console.log('Selecting user:', user);
     setSelectedUser(user);
-    setSelectedConversationId(user.conversationId);
+    
+    // Ensure we have the conversation ID set
+    if (user.conversationId) {
+      console.log('Setting selectedConversationId to:', user.conversationId);
+      setSelectedConversationId(user.conversationId);
+    }
     
     // Mark conversation as read
     if (user.conversationId) {
