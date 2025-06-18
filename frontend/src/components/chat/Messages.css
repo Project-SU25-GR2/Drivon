@@ -15,12 +15,36 @@
 .messages-header {
   padding: 20px;
   border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .messages-header h2 {
   margin: 0;
   font-size: 1.5rem;
   color: #333;
+}
+
+.heartbeat-status {
+  display: flex;
+  align-items: center;
+}
+
+.heartbeat-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #28a745;
+  font-weight: 500;
+  padding: 4px 8px;
+  background-color: #e8f5e8;
+  border-radius: 12px;
+}
+
+.heartbeat-indicator i {
+  animation: pulse 2s infinite;
 }
 
 .conversations-list {
@@ -139,8 +163,8 @@
 }
 
 .polling-indicator.optimized {
-  color: #ffc107;
-  background-color: #fff3cd;
+  color: #dc3545;
+  background-color: #f8d7da;
 }
 
 .polling-indicator i {

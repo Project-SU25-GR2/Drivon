@@ -115,6 +115,7 @@ const TestOnlineStatus = () => {
         <p><strong>Current User ID:</strong> {serviceStatus.currentUserId || 'None'}</p>
         <p><strong>Active:</strong> {serviceStatus.isActive ? 'Yes' : 'No'}</p>
         <p><strong>Cache Size:</strong> {serviceStatus.cacheSize || 0}</p>
+        <p><strong>Heartbeat Active:</strong> {onlineStatusService.isHeartbeatActive() ? 'Yes' : 'No'}</p>
       </div>
 
       <div style={{ marginBottom: '20px' }}>
@@ -188,6 +189,8 @@ const TestOnlineStatus = () => {
         <h3>Instructions</h3>
         <ol>
           <li>Login to start heartbeat for current user</li>
+          <li><strong>Heartbeat chỉ hoạt động khi ở Messages page</strong></li>
+          <li>Khi chuyển sang page khác, user sẽ tự động offline</li>
           <li>Open another browser/tab to test with different user</li>
           <li>Use "Get Online Users" to see who's online</li>
           <li>Use "Check User Status" to check specific user</li>
