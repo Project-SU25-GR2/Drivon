@@ -15,7 +15,7 @@ const Messages = () => {
   const currentUser = JSON.parse(localStorage.getItem('user'));
   const chatMessagesRef = useRef(null);
   const selectedUserRef = useRef(selectedUser);
-  
+  //binhvuong
   // Polling intervals (in milliseconds)
   const MESSAGES_POLL_INTERVAL = 3000; // 3 seconds
   const CONVERSATIONS_POLL_INTERVAL = 5000; // 5 seconds
