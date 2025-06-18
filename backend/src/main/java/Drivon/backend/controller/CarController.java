@@ -27,7 +27,7 @@ public class CarController {
     @GetMapping
     public ResponseEntity<?> getAllCars() {
         try {
-            List<Car> cars = carService.getAllCars();
+            List<Car> cars = carService.getCarsByStatus("available");
             List<Map<String, Object>> carsWithImages = new ArrayList<>();
 
             for (Car car : cars) {

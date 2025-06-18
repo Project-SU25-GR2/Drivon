@@ -34,4 +34,8 @@ public class CarService {
     public Car updateCar(Car car) {
         return carRepository.save(car);
     }
+
+    public List<Car> getCarsByStatus(String status) {
+        return carRepository.findByStatus(status);
+    }
 }

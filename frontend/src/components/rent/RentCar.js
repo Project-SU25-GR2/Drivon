@@ -60,6 +60,7 @@ const RentCar = () => {
   }
 
   const filteredCars = cars.filter(car => {
+    if (car.status !== 'available') return false;
     const matchesSearch = car.brand.toLowerCase().includes(search.toLowerCase()) ||
                          car.model.toLowerCase().includes(search.toLowerCase()) ||
                          car.location.toLowerCase().includes(search.toLowerCase())||

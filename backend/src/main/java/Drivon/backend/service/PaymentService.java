@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import Drivon.backend.model.PaymentMethod;
 import Drivon.backend.model.PaymentStatus;
 import java.util.List;
+import Drivon.backend.model.Car;
 
 @Service
 public class PaymentService {
@@ -32,6 +33,9 @@ public class PaymentService {
 
     @Autowired
     private PaymentRepository paymentRepository;
+
+    @Autowired
+    private CarService carService;
 
     private PayOS payOS;
 
@@ -82,6 +86,14 @@ public class PaymentService {
             // Save to database (dùng hàm dùng chung)
             payment = savePayment(payment);
             logger.info("Created cash payment: {}", payment);
+
+            // Cập nhật trạng thái xe thành 'rented'
+            Car car = carService.getCarById(payment.getCarId());
+            if (car != null) {
+                car.setStatus("rented");
+                carService.updateCar(car);
+                logger.info("Updated car status to 'rented' for carId: {}", car.getLicensePlate());
+            }
 
             // Return response
             Map<String, Object> response = new HashMap<>();
@@ -197,6 +209,14 @@ public class PaymentService {
                     }
                     savePayment(payment);
                     logger.info("Saved PAID PayOS payment: {}", payment);
+
+                    // Cập nhật trạng thái xe thành 'rented'
+                    Car car = carService.getCarById(payment.getCarId());
+                    if (car != null) {
+                        car.setStatus("rented");
+                        carService.updateCar(car);
+                        logger.info("Updated car status to 'rented' for carId: {}", car.getLicensePlate());
+                    }
                 }
             } catch (Exception ex) {
                 logger.error("Error saving PAID payment to DB: {}", ex.getMessage(), ex);
@@ -244,6 +264,15 @@ public class PaymentService {
                         logger.info("Updating PayOS payment status to SUCCESS: {}", payment);
                         savePayment(payment);
                         logger.info("Updated PayOS payment status to SUCCESS: {}", payment);
+
+                        // Cập nhật trạng thái xe thành 'rented' nếu chưa
+                        Car car = carService.getCarById(payment.getCarId());
+                        if (car != null && (car.getStatus() == null || !car.getStatus().equals("rented"))) {
+                            car.setStatus("rented");
+                            carService.updateCar(car);
+                            logger.info("Updated car status to 'rented' for carId: {} (webhook)",
+                                    car.getLicensePlate());
+                        }
                     } else {
                         logger.error("No PAID payment found for orderCode {}. Webhook ignored.", orderCode);
                     }
