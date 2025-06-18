@@ -4,10 +4,18 @@
 
 Hệ thống online status được implement với các tính năng sau:
 
-1. **Frontend định kỳ báo hiệu "tôi đang online" (heartbeat)** mỗi 20 giây
+1. **Frontend định kỳ báo hiệu "tôi đang online" (heartbeat)** mỗi 20 giây **CHỈ KHI Ở MESSAGES PAGE**
 2. **Backend lưu trạng thái online** với timeout 30 giây
 3. **API kiểm tra trạng thái đối phương**
 4. **Tối ưu polling** khi người kia offline (giảm từ 3s xuống 30s)
+5. **Tự động offline** khi chuyển sang page khác
+
+## ⚠️ Lưu ý quan trọng
+
+**Heartbeat chỉ hoạt động khi user đang ở Messages page:**
+- ✅ **Vào Messages page** → Start heartbeat → User online
+- ❌ **Chuyển sang page khác** → Stop heartbeat → User offline ngay lập tức
+- ✅ **Quay lại Messages page** → Start heartbeat lại → User online
 
 ## Cấu trúc Database
 
@@ -61,22 +69,38 @@ CREATE TABLE user_online_status (
 
 ### 2. Component: `Messages.js` (Updated)
 - Tích hợp online status checking
-- Tối ưu polling dựa trên online status
+- **Tối ưu polling dựa trên online status**
 - Hiển thị online/offline indicators
-- Polling intervals:
-  - User online: 3 giây
-  - User offline: 30 giây
+- **Polling behavior:**
+  - **User online**: Polling 3 giây
+  - **User offline**: **Dừng polling hoàn toàn** (tiết kiệm 100% tài nguyên)
+- **Auto-resume**: Tự động bắt đầu polling khi user online lại
 
 ## Cách sử dụng
 
 ### 1. Khởi tạo hệ thống
 
 ```javascript
-// Frontend tự động start heartbeat khi user login
-onlineStatusService.startHeartbeat(currentUser.userId);
+// Heartbeat tự động start khi vào Messages page
+// Không cần gọi thủ công
 ```
 
-### 2. Kiểm tra trạng thái user
+### 2. Messages Page Behavior
+
+```javascript
+// Khi vào Messages page
+useEffect(() => {
+  // Tự động start heartbeat
+  onlineStatusService.startHeartbeat(currentUser.userId);
+  
+  return () => {
+    // Tự động stop heartbeat khi rời khỏi page
+    onlineStatusService.stopHeartbeat();
+  };
+}, []);
+```
+
+### 3. Kiểm tra trạng thái user
 
 ```javascript
 // Kiểm tra một user
@@ -86,7 +110,7 @@ const isOnline = await onlineStatusService.checkUserOnlineStatus(userId);
 const onlineStatus = await onlineStatusService.checkUsersOnlineStatus([userId1, userId2, userId3]);
 ```
 
-### 3. API Endpoints
+### 4. API Endpoints
 
 ```bash
 # Heartbeat
@@ -114,7 +138,7 @@ POST /api/online-status/offline
 }
 ```
 
-### 4. Test Component
+### 5. Test Component
 
 Truy cập `/test-online-status` để test các tính năng:
 - Start/Stop heartbeat
@@ -128,9 +152,10 @@ Truy cập `/test-online-status` để test các tính năng:
 - Frontend: Cache online status để giảm API calls
 
 ### 2. Polling Optimization
-- User online: Polling 3 giây
-- User offline: Polling 30 giây
-- Tự động điều chỉnh dựa trên online status
+- **User online**: Polling 3 giây
+- **User offline**: **Dừng polling hoàn toàn** (tiết kiệm 100% tài nguyên)
+- **Auto-resume**: Tự động bắt đầu polling khi user online lại
+- **Periodic status check**: Kiểm tra online status mỗi 10 giây
 
 ### 3. Scheduled Cleanup
 - Backend tự động cleanup users offline sau 30 giây

@@ -25,6 +25,7 @@ const Messages = () => {
   // Refs for polling intervals
   const messagesPollingRef = useRef(null);
   const conversationsPollingRef = useRef(null);
+  const onlineStatusPollingRef = useRef(null);
   
   // State to track if tab is active
   const [isTabActive, setIsTabActive] = useState(true);
@@ -194,43 +195,78 @@ const Messages = () => {
 
   // Start polling for messages
   const startMessagesPolling = () => {
+    console.log('🔄 startMessagesPolling called', {
+      selectedUser: selectedUser?.id,
+      selectedUserOnline,
+      currentInterval: messagesPollingRef.current
+    });
+    
     if (messagesPollingRef.current) {
       clearInterval(messagesPollingRef.current);
+      console.log('🔄 Cleared existing messages polling interval');
     }
     
-    messagesPollingRef.current = setInterval(() => {
-      if (selectedUser && currentUser && isTabActive) {
-        console.log('Polling for messages...');
-        setLastPollTime(new Date());
-        fetchMessages(currentUser.userId, selectedUser.id);
-      }
-    }, getOptimizedPollingInterval(selectedUserOnline));
+    // Chỉ start polling nếu selected user online
+    if (selectedUser && selectedUserOnline) {
+      messagesPollingRef.current = setInterval(() => {
+        if (selectedUser && currentUser && isTabActive) {
+          console.log('🔄 Polling for messages...', {
+            selectedUser: selectedUser.id,
+            currentUser: currentUser.userId
+          });
+          setLastPollTime(new Date());
+          fetchMessages(currentUser.userId, selectedUser.id);
+        }
+      }, MESSAGES_POLL_INTERVAL);
+      console.log('🔄 Started messages polling (user online)');
+    } else if (selectedUser && !selectedUserOnline) {
+      console.log('🔄 Skipped messages polling (user offline)');
+    }
   };
 
   // Start polling for conversations
   const startConversationsPolling = () => {
+    console.log('🔄 startConversationsPolling called', {
+      currentInterval: conversationsPollingRef.current
+    });
+    
     if (conversationsPollingRef.current) {
       clearInterval(conversationsPollingRef.current);
+      console.log('🔄 Cleared existing conversations polling interval');
     }
     
     conversationsPollingRef.current = setInterval(() => {
       if (currentUser && isTabActive) {
-        console.log('Polling for conversations...');
+        console.log('🔄 Polling for conversations...');
         setLastPollTime(new Date());
         fetchConversations();
       }
     }, CONVERSATIONS_POLL_INTERVAL);
+    console.log('🔄 Started conversations polling');
   };
 
   // Stop all polling
   const stopPolling = () => {
+    console.log('🔄 stopPolling called', {
+      messagesInterval: messagesPollingRef.current,
+      conversationsInterval: conversationsPollingRef.current,
+      onlineStatusInterval: onlineStatusPollingRef.current
+    });
+    
     if (messagesPollingRef.current) {
       clearInterval(messagesPollingRef.current);
       messagesPollingRef.current = null;
+      console.log('🔄 Stopped messages polling');
     }
     if (conversationsPollingRef.current) {
       clearInterval(conversationsPollingRef.current);
       conversationsPollingRef.current = null;
+      console.log('🔄 Stopped conversations polling');
+    }
+    if (onlineStatusPollingRef.current) {
+      clearInterval(onlineStatusPollingRef.current);
+      onlineStatusPollingRef.current = null;
+      console.log('🔄 Stopped online status polling');
     }
   };
 
@@ -242,24 +278,43 @@ const Messages = () => {
     selectedUserRef.current = selectedUser;
   }, [selectedUser]);
 
-  // Handle tab visibility changes
+  // Effect to handle tab visibility changes
+  useEffect(() => {
+    console.log('🔄 Tab visibility changed:', isTabActive);
+    
+    if (isTabActive) {
+      // Tab became active, resume polling if needed
+      if (selectedUser && selectedUserOnline) {
+        console.log('🔄 Tab active, resuming messages polling');
+        startMessagesPolling();
+      }
+      if (currentUser) {
+        console.log('🔄 Tab active, resuming conversations polling');
+        startConversationsPolling();
+      }
+      
+      // Immediately fetch latest data when tab becomes visible
+      if (selectedUser && currentUser) {
+        console.log('🔄 Tab became visible, fetching latest messages...');
+        fetchMessages(currentUser.userId, selectedUser.id);
+      }
+      if (currentUser) {
+        console.log('🔄 Tab became visible, fetching latest conversations...');
+        fetchConversations();
+      }
+    } else {
+      // Tab became inactive, stop polling to save resources
+      console.log('🔄 Tab inactive, stopping all polling');
+      stopPolling();
+    }
+  }, [isTabActive]);
+
+  // Track tab visibility changes
   useEffect(() => {
     const handleVisibilityChange = () => {
       const isVisible = !document.hidden;
-      console.log('Tab visibility changed:', isVisible);
+      console.log('🔄 Document visibility changed:', isVisible);
       setIsTabActive(isVisible);
-      
-      // If tab becomes visible, immediately fetch latest data
-      if (isVisible) {
-        if (selectedUser && currentUser) {
-          console.log('Tab became visible, fetching latest messages...');
-          fetchMessages(currentUser.userId, selectedUser.id);
-        }
-        if (currentUser) {
-          console.log('Tab became visible, fetching latest conversations...');
-          fetchConversations();
-        }
-      }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -267,7 +322,7 @@ const Messages = () => {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [selectedUser, currentUser]);
+  }, []);
 
   useEffect(() => {
     if (!currentUser) {
@@ -275,7 +330,7 @@ const Messages = () => {
       return;
     }
 
-    // Bắt đầu heartbeat cho current user
+    // Bắt đầu heartbeat cho current user khi vào Messages page
     onlineStatusService.startHeartbeat(currentUser.userId);
   
     const handleNewMessage = (newMessage) => {
@@ -389,38 +444,26 @@ const Messages = () => {
       if (shouldShowInCurrentChat && selectedUser) {
         console.log('Adding message to current chat:', newMessage);
         setMessages((prev) => {
-          // Check if message already exists (to avoid duplicates)
-          const messageExists = prev.some(
-            (msg) => {
-              // Check by content and sender (for sent messages)
-              if (msg.sender_id === newMessage.sender_id && 
-                  msg.content === newMessage.content) {
-                // For messages we just sent, check by temporary ID or time
-                if (msg.sender_id === currentUser.userId) {
-                  return Math.abs(new Date(msg.sent_at) - new Date(newMessage.sent_at)) < 2000;
-                }
-                // For received messages, check by message_id if available
-                return msg.message_id === newMessage.message_id;
-              }
-              return false;
+          const TIME_WINDOW = 5000; // 5 seconds
+          let found = false;
+          const updated = prev.map(msg => {
+            if (
+              msg.sender_id === newMessage.sender_id &&
+              msg.content === newMessage.content &&
+              msg.sender_id === currentUser.userId &&
+              Math.abs(new Date(msg.sent_at) - new Date(newMessage.sent_at)) < TIME_WINDOW &&
+              msg.pending
+            ) {
+              found = true;
+              // Update pending message to confirmed
+              return { ...newMessage, pending: false, error: false };
             }
-          );
-          
-          if (messageExists) {
-            // Update the existing message with the real message_id if it's a sent message
-            return prev.map(msg => {
-              if (msg.sender_id === newMessage.sender_id && 
-                  msg.content === newMessage.content &&
-                  msg.sender_id === currentUser.userId &&
-                  Math.abs(new Date(msg.sent_at) - new Date(newMessage.sent_at)) < 2000) {
-                return { ...msg, message_id: newMessage.message_id };
-              }
-              return msg;
-            });
+            return msg;
+          });
+          if (!found) {
+            return [...updated, newMessage];
           }
-          
-          console.log('Adding new message to chat:', newMessage);
-          return [...prev, newMessage];
+          return updated;
         });
       } else {
         console.log('Message not for current conversation:', {
@@ -449,11 +492,8 @@ const Messages = () => {
     // Initial fetch
     fetchConversations();
     
-    // Start polling
+    // Start conversations polling (chỉ chạy 1 lần)
     startConversationsPolling();
-    if (selectedUser) {
-      startMessagesPolling();
-    }
 
     // Check online status initially
     checkConversationsOnlineStatus();
@@ -461,13 +501,15 @@ const Messages = () => {
     return () => {
       webSocketService.unsubscribe('messages', handleNewMessage);
       stopPolling();
-      // Cleanup online status service
-      onlineStatusService.cleanup();
+      // Dừng heartbeat khi rời khỏi Messages page
+      onlineStatusService.stopHeartbeat();
     };
-  }, [currentUser?.userId, selectedConversationId, selectedUser]);
+  }, [currentUser?.userId]); // Chỉ phụ thuộc vào currentUser.userId
   
   useEffect(() => {
     if (selectedUser) {
+      console.log('🔄 Selected user changed:', selectedUser.id);
+      
       fetchMessages(currentUser.userId, selectedUser.id);
 
       if (location.state?.initialMessage) {
@@ -477,16 +519,10 @@ const Messages = () => {
       // Check online status of selected user
       checkSelectedUserOnlineStatus();
       
-      // Start polling for messages when a user is selected
-      startMessagesPolling();
-    } else {
-      // Stop polling for messages when no user is selected
-      if (messagesPollingRef.current) {
-        clearInterval(messagesPollingRef.current);
-        messagesPollingRef.current = null;
-      }
+      // Start checking online status periodically for this user
+      startOnlineStatusChecking();
     }
-  }, [selectedUser?.id]);
+  }, [selectedUser?.id]); // Chỉ phụ thuộc vào selectedUser.id
 
   // Update selectedConversationId when conversations are loaded and we have a selectedUser
   useEffect(() => {
@@ -524,6 +560,48 @@ const Messages = () => {
     console.log('Current user:', currentUser);
   }, [selectedConversationId, selectedUser, currentUser]);
 
+  // Check online status periodically
+  const startOnlineStatusChecking = () => {
+    console.log('🔄 startOnlineStatusChecking called', {
+      currentInterval: onlineStatusPollingRef.current
+    });
+    
+    // Clear existing interval if any
+    if (onlineStatusPollingRef.current) {
+      clearInterval(onlineStatusPollingRef.current);
+      console.log('🔄 Cleared existing online status interval');
+    }
+    
+    // Check online status every 10 seconds
+    onlineStatusPollingRef.current = setInterval(() => {
+      if (selectedUser && currentUser && isTabActive) {
+        console.log('🔄 Checking online status...');
+        checkSelectedUserOnlineStatus();
+      }
+    }, 10000); // 10 seconds
+
+    console.log('🔄 Started online status checking');
+    return onlineStatusPollingRef.current;
+  };
+
+  // Effect to manage messages polling based on online status
+  useEffect(() => {
+    console.log('🔄 selectedUserOnline changed:', selectedUserOnline);
+    
+    if (selectedUser) {
+      if (selectedUserOnline) {
+        console.log('🔄 User is online, starting messages polling');
+        startMessagesPolling();
+      } else {
+        console.log('🔄 User is offline, stopping messages polling');
+        if (messagesPollingRef.current) {
+          clearInterval(messagesPollingRef.current);
+          messagesPollingRef.current = null;
+        }
+      }
+    }
+  }, [selectedUserOnline, selectedUser?.id]);
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!message.trim() || !selectedUser) return;
@@ -543,7 +621,9 @@ const Messages = () => {
       const messageToAdd = {
         ...newMessage,
         conversation_id: selectedConversationId,
-        message_id: Date.now() // Temporary ID until we get the real one from server
+        message_id: Date.now(), // Temporary ID until we get the real one from server
+        pending: true, // Mark as pending
+        error: false
       };
       
       setMessages(prev => [...prev, messageToAdd]);
@@ -579,7 +659,14 @@ const Messages = () => {
     } catch (error) {
       console.error('Error sending message:', error);
       alert('Failed to send message. Please try again.');
-      
+      // Mark the pending message as error
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.pending && msg.content === messageContent && msg.sender_id === currentUser.userId
+            ? { ...msg, pending: false, error: true }
+            : msg
+        )
+      );
       // Put the message back in the input field so user can try again
       setMessage(messageContent);
     }
@@ -608,11 +695,35 @@ const Messages = () => {
     startMessagesPolling();
   };
 
+  // Debug function to log all active intervals
+  const debugIntervals = () => {
+    console.log('🔍 DEBUG INTERVALS:', {
+      messagesPolling: messagesPollingRef.current ? 'ACTIVE' : 'INACTIVE',
+      conversationsPolling: conversationsPollingRef.current ? 'ACTIVE' : 'INACTIVE', 
+      onlineStatusPolling: onlineStatusPollingRef.current ? 'ACTIVE' : 'INACTIVE',
+      selectedUser: selectedUser?.id,
+      selectedUserOnline,
+      isTabActive
+    });
+  };
+
+  // Call debug every 5 seconds
+  useEffect(() => {
+    const debugInterval = setInterval(debugIntervals, 5000);
+    return () => clearInterval(debugInterval);
+  }, [selectedUser?.id, selectedUserOnline, isTabActive]);
+
   return (
     <div className="messages-container">
       <div className="messages-sidebar">
         <div className="messages-header">
           <h2>Messages</h2>
+          <div className="heartbeat-status">
+            <span className="heartbeat-indicator">
+              <i className="bi bi-circle-fill" style={{ color: '#28a745', fontSize: '8px' }}></i>
+              Heartbeat Active
+            </span>
+          </div>
         </div>
         <div className="conversations-list">
           {conversations.map((conv) => {
@@ -659,25 +770,29 @@ const Messages = () => {
               </div>
               {isTabActive && (
                 <div className={`polling-indicator ${!selectedUserOnline ? 'optimized' : ''}`} 
-                     title={selectedUserOnline ? 'Live updates active' : 'Optimized polling (user offline)'}>
+                     title={selectedUserOnline ? 'Live updates active' : 'Polling stopped (user offline)'}>
                   <i className="bi bi-circle-fill" style={{ 
-                    color: selectedUserOnline ? '#28a745' : '#ffc107', 
+                    color: selectedUserOnline ? '#28a745' : '#dc3545', 
                     fontSize: '8px' 
                   }}></i>
-                  {!selectedUserOnline && <span>Optimized</span>}
+                  {!selectedUserOnline && <span>Polling Stopped</span>}
                 </div>
               )}
             </div>
             <div className="chat-messages" ref={chatMessagesRef}>
-              {messages.map((msg, index) => (
+              {messages.filter(msg => !msg.pending).map((msg, index) => (
                 <div
                   key={index}
-                  className={`message ${msg.sender_id === currentUser.userId ? 'sent' : 'received'}`}
+                  className={`message ${msg.sender_id === currentUser.userId ? 'sent' : 'received'}${msg.error ? ' error-message' : ''}`}
                 >
                   <p>{msg.content}</p>
                   <span className="message-time">
                     {new Date(msg.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {msg.pending && <span className="sending-indicator"> • Đang gửi...</span>}
                   </span>
+                  {msg.error && (
+                    <div className="error-text">Gửi thất bại. <button onClick={() => alert('TODO: resend logic')}>Gửi lại</button></div>
+                  )}
                 </div>
               ))}
               <div />

@@ -51,9 +51,10 @@ class OnlineStatusService {
             this.statusCheckInterval = null;
         }
 
-        // Đánh dấu offline khi dừng
+        // Đánh dấu offline ngay lập tức khi dừng heartbeat
         if (this.currentUserId) {
             this.markOffline();
+            console.log('Heartbeat stopped, user marked as offline');
         }
     }
 
@@ -206,6 +207,13 @@ class OnlineStatusService {
             isActive: this.isActive,
             cacheSize: this.onlineStatusCache.size
         };
+    }
+
+    /**
+     * Kiểm tra xem heartbeat có đang chạy không
+     */
+    isHeartbeatActive() {
+        return this.heartbeatInterval !== null && this.isActive;
     }
 }
 
