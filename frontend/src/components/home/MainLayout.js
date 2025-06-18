@@ -112,6 +112,10 @@ const MainLayout = ({ user, handleLogout, children }) => {
                     />
                     <span>{user.fullName || user.email || "User"}</span>
                   </Link>
+                  <Link to="/messages" className="dropdown-item" style={{ padding: '10px', display: 'block', textDecoration: 'none', color: '#222' }}>
+                    <i className="bi bi-chat-dots" style={{ marginRight: '8px' }}></i>
+                    Messages
+                  </Link>
                   <Link to="/payment" className="dropdown-item" style={{ padding: '10px', display: 'block', textDecoration: 'none', color: '#222' }}>Payment</Link>
                   <button onClick={handleLogout} className="dropdown-item logout-button" style={{ padding: '10px', width: '100%', textAlign: 'left', border: 'none', cursor: 'pointer' }}>Logout</button>
                 </>
