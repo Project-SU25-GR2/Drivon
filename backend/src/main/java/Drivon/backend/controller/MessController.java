@@ -67,4 +67,10 @@ public class MessController {
         messageService.markConversationAsRead(userId, conversationId);
         return ResponseEntity.ok().build();
     }
+
+    @DeleteMapping("/conversation/{userId}/{otherUserId}")
+    public ResponseEntity<?> deleteConversationForUser(@PathVariable Long userId, @PathVariable Long otherUserId) {
+        messageService.deleteConversationForUser(userId, otherUserId);
+        return ResponseEntity.ok().build();
+    }
 }

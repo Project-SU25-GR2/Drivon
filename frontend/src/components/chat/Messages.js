@@ -28,6 +28,9 @@ const Messages = () => {
   const [isTabActive, setIsTabActive] = useState(true);
   const [lastPollTime, setLastPollTime] = useState(null);
 
+  // Thêm state để điều khiển hiển thị sidebar khi đang trong đoạn chat
+  const [showSidebar, setShowSidebar] = useState(false);
+
   const scrollToBottom = () => {
     const chatBox = chatMessagesRef.current;
     if (chatBox) {
@@ -399,6 +402,11 @@ const Messages = () => {
     console.log('Current user:', currentUser);
   }, [selectedConversationId, selectedUser, currentUser]);
 
+  // Khi chọn user, sidebar sẽ ẩn, nhưng có thể mở lại bằng icon menu
+  useEffect(() => {
+    if (selectedUser) setShowSidebar(false);
+  }, [selectedUser]);
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!message.trim() || !selectedUser) return;
@@ -475,44 +483,81 @@ const Messages = () => {
 
   return (
     <div className="messages-container">
-      <div className="messages-sidebar">
-        <div className="messages-header">
-          <h2>Messages</h2>
-        </div>
-        <div className="conversations-list">
-          {conversations.map((conv) => (
-            <div
-              key={conv.id}
-              className={`conversation-item ${selectedUser?.id === conv.id ? 'active' : ''}`}
-              onClick={() => handleUserSelect(conv)}
-            >
-              <img src={conv.avatar} alt={conv.name} className="conversation-avatar" />
-              <div className="conversation-info">
-                <div className="conversation-header">
-                  <h3>{conv.name}</h3>
-                  <span className="conversation-time">{conv.time}</span>
+      {/* Hiển thị sidebar nếu chưa chọn user hoặc showSidebar = true */}
+      {(!selectedUser || showSidebar) && (
+        <div className="messages-sidebar">
+          <div className="messages-header">
+            <h2>Messages</h2>
+          </div>
+          <div className="conversations-list">
+            {conversations.map((conv) => (
+              <div
+                key={conv.id}
+                className={`conversation-item ${selectedUser?.id === conv.id ? 'active' : ''}`}
+                onClick={() => { setShowSidebar(false); handleUserSelect(conv); }}
+              >
+                <img src={conv.avatar} alt={conv.name} className="conversation-avatar" />
+                <div className="conversation-info">
+                  <div className="conversation-header">
+                    <h3>{conv.name}</h3>
+                    <span className="conversation-time">{conv.time}</span>
+                  </div>
+                  <p className="conversation-last-message">{conv.lastMessage}</p>
                 </div>
-                <p className="conversation-last-message">{conv.lastMessage}</p>
+                {conv.unread > 0 && (
+                  <div className="unread-badge">{conv.unread}</div>
+                )}
               </div>
-              {conv.unread > 0 && (
-                <div className="unread-badge">{conv.unread}</div>
-              )}
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="messages-main">
         {selectedUser ? (
           <>
             <div className="chat-header">
+              {/* Icon menu để mở/tắt sidebar */}
+              <button
+                className="menu-btn"
+                title="Hiện/tắt danh sách hội thoại"
+                onClick={() => setShowSidebar((prev) => !prev)}
+                style={{ background: 'none', border: 'none', marginRight: 8, fontSize: 22, cursor: 'pointer' }}
+              >
+                <i className="bi bi-list"></i>
+              </button>
               <img src={selectedUser.avatar} alt={selectedUser.name} className="chat-avatar" />
               <h3>{selectedUser.name}</h3>
-              {isTabActive && (
-                <div className="polling-indicator" title="Live updates active">
-                  <i className="bi bi-circle-fill" style={{ color: '#28a745', fontSize: '8px' }}></i>
-                </div>
-              )}
+              {/* Nút icon đóng và xóa đoạn chat */}
+              <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+                <button
+                  className="close-chat-btn"
+                  title="Đóng đoạn chat"
+                  onClick={() => setSelectedUser(null)}
+                  style={{ padding: '4px', borderRadius: '4px', border: 'none', background: '#eee', cursor: 'pointer', fontSize: 20 }}
+                >
+                  <i className="bi bi-x"></i>
+                </button>
+                <button
+                  className="delete-chat-btn"
+                  title="Xóa đoạn chat"
+                  onClick={async () => {
+                    if (window.confirm('Bạn có chắc muốn xóa toàn bộ đoạn chat này?')) {
+                      try {
+                        await axios.delete(`http://localhost:8080/api/messages/conversation/${currentUser.userId}/${selectedUser.id}`);
+                        setMessages([]);
+                        setSelectedUser(null);
+                        fetchConversations();
+                      } catch (err) {
+                        alert('Xóa đoạn chat thất bại!');
+                      }
+                    }
+                  }}
+                  style={{ padding: '4px', borderRadius: '4px', border: 'none', background: '#ffdddd', color: '#c00', cursor: 'pointer', fontSize: 20 }}
+                >
+                  <i className="bi bi-trash"></i>
+                </button>
+              </div>
             </div>
             <div className="chat-messages" ref={chatMessagesRef}>
               {messages.map((msg, index) => (
