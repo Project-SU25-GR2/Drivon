@@ -32,7 +32,7 @@ const Messages = () => {
       
       // Get the conversation ID for this user pair
       const conversation = conversations.find(conv => conv.id === userId2);
-      if (conversation) {
+      if (conversation && conversation.conversationId) {
         setSelectedConversationId(conversation.conversationId);
       }
     } catch (error) {
@@ -56,7 +56,18 @@ const Messages = () => {
   
     const handleNewMessage = (newMessage) => {
       // Check if this message belongs to the current conversation
-      const isCurrentConversation = selectedConversationId === newMessage.conversation_id;
+      // We need to check both conversationId and user IDs to handle all cases
+      const isCurrentConversation = selectedConversationId === newMessage.conversation_id ||
+        (selectedUser && (
+          (newMessage.sender_id === selectedUser.id && newMessage.receiver_id === currentUser.userId) ||
+          (newMessage.sender_id === currentUser.userId && newMessage.receiver_id === selectedUser.id)
+        ));
+      
+      // If this is a message for the current conversation but selectedConversationId is not set,
+      // update it with the conversation_id from the message
+      if (isCurrentConversation && !selectedConversationId && newMessage.conversation_id) {
+        setSelectedConversationId(newMessage.conversation_id);
+      }
   
       // Update conversations list
       setConversations((prev) =>
@@ -109,7 +120,17 @@ const Messages = () => {
             });
           }
           
+          console.log('Adding new message to chat:', newMessage);
           return [...prev, newMessage];
+        });
+      } else {
+        console.log('Message not for current conversation:', {
+          selectedConversationId,
+          messageConversationId: newMessage.conversation_id,
+          selectedUser: selectedUser?.id,
+          messageSender: newMessage.sender_id,
+          messageReceiver: newMessage.receiver_id,
+          currentUser: currentUser?.userId
         });
       }
     };
@@ -159,6 +180,13 @@ const Messages = () => {
       }
     }
   }, [conversations, selectedUser]);
+
+  // Debug logging to help track the issue
+  useEffect(() => {
+    console.log('Selected conversation ID:', selectedConversationId);
+    console.log('Selected user:', selectedUser);
+    console.log('Current user:', currentUser);
+  }, [selectedConversationId, selectedUser, currentUser]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
