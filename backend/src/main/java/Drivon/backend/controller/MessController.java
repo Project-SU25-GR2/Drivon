@@ -22,14 +22,6 @@ public class MessController {
     private SimpMessagingTemplate messagingTemplate;
 
     @PostMapping
-<<<<<<< HEAD
-    public ResponseEntity<Message> sendMessage(@RequestBody Message message) {
-        Message savedMessage = messageService.sendMessage(message);
-
-        // Send to sender's personal queue
-        messagingTemplate.convertAndSendToUser(
-                String.valueOf(message.getSender_id()),
-=======
     public ResponseEntity<Message> sendMessage(@RequestBody Map<String, Object> request) {
         Long senderId = Long.valueOf(request.get("sender_id").toString());
         Long receiverId = Long.valueOf(request.get("receiver_id").toString());
@@ -40,17 +32,12 @@ public class MessController {
         // Send to sender's personal queue
         messagingTemplate.convertAndSendToUser(
                 String.valueOf(senderId),
->>>>>>> a9984380f711087bf45d3999e75e5b6f06f9f60d
                 "/topic/messages",
                 savedMessage);
 
         // Send to receiver's personal queue
         messagingTemplate.convertAndSendToUser(
-<<<<<<< HEAD
-                String.valueOf(message.getReceiver_id()),
-=======
                 String.valueOf(receiverId),
->>>>>>> a9984380f711087bf45d3999e75e5b6f06f9f60d
                 "/topic/messages",
                 savedMessage);
 

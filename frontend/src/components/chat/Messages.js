@@ -11,14 +11,22 @@ const Messages = () => {
   const [selectedUser, setSelectedUser] = useState(location.state?.selectedUser || null);
   const [message, setMessage] = useState(location.state?.initialMessage || '');
   const [messages, setMessages] = useState([]);
-<<<<<<< HEAD
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-=======
   const [selectedConversationId, setSelectedConversationId] = useState(null);
->>>>>>> a9984380f711087bf45d3999e75e5b6f06f9f60d
   const currentUser = JSON.parse(localStorage.getItem('user'));
   const chatMessagesRef = useRef(null);
   const selectedUserRef = useRef(selectedUser);
+  //binhvuong
+  // Polling intervals (in milliseconds)
+  const MESSAGES_POLL_INTERVAL = 3000; // 3 seconds
+  const CONVERSATIONS_POLL_INTERVAL = 5000; // 5 seconds
+  
+  // Refs for polling intervals
+  const messagesPollingRef = useRef(null);
+  const conversationsPollingRef = useRef(null);
+  
+  // State to track if tab is active
+  const [isTabActive, setIsTabActive] = useState(true);
+  const [lastPollTime, setLastPollTime] = useState(null);
 
   const scrollToBottom = () => {
     const chatBox = chatMessagesRef.current;
@@ -32,11 +40,37 @@ const Messages = () => {
       const response = await axios.get(
         `http://localhost:8080/api/messages/conversation/${userId1}/${userId2}`
       );
-      setMessages(response.data);
+      
+      // Merge new messages with existing ones to avoid duplicates
+      setMessages(prevMessages => {
+        const newMessages = response.data;
+        
+        // Create a map of existing messages by content and sender for quick lookup
+        const existingMessagesMap = new Map();
+        prevMessages.forEach(msg => {
+          const key = `${msg.sender_id}-${msg.content}-${new Date(msg.sent_at).getTime()}`;
+          existingMessagesMap.set(key, msg);
+        });
+        
+        // Filter out messages that already exist
+        const uniqueNewMessages = newMessages.filter(newMsg => {
+          const key = `${newMsg.sender_id}-${newMsg.content}-${new Date(newMsg.sent_at).getTime()}`;
+          return !existingMessagesMap.has(key);
+        });
+        
+        // If we have new messages, merge them
+        if (uniqueNewMessages.length > 0) {
+          console.log('Adding new messages from polling:', uniqueNewMessages.length);
+          return [...prevMessages, ...uniqueNewMessages];
+        }
+        
+        // If no new messages, just return the server data (in case messages were reordered)
+        return newMessages;
+      });
       
       // Get the conversation ID for this user pair
       const conversation = conversations.find(conv => conv.id === userId2);
-      if (conversation) {
+      if (conversation && conversation.conversationId) {
         setSelectedConversationId(conversation.conversationId);
       }
     } catch (error) {
@@ -47,9 +81,85 @@ const Messages = () => {
   const fetchConversations = async () => {
     try {
       const response = await axios.get(`http://localhost:8080/api/messages/conversations/${currentUser.userId}`);
-      setConversations(response.data);
+      
+      // Merge new conversations with existing ones to preserve unread counts and other state
+      setConversations(prevConversations => {
+        const newConversations = response.data;
+        
+        // Create a map of existing conversations by ID
+        const existingConversationsMap = new Map();
+        prevConversations.forEach(conv => {
+          existingConversationsMap.set(conv.id, conv);
+        });
+        
+        // Merge conversations, preserving existing state like unread counts
+        const mergedConversations = newConversations.map(newConv => {
+          const existingConv = existingConversationsMap.get(newConv.id);
+          if (existingConv) {
+            // Preserve unread count and other state from existing conversation
+            return {
+              ...newConv,
+              unread: existingConv.unread || newConv.unread || 0
+            };
+          }
+          return newConv;
+        });
+        
+        // Check if we have any new conversations
+        const hasNewConversations = newConversations.some(newConv => 
+          !existingConversationsMap.has(newConv.id)
+        );
+        
+        if (hasNewConversations) {
+          console.log('New conversations found via polling');
+        }
+        
+        return mergedConversations;
+      });
     } catch (error) {
       console.error('Error fetching conversations:', error);
+    }
+  };
+
+  // Start polling for messages
+  const startMessagesPolling = () => {
+    if (messagesPollingRef.current) {
+      clearInterval(messagesPollingRef.current);
+    }
+    
+    messagesPollingRef.current = setInterval(() => {
+      if (selectedUser && currentUser && isTabActive) {
+        console.log('Polling for messages...');
+        setLastPollTime(new Date());
+        fetchMessages(currentUser.userId, selectedUser.id);
+      }
+    }, MESSAGES_POLL_INTERVAL);
+  };
+
+  // Start polling for conversations
+  const startConversationsPolling = () => {
+    if (conversationsPollingRef.current) {
+      clearInterval(conversationsPollingRef.current);
+    }
+    
+    conversationsPollingRef.current = setInterval(() => {
+      if (currentUser && isTabActive) {
+        console.log('Polling for conversations...');
+        setLastPollTime(new Date());
+        fetchConversations();
+      }
+    }, CONVERSATIONS_POLL_INTERVAL);
+  };
+
+  // Stop all polling
+  const stopPolling = () => {
+    if (messagesPollingRef.current) {
+      clearInterval(messagesPollingRef.current);
+      messagesPollingRef.current = null;
+    }
+    if (conversationsPollingRef.current) {
+      clearInterval(conversationsPollingRef.current);
+      conversationsPollingRef.current = null;
     }
   };
 
@@ -57,83 +167,132 @@ const Messages = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Debug useEffect để theo dõi thay đổi messages
-  useEffect(() => {
-    console.log('Messages state changed:', messages);
-    console.log('Messages count:', messages.length);
-  }, [messages]);
-
   useEffect(() => {
     selectedUserRef.current = selectedUser;
   }, [selectedUser]);
+
+  // Handle tab visibility changes
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      const isVisible = !document.hidden;
+      console.log('Tab visibility changed:', isVisible);
+      setIsTabActive(isVisible);
+      
+      // If tab becomes visible, immediately fetch latest data
+      if (isVisible) {
+        if (selectedUser && currentUser) {
+          console.log('Tab became visible, fetching latest messages...');
+          fetchMessages(currentUser.userId, selectedUser.id);
+        }
+        if (currentUser) {
+          console.log('Tab became visible, fetching latest conversations...');
+          fetchConversations();
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [selectedUser, currentUser]);
 
   useEffect(() => {
     if (!currentUser) {
       navigate('/auth');
       return;
     }
-
+  
     const handleNewMessage = (newMessage) => {
-<<<<<<< HEAD
-      console.log('=== NEW MESSAGE RECEIVED ===');
-      console.log('Received new message:', newMessage);
-      console.log('Current selectedUser:', selectedUser);
-      console.log('Current user:', currentUser);
-      console.log('Message sender_id:', newMessage.sender_id, 'type:', typeof newMessage.sender_id);
-      console.log('Message receiver_id:', newMessage.receiver_id, 'type:', typeof newMessage.receiver_id);
-      console.log('Current user ID:', currentUser.userId, 'type:', typeof currentUser.userId);
-      console.log('Selected user ID:', selectedUser?.id, 'type:', typeof selectedUser?.id);
-      
-      // Chuyển đổi sang number để so sánh chính xác
-      const senderId = Number(newMessage.sender_id);
-      const receiverId = Number(newMessage.receiver_id);
-      const currentUserId = Number(currentUser.userId);
-      const selectedUserId = Number(selectedUser?.id);
-      
-      const isCurrentConversation =
-        (senderId === currentUserId && receiverId === selectedUserId) ||
-        (receiverId === currentUserId && senderId === selectedUserId);
-  
-      console.log('Converted IDs - senderId:', senderId, 'receiverId:', receiverId, 'currentUserId:', currentUserId, 'selectedUserId:', selectedUserId);
-      console.log('Is current conversation:', isCurrentConversation);
-
-      // Cập nhật preview hội thoại
-      setConversations((prev) => {
-        const updatedConversations = prev.map((conv) => {
-          // Xác định cuộc trò chuyện cần cập nhật
-          // conv.id là ID của người dùng khác trong cuộc trò chuyện
-          const isCurrentConv = conv.id === newMessage.sender_id || conv.id === newMessage.receiver_id;
-          if (!isCurrentConv) return conv;
-    
-          // Kiểm tra xem người dùng hiện tại có phải là người gửi không
-          const isCurrentUserSender = newMessage.sender_id === currentUser.userId;
-          const isCurrentUserReceiver = newMessage.receiver_id === currentUser.userId;
-          const isSelected = conv.id === selectedUser?.id;
-    
-          return {
-            ...conv,
-            lastMessage: newMessage.content,
-            time: new Date(newMessage.sent_at).toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit',
-            }),
-            lastMessageTime: new Date(newMessage.sent_at).getTime(), // Thêm timestamp để sắp xếp
-            // Tăng unread count nếu người dùng hiện tại là người nhận và không đang xem cuộc trò chuyện này
-            unread: isCurrentUserReceiver && !isSelected ? (conv.unread || 0) + 1 : conv.unread,
-          };
-        });
-
-        // Sắp xếp conversations theo thời gian tin nhắn mới nhất
-        return updatedConversations.sort((a, b) => {
-          const timeA = a.lastMessageTime || 0;
-          const timeB = b.lastMessageTime || 0;
-          return timeB - timeA; // Sắp xếp giảm dần (mới nhất lên đầu)
-        });
+      console.log('Received new message via WebSocket:', newMessage);
+      console.log('Current state:', {
+        selectedConversationId,
+        selectedUser: selectedUser?.id,
+        currentUser: currentUser?.userId
       });
-=======
+
       // Check if this message belongs to the current conversation
-      const isCurrentConversation = selectedConversationId === newMessage.conversation_id;
-  
+      // First, check if we have a selectedUser and the message involves this user
+      const isMessageForSelectedUser = selectedUser && (
+        (newMessage.sender_id === selectedUser.id && newMessage.receiver_id === currentUser.userId) ||
+        (newMessage.sender_id === currentUser.userId && newMessage.receiver_id === selectedUser.id)
+      );
+
+      // Also check by conversation ID
+      const isMessageForCurrentConversation = selectedConversationId === newMessage.conversation_id;
+
+      // Determine if this message should be shown in the current chat
+      let shouldShowInCurrentChat = isMessageForSelectedUser || isMessageForCurrentConversation;
+
+      // If this is a message for the selected user but we don't have the conversation ID set,
+      // we need to find the conversation and update it
+      if (isMessageForSelectedUser && !selectedConversationId && newMessage.conversation_id) {
+        console.log('Updating selectedConversationId to:', newMessage.conversation_id);
+        setSelectedConversationId(newMessage.conversation_id);
+      }
+
+      // If we don't have a selectedUser but this message is for us, we should find the sender
+      // and select that conversation
+      if (!selectedUser && newMessage.receiver_id === currentUser.userId) {
+        console.log('No selected user, but received message from:', newMessage.sender_id);
+        // Find the conversation for this sender
+        const conversation = conversations.find(conv => conv.id === newMessage.sender_id);
+        if (conversation) {
+          console.log('Found conversation for sender, selecting it');
+          setSelectedUser(conversation);
+          setSelectedConversationId(newMessage.conversation_id);
+          // Since we're now selecting this conversation, we should show the message
+          shouldShowInCurrentChat = true;
+          // Add the message to chat immediately since we're now viewing this conversation
+          setMessages(prev => {
+            const messageExists = prev.some(msg => 
+              msg.sender_id === newMessage.sender_id && 
+              msg.content === newMessage.content &&
+              msg.message_id === newMessage.message_id
+            );
+            if (!messageExists) {
+              console.log('Adding message to chat after selecting conversation:', newMessage);
+              return [...prev, newMessage];
+            }
+            return prev;
+          });
+        } else {
+          // If conversation not found in current list, we need to fetch conversations first
+          console.log('Conversation not found in current list, fetching conversations...');
+          const fetchAndSelectConversation = async () => {
+            try {
+              const response = await axios.get(`http://localhost:8080/api/messages/conversations/${currentUser.userId}`);
+              const updatedConversations = response.data;
+              const foundConversation = updatedConversations.find(conv => conv.id === newMessage.sender_id);
+              if (foundConversation) {
+                console.log('Found conversation after fetching, selecting it');
+                setSelectedUser(foundConversation);
+                setSelectedConversationId(newMessage.conversation_id);
+                // Since we're now selecting this conversation, we should show the message
+                shouldShowInCurrentChat = true;
+                // Add the message to chat immediately since we're now viewing this conversation
+                setMessages(prev => {
+                  const messageExists = prev.some(msg => 
+                    msg.sender_id === newMessage.sender_id && 
+                    msg.content === newMessage.content &&
+                    msg.message_id === newMessage.message_id
+                  );
+                  if (!messageExists) {
+                    console.log('Adding message to chat after selecting conversation:', newMessage);
+                    return [...prev, newMessage];
+                  }
+                  return prev;
+                });
+              }
+            } catch (error) {
+              console.error('Error fetching conversations for new message:', error);
+            }
+          };
+          fetchAndSelectConversation();
+        }
+      }
+
       // Update conversations list
       setConversations((prev) =>
         prev.map((conv) => {
@@ -145,45 +304,17 @@ const Messages = () => {
                 hour: '2-digit',
                 minute: '2-digit',
               }),
-              unread: !isCurrentConversation ? (conv.unread || 0) + 1 : conv.unread,
+              unread: !shouldShowInCurrentChat ? (conv.unread || 0) + 1 : conv.unread,
             };
           }
           return conv;
         })
       );
->>>>>>> a9984380f711087bf45d3999e75e5b6f06f9f60d
-  
+
       // If currently viewing this conversation, add message to chat
-      if (isCurrentConversation) {
-        console.log('Adding message to current conversation');
+      if (shouldShowInCurrentChat && selectedUser) {
+        console.log('Adding message to current chat:', newMessage);
         setMessages((prev) => {
-<<<<<<< HEAD
-          // Kiểm tra xem có tin nhắn tạm thời tương ứng không
-          const tempMessageIndex = prev.findIndex(
-            (msg) => msg.temp && 
-                     msg.content === newMessage.content &&
-                     msg.sender_id === newMessage.sender_id &&
-                     msg.receiver_id === newMessage.receiver_id &&
-                     Math.abs(new Date(msg.sent_at) - new Date(newMessage.sent_at)) < 5000
-          );
-          
-          if (tempMessageIndex !== -1) {
-            // Thay thế tin nhắn tạm thời bằng tin nhắn thật
-            console.log('Replacing temporary message with real message');
-            const updatedMessages = [...prev];
-            updatedMessages[tempMessageIndex] = newMessage;
-            return updatedMessages;
-          }
-          
-          // Nếu không có tin nhắn tạm thời tương ứng, chỉ thêm tin nhắn mới nếu không phải từ người gửi hiện tại
-          if (newMessage.sender_id !== currentUser.userId) {
-            console.log('Adding new message from other user');
-            return [...prev, newMessage];
-          } else {
-            console.log('Skipping message from current user (should be handled by temp message)');
-            return prev;
-          }
-=======
           // Check if message already exists (to avoid duplicates)
           const messageExists = prev.some(
             (msg) => {
@@ -214,48 +345,48 @@ const Messages = () => {
             });
           }
           
+          console.log('Adding new message to chat:', newMessage);
           return [...prev, newMessage];
->>>>>>> a9984380f711087bf45d3999e75e5b6f06f9f60d
         });
       } else {
-        console.log('Not current conversation, skipping message display');
+        console.log('Message not for current conversation:', {
+          selectedConversationId,
+          messageConversationId: newMessage.conversation_id,
+          selectedUser: selectedUser?.id,
+          messageSender: newMessage.sender_id,
+          messageReceiver: newMessage.receiver_id,
+          currentUser: currentUser?.userId,
+          isMessageForSelectedUser,
+          isMessageForCurrentConversation
+        });
       }
     };
-
+  
     const setupWebSocket = () => {
-      console.log('Setting up WebSocket subscription');
       webSocketService.subscribe('messages', handleNewMessage);
     };
-
+  
     if (!webSocketService.isWebSocketConnected()) {
-      console.log('WebSocket not connected, connecting...');
       webSocketService.connect(currentUser.userId, setupWebSocket);
     } else {
-      console.log('WebSocket already connected, setting up subscription');
       setupWebSocket();
     }
   
-    if (!webSocketService.isWebSocketConnected()) {
-      console.log('WebSocket not connected, connecting...');
-      webSocketService.connect(currentUser.userId, setupWebSocket);
-    } else {
-      console.log('WebSocket already connected, setting up subscription');
-      setupWebSocket();
-    }
-  
+    // Initial fetch
     fetchConversations();
-
+    
+    // Start polling
+    startConversationsPolling();
+    if (selectedUser) {
+      startMessagesPolling();
+    }
+  
     return () => {
       webSocketService.unsubscribe('messages', handleNewMessage);
+      stopPolling();
     };
-<<<<<<< HEAD
-  }, [currentUser?.userId, selectedUser?.id]);
-
-
-=======
-  }, [currentUser?.userId, selectedConversationId]);
+  }, [currentUser?.userId, selectedConversationId, selectedUser]);
   
->>>>>>> a9984380f711087bf45d3999e75e5b6f06f9f60d
   useEffect(() => {
     if (selectedUser) {
       fetchMessages(currentUser.userId, selectedUser.id);
@@ -263,66 +394,60 @@ const Messages = () => {
       if (location.state?.initialMessage) {
         handleSendMessage(new Event('submit'));
       }
+      
+      // Start polling for messages when a user is selected
+      startMessagesPolling();
+    } else {
+      // Stop polling for messages when no user is selected
+      if (messagesPollingRef.current) {
+        clearInterval(messagesPollingRef.current);
+        messagesPollingRef.current = null;
+      }
     }
   }, [selectedUser?.id]);
 
-<<<<<<< HEAD
-  // Thêm polling để cập nhật tin nhắn mới
-  useEffect(() => {
-    if (!selectedUser) return;
-
-    const pollInterval = setInterval(() => {
-      fetchMessages(currentUser.userId, selectedUser.id);
-    }, 3000); // Poll mỗi 3 giây
-
-    return () => clearInterval(pollInterval);
-  }, [selectedUser?.id, currentUser?.userId]);
-
-  // Thêm polling để cập nhật conversations
-  useEffect(() => {
-    const pollConversationsInterval = setInterval(() => {
-      fetchConversations();
-    }, 5000); // Poll conversations mỗi 5 giây
-
-    return () => clearInterval(pollConversationsInterval);
-  }, [currentUser?.userId]);
-
-  // Xử lý click outside để đóng dialog xác nhận xóa
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (showDeleteConfirm && !event.target.closest('.delete-confirm') && !event.target.closest('.delete-btn')) {
-        setShowDeleteConfirm(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showDeleteConfirm]);
-=======
   // Update selectedConversationId when conversations are loaded and we have a selectedUser
   useEffect(() => {
     if (selectedUser && conversations.length > 0) {
       const conversation = conversations.find(conv => conv.id === selectedUser.id);
       if (conversation && conversation.conversationId) {
+        console.log('Found conversation for selected user, setting conversationId:', conversation.conversationId);
         setSelectedConversationId(conversation.conversationId);
+      } else {
+        console.log('No conversation found for selected user:', selectedUser.id);
       }
     }
   }, [conversations, selectedUser]);
->>>>>>> a9984380f711087bf45d3999e75e5b6f06f9f60d
+
+  // Refetch messages when selectedConversationId changes
+  useEffect(() => {
+    if (selectedUser && selectedConversationId) {
+      console.log('Refetching messages for conversation:', selectedConversationId);
+      fetchMessages(currentUser.userId, selectedUser.id);
+    }
+  }, [selectedConversationId]);
+
+  // Handle when selectedUser changes (e.g., when receiving a message from a new user)
+  useEffect(() => {
+    if (selectedUser && selectedConversationId) {
+      console.log('Selected user changed, fetching messages for:', selectedUser.id);
+      fetchMessages(currentUser.userId, selectedUser.id);
+    }
+  }, [selectedUser?.id, selectedConversationId]);
+
+  // Debug logging to help track the issue
+  useEffect(() => {
+    console.log('Selected conversation ID:', selectedConversationId);
+    console.log('Selected user:', selectedUser);
+    console.log('Current user:', currentUser);
+  }, [selectedConversationId, selectedUser, currentUser]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!message.trim() || !selectedUser) return;
 
-<<<<<<< HEAD
-    console.log('Sending message:', message);
-    console.log('To user:', selectedUser);
-=======
     const messageContent = message.trim();
     setMessage(''); // Clear input immediately
->>>>>>> a9984380f711087bf45d3999e75e5b6f06f9f60d
 
     try {
       const newMessage = {
@@ -332,9 +457,6 @@ const Messages = () => {
         sent_at: new Date().toISOString()
       };
 
-<<<<<<< HEAD
-      console.log('Created message object:', newMessage);
-=======
       // Add the message to the current chat immediately for better UX
       const messageToAdd = {
         ...newMessage,
@@ -356,7 +478,6 @@ const Messages = () => {
             : conv
         );
       });
->>>>>>> a9984380f711087bf45d3999e75e5b6f06f9f60d
 
       if (!webSocketService.isWebSocketConnected()) {
         console.log('WebSocket not connected, reconnecting...');
@@ -366,51 +487,9 @@ const Messages = () => {
       }
 
       const success = webSocketService.sendMessage(newMessage);
-<<<<<<< HEAD
-      console.log('WebSocket send success:', success);
-      
-      if (!success) throw new Error('Failed to send message');
-
-      // Thêm tin nhắn tạm thời với flag để tránh trùng lặp
-      const tempMessage = {
-        ...newMessage,
-        temp: true, // Flag để đánh dấu tin nhắn tạm thời
-        tempId: Date.now(), // ID tạm thời
-        message_id: null // Đảm bảo không có message_id
-      };
-      
-      console.log('Adding temporary message to state');
-      setMessages(prevMessages => {
-        console.log('Previous messages count:', prevMessages.length);
-        const updatedMessages = [...prevMessages, tempMessage];
-        console.log('Updated messages count:', updatedMessages.length);
-        return updatedMessages;
-      });
-
-      // Thêm timeout để xử lý trường hợp tin nhắn tạm thời không được thay thế
-      setTimeout(() => {
-        setMessages(prevMessages => {
-          const tempMessageIndex = prevMessages.findIndex(
-            msg => msg.tempId === tempMessage.tempId
-          );
-          if (tempMessageIndex !== -1) {
-            console.log('Removing temporary message after timeout');
-            const updatedMessages = [...prevMessages];
-            updatedMessages.splice(tempMessageIndex, 1);
-            return updatedMessages;
-          }
-          return prevMessages;
-        });
-      }, 10000); // 10 giây timeout
-
-      updateConversationPreview(selectedUser.id, message, true);
-
-      setMessage('');
-=======
       if (!success) {
         throw new Error('Failed to send message');
       }
->>>>>>> a9984380f711087bf45d3999e75e5b6f06f9f60d
 
       if (location.state?.initialMessage) {
         navigate('/messages', { state: { selectedUser } });
@@ -426,77 +505,25 @@ const Messages = () => {
 
   const handleUserSelect = (user) => {
     console.log('Selecting user:', user);
-    console.log('User ID:', user.id, 'type:', typeof user.id);
     setSelectedUser(user);
-<<<<<<< HEAD
-    setShowDeleteConfirm(false); // Reset delete confirm khi chọn user mới
-    axios.put(`http://localhost:8080/api/messages/read/${currentUser.userId}/${user.id}`);
-=======
-    setSelectedConversationId(user.conversationId);
+    
+    // Ensure we have the conversation ID set
+    if (user.conversationId) {
+      console.log('Setting selectedConversationId to:', user.conversationId);
+      setSelectedConversationId(user.conversationId);
+    }
     
     // Mark conversation as read
     if (user.conversationId) {
       axios.put(`http://localhost:8080/api/messages/read/${currentUser.userId}/${user.conversationId}`);
     }
     
->>>>>>> a9984380f711087bf45d3999e75e5b6f06f9f60d
     setConversations(prev =>
       prev.map(conv => (conv.id === user.id ? { ...conv, unread: 0 } : conv))
     );
-  };
-
-  const handleCloseChat = () => {
-    setSelectedUser(null);
-    setMessages([]);
-    setShowDeleteConfirm(false);
-  };
-
-  const handleDeleteChat = async () => {
-    if (!selectedUser) return;
-
-    try {
-      // Gọi API để xóa tất cả tin nhắn trong cuộc trò chuyện
-      await axios.delete(`http://localhost:8080/api/messages/conversation/${currentUser.userId}/${selectedUser.id}`);
-      
-      // Xóa khỏi danh sách conversations
-      setConversations(prev => prev.filter(conv => conv.id !== selectedUser.id));
-      
-      // Đóng chat hiện tại
-      handleCloseChat();
-      
-      console.log('Chat deleted successfully');
-    } catch (error) {
-      console.error('Error deleting chat:', error);
-      alert('Failed to delete chat. Please try again.');
-    }
-  };
-
-  const toggleDeleteConfirm = () => {
-    setShowDeleteConfirm(!showDeleteConfirm);
-  };
-
-  const updateConversationPreview = (userId, lastMessage, isFromCurrentUser = false) => {
-    setConversations(prev => {
-      const updatedConversations = prev.map(conv =>
-        conv.id === userId
-          ? {
-              ...conv,
-              lastMessage: lastMessage,
-              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-              lastMessageTime: Date.now(), // Thêm timestamp hiện tại
-              // Reset unread count nếu người dùng hiện tại gửi tin nhắn
-              unread: isFromCurrentUser ? 0 : conv.unread
-            }
-          : conv
-      );
-
-      // Sắp xếp conversations theo thời gian tin nhắn mới nhất
-      return updatedConversations.sort((a, b) => {
-        const timeA = a.lastMessageTime || 0;
-        const timeB = b.lastMessageTime || 0;
-        return timeB - timeA; // Sắp xếp giảm dần (mới nhất lên đầu)
-      });
-    });
+    
+    // Restart polling for messages with the new user
+    startMessagesPolling();
   };
 
   return (
@@ -504,15 +531,6 @@ const Messages = () => {
       <div className="messages-sidebar">
         <div className="messages-header">
           <h2>Messages</h2>
-          {selectedUser && (
-            <button 
-              className="sidebar-close-btn" 
-              onClick={handleCloseChat}
-              title="Đóng chat"
-            >
-              <i className="bi bi-x-lg"></i>
-            </button>
-          )}
         </div>
         <div className="conversations-list">
           {conversations.map((conv) => (
@@ -543,52 +561,21 @@ const Messages = () => {
             <div className="chat-header">
               <img src={selectedUser.avatar} alt={selectedUser.name} className="chat-avatar" />
               <h3>{selectedUser.name}</h3>
-              <div className="chat-actions">
-                <button 
-                  className="chat-action-btn close-btn" 
-                  onClick={handleCloseChat}
-                  title="Đóng chat"
-                >
-                  <i className="bi bi-x-lg"></i>
-                </button>
-                <button 
-                  className="chat-action-btn delete-btn" 
-                  onClick={toggleDeleteConfirm}
-                  title="Xóa đoạn chat"
-                >
-                  <i className="bi bi-trash"></i>
-                </button>
-              </div>
-              {showDeleteConfirm && (
-                <div className="delete-confirm">
-                  <p>Bạn có chắc muốn xóa đoạn chat này?</p>
-                  <div className="delete-confirm-buttons">
-                    <button 
-                      className="confirm-btn confirm-delete" 
-                      onClick={handleDeleteChat}
-                    >
-                      Xóa
-                    </button>
-                    <button 
-                      className="confirm-btn cancel-delete" 
-                      onClick={toggleDeleteConfirm}
-                    >
-                      Hủy
-                    </button>
-                  </div>
+              {isTabActive && (
+                <div className="polling-indicator" title="Live updates active">
+                  <i className="bi bi-circle-fill" style={{ color: '#28a745', fontSize: '8px' }}></i>
                 </div>
               )}
             </div>
             <div className="chat-messages" ref={chatMessagesRef}>
               {messages.map((msg, index) => (
                 <div
-                  key={`${msg.sender_id}-${msg.receiver_id}-${msg.sent_at}-${index}`}
-                  className={`message ${msg.sender_id === currentUser.userId ? 'sent' : 'received'} ${msg.temp ? 'temp-message' : ''}`}
+                  key={index}
+                  className={`message ${msg.sender_id === currentUser.userId ? 'sent' : 'received'}`}
                 >
                   <p>{msg.content}</p>
                   <span className="message-time">
                     {new Date(msg.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    {msg.temp && <span className="temp-indicator"> (Đang gửi...)</span>}
                   </span>
                 </div>
               ))}

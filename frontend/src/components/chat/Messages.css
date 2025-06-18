@@ -15,9 +15,6 @@
 .messages-header {
   padding: 20px;
   border-bottom: 1px solid #e0e0e0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
 .messages-header h2 {
@@ -114,7 +111,6 @@
   border-bottom: 1px solid #e0e0e0;
   display: flex;
   align-items: center;
-  position: relative;
 }
 
 .chat-avatar {
@@ -128,130 +124,33 @@
   margin: 0;
   font-size: 1.1rem;
   color: #333;
-  flex: 1;
 }
 
-/* Chat actions */
-.chat-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.chat-action-btn {
-  background: none;
-  border: none;
-  padding: 8px;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: background-color 0.2s;
+.polling-indicator {
+  margin-left: auto;
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
+  padding: 4px 8px;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  color: #28a745;
 }
 
-.chat-action-btn:hover {
-  background-color: #f0f0f0;
+.polling-indicator i {
+  animation: pulse 2s infinite;
 }
 
-.chat-action-btn.close-btn {
-  color: #666;
-}
-
-.chat-action-btn.close-btn:hover {
-  color: #333;
-}
-
-.chat-action-btn.delete-btn {
-  color: #dc3545;
-}
-
-.chat-action-btn.delete-btn:hover {
-  background-color: #f8d7da;
-  color: #721c24;
-}
-
-.chat-action-btn i {
-  font-size: 14px;
-}
-
-/* Delete confirmation dialog */
-.delete-confirm {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background: white;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  padding: 16px;
-  min-width: 250px;
-  z-index: 1000;
-  margin-top: 8px;
-}
-
-.delete-confirm::before {
-  content: '';
-  position: absolute;
-  top: -8px;
-  right: 20px;
-  width: 0;
-  height: 0;
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  border-bottom: 8px solid white;
-}
-
-.delete-confirm::after {
-  content: '';
-  position: absolute;
-  top: -9px;
-  right: 20px;
-  width: 0;
-  height: 0;
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  border-bottom: 8px solid #e0e0e0;
-}
-
-.delete-confirm p {
-  margin: 0 0 16px 0;
-  color: #333;
-  font-size: 14px;
-}
-
-.delete-confirm-buttons {
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-}
-
-.confirm-btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.2s;
-}
-
-.confirm-btn.confirm-delete {
-  background-color: #dc3545;
-  color: white;
-}
-
-.confirm-btn.confirm-delete:hover {
-  background-color: #c82333;
-}
-
-.confirm-btn.cancel-delete {
-  background-color: #6c757d;
-  color: white;
-}
-
-.confirm-btn.cancel-delete:hover {
-  background-color: #5a6268;
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 .chat-messages {
@@ -286,34 +185,6 @@
   background-color: #f0f0f0;
   color: #333;
   border-bottom-left-radius: 5px;
-}
-
-/* Styling cho tin nhắn tạm thời */
-.message.temp-message {
-  opacity: 0.6;
-  position: relative;
-}
-
-.message.temp-message::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-  animation: shimmer 1.5s infinite;
-}
-
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-.temp-indicator {
-  font-style: italic;
-  color: #999;
-  font-size: 0.8em;
 }
 
 .message p {
@@ -384,28 +255,4 @@
 .no-chat-selected p {
   font-size: 1.1rem;
   margin: 0;
-}
-
-.sidebar-close-btn {
-  background: none;
-  border: none;
-  padding: 8px;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  color: #666;
-}
-
-.sidebar-close-btn:hover {
-  background-color: #f0f0f0;
-  color: #333;
-}
-
-.sidebar-close-btn i {
-  font-size: 12px;
 } 

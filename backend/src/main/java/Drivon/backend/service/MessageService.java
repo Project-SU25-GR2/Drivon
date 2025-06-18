@@ -153,19 +153,6 @@ public class MessageService {
                 Long otherUserId = conversation.getUser1_id().equals(userId) ? conversation.getUser2_id()
                         : conversation.getUser1_id();
 
-<<<<<<< HEAD
-                    Map<String, Object> conversation = Map.of(
-                            "id", partner.getUserId(),
-                            "name", partner.getFullName(),
-                            "avatar",
-                            partner.getAvatarUrl() != null ? partner.getAvatarUrl()
-                                    : "https://ui-avatars.com/api/?name=" + partner.getFullName()
-                                            + "&background=random",
-                            "lastMessage", lastMessage.getContent(),
-                            "time", lastMessage.getSent_at().format(DateTimeFormatter.ofPattern("HH:mm")),
-                            "unread", unreadCount);
-                    conversations.add(conversation);
-=======
                 User otherUser = userRepository.findById(otherUserId).orElse(null);
                 if (otherUser != null) {
                     // Get latest message
@@ -200,7 +187,6 @@ public class MessageService {
                             "time", lastMessage != null ? lastMessage.getSent_at().toString() : "",
                             "unread", unreadCount);
                     conversations.add(conversationData);
->>>>>>> a9984380f711087bf45d3999e75e5b6f06f9f60d
                 }
             }
         }
