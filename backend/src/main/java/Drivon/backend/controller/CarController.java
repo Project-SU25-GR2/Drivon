@@ -1,0 +1,260 @@
+package Drivon.backend.controller;
+
+import Drivon.backend.model.Car;
+import Drivon.backend.model.CarImage;
+import Drivon.backend.service.CarService;
+import Drivon.backend.repository.CarImageRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/cars")
+@CrossOrigin(origins = "http://localhost:3000")
+public class CarController {
+
+    @Autowired
+    private CarService carService;
+
+    @Autowired
+    private CarImageRepository carImageRepository;
+
+    @GetMapping
+    public ResponseEntity<?> getAllCars() {
+        try {
+            List<Car> cars = carService.getCarsByStatus("available");
+            List<Map<String, Object>> carsWithImages = new ArrayList<>();
+
+            for (Car car : cars) {
+                Map<String, Object> carData = new HashMap<>();
+                carData.put("licensePlate", car.getLicensePlate());
+                carData.put("brand", car.getBrand());
+                carData.put("model", car.getModel());
+                carData.put("year", car.getYear());
+                carData.put("seats", car.getSeats());
+                carData.put("description", car.getDescription());
+                carData.put("type", car.getType());
+                carData.put("transmission", car.getTransmission());
+                carData.put("fuelType", car.getFuelType());
+                carData.put("fuelConsumption", car.getFuelConsumption());
+                carData.put("status", car.getStatus());
+                carData.put("location", car.getLocation());
+                carData.put("ownerId", car.getOwnerId());
+
+                // Get main image from cars table
+                carData.put("mainImage", car.getMainImage());
+
+                // Get other images from car_images table
+                List<CarImage> otherImages = carImageRepository.findByCarId(car.getLicensePlate());
+                List<String> otherImageUrls = new ArrayList<>();
+                for (CarImage image : otherImages) {
+                    otherImageUrls.add(image.getImageUrl());
+                }
+                carData.put("otherImages", otherImageUrls);
+
+                carsWithImages.add(carData);
+            }
+
+            return ResponseEntity.ok(carsWithImages);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    @GetMapping("/{licensePlate}")
+    public ResponseEntity<?> getCarById(@PathVariable String licensePlate) {
+        try {
+            Car car = carService.getCarById(licensePlate);
+            if (car == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Map<String, Object> carData = new HashMap<>();
+            carData.put("licensePlate", car.getLicensePlate());
+            carData.put("brand", car.getBrand());
+            carData.put("model", car.getModel());
+            carData.put("year", car.getYear());
+            carData.put("seats", car.getSeats());
+            carData.put("description", car.getDescription());
+            carData.put("type", car.getType());
+            carData.put("transmission", car.getTransmission());
+            carData.put("fuelType", car.getFuelType());
+            carData.put("fuelConsumption", car.getFuelConsumption());
+            carData.put("status", car.getStatus());
+            carData.put("location", car.getLocation());
+            carData.put("ownerId", car.getOwnerId());
+
+            // Get main image from cars table
+            carData.put("mainImage", car.getMainImage());
+
+            // Get other images from car_images table
+            List<CarImage> otherImages = carImageRepository.findByCarId(car.getLicensePlate());
+            List<String> otherImageUrls = new ArrayList<>();
+            for (CarImage image : otherImages) {
+                otherImageUrls.add(image.getImageUrl());
+            }
+            carData.put("otherImages", otherImageUrls);
+
+            return ResponseEntity.ok(carData);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    @GetMapping("/owner/{ownerId}")
+    public ResponseEntity<?> getCarsByOwnerId(@PathVariable Long ownerId) {
+        try {
+            List<Car> cars = carService.getCarsByOwnerId(ownerId);
+            List<Map<String, Object>> carsWithImages = new ArrayList<>();
+
+            for (Car car : cars) {
+                Map<String, Object> carData = new HashMap<>();
+                carData.put("licensePlate", car.getLicensePlate());
+                carData.put("brand", car.getBrand());
+                carData.put("model", car.getModel());
+                carData.put("year", car.getYear());
+                carData.put("seats", car.getSeats());
+                carData.put("description", car.getDescription());
+                carData.put("type", car.getType());
+                carData.put("transmission", car.getTransmission());
+                carData.put("fuelType", car.getFuelType());
+                carData.put("fuelConsumption", car.getFuelConsumption());
+                carData.put("status", car.getStatus());
+                carData.put("location", car.getLocation());
+                carData.put("ownerId", car.getOwnerId());
+
+                // Get main image from cars table
+                carData.put("mainImage", car.getMainImage());
+                System.out.println("Car data: " + car);
+                // Get other images from car_images table
+                List<CarImage> otherImages = carImageRepository.findByCarId(car.getLicensePlate());
+                List<String> otherImageUrls = new ArrayList<>();
+                for (CarImage image : otherImages) {
+                    otherImageUrls.add(image.getImageUrl());
+                }
+                carData.put("otherImages", otherImageUrls);
+
+                carsWithImages.add(carData);
+            }
+
+            return ResponseEntity.ok(carsWithImages);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    @GetMapping("/active-lease")
+    public ResponseEntity<?> getActiveLeaseCars() {
+        try {
+            List<Car> cars = carService.getActiveLeaseCars();
+            List<Map<String, Object>> carsWithImages = new ArrayList<>();
+
+            for (Car car : cars) {
+                Map<String, Object> carData = new HashMap<>();
+                carData.put("licensePlate", car.getLicensePlate());
+                carData.put("brand", car.getBrand());
+                carData.put("model", car.getModel());
+                carData.put("year", car.getYear());
+                carData.put("seats", car.getSeats());
+                carData.put("description", car.getDescription());
+                carData.put("type", car.getType());
+                carData.put("transmission", car.getTransmission());
+                carData.put("fuelType", car.getFuelType());
+                carData.put("fuelConsumption", car.getFuelConsumption());
+                carData.put("status", car.getStatus());
+                carData.put("location", car.getLocation());
+                carData.put("ownerId", car.getOwnerId());
+                System.out.println(car);
+                // Get main image from cars table
+                carData.put("mainImage", car.getMainImage());
+
+                // Get other images from car_images table
+                List<CarImage> otherImages = carImageRepository.findByCarId(car.getLicensePlate());
+                List<String> otherImageUrls = new ArrayList<>();
+                for (CarImage image : otherImages) {
+                    otherImageUrls.add(image.getImageUrl());
+                }
+                carData.put("otherImages", otherImageUrls);
+                carsWithImages.add(carData);
+
+            }
+
+            return ResponseEntity.ok(carsWithImages);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    @PutMapping("/{licensePlate}")
+    public ResponseEntity<?> updateCar(@PathVariable String licensePlate, @RequestBody Car updatedCar) {
+        try {
+            Car existingCar = carService.getCarById(licensePlate);
+            if (existingCar == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Update car information
+            existingCar.setBrand(updatedCar.getBrand());
+            existingCar.setModel(updatedCar.getModel());
+            existingCar.setYear(updatedCar.getYear());
+            existingCar.setSeats(updatedCar.getSeats());
+            existingCar.setDescription(updatedCar.getDescription());
+            existingCar.setType(updatedCar.getType());
+            existingCar.setTransmission(updatedCar.getTransmission());
+            existingCar.setFuelType(updatedCar.getFuelType());
+            existingCar.setFuelConsumption(updatedCar.getFuelConsumption());
+            existingCar.setLocation(updatedCar.getLocation());
+            if (updatedCar.getMainImage() != null) {
+                existingCar.setMainImage(updatedCar.getMainImage());
+            }
+
+            Car savedCar = carService.updateCar(existingCar);
+
+            // Prepare response with images
+            Map<String, Object> carData = new HashMap<>();
+            carData.put("licensePlate", savedCar.getLicensePlate());
+            carData.put("brand", savedCar.getBrand());
+            carData.put("model", savedCar.getModel());
+            carData.put("year", savedCar.getYear());
+            carData.put("seats", savedCar.getSeats());
+            carData.put("description", savedCar.getDescription());
+            carData.put("type", savedCar.getType());
+            carData.put("transmission", savedCar.getTransmission());
+            carData.put("fuelType", savedCar.getFuelType());
+            carData.put("fuelConsumption", savedCar.getFuelConsumption());
+            carData.put("status", savedCar.getStatus());
+            carData.put("location", savedCar.getLocation());
+            carData.put("ownerId", savedCar.getOwnerId());
+            carData.put("mainImage", savedCar.getMainImage());
+
+            // Get other images
+            List<CarImage> otherImages = carImageRepository.findByCarId(savedCar.getLicensePlate());
+            List<String> otherImageUrls = new ArrayList<>();
+            for (CarImage image : otherImages) {
+                otherImageUrls.add(image.getImageUrl());
+            }
+            carData.put("otherImages", otherImageUrls);
+
+            System.out.println("Backend returning carData: " + carData);
+
+            return ResponseEntity.ok(carData);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+}
