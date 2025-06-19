@@ -262,4 +262,120 @@
   .btn {
     width: 100%;
   }
-} 
+}
+
+.owner-content-page {
+  max-width: 600px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  padding: 32px 40px;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.page-header h2 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #2d3a4b;
+  margin: 0;
+}
+
+.btn {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 28px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-primary {
+  background: #1976d2;
+  color: #fff;
+}
+.btn-primary:hover {
+  background: #1565c0;
+}
+
+.btn-success {
+  background: #43a047;
+  color: #fff;
+}
+.btn-success:hover {
+  background: #388e3c;
+}
+
+.profile-content {
+  margin-top: 12px;
+}
+
+.profile-info {
+  margin-bottom: 8px;
+}
+
+.info-group {
+  margin-bottom: 6px;
+}
+
+.info-group label {
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 2px;
+  display: block;
+}
+
+.info-group p {
+  font-size: 1.1rem;
+  color: #222;
+  margin: 0;
+}
+
+.info-group p span {
+  color: #aaa;
+  font-style: italic;
+}
+
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  margin-top: 4px;
+  box-sizing: border-box;
+  transition: border 0.2s;
+}
+
+.form-control:focus {
+  border: 1.5px solid #1976d2;
+  outline: none;
+}
+
+@media (max-width: 700px) {
+  .owner-content-page {
+    padding: 18px 6px;
+  }
+  .page-header h2 {
+    font-size: 1.5rem;
+  }
+}

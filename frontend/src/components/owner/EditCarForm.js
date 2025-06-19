@@ -26,6 +26,27 @@ const EditCarForm = ({ car, onSave, onClose }) => {
   const [selectedOtherImageFiles, setSelectedOtherImageFiles] = useState([]); // State for selected other image files array
   const [uploadingImage, setUploadingImage] = useState(false); // State to indicate image is being uploaded
 
+  const CAR_BRANDS = [
+    "Toyota",
+    "Honda",
+    "Ford",
+    "Chevrolet",
+    "Hyundai",
+    "Kia",
+    "Mazda",
+    "Nissan",
+    "BMW",
+    "Mercedes-Benz",
+    "Audi",
+    "Lexus",
+    "Volkswagen",
+    "Subaru",
+    "Mitsubishi",
+    "Suzuki",
+    "VinFast",
+    "Other",
+  ];
+
   useEffect(() => {
     if (car) {
       setFormData({
@@ -272,14 +293,35 @@ const EditCarForm = ({ car, onSave, onClose }) => {
         <form onSubmit={handleSubmit} className="edit-car-form">
           <div className="form-group">
             <label htmlFor="brand">Brand:</label>
-            <input
-              type="text"
+            <select
               id="brand"
               name="brand"
               value={formData.brand}
               onChange={handleChange}
               required
-            />
+              className="form-control"
+            >
+              <option value="">Select a brand</option>
+              {CAR_BRANDS.map((brand) => (
+                <option key={brand} value={brand}>
+                  {brand}
+                </option>
+              ))}
+            </select>
+            {formData.brand === "Other" && (
+              <input
+                type="text"
+                name="brand"
+                placeholder="Enter your brand"
+                value={formData.brandInput || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, brand: e.target.value }))
+                }
+                className="form-control"
+                style={{ marginTop: 8 }}
+                required
+              />
+            )}
           </div>
           <div className="form-group">
             <label htmlFor="model">Model:</label>

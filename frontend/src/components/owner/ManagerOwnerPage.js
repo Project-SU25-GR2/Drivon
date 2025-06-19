@@ -27,7 +27,7 @@ const ManagerOwnerPage = ({ user }) => {
   const renderActiveComponent = useCallback(() => {
     switch (activeComponent) {
       case "dashboard":
-        return <DashboardOverview />;
+        return <DashboardOverview user={user} />;
       case "car-management":
         return <CarManagementPage user={user} />;
       case "rental-history":
@@ -35,9 +35,9 @@ const ManagerOwnerPage = ({ user }) => {
       case "earnings":
         return <EarningsPage />;
       case "profile":
-        return <ProfilePage />;
+        return <ProfilePage user={user} />;
       default:
-        return <DashboardOverview />;
+        return <DashboardOverview user={user} />;
     }
   }, [activeComponent, user]);
 
