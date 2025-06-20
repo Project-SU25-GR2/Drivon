@@ -516,6 +516,14 @@
   box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
 }
 
+/* Globally disable tooltip transition to make them appear/disappear instantly.
+   This is a workaround for the Rate component's tooltips feeling slow. */
+.ant-tooltip {
+  --ant-motion-duration-fast: 0s;
+  --ant-motion-duration-mid: 0s;
+  --ant-motion-duration-slow: 0s;
+}
+
 /* Contract Form Styles */
 .contract-form-container {
   max-width: 800px;
