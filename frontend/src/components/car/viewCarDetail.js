@@ -4,13 +4,13 @@ import axios from 'axios';
 import { DateRange } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
-import { Modal, Button, List, message } from 'antd';
+import { Modal, Button, List, message, Rate, Avatar, Divider, Pagination } from 'antd';
 import 'antd/dist/reset.css';
 import RentalForm from './RentalForm';
 import { GiGearStickPattern } from "react-icons/gi";
 import './viewCarDetail.css';
 import { TbAutomaticGearboxFilled } from "react-icons/tb";
-import { FaGasPump } from "react-icons/fa";
+import { FaGasPump, FaCalendarAlt, FaUserFriends, FaCogs, FaRoad, FaMapMarkerAlt, FaInfoCircle } from "react-icons/fa";
 import { BsEvStationFill } from "react-icons/bs";
 import { BsFillFuelPumpDieselFill } from "react-icons/bs";
 
@@ -42,6 +42,34 @@ const ViewCarDetail = () => {
   const [otherImages, setOtherImages] = useState([]);
   const [carContracts, setCarContracts] = useState({});
   const [ownerInfo, setOwnerInfo] = useState(null);
+
+  // State cho dữ liệu đánh giá từ API
+  const [reviewsData, setReviewsData] = useState({
+    averageRating: 0,
+    totalReviews: 0,
+    ratingCounts: {},
+    reviews: []
+  });
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+
+  // State cho modal xem tất cả đánh giá
+  const [showAllReviewsModal, setShowAllReviewsModal] = useState(false);
+  const [allReviewsFilter, setAllReviewsFilter] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const reviewsPerPage = 5;
+
+  // Lấy 2 đánh giá 5 sao đầu tiên để hiển thị
+  const topFiveStarReviews = reviewsData.reviews.filter(review => review.rating === 5).slice(0, 2);
+
+  // Lọc đánh giá cho modal
+  const allReviewsFiltered = allReviewsFilter === 0 
+    ? reviewsData.reviews 
+    : reviewsData.reviews.filter(review => review.rating === allReviewsFilter);
+
+  // Tính toán phân trang cho modal
+  const indexOfLastReview = currentPage * reviewsPerPage;
+  const indexOfFirstReview = indexOfLastReview - reviewsPerPage;
+  const currentReviews = allReviewsFiltered.slice(indexOfFirstReview, indexOfLastReview);
 
   // Đặt filteredCars lên trên các useEffect để tránh lỗi ReferenceError
   const filteredCars = allCars.filter(item => {
@@ -85,6 +113,18 @@ const ViewCarDetail = () => {
       .catch(error => {
         console.error('Error fetching contract:', error);
         setContract(null);
+      });
+
+    // Fetch reviews
+    setReviewsLoading(true);
+    axios.get(`http://localhost:8080/api/reviews/car/${licensePlate}`)
+      .then(res => {
+        setReviewsData(res.data);
+        setReviewsLoading(false);
+      })
+      .catch(error => {
+        console.error('Error fetching reviews:', error);
+        setReviewsLoading(false);
       });
   }, [licensePlate]);
 
@@ -246,6 +286,16 @@ const ViewCarDetail = () => {
     });
   };
 
+  // Hàm xử lý mở modal
+  const handleShowAllReviews = () => {
+    setShowAllReviewsModal(true);
+  };
+
+  // Hàm xử lý đóng modal
+  const handleCloseAllReviews = () => {
+    setShowAllReviewsModal(false);
+  };
+
   if (loading) return <div>Đang tải...</div>;
   if (error) return <div>{error}</div>;
   if (!car) return <div>Không có dữ liệu xe</div>;
@@ -253,7 +303,7 @@ const ViewCarDetail = () => {
   return (
     <div className="car-detail-page ">
       <div className="row car-detail-main container-fluid">
-        <div className="col-12 col-md-8 car-detail-images ">
+        <div className="col-12 col-md-7 car-detail-images ">
           <div className="car-detail-main-image">
             <img src={mainImage} alt="car" />
           </div>
@@ -278,8 +328,87 @@ const ViewCarDetail = () => {
               <li>Người thuê chịu trách nhiệm bảo quản xe và bồi thường nếu có hư hỏng do lỗi cá nhân.</li>
               <li>Thời gian thuê và trả xe phải đúng theo hợp đồng đã ký. Quá hạn sẽ bị tính thêm phí.</li>
             </ol>
-
           </div>
+
+          {/* Phần đánh giá */}
+          <div className="car-reviews">
+            <h1>Đánh giá từ khách hàng</h1>
+            
+            {/* Tổng quan đánh giá */}
+            <div className="reviews-overview">
+              <div className="overview-left">
+                <div className="average-rating">
+                  <div className="rating-number">{reviewsData.averageRating}/5</div>
+                  <div className="rating-stars">
+                    <Rate disabled allowHalf value={reviewsData.averageRating} />
+                  </div>
+                  <div className="total-reviews">{reviewsData.totalReviews} đánh giá</div>
+                </div>
+              </div>
+              
+              <div className="overview-right">
+                <div className="rating-bars">
+                  {[5, 4, 3, 2, 1].map(star => (
+                    <div key={star} className="rating-bar-item">
+                      <span className="star-label">{star} sao</span>
+                      <div className="rating-bar">
+                        <div 
+                          className="rating-bar-fill" 
+                          style={{ 
+                            width: `${reviewsData.totalReviews > 0 ? (reviewsData.ratingCounts[star] / reviewsData.totalReviews) * 100 : 0}%` 
+                          }}
+                        ></div>
+                      </div>
+                      <span className="star-count">{reviewsData.ratingCounts[star] || 0}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <Divider />
+
+            {/* Danh sách đánh giá nổi bật */}
+            <div className="reviews-list">
+              {reviewsLoading ? (
+                <p>Đang tải đánh giá...</p>
+              ) : topFiveStarReviews.length === 0 ? (
+                <div className="no-reviews">
+                  <p>Chưa có đánh giá nào nổi bật.</p>
+                </div>
+              ) : (
+                topFiveStarReviews.map(review => (
+                  <div key={review.id} className="review-item">
+                    <div className="review-header">
+                      <div className="reviewer-info">
+                        <Avatar src={review.userAvatar} size={40} />
+                        <div className="reviewer-details">
+                          <div className="reviewer-name-date">
+                            <span className="reviewer-name">{review.userName}</span>
+                            <span className="review-date">{new Date(review.date).toLocaleDateString('vi-VN')}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="review-rating">
+                        <Rate disabled defaultValue={review.rating} />
+                      </div>
+                    </div>
+                    <div className="review-content">
+                      <p className="review-comment">{review.comment}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Nút xem thêm đánh giá */}
+            <div className="reviews-footer">
+              <Button type="primary" size="large" style={{ marginTop: '20px' }} onClick={handleShowAllReviews} disabled={reviewsLoading}>
+                Xem tất cả đánh giá ({reviewsData.totalReviews})
+              </Button>
+            </div>
+          </div>
+
           <div className="same-car">
             <div className="same-car-filter">
               <button onClick={() => setCarFilter('all')} className={carFilter==='all' ? 'active' : ''}>Tất cả</button>
@@ -333,27 +462,63 @@ const ViewCarDetail = () => {
             </div>
           </div>
         </div>
-        <div className="col-12 col-md-3 car-detail-info">
+        <div className="col-12 col-md-4 car-detail-info">
           <div className="car-detail-info-header">
             <h2>{car.brand} {car.model}</h2>
-            <p><b>Năm:</b> {car.year}</p>
-            <p><b>Số chỗ ngồi:</b> {car.seats}</p>
-            <p><b>Hộp số:</b> {car.transmission === 'manual' ? 'Số sàn' : 'Số tự động'}</p>
-            <p><b>Nhiên liệu:</b> {
-              car.fuelType === 'gasoline' ? 'Xăng' :
+            <div className="car-info-row">
+              <span className="car-info-icon"><FaCalendarAlt /></span>
+              <span className="car-info-label">Năm sản xuất</span>
+              <span className="car-info-value car-info-badge">{car.year}</span>
+            </div>
+            <div className="car-info-row">
+              <span className="car-info-icon"><FaUserFriends /></span>
+              <span className="car-info-label">Số chỗ ngồi</span>
+              <span className="car-info-value">{car.seats} chỗ</span>
+            </div>
+            <div className="car-info-row">
+              <span className="car-info-icon"><FaCogs /></span>
+              <span className="car-info-label">Hộp số</span>
+              <span className="car-info-value">{car.transmission === 'manual' ? 'Số sàn' : 'Số tự động'}</span>
+            </div>
+            <div className="car-info-row">
+              <span className="car-info-icon"><FaGasPump /></span>
+              <span className="car-info-label">Nhiên liệu</span>
+              <span className="car-info-value">{
+                car.fuelType === 'gasoline' ? 'Xăng' :
                 car.fuelType === 'diesel' ? 'Dầu' :
-                  car.fuelType === 'electric' ? 'Điện' :
-                    car.fuelType === 'hybrid' ? 'Hybrid' : car.fuelType
-            }</p>
-            <p><b>Mức tiêu thụ:</b> {car.fuelConsumption} lít/100km</p>
-            <p><b>Địa điểm:</b> {car.location}</p>
-            <p><b>Mô tả:</b> {car.description}</p>
+                car.fuelType === 'electric' ? 'Điện' :
+                car.fuelType === 'hybrid' ? 'Hybrid' : car.fuelType
+              }</span>
+            </div>
+            <div className="car-info-row">
+              <span className="car-info-icon"><FaRoad /></span>
+              <span className="car-info-label">Mức tiêu thụ</span>
+              <span className="car-info-value car-info-badge car-info-badge-red">{car.fuelConsumption} lít/100km</span>
+            </div>
+            <div className="car-info-row">
+              <span className="car-info-icon"><FaMapMarkerAlt /></span>
+              <span className="car-info-label">Địa điểm</span>
+              <span className="car-info-value">{car.location}</span>
+            </div>
+            <div className="car-info-row car-info-desc">
+              <span className="car-info-icon"><FaInfoCircle /></span>
+              <span className="car-info-label">Mô tả:</span>
+              <span className="car-info-value">{car.description}</span>
+            </div>
           </div>
           <div className="car-detail-info-footer">
             {contract && (
               <>
-                <p><b>Giá:</b> {contract.pricePerDay?.toLocaleString()} VNĐ/ngày</p>
-                <p><b>Deposit:</b> {contract.deposit?.toLocaleString()} VNĐ</p>
+                <div className="car-price-row">
+                  <span className="car-price-label">Giá: </span>
+                  <span className="car-price-value">{contract.pricePerDay?.toLocaleString()}</span>
+                  <span className="car-price-unit">VNĐ/ngày</span>
+                </div>
+                <div className="car-price-row">
+                  <span className="car-price-label">Deposit: </span>
+                  <span className="car-price-value" style={{fontSize: '1.2rem'}}>{contract.deposit?.toLocaleString()}</span>
+                  <span className="car-price-unit">VNĐ</span>
+                </div>
               </>
             )}
             <button 
@@ -390,6 +555,75 @@ const ViewCarDetail = () => {
           onSuccess={handleRentalSuccess}
         />
       )}
+
+      <Modal
+        title={<h2 style={{ textAlign: 'center', marginBottom: '0' }}>Đánh giá từ khách hàng</h2>}
+        open={showAllReviewsModal}
+        onCancel={handleCloseAllReviews}
+        footer={null}
+        width={800}
+        centered
+        destroyOnClose
+      >
+        <div className="reviews-filter">
+          <div className="filter-buttons">
+            <button
+              className={`filter-btn ${allReviewsFilter === 0 ? 'active' : ''}`}
+              onClick={() => { setAllReviewsFilter(0); setCurrentPage(1); }}
+            >
+              Tất cả ({reviewsData.totalReviews})
+            </button>
+            {[5, 4, 3, 2, 1].map(star => (
+              <button
+                key={star}
+                className={`filter-btn ${allReviewsFilter === star ? 'active' : ''}`}
+                onClick={() => { setAllReviewsFilter(star); setCurrentPage(1); }}
+              >
+                {star} sao ({reviewsData.ratingCounts[star] || 0})
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="reviews-list">
+          {currentReviews.length === 0 ? (
+            <div className="no-reviews">
+              <p>Không có đánh giá nào cho mức {allReviewsFilter > 0 ? `${allReviewsFilter} sao` : ''}</p>
+            </div>
+          ) : (
+            currentReviews.map(review => (
+              <div key={review.id} className="review-item">
+                <div className="review-header">
+                  <div className="reviewer-info">
+                    <Avatar src={review.userAvatar} size={40} />
+                    <div className="reviewer-details">
+                      <div className="reviewer-name-date">
+                        <span className="reviewer-name">{review.userName}</span>
+                        <span className="review-date">{new Date(review.date).toLocaleDateString('vi-VN')}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="review-rating">
+                    <Rate disabled defaultValue={review.rating} />
+                  </div>
+                </div>
+                <div className="review-content">
+                  <p className="review-comment">{review.comment}</p>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        <Pagination
+          current={currentPage}
+          pageSize={reviewsPerPage}
+          total={allReviewsFiltered.length}
+          onChange={(page) => setCurrentPage(page)}
+          style={{ textAlign: 'center', marginTop: '2rem' }}
+          showSizeChanger={false}
+        />
+      </Modal>
     </div>
   );
 };

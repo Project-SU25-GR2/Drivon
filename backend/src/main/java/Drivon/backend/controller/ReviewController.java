@@ -1,0 +1,26 @@
+package Drivon.backend.controller;
+
+import Drivon.backend.dto.ReviewResponseDto;
+import Drivon.backend.service.ReviewService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/reviews")
+@CrossOrigin(origins = "http://localhost:3000")
+public class ReviewController {
+
+    private final ReviewService reviewService;
+
+    @Autowired
+    public ReviewController(ReviewService reviewService) {
+        this.reviewService = reviewService;
+    }
+
+    @GetMapping("/car/{licensePlate}")
+    public ResponseEntity<ReviewResponseDto> getReviewsByCar(@PathVariable String licensePlate) {
+        ReviewResponseDto response = reviewService.getReviewsForCar(licensePlate);
+        return ResponseEntity.ok(response);
+    }
+} 
