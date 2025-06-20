@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import '../css/RentCar.css';
+import './RentCar.css';
 import { Link } from 'react-router-dom';
 import { FaCog, FaGasPump, FaRoad, FaWrench, FaMapMarkerAlt, FaChair, FaStar, FaCarSide, FaBrain } from 'react-icons/fa';
 
@@ -76,7 +76,7 @@ const RentCar = () => {
     return matchesSearch && matchesBrand && matchesSeat && matchesFuel && matchesType;
   });
 
-  if (loading) return <div className="loading">Loading...</div>;
+  if (loading) return <div className="loading"><div className="loader"></div></div>;
   if (error) return <div className="error">{error}</div>;
 
   return (
