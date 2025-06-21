@@ -4,7 +4,7 @@ import axios from 'axios';
 import { DateRange } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
-import { Modal, Button, List, message, Rate, Avatar, Divider, Pagination } from 'antd';
+import { Modal, Button, List, message, Rate, Avatar, Divider, Pagination, Slider } from 'antd';
 import 'antd/dist/reset.css';
 import RentalForm from './RentalForm';
 import { GiGearStickPattern } from "react-icons/gi";
@@ -42,6 +42,15 @@ const ViewCarDetail = () => {
   const [otherImages, setOtherImages] = useState([]);
   const [carContracts, setCarContracts] = useState({});
   const [ownerInfo, setOwnerInfo] = useState(null);
+
+  // State cho modal xem ảnh
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState('');
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [isPanning, setIsPanning] = useState(false);
+  const [startPan, setStartPan] = useState({ x: 0, y: 0 });
+  const [lastTranslate, setLastTranslate] = useState({ x: 0, y: 0 });
+  const [translate, setTranslate] = useState({ x: 0, y: 0 });
 
   // State cho dữ liệu đánh giá từ API
   const [reviewsData, setReviewsData] = useState({
@@ -186,6 +195,13 @@ const ViewCarDetail = () => {
     // eslint-disable-next-line
   }, [filteredCars, carContracts]);
 
+  useEffect(() => {
+    if (zoomLevel === 1) {
+      setTranslate({ x: 0, y: 0 });
+      setLastTranslate({ x: 0, y: 0 });
+    }
+  }, [zoomLevel]);
+
   const handleApplyCoupon = (coupon) => {
     if (selectedCoupon && selectedCoupon.code === coupon.code) {
       setSelectedCoupon(null);
@@ -209,6 +225,61 @@ const ViewCarDetail = () => {
     newOtherImages[idx] = mainImage;
     setMainImage(img);
     setOtherImages(newOtherImages);
+  };
+
+  // Hàm xử lý double click vào ảnh chính
+  const handleMainImageDoubleClick = () => {
+    setSelectedImage(mainImage);
+    setShowImageModal(true);
+  };
+
+  // Hàm xử lý double click vào thumbnail
+  const handleThumbnailDoubleClick = (img) => {
+    setSelectedImage(img);
+    setShowImageModal(true);
+  };
+
+  // Hàm đóng modal ảnh
+  const handleCloseImageModal = () => {
+    setShowImageModal(false);
+    setSelectedImage('');
+    setZoomLevel(1);
+    setTranslate({ x: 0, y: 0 });
+    setLastTranslate({ x: 0, y: 0 });
+    setIsPanning(false);
+  };
+
+  const handleZoomIn = () => {
+    setZoomLevel(prev => Math.min(prev + 0.2, 3));
+  };
+
+  const handleZoomOut = () => {
+    setZoomLevel(prev => Math.max(prev - 0.2, 1));
+  };
+
+  const handleMouseDown = (e) => {
+    if (zoomLevel <= 1) return;
+    e.preventDefault();
+    setStartPan({ x: e.clientX, y: e.clientY });
+    setLastTranslate({ ...translate });
+    setIsPanning(true);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isPanning) return;
+    e.preventDefault();
+    const dx = e.clientX - startPan.x;
+    const dy = e.clientY - startPan.y;
+    setTranslate({
+      x: lastTranslate.x + dx,
+      y: lastTranslate.y + dy,
+    });
+  };
+
+  const handleMouseUpOrLeave = () => {
+    if (isPanning) {
+      setIsPanning(false);
+    }
   };
 
   const maxIndex = Math.max(0, filteredCars.length - carsPerPage);
@@ -309,7 +380,12 @@ const ViewCarDetail = () => {
       <div className="row car-detail-main container-fluid">
         <div className="col-12 col-md-7 car-detail-images ">
           <div className="car-detail-main-image">
-            <img src={mainImage} alt="car" />
+            <img
+              src={mainImage}
+              alt="car"
+              onDoubleClick={handleMainImageDoubleClick}
+              style={{ cursor: 'pointer' }}
+            />
           </div>
           {otherImages && otherImages.length > 0 && (
             <div className="car-detail-thumbnails">
@@ -319,6 +395,7 @@ const ViewCarDetail = () => {
                   src={img}
                   alt={`car-thumb-${idx + 1}`}
                   onClick={() => handleThumbnailClick(img, idx)}
+                  onDoubleClick={() => handleThumbnailDoubleClick(img)}
                   style={{ cursor: 'pointer' }}
                 />
               ))}
@@ -627,6 +704,55 @@ const ViewCarDetail = () => {
           style={{ textAlign: 'center', marginTop: '2rem' }}
           showSizeChanger={false}
         />
+      </Modal>
+
+      <Modal
+        title={<h2 style={{ textAlign: 'center', marginBottom: '0' }}>Xem ảnh xe</h2>}
+        open={showImageModal}
+        onCancel={handleCloseImageModal}
+        footer={null}
+        width={900}
+        centered
+        destroyOnClose
+        style={{ top: 20 }}
+        bodyStyle={{ padding: 0, background: '#fff' }}
+      >
+        <div
+          className="image-modal-content"
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUpOrLeave}
+          onMouseLeave={handleMouseUpOrLeave}
+          style={{ cursor: zoomLevel > 1 ? (isPanning ? 'grabbing' : 'grab') : 'default' }}
+        >
+          <div
+            className="panning-container"
+            style={{ transform: `translate(${translate.x}px, ${translate.y}px)` }}
+          >
+            <img
+              src={selectedImage}
+              alt="Selected car image"
+              style={{
+                width: '100%',
+                transform: `scale(${zoomLevel})`,
+                transition: isPanning ? 'none' : 'transform 0.1s linear',
+              }}
+            />
+          </div>
+        </div>
+        <div className="zoom-controls">
+          <span className="zoom-label">Zoom</span>
+          <Button onClick={handleZoomOut} disabled={zoomLevel <= 1} size="small">-</Button>
+          <Slider
+            min={1}
+            max={3}
+            step={0.1}
+            value={zoomLevel}
+            onChange={setZoomLevel}
+            style={{ flex: 1, margin: '0 15px' }}
+          />
+          <Button onClick={handleZoomIn} disabled={zoomLevel >= 3} size="small">+</Button>
+        </div>
       </Modal>
     </div>
   );

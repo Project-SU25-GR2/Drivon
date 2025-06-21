@@ -54,6 +54,9 @@ function App() {
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    // Reload the page and redirect to home
+    window.location.href = "/";
   };
 
   return (
