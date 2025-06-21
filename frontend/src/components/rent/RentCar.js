@@ -136,17 +136,19 @@ const RentCar = () => {
           <div className="price-range-display">
             <span>Giá: {priceRange[0].toLocaleString('vi-VN')} - {priceRange[1].toLocaleString('vi-VN')} VNĐ</span>
           </div>
-          <Slider
-            range
-            min={0}
-            max={5000000}
-            step={100000}
-            defaultValue={priceRange}
-            onChange={handleSliderChange}
-            handleStyle={[{ borderColor: '#1890ff' }, { borderColor: '#1890ff' }]}
-            trackStyle={[{ backgroundColor: '#1890ff' }]}
-            className="price-range-slider"
-          />
+          <div className="slider-popover">
+            <Slider
+              range
+              min={0}
+              max={5000000}
+              step={100000}
+              defaultValue={priceRange}
+              onChange={handleSliderChange}
+              handleStyle={[{ borderColor: '#1890ff' }, { borderColor: '#1890ff' }]}
+              trackStyle={[{ backgroundColor: '#1890ff' }]}
+              className="price-range-slider"
+            />
+          </div>
         </div>
         <select name="brand" value={filters.brand} onChange={handleChange} className="filter-select">
           <option value="">Hãng xe</option>
