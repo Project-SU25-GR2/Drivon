@@ -182,7 +182,7 @@ function App() {
         />
 
         <Route
-          path="/adminsecret"
+          path="/adminSecret"
           element={
             <MainLayout user={user} handleLogout={handleLogout}>
               <AdminPage user={user} />

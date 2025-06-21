@@ -424,3 +424,9 @@
 */
 
 /* Add more styles for specific sections as you build them */ 
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+  }

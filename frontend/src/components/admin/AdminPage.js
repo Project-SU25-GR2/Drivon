@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios'; // Assuming you'll use axios for API calls
 import './AdminPage.css'; // Import the new CSS file
-
+import Loader from '../others/loader';
 // Import all admin components
 import DashboardOverview from './DashboardOverview';
 import PagesPage from './PagesPage';
@@ -22,6 +22,7 @@ const AdminPage = ({ user }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [roleCheckComplete, setRoleCheckComplete] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -30,7 +31,7 @@ const AdminPage = ({ user }) => {
 
   const setActiveComponent = (component) => {
     // Preserve the current path while updating the tab parameter
-    navigate(`/admin?tab=${component}`, { replace: true });
+    navigate(`/adminSecret?tab=${component}`, { replace: true });
   };
 
   // Define fetchUsers outside useEffect so it can be called from other functions
@@ -63,8 +64,25 @@ const AdminPage = ({ user }) => {
     console.log('User role:', user?.role);
     
     const checkUserRole = async () => {
+      // Set timeout for role check (10 seconds)
+      const timeoutDuration = 10000;
+      let timeoutId;
+      
+      const timeoutPromise = new Promise((_, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(new Error('Role check timeout'));
+        }, timeoutDuration);
+      });
+
       try {
-        const response = await axios.get(`http://localhost:8080/api/admin/check-role/${user.userId}`);
+        const roleCheckPromise = axios.get(`http://localhost:8080/api/admin/check-role/${user.userId}`);
+        
+        // Race between role check and timeout
+        const response = await Promise.race([roleCheckPromise, timeoutPromise]);
+        
+        // Clear timeout if role check completes successfully
+        clearTimeout(timeoutId);
+        
         const { role, status } = response.data;
         
         if (role?.toLowerCase() !== 'admin' || status?.toLowerCase() !== 'active') {
@@ -73,10 +91,27 @@ const AdminPage = ({ user }) => {
         }
         
         // If user is admin and active, continue loading the page
+        setRoleCheckComplete(true);
         setLoading(false);
       } catch (error) {
+        // Clear timeout if it was set
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+        
         console.error('Error checking user role:', error);
-        navigate('/404', { replace: true });
+        
+        // Show specific error message based on error type
+        if (error.message === 'Role check timeout') {
+          setError('Role check timed out. Please try again.');
+        } else {
+          setError('Failed to verify admin access. Please try again.');
+        }
+        
+        // Redirect to 404 after a short delay to show error message
+        setTimeout(() => {
+          navigate('/404', { replace: true });
+        }, 2000);
       }
     };
 
@@ -87,6 +122,27 @@ const AdminPage = ({ user }) => {
       setLoading(false);
     }
   }, [user, navigate]);
+
+  // Show loader while checking role or if role check hasn't completed
+  if (loading || !roleCheckComplete) {
+    return <div className="loading"><Loader text="Checking admin access..." /></div>;
+  }
+
+  // Show error message if there's an error
+  if (error) {
+    return (
+      <div className="admin-page-container" style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '100vh',
+        color: 'red',
+        fontSize: '18px'
+      }}>
+        {error}
+      </div>
+    );
+  }
 
   // Implement update role and delete user functions (Keeping for now, but not used in this layout step)
   const handleUpdateRole = async (userId, newRole) => {
