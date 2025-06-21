@@ -1,16 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './RentCar.css';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { FaCog, FaGasPump, FaRoad, FaWrench, FaMapMarkerAlt, FaChair, FaStar, FaCarSide, FaBrain } from 'react-icons/fa';
+import Slider from 'rc-slider';
+import 'rc-slider/assets/index.css';
 
 const RentCar = () => {
+  const location = useLocation();
   const [filters, setFilters] = useState({
     location: '',
     brand: '',
     type: '',
+    minPrice: '',
+    maxPrice: '',
   });
 
+  // Thêm state cho price range slider
+  const [priceRange, setPriceRange] = useState([0, 5000000]);
   const [search, setSearch] = useState("");
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,8 +25,29 @@ const RentCar = () => {
   const [carContracts, setCarContracts] = useState({});
 
   useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const locationParam = params.get('location');
+    const minPriceParam = params.get('minPrice');
+    const maxPriceParam = params.get('maxPrice');
+
+    if (locationParam || minPriceParam || maxPriceParam) {
+      const newMinPrice = minPriceParam ? parseInt(minPriceParam) : 0;
+      const newMaxPrice = maxPriceParam ? parseInt(maxPriceParam) : 5000000;
+      
+      setFilters(prevFilters => ({
+        ...prevFilters,
+        location: locationParam || '',
+        minPrice: newMinPrice.toString(),
+        maxPrice: newMaxPrice.toString(),
+      }));
+      
+      // Cập nhật price range slider
+      setPriceRange([newMinPrice, newMaxPrice]);
+      
+      if(locationParam) setSearch(locationParam);
+    }
     fetchCars();
-  }, []);
+  }, [location.search]);
 
   const fetchCars = async () => {
     try {
@@ -48,6 +76,16 @@ const RentCar = () => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
   };
 
+  // Thêm hàm xử lý thay đổi price range slider
+  const handleSliderChange = (value) => {
+    setPriceRange(value);
+    setFilters({
+      ...filters,
+      minPrice: value[0].toString(),
+      maxPrice: value[1].toString()
+    });
+  };
+
   // Thêm hàm chuyển đổi fuelType sang tiếng Việt
   function getFuelTypeVi(fuelType) {
     switch (fuelType) {
@@ -73,7 +111,11 @@ const RentCar = () => {
     const matchesSeat = !filters.seat || car.seats.toString() === filters.seat;
     const matchesFuel = !filters.fuel || car.fuelType === filters.fuel;
     const matchesType = !filters.type || (car.type && car.type.toLowerCase() === filters.type.toLowerCase());
-    return matchesSearch && matchesBrand && matchesSeat && matchesFuel && matchesType;
+    
+    const price = carContracts[car.licensePlate]?.pricePerDay;
+    const matchesPrice = price && price >= priceRange[0] && price <= priceRange[1];
+
+    return matchesSearch && matchesBrand && matchesSeat && matchesFuel && matchesType && matchesPrice;
   });
 
   if (loading) return <div className="loading"><div className="loader"></div></div>;
@@ -89,10 +131,22 @@ const RentCar = () => {
           onChange={e => setSearch(e.target.value)}
           className="search-input"
         />
-        <select name="price" className="filter-select">
-          <option>Giá tiền</option>
-          {/* Thêm các option giá nếu cần */}
-        </select>
+        <div className="price-filter-container">
+          <div className="price-range-display">
+            <span>Giá: {priceRange[0].toLocaleString('vi-VN')} - {priceRange[1].toLocaleString('vi-VN')} VNĐ</span>
+          </div>
+          <Slider
+            range
+            min={0}
+            max={5000000}
+            step={100000}
+            defaultValue={priceRange}
+            onChange={handleSliderChange}
+            handleStyle={[{ borderColor: '#1890ff' }, { borderColor: '#1890ff' }]}
+            trackStyle={[{ backgroundColor: '#1890ff' }]}
+            className="price-range-slider"
+          />
+        </div>
         <select name="brand" value={filters.brand} onChange={handleChange} className="filter-select">
           <option value="">Hãng xe</option>
           <option value="Toyota">Toyota</option>
