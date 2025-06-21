@@ -12,4 +12,5 @@ public class CashPaymentRequest {
     private String additionalRequirements;
     private LocalDateTime rentalStartDate;
     private LocalDateTime rentalEndDate;
+    private Integer bookingId;
 }
