@@ -24,6 +24,7 @@ const RentCar = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [carContracts, setCarContracts] = useState({});
+  const [reviewStats, setReviewStats] = useState({});
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -53,19 +54,29 @@ const RentCar = () => {
   const fetchCars = async () => {
     try {
       const response = await axios.get('http://localhost:8080/api/cars/active-lease');
-      setCars(response.data);
+      const carsData = response.data;
+      setCars(carsData);
       
-      // Fetch contracts for each car
       const contracts = {};
-      for (const car of response.data) {
+      const stats = {};
+      for (const car of carsData) {
         try {
           const contractResponse = await axios.get(`http://localhost:8080/api/contracts/by-car/${car.licensePlate}`);
           contracts[car.licensePlate] = contractResponse.data;
         } catch (err) {
           console.error(`Error fetching contract for car ${car.licensePlate}:`, err);
         }
+
+        try {
+            const reviewResponse = await axios.get(`http://localhost:8080/api/reviews/car/${car.licensePlate}`);
+            stats[car.licensePlate] = reviewResponse.data;
+        } catch (err) {
+            console.error(`Error fetching reviews for car ${car.licensePlate}:`, err);
+            stats[car.licensePlate] = { averageRating: 0, totalReviews: 0 };
+        }
       }
       setCarContracts(contracts);
+      setReviewStats(stats);
       setLoading(false);
     } catch (err) {
       setError('Failed to fetch cars');
@@ -216,8 +227,8 @@ const RentCar = () => {
                   </div>
                   
                   <div className="rating-trips">
-                      <span className="rating-stars"><FaStar /> 5.0</span>
-                      <span className="total-trips"><FaCarSide /> 100+ chuyến</span>
+                      <span className="rating-stars"><FaStar /> {reviewStats[car.licensePlate]?.averageRating.toFixed(1) || 'Mới'}</span>
+                      <span className="total-trips"><FaCarSide /> {reviewStats[car.licensePlate]?.totalReviews || 0} chuyến</span>
                   </div>
                       
                   <div className="car-price">
