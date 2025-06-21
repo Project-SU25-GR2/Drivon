@@ -39,8 +39,8 @@ const UserManagementPage = () => {
 
     const handleUpdateRole = async (userId, newRole) => {
         try {
-            // Đảm bảo role được gửi đúng định dạng (chữ hoa)
-            const formattedRole = newRole.toUpperCase();
+            // Đảm bảo role được gửi đúng định dạng (chữ thường)
+            const formattedRole = newRole.toLowerCase();
             
             console.log('Đang cập nhật vai trò:', {
                 userId,
@@ -157,9 +157,9 @@ const UserManagementPage = () => {
                                         onChange={(e) => handleUpdateRole(user.userId, e.target.value)}
                                         className="role-select"
                                     >
-                                        <option value="RENTER">Renter</option>
-                                        <option value="OWNER">Owner</option>
-                                        <option value="ADMIN">Admin</option>
+                                        <option value="renter">Renter</option>
+                                        <option value="owner">Owner</option>
+                                        <option value="admin">Admin</option>
                                     </select>
                                 </td>
                                 <td>
