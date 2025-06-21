@@ -617,3 +617,17 @@ margin: 3rem 2rem;
   width: 100%;
   cursor: pointer;
 }
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+}
+
+.error {
+  text-align: center;
+  padding: 2rem;
+  color: #dc3545;
+  font-size: 1.2rem;
+}
+

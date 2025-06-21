@@ -13,7 +13,7 @@ import { TbAutomaticGearboxFilled } from "react-icons/tb";
 import { FaGasPump } from "react-icons/fa";
 import { BsEvStationFill } from "react-icons/bs";
 import { BsFillFuelPumpDieselFill } from "react-icons/bs";
-
+import Loader from '../others/loader';
 const ViewCarDetail = () => {
   const { licensePlate } = useParams();
   const navigate = useNavigate();
@@ -246,7 +246,7 @@ const ViewCarDetail = () => {
     });
   };
 
-  if (loading) return <div>Đang tải...</div>;
+  if (loading) return <div className="loading"><Loader /></div>;
   if (error) return <div>{error}</div>;
   if (!car) return <div>Không có dữ liệu xe</div>;
 
