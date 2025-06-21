@@ -57,7 +57,7 @@ const MainLayout = ({ user, handleLogout, children }) => {
     <div className="HomeLayout">
       <header>
         <div className="logo">
-          CAR<span>RENTAL</span>
+          <Link to="/" style={{ textDecoration: 'none', color: '#fff' }}>CAR<span>RENTAL</span></Link>
         </div>
         
         <nav>
