@@ -48,6 +48,49 @@ min-width: 120px;
 .filter-select[name="fuel"] {
 min-width: 110px;
 }
+
+/* Price Filter Container Styles */
+.price-filter-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 250px;
+  padding: 8px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.price-range-display {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: #495057;
+  padding: 4px 0;
+}
+
+.price-range-slider {
+  margin: 0 8px;
+}
+
+.price-range-slider .rc-slider-track {
+  background-color: #1890ff !important;
+}
+
+.price-range-slider .rc-slider-handle {
+  border-color: #1890ff !important;
+  background-color: #1890ff !important;
+  box-shadow: 0 2px 4px rgba(24, 144, 255, 0.3) !important;
+}
+
+.price-range-slider .rc-slider-handle:hover {
+  box-shadow: 0 4px 8px rgba(24, 144, 255, 0.4) !important;
+}
+
+.price-range-slider .rc-slider-handle:active {
+  box-shadow: 0 2px 4px rgba(24, 144, 255, 0.5) !important;
+}
+
 .btn-fast-search {
   background-color: #fff;
   margin-right: 10px;
@@ -367,4 +410,69 @@ font-size: 0.8rem;
 	100% {
 		stroke-dashoffset: -22;
 	}
+}
+@keyframes l12-1 { 
+ 100% {transform: rotate(-2deg)}
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .search-input {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .price-filter-container {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .filter-select {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .car-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+  
+  .car-specs-grid {
+    grid-template-columns: 1fr;
+    gap: 0.3rem;
+  }
+  
+  .rating-trips {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .rent-car-page {
+    padding: 1rem !important;
+  }
+  
+  .filter-bar {
+    padding: 12px;
+  }
+  
+  .price-range-display {
+    font-size: 12px;
+  }
+  
+  .car-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .car-card {
+    margin-bottom: 1rem;
+  }
 }
