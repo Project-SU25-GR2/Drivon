@@ -68,8 +68,7 @@ const AdminPage = ({ user }) => {
         const { role, status } = response.data;
         
         if (role?.toLowerCase() !== 'admin' || status?.toLowerCase() !== 'active') {
-          alert('Tài khoản của bạn không được phép truy cập vào trang này. Vui lòng liên hệ quản trị viên nếu bạn cần quyền truy cập.');
-          navigate('/', { replace: true });
+          navigate('/404', { replace: true });
           return;
         }
         
@@ -77,8 +76,7 @@ const AdminPage = ({ user }) => {
         setLoading(false);
       } catch (error) {
         console.error('Error checking user role:', error);
-        alert('Có lỗi xảy ra khi kiểm tra quyền truy cập. Vui lòng thử lại sau.');
-        navigate('/', { replace: true });
+        navigate('/404', { replace: true });
       }
     };
 

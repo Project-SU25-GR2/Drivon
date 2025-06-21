@@ -3,9 +3,10 @@ import axios from 'axios';
 import './RentCar.css';
 import { Link, useLocation } from 'react-router-dom';
 import { FaCog, FaGasPump, FaRoad, FaWrench, FaMapMarkerAlt, FaChair, FaStar, FaCarSide, FaBrain } from 'react-icons/fa';
+import Loader from '../others/loader';
+import NotFoundCar from '../others/notFoundCar';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
-
 const RentCar = () => {
   const location = useLocation();
   const [filters, setFilters] = useState({
@@ -118,7 +119,7 @@ const RentCar = () => {
     return matchesSearch && matchesBrand && matchesSeat && matchesFuel && matchesType && matchesPrice;
   });
 
-  if (loading) return <div className="loading"><div className="loader"></div></div>;
+  if (loading) return <div className="loading"><Loader /></div>;
   if (error) return <div className="error">{error}</div>;
 
   return (
@@ -184,7 +185,7 @@ const RentCar = () => {
 
       <div className="car-list">
         {filteredCars.length === 0 ? (
-          <p>Không tìm thấy xe phù hợp.</p>
+          <NotFoundCar />
         ) : (
           <div className="car-grid">
             {filteredCars.map((car) => (

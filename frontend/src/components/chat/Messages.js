@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import webSocketService from '../../services/WebSocketService';
 import './Messages.css';
-
+import Loader from '../others/loader';
 const Messages = () => {
   const location = useLocation();
   const navigate = useNavigate();

@@ -23,6 +23,7 @@ import ManagerOwnerPage from "./components/owner/ManagerOwnerPage";
 import RentalSuccess from "./components/car/RentalSuccess";
 import Messages from "./components/chat/Messages";
 import MyRentals from "./components/car/MyRentals";
+import CarRental404 from "./components/others/404";
 // import CarRental404 from "./components/others/404";
 function App() {
   const [user, setUser] = useState(null);
@@ -181,7 +182,7 @@ function App() {
         />
 
         <Route
-          path="/admin"
+          path="/adminsecret"
           element={
             <MainLayout user={user} handleLogout={handleLogout}>
               <AdminPage user={user} />
@@ -265,19 +266,27 @@ function App() {
           }
         />
         <Route path="/my-rentals" element={<MyRentals />} />
-        {/* <Route
-          path="*"
+        <Route
+          path="/404"
           element={
             <MainLayout user={user} handleLogout={handleLogout}>
               <CarRental404 />
             </MainLayout>
           }
-        /> */}
+        />
         <Route
           path="/messages"
           element={
             <MainLayout user={user} handleLogout={handleLogout}>
               <Messages />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="*"
+          element={
+            <MainLayout user={user} handleLogout={handleLogout}>
+              <CarRental404 />
             </MainLayout>
           }
         />

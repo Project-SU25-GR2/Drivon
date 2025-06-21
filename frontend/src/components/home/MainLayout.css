@@ -236,7 +236,8 @@ nav a:hover {
     display: block;
     text-decoration: none;
     color: #222;
-    border-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
     /* Giữ bo góc luôn */
     transition: background 0.2s ease, color 0.2s ease;
 }
