@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Loader from '../others/loader';
 import './PartnerPage.css';
 
 const PartnerPage = () => {
@@ -14,11 +15,34 @@ const PartnerPage = () => {
     const fetchPartners = async () => {
       try {
         setLoading(true);
+        setError(null);
+        console.log('Fetching partners from API...');
+        
         const response = await axios.get('http://localhost:8080/api/admin/partners');
+        console.log('Partners API response:', response.data);
+        
         setPartners(response.data);
       } catch (err) {
         console.error('Error fetching partners:', err);
-        setError('Failed to fetch partners: ' + (err.response?.data?.message || err.message));
+        console.error('Error response:', err.response);
+        console.error('Error status:', err.response?.status);
+        console.error('Error data:', err.response?.data);
+        
+        let errorMessage = 'Failed to fetch partners';
+        
+        if (err.response?.status === 500) {
+          errorMessage = 'Server error (500) - Backend service might be down or database connection issue';
+        } else if (err.response?.status === 404) {
+          errorMessage = 'API endpoint not found (404) - Check if backend is running';
+        } else if (err.code === 'ERR_NETWORK') {
+          errorMessage = 'Network error - Backend server is not running or not accessible';
+        } else if (err.response?.data?.message) {
+          errorMessage = `Server error: ${err.response.data.message}`;
+        } else {
+          errorMessage = `Error: ${err.message}`;
+        }
+        
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -29,12 +53,14 @@ const PartnerPage = () => {
 
   const handleStatusChange = async (id, newStatus) => {
     try {
+      console.log(`Updating partner status: ${id} to ${newStatus}`);
       await axios.put(`http://localhost:8080/api/admin/partners/${id}/status`, { status: newStatus });
       setPartners(prev =>
         prev.map(p => (p.id === id ? { ...p, status: newStatus } : p))
       );
     } catch (err) {
-      alert('Failed to update status');
+      console.error('Error updating partner status:', err);
+      alert('Failed to update status: ' + (err.response?.data?.message || err.message));
     }
   };
 
@@ -66,67 +92,116 @@ const PartnerPage = () => {
   };
 
   if (loading) {
-    return <div>Loading partners...</div>;
+    return <div className="loading"><Loader text="Loading partners..." /></div>;
   }
 
   if (error) {
-    return <div style={{ color: 'red' }}>Error: {error}</div>;
+    return (
+      <div className="partner-page">
+        <h1>Partner Management</h1>
+        <div style={{ 
+          color: 'red', 
+          padding: '20px', 
+          backgroundColor: '#ffe6e6', 
+          border: '1px solid #ff9999',
+          borderRadius: '8px',
+          margin: '20px 0'
+        }}>
+          <h3>Error Loading Partners</h3>
+          <p>{error}</p>
+          <p><strong>Troubleshooting steps:</strong></p>
+          <ul>
+            <li>Make sure the backend server is running on port 8080</li>
+            <li>Check if the database connection is working</li>
+            <li>Verify that the contract_partners table exists and has data</li>
+            <li>Check the backend logs for more detailed error information</li>
+          </ul>
+          <button 
+            onClick={() => window.location.reload()} 
+            style={{
+              padding: '10px 20px',
+              backgroundColor: '#007bff',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="partner-page">
       <h1>Partner Management</h1>
-      <div className="table-container">
-        <table className="partner-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Phone</th>
-              <th>Email</th>
-              <th>Car Plate</th>
-              <th>Car Brand</th>
-              <th>Car Model</th>
-              <th>Car Year</th>
-              <th>Price/Day</th>
-              <th>Deposit</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {partners.map((partner) => (
-              <tr key={partner.id} onClick={() => handleSeeMore(partner)} style={{ cursor: 'pointer' }}>
-                <td>{partner.name}</td>
-                <td>{partner.phone}</td>
-                <td>{partner.email}</td>
-                <td>{partner.carId}</td>
-                <td>{partner.car?.brand}</td>
-                <td>{partner.car?.model}</td>
-                <td>{partner.car?.year}</td>
-                <td>{partner.pricePerDay?.toLocaleString('vi-VN')} VND</td>
-                <td>{partner.deposit?.toLocaleString('vi-VN')} VND</td>
-                <td>
-                  <select
-                    value={partner.status || ""}
-                    onChange={e => handleStatusChange(partner.id, e.target.value)}
-                    className={
-                      partner.status === 'ACTIVE_LEASE' ? 'status-active' :
-                      partner.status === 'CANCELLED_LEASE' ? 'status-cancelled' :
-                      partner.status === 'EXPIRED_LEASE' ? 'status-expired' :
-                      partner.status === 'PENDING_LEASE' ? 'status-pending' : ''
-                    }
-                    onClick={e => e.stopPropagation()}
-                  >
-                    <option value="PENDING_LEASE">PENDING</option>
-                    <option value="ACTIVE_LEASE">ACTIVE</option>
-                    <option value="CANCELLED_LEASE">CANCELLED</option>
-                    <option value="EXPIRED_LEASE">EXPIRED</option>
-                  </select>
-                </td>
+      {partners.length === 0 ? (
+        <div style={{ 
+          padding: '20px', 
+          backgroundColor: '#f8f9fa', 
+          border: '1px solid #dee2e6',
+          borderRadius: '8px',
+          margin: '20px 0',
+          textAlign: 'center'
+        }}>
+          <h3>No Partners Found</h3>
+          <p>There are currently no partner contracts in the system.</p>
+        </div>
+      ) : (
+        <div className="table-container">
+          <table className="partner-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Car Plate</th>
+                <th>Car Brand</th>
+                <th>Car Model</th>
+                <th>Car Year</th>
+                <th>Price/Day</th>
+                <th>Deposit</th>
+                <th>Status</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {partners.map((partner) => (
+                <tr key={partner.id} onClick={() => handleSeeMore(partner)} style={{ cursor: 'pointer' }}>
+                  <td>{partner.name}</td>
+                  <td>{partner.phone}</td>
+                  <td>{partner.email}</td>
+                  <td>{partner.carId}</td>
+                  <td>{partner.car?.brand}</td>
+                  <td>{partner.car?.model}</td>
+                  <td>{partner.car?.year}</td>
+                  <td>{partner.pricePerDay?.toLocaleString('vi-VN')} VND</td>
+                  <td>{partner.deposit?.toLocaleString('vi-VN')} VND</td>
+                  <td>
+                    <select
+                      value={partner.status || ""}
+                      onChange={e => handleStatusChange(partner.id, e.target.value)}
+                      className={
+                        partner.status === 'ACTIVE_LEASE' ? 'status-active' :
+                        partner.status === 'CANCELLED_LEASE' ? 'status-cancelled' :
+                        partner.status === 'EXPIRED_LEASE' ? 'status-expired' :
+                        partner.status === 'PENDING_LEASE' ? 'status-pending' : ''
+                      }
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <option value="PENDING_LEASE">PENDING</option>
+                      <option value="ACTIVE_LEASE">ACTIVE</option>
+                      <option value="CANCELLED_LEASE">CANCELLED</option>
+                      <option value="EXPIRED_LEASE">EXPIRED</option>
+                    </select>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {showModal && selectedPartner && (
         <div className="modal-overlay">

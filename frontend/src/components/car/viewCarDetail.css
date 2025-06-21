@@ -14,6 +14,7 @@
   display: flex;
   justify-content: center;
   width: 100%;
+  position: relative;
 }
 
 .car-detail-main-image img {
@@ -32,6 +33,17 @@
   gap: 16px;
   margin-bottom: 32px;
   width: 100%;
+  position: relative;
+}
+
+.car-detail-thumbnails::before {
+  content: "Double click để xem chi tiết";
+  position: absolute;
+  top: -25px;
+  left: 0;
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
 }
 
 .car-detail-thumbnails img {
@@ -1134,5 +1146,74 @@
   font-size: 1rem;
   font-weight: 400;
   margin-left: 2px;
+}
+
+/* Image Modal Styles */
+.image-modal-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #fff;
+  overflow: hidden;
+  height: 75vh;
+  padding: 0;
+}
+
+.panning-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.image-modal-content img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+/* Custom modal styles */
+.ant-modal-content {
+  background: #fff !important;
+  border-radius: 12px !important;
+}
+
+.ant-modal-header {
+  background: #fff !important;
+  border-bottom: 1px solid #f0f0f0 !important;
+}
+
+.ant-modal-title {
+  color: #000 !important;
+}
+
+.ant-modal-close {
+  color: #000 !important;
+}
+
+.ant-modal-close:hover {
+  color: #1890ff !important;
+}
+
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 30px 20px;
+}
+
+.zoom-label {
+  margin-right: 15px;
+  font-weight: 500;
+  color: #333;
+  font-size: 14px;
+}
+
+.zoom-controls .ant-btn {
+  min-width: 28px;
+  font-weight: bold;
 }
 

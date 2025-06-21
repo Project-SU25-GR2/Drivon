@@ -54,15 +54,14 @@ public class AdminController {
             if (newRole == null || newRole.isEmpty()) {
                 return ResponseEntity.badRequest().body("New role must be provided.");
             }
-            // Cập nhật kiểm tra vai trò để chấp nhận RENTER, OWNER, ADMIN (chữ hoa)
-            String upperCaseRole = newRole.toUpperCase();
-            if (!upperCaseRole.equals("RENTER") && !upperCaseRole.equals("OWNER") && !upperCaseRole.equals("ADMIN")) {
+            // Chuyển đổi role về chữ thường để khớp với enum
+            String lowerCaseRole = newRole.toLowerCase();
+            if (!lowerCaseRole.equals("renter") && !lowerCaseRole.equals("owner") && !lowerCaseRole.equals("admin")) {
                 return ResponseEntity.badRequest().body("Invalid role.");
             }
 
             try {
-                UserRole roleEnum = UserRole.valueOf(upperCaseRole); // Chuyển đổi string sang enum, dùng giá trị đã
-                                                                     // chuyển hoa
+                UserRole roleEnum = UserRole.valueOf(lowerCaseRole); // Chuyển đổi string sang enum, dùng giá trị chữ thường
                 user.setRole(roleEnum);
             } catch (IllegalArgumentException e) {
                 return ResponseEntity.badRequest().body("Invalid role provided.");

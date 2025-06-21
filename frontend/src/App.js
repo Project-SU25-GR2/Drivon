@@ -54,6 +54,9 @@ function App() {
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    // Reload the page and redirect to home
+    window.location.href = "/";
   };
 
   return (
@@ -182,7 +185,7 @@ function App() {
         />
 
         <Route
-          path="/adminsecret"
+          path="/adminSecret"
           element={
             <MainLayout user={user} handleLogout={handleLogout}>
               <AdminPage user={user} />

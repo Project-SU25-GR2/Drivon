@@ -127,20 +127,29 @@ const MyRentals = () => {
       message.error("Vui lòng chọn số sao đánh giá.");
       return;
     }
-    // TODO: Call API to submit review
-    console.log(
-      `Submitting review for order ${ratingRental.orderCode}: ${rating} stars, comment: "${comment}"`
-    );
-
-    // Show success state in modal
-    setIsReviewSubmitted(true);
-    // Add to client-side reviewed list to hide button
-    setReviewedRentals((prev) => [...prev, ratingRental.paymentId]);
-
-    // Close the modal automatically after 2 seconds
-    setTimeout(() => {
-      handleRatingModalClose();
-    }, 2000);
+    try {
+      await axios.post(
+        `http://localhost:8080/api/reviews/car/${ratingRental.carId}`,
+        {
+          rating: rating,
+          comment: comment,
+        },
+        {
+          params: {
+            bookingId: ratingRental.bookingId,
+            reviewerId: user.userId,
+          },
+        }
+      );
+      message.success("Đánh giá đã được lưu thành công!");
+      setIsReviewSubmitted(true);
+      setReviewedRentals((prev) => [...prev, ratingRental.bookingId]);
+      setTimeout(() => {
+        handleRatingModalClose();
+      }, 2000);
+    } catch (error) {
+      message.error("Gửi đánh giá thất bại. Vui lòng thử lại!");
+    }
   };
 
   const renderRentalCard = (rental) => {

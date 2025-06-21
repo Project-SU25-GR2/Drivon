@@ -54,4 +54,7 @@ public class Payment {
 
     @Column(name = "discount_percent")
     private Integer discountPercent;
+
+    @Column(name = "booking_id")
+    private Integer bookingId;
 }
