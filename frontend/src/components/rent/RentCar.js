@@ -219,13 +219,19 @@ const RentCar = () => {
                   <h3 className="car-name">{car.brand} {car.model} {car.year}</h3>
                   <div className="car-specs-grid">
                       <p className="spec-item"><FaCog /> {car.transmission === 'automatic' ? 'Số tự động' : 'Số sàn'}</p>
-                      <p className="spec-item"><FaGasPump /> {car.fuelType === 'gasoline' ? 'Xăng' : car.fuelType === 'diesel' ? 'Dầu diesel' : car.fuelType}</p>
+                      <p className="spec-item"><FaGasPump /> {
+                        car.fuelType === 'gasoline' ? 'Xăng' :
+                        car.fuelType === 'diesel' ? 'Dầu diesel' :
+                        car.fuelType === 'electric' ? 'Điện' :
+                        car.fuelType === 'hybrid' ? 'Hybrid' :
+                        car.fuelType
+                      }</p>
                       <p className="spec-item"><FaRoad /> {car.fuelConsumption}l/100km</p>
                       <p className="spec-item"><FaWrench /> Sản xuất {car.year}</p>
                       <p className="spec-item"><FaMapMarkerAlt /> {car.location}</p>
                       <p className="spec-item"><FaChair /> {car.seats} chỗ</p>
                   </div>
-                  
+                  {/* Tải dữ liệu rating và số chuyến từ database */}
                   <div className="rating-trips">
                       <span className="rating-stars"><FaStar /> {reviewStats[car.licensePlate]?.averageRating.toFixed(1) || 'Mới'}</span>
                       <span className="total-trips"><FaCarSide /> {reviewStats[car.licensePlate]?.totalReviews || 0} chuyến</span>
