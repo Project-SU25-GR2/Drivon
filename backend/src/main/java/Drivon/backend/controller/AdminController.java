@@ -61,7 +61,8 @@ public class AdminController {
             }
 
             try {
-                UserRole roleEnum = UserRole.valueOf(lowerCaseRole); // Chuyển đổi string sang enum, dùng giá trị chữ thường
+                UserRole roleEnum = UserRole.valueOf(lowerCaseRole); // Chuyển đổi string sang enum, dùng giá trị chữ
+                                                                     // thường
                 user.setRole(roleEnum);
             } catch (IllegalArgumentException e) {
                 return ResponseEntity.badRequest().body("Invalid role provided.");
@@ -108,12 +109,12 @@ public class AdminController {
             }
 
             try {
-                UserStatus statusEnum = UserStatus.valueOf(newStatus.toUpperCase());
+                UserStatus statusEnum = UserStatus.valueOf(newStatus.toLowerCase());
                 user.setStatus(statusEnum);
                 userRepository.save(user);
                 return ResponseEntity.ok().body("User status updated successfully.");
             } catch (IllegalArgumentException e) {
-                return ResponseEntity.badRequest().body("Invalid status. Must be either ACTIVE or BANNED.");
+                return ResponseEntity.badRequest().body("Invalid status. Must be one of: active, inactive, banned.");
             }
         }).orElse(ResponseEntity.notFound().build());
     }

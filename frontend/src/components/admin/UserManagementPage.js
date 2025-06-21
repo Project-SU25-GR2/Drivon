@@ -74,27 +74,15 @@ const UserManagementPage = () => {
         }
     };
 
-    const handleToggleStatus = async (userId, currentStatus) => {
+    const handleUpdateStatus = async (userId, newStatus) => {
         try {
-            // Đảm bảo trạng thái luôn là ACTIVE hoặc BANNED
-            const newStatus = currentStatus?.toUpperCase() === 'ACTIVE' ? 'BANNED' : 'ACTIVE';
-            
-            console.log('Đang cập nhật trạng thái:', {
-                userId,
-                currentStatus: currentStatus?.toUpperCase(),
-                newStatus
+            const response = await axios.put(`http://localhost:8080/api/admin/users/${userId}/status`, {
+                status: newStatus
             });
-
-            const response = await axios.put(`http://localhost:8080/api/admin/users/${userId}/status`, { 
-                status: newStatus 
-            });
-            
-            console.log('Phản hồi từ server:', response.data);
-            alert(`Người dùng đã được ${newStatus === 'ACTIVE' ? 'mở khóa' : 'khóa'} thành công!`);
+            alert('Cập nhật trạng thái người dùng thành công!');
             fetchUsers();
         } catch (err) {
             console.error('Lỗi khi cập nhật trạng thái người dùng:', err);
-            console.error('Chi tiết lỗi:', err.response?.data);
             alert('Không thể cập nhật trạng thái người dùng: ' + (err.response?.data?.message || err.message));
         }
     };
@@ -167,13 +155,13 @@ const UserManagementPage = () => {
                                         <label className="toggle-switch">
                                             <input
                                                 type="checkbox"
-                                                checked={user.status?.toUpperCase() === 'ACTIVE'}
-                                                onChange={() => handleToggleStatus(user.userId, user.status)}
+                                                checked={user.status === 'active'}
+                                                onChange={() => handleUpdateStatus(user.userId, user.status === 'active' ? 'banned' : 'active')}
                                             />
                                             <span className="toggle-slider"></span>
                                         </label>
                                         <span className="toggle-label">
-                                            {user.status?.toUpperCase() === 'ACTIVE' ? 'Active' : 'Banned'}
+                                            {user.status === 'active' ? 'Đang hoạt động' : (user.status === 'banned' ? 'Đã khóa' : 'Ngưng hoạt động')}
                                         </span>
                                     </div>
                                 </td>
