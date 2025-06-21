@@ -1,26 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../css/HomeContent.css';
 import { useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Form, Button } from 'react-bootstrap';
+import api from '../../api/config';
+import Slider from 'rc-slider';
+import 'rc-slider/assets/index.css';
 
 const HomeContent = () => {
   const [form, setForm] = useState({
     location: '',
-    pickupDate: '',
-    pickupTime: '',
-    returnDate: '',
-    returnTime: '',
+    minPrice: 0,
+    maxPrice: 5000000,
   });
+  const [locations, setLocations] = useState([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Fetch all cars and extract unique locations
+    const fetchLocations = async () => {
+      try {
+        const response = await api.get('/api/cars/active-lease');
+        const cars = response.data;
+        const uniqueLocations = [...new Set(cars.map(car => car.location).filter(Boolean))];
+        setLocations(uniqueLocations);
+      } catch (error) {
+        setLocations([]);
+      }
+    };
+    fetchLocations();
+  }, []);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // TODO: Handle form submission
+  const handleSliderChange = (value) => {
+    setForm({
+      ...form,
+      minPrice: value[0],
+      maxPrice: value[1],
+    });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle booking logic here
+    // Build query params
+    const params = new URLSearchParams();
+    if (form.location) params.append('location', form.location);
+    if (form.minPrice != null) params.append('minPrice', form.minPrice);
+    if (form.maxPrice != null) params.append('maxPrice', form.maxPrice);
+    navigate(`/rent-car?${params.toString()}`);
   };
 
   return (
@@ -99,66 +128,30 @@ const HomeContent = () => {
                       name="location"
                       value={form.location}
                       onChange={handleChange}
-                      required
                     >
                       <option value="">Select location</option>
-                      <option value="Hà Nội">Hanoi</option>
-                      <option value="Hồ Chí Minh">Ho Chi Minh City</option>
-                      <option value="Đà Nẵng">Da Nang</option>
-                      <option value="Cần Thơ">Can Tho</option>
-                      <option value="Hải Phòng">Hai Phong</option>
-                      <option value="Nha Trang">Nha Trang</option>
-                      <option value="Huế">Hue</option>
-                      <option value="Khác">Other</option>
+                      {locations.map((loc) => (
+                        <option key={loc} value={loc}>{loc}</option>
+                      ))}
                     </Form.Select>
                   </Form.Group>
 
-                  <Form.Group className="mb-3">
-                    <Form.Label>Pickup Time</Form.Label>
-                    <Row className="g-2">
-                      <Col>
-                        <Form.Control
-                          type="date"
-                          name="pickupDate"
-                          value={form.pickupDate}
-                          onChange={handleChange}
-                          required
-                        />
-                      </Col>
-                      <Col>
-                        <Form.Control
-                          type="time"
-                          name="pickupTime"
-                          value={form.pickupTime}
-                          onChange={handleChange}
-                          required
-                        />
-                      </Col>
-                    </Row>
-                  </Form.Group>
-
                   <Form.Group className="mb-4">
-                    <Form.Label>Return Time</Form.Label>
-                    <Row className="g-2">
-                      <Col>
-                        <Form.Control
-                          type="date"
-                          name="returnDate"
-                          value={form.returnDate}
-                          onChange={handleChange}
-                          required
-                        />
-                      </Col>
-                      <Col>
-                        <Form.Control
-                          type="time"
-                          name="returnTime"
-                          value={form.returnTime}
-                          onChange={handleChange}
-                          required
-                        />
-                      </Col>
-                    </Row>
+                    <Form.Label>Price Range (VND/day)</Form.Label>
+                    <Slider
+                      range
+                      min={0}
+                      max={5000000}
+                      step={100000}
+                      defaultValue={[form.minPrice, form.maxPrice]}
+                      onChange={handleSliderChange}
+                      handleStyle={[{ borderColor: '#0d6efd' }, { borderColor: '#0d6efd' }]}
+                      trackStyle={[{ backgroundColor: '#0d6efd' }]}
+                    />
+                    <div className="d-flex justify-content-between mt-2">
+                      <span>{form.minPrice.toLocaleString()} đ</span>
+                      <span>{form.maxPrice.toLocaleString()} đ</span>
+                    </div>
                   </Form.Group>
 
                   <Button variant="primary" type="submit" className="w-100 py-2">
