@@ -16,6 +16,8 @@ import CalendarPage from './CalendarPage';
 import UIElementsPage from './UIElementsPage';
 import UserManagementPage from './UserManagementPage';
 import MultipleLevelsPage from './MultipleLevelsPage';
+import AdminNotificationManager from './AdminNotificationManager';
+import { addNotification } from '../../api/notification';
 
 // Component for Admin Page
 const AdminPage = ({ user }) => {
@@ -23,6 +25,10 @@ const AdminPage = ({ user }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [roleCheckComplete, setRoleCheckComplete] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [content, setContent] = useState('');
+  const [type, setType] = useState('SYSTEM');
+  const [sending, setSending] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -224,9 +230,25 @@ const AdminPage = ({ user }) => {
         return <UserManagementPage />;
       case 'multiple-levels':
         return <MultipleLevelsPage />;
+      case 'notification-manager':
+        return <AdminNotificationManager />;
       default:
         return <div>Select a component from the sidebar</div>;
     }
+  };
+
+  const handleSend = async (e) => {
+    e.preventDefault();
+    setSending(true);
+    try {
+      await addNotification(content, type);
+      alert('Đã gửi thông báo đến tất cả user!');
+      setContent('');
+      setShowForm(false);
+    } catch {
+      alert('Gửi thông báo thất bại!');
+    }
+    setSending(false);
   };
 
   return (
@@ -379,6 +401,18 @@ const AdminPage = ({ user }) => {
               }}
             >
               <i className="fas fa-layer-group"></i> Multiple Levels
+            </a>
+          </li>
+          <li>
+            <a 
+              href="#" 
+              className={activeComponent === 'notification-manager' ? 'active' : ''}
+              onClick={(e) => {
+                e.preventDefault();
+                setActiveComponent('notification-manager');
+              }}
+            >
+              <i className="fas fa-bell"></i> Quản lý thông báo
             </a>
           </li>
         </ul>

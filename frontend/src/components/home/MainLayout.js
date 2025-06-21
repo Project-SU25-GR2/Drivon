@@ -6,6 +6,7 @@ import Signup from '../auth/Signup';
 import ForgotPasswordPage from '../auth/ForgotPasswordPage';
 import Footer from '../layout/footer';
 import Loader from '../others/loader';
+import NotificationBell from '../others/NotificationBell';
 import './MainLayout.css';
 
 const MainLayout = ({ user, handleLogout, children }) => {
@@ -122,103 +123,99 @@ const MainLayout = ({ user, handleLogout, children }) => {
 
   return (
     <div className="HomeLayout">
-      <header>
+      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div className="logo">
           DRI<span>VON</span>
         </div>
-        
         <nav>
           <Link to="/">Home</Link>
           <Link to="/rent-car">Rent car</Link>
           <Link to="/contracts">Contracts</Link>
           <Link to="/rent-your-car">Become a Partner</Link>
-          {/* <a href="#">About</a>
-          <a href="#">Pages</a> */}
           <a href="#">Contact</a>
           <div className="search-box">
             <input type="text" placeholder="Search..." />
             <button type="button"><i className="fas fa-search"></i></button>
           </div>
         </nav>
-        <div
-          className="user-menu-container"
-          style={{ position: 'relative', display: 'inline-block' }}
-          ref={menuRef}
-        >
-          {user ? (
-            <>
-              <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => setMenuOpen((open) => !open)}>
-                <img
-                  src={avatarUrl}
-                  alt="avatar"
-                  className="user-avatar-header"
-                  style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', marginRight: 8 }}
-                />
-                <span style={{ fontWeight: 500, color: '#fff', fontSize: 16 }}>{user.fullName || user.email || "User"}</span>
-              </div>
-              {menuOpen && (
-                <div
-                  className="user-dropdown-menu"
-                >
-                  <Link to="/profile" className="dropdown-item" style={{ display: 'flex', alignItems: 'center', padding: '10px', textDecoration: 'none', color: '#222' }}>
-                    <img
-                      src={avatarUrl}
-                      alt="avatar"
-                      className="user-avatar-header"
-                      style={{ width: 28, height: 28, borderRadius: '50%', marginRight: 8 }}
-                    />
-                    <span>{user.fullName || user.email || "User"}</span>
-                  </Link>
-                  <Link to="/messages" className="dropdown-item" style={{ padding: '10px', display: 'block', textDecoration: 'none', color: '#222' }}>
-                    <i className="bi bi-chat-dots" style={{ marginRight: '8px' }}></i>
-                    Messages
-                  </Link>
-                  <Link to="/my-rentals" className="dropdown-item" style={{ padding: '10px', display: 'block', textDecoration: 'none', color: '#222' }}>
-                    <i className="bi bi-car-front" style={{ marginRight: '8px' }}></i>
-                    My Rentals
-                  </Link>
-                  <Link to="/payment" className="dropdown-item" style={{ padding: '10px', display: 'block', textDecoration: 'none', color: '#222' }}>
-                    <i className="bi bi-credit-card" style={{ marginRight: '8px' }}></i>
-                    Payment
-                  </Link>
-                  
-                  {/* Admin Dashboard Button */}
-                  {userRole === "admin" && (
-                    <Link to="/adminSecret" className="dropdown-item" style={{ padding: '10px', display: 'block', textDecoration: 'none', color: '#222' }}>
-                      <i className="bi bi-speedometer2" style={{ marginRight: '8px' }}></i>
-                      Admin Dashboard
-                    </Link>
-                  )}
-                  
-                  {/* Owner Dashboard Button */}
-                  {userRole === "owner" && (
-                    <Link to="/owner" className="dropdown-item" style={{ padding: '10px', display: 'block', textDecoration: 'none', color: '#222' }}>
-                      <i className="bi bi-gear" style={{ marginRight: '8px' }}></i>
-                      Owner Dashboard
-                    </Link>
-                  )}
-                  
-                  <button onClick={handleLogout} className="dropdown-item logout-button" style={{ padding: '10px', width: '100%', textAlign: 'left', border: 'none', cursor: 'pointer' }}>Logout</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div className="user-menu-container" style={{ position: 'relative', display: 'inline-block' }} ref={menuRef}>
+            {user ? (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => setMenuOpen((open) => !open)}>
+                  <img
+                    src={avatarUrl}
+                    alt="avatar"
+                    className="user-avatar-header"
+                    style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', marginRight: 8 }}
+                  />
+                  <span style={{ fontWeight: 500, color: '#fff', fontSize: 16 }}>{user.fullName || user.email || "User"}</span>
                 </div>
-              )}
-            </>
-          ) : (
-            <button 
-              onClick={() => navigate('/auth')}
-              style={{
-                padding: '8px 16px',
-                backgroundColor: '#007bff',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500'
-              }}
-            >
-              Login / Signup
-            </button>
-          )}
+                {menuOpen && (
+                  <div
+                    className="user-dropdown-menu"
+                  >
+                    <Link to="/profile" className="dropdown-item" style={{ display: 'flex', alignItems: 'center', padding: '10px', textDecoration: 'none', color: '#222' }}>
+                      <img
+                        src={avatarUrl}
+                        alt="avatar"
+                        className="user-avatar-header"
+                        style={{ width: 28, height: 28, borderRadius: '50%', marginRight: 8 }}
+                      />
+                      <span>{user.fullName || user.email || "User"}</span>
+                    </Link>
+                    <Link to="/messages" className="dropdown-item" style={{ padding: '10px', display: 'block', textDecoration: 'none', color: '#222' }}>
+                      <i className="bi bi-chat-dots" style={{ marginRight: '8px' }}></i>
+                      Messages
+                    </Link>
+                    <Link to="/my-rentals" className="dropdown-item" style={{ padding: '10px', display: 'block', textDecoration: 'none', color: '#222' }}>
+                      <i className="bi bi-car-front" style={{ marginRight: '8px' }}></i>
+                      My Rentals
+                    </Link>
+                    <Link to="/payment" className="dropdown-item" style={{ padding: '10px', display: 'block', textDecoration: 'none', color: '#222' }}>
+                      <i className="bi bi-credit-card" style={{ marginRight: '8px' }}></i>
+                      Payment
+                    </Link>
+                    
+                    {/* Admin Dashboard Button */}
+                    {userRole === "admin" && (
+                      <Link to="/adminSecret" className="dropdown-item" style={{ padding: '10px', display: 'block', textDecoration: 'none', color: '#222' }}>
+                        <i className="bi bi-speedometer2" style={{ marginRight: '8px' }}></i>
+                        Admin Dashboard
+                      </Link>
+                    )}
+                    
+                    {/* Owner Dashboard Button */}
+                    {userRole === "owner" && (
+                      <Link to="/owner" className="dropdown-item" style={{ padding: '10px', display: 'block', textDecoration: 'none', color: '#222' }}>
+                        <i className="bi bi-gear" style={{ marginRight: '8px' }}></i>
+                        Owner Dashboard
+                      </Link>
+                    )}
+                    
+                    <button onClick={handleLogout} className="dropdown-item logout-button" style={{ padding: '10px', width: '100%', textAlign: 'left', border: 'none', cursor: 'pointer' }}>Logout</button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <button 
+                onClick={() => navigate('/auth')}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#007bff',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}
+              >
+                Login / Signup
+              </button>
+            )}
+          </div>
+          <NotificationBell />
         </div>
       </header>
 
