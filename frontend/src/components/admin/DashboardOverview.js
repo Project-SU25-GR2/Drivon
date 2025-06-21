@@ -1,181 +1,217 @@
 import React from 'react';
 
-const DashboardOverview = () => {
-    return (
-        <div className="dashboard-content">
-            {/* Metric Cards */}
-            <div className="metric-cards">
-                <div className="card">
-                    <div className="card-title">Total Visits</div>
-                    <div className="card-value">10,500</div> {/* Placeholder value */}
-                    <div className="card-trend">
-                        {/* Placeholder for small chart */}
-                        <div className="mini-chart"></div>
-                        <span className="percentage-change positive">+10%</span>
-                    </div>
-                </div>
-
-                <div className="card">
-                    <div className="card-title">Total Page Views</div>
-                    <div className="card-value">50,000</div> {/* Placeholder value */}
-                    <div className="card-trend">
-                        {/* Placeholder for small chart */}
-                        <div className="mini-chart"></div>
-                        <span className="percentage-change negative">-7%</span>
-                    </div>
-                </div>
-
-                <div className="card">
-                    <div className="card-title">Unique Visitor</div>
-                    <div className="card-value">8,200</div> {/* Placeholder value */}
-                    <div className="card-trend">
-                        {/* Placeholder for small chart */}
-                        <div className="mini-chart"></div>
-                        <span className="percentage-change negative">-12%</span>
-                    </div>
-                </div>
-
-                <div className="card">
-                    <div className="card-title">Bounce Rate</div>
-                    <div className="card-value">33%</div> {/* Placeholder value */}
-                    <div className="card-trend">
-                         {/* Placeholder for small chart */}
-                         <div className="mini-chart"></div>
-                         <span className="percentage-change positive">+33%</span> {/* Example positive change */}
-                    </div>
-                </div>
-            </div>
-
-            {/* Site Visits Section */}
-            <div className="site-visits-section">
-                <h4>Site Visits</h4>
-                <div className="site-visits-content">
-                    <div className="world-map-placeholder">
-                        {/* Placeholder for World Map */}
-                        World Map goes here
-                    </div>
-                    <div className="regional-stats">
-                        {/* Regional Stats List */}
-                        <div className="stat-item">
-                            <div className="stat-label">100k</div>
-                            <div className="stat-region">Visitors From USA</div>
-                            <div className="progress-bar-container">
-                                <div className="progress-bar" style={{ width: '50%', backgroundColor: '#6f42c1' }}></div> {/* Example color */}
-                            </div>
-                            <div className="stat-percentage">50%</div>
-                        </div>
-                         <div className="stat-item">
-                            <div className="stat-label">1M</div>
-                            <div className="stat-region">Visitors From Europe</div>
-                            <div className="progress-bar-container">
-                                <div className="progress-bar" style={{ width: '80%', backgroundColor: '#28a745' }}></div> {/* Example color */}
-                            </div>
-                            <div className="stat-percentage">80%</div>
-                        </div>
-                         <div className="stat-item">
-                            <div className="stat-label">450k</div>
-                            <div className="stat-region">Visitors From Australia</div>
-                            <div className="progress-bar-container">
-                                <div className="progress-bar" style={{ width: '40%', backgroundColor: '#007bff' }}></div> {/* Example color */}
-                            </div>
-                            <div className="stat-percentage">40%</div>
-                        </div>
-                         <div className="stat-item">
-                            <div className="stat-label">1B</div>
-                            <div className="stat-region">Visitors From India</div>
-                            <div className="progress-bar-container">
-                                <div className="progress-bar" style={{ width: '90%', backgroundColor: '#dc3545' }}></div> {/* Example color */}
-                            </div>
-                            <div className="stat-percentage">90%</div>
-                        </div>
-                        {/* Add more regional stats as needed */}
-                    </div>
-                </div>
-            </div>
-
-            {/* Placeholder for Circular Charts */}
-            <div className="circular-charts-section">
-                 <h4>User Statistics</h4> {/* Example title */}
-                 <div className="circular-charts-container">
-                     <div className="chart-item">
-                         {/* Placeholder for New Users Chart */}
-                         <div className="circular-chart">75%</div> {/* Placeholder value */}
-                         <div className="chart-label">New Users</div>
-                     </div>
-                     <div className="chart-item">
-                          {/* Placeholder for New Purchases Chart */}
-                          <div className="circular-chart">50%</div> {/* Placeholder value */}
-                          <div className="chart-label">New Purchases</div>
-                      </div>
-                      <div className="chart-item">
-                           {/* Placeholder for Bounce Rate Chart */}
-                           <div className="circular-chart">90%</div> {/* Placeholder value */}
-                           <div className="chart-label">Bounce Rate</div>
-                       </div>
-                 </div>
-            </div>
-
-             {/* Remaining Widgets Section */}
-             <div className="remaining-widgets">
-                 <div className="widget monthly-stats">
-                     <h4>Monthly Stats</h4>
-                     {/* Placeholder content */}
-                     <p>Monthly stats content here.</p>
-                 </div>
-                 <div className="widget todo-list">
-                     <h4>Todo List</h4>
-                     {/* Placeholder content */}
-                     <ul>
-                         <li>Call John for Dinner</li>
-                         <li>Book Boss Flight 2 Days</li>
-                         <li>Hit the Gym 3 Minutes</li>
-                         <li>Give Purchase Report not important</li>
-                         <li>Watch Game of Thrones Episode Tomorrow</li>
-                         <li>Give Purchase report Done</li>
-                     </ul>
-                 </div>
-                 <div className="widget sales-report">
-                     <h4>Sales Report</h4>
-                     {/* Placeholder content */}
-                      <p>Sales: $6,000</p>
-                      {/* Placeholder for sales table */}
-                      <table>
-                          <thead>
-                              <tr>
-                                  <th>Name</th>
-                                  <th>Status</th>
-                                  <th>Date</th>
-                                  <th>Price</th>
-                              </tr>
-                          </thead>
-                          <tbody>
-                              <tr><td>Item #1 Name</td><td>Unavailable</td><td>Nov 18</td><td>$12</td></tr>
-                              <tr><td>Item #2 Name</td><td>New</td><td>Nov 19</td><td>$34</td></tr>
-                              <tr><td>Item #3 Name</td><td>New</td><td>Nov 20</td><td>-$45</td></tr>
-                              <tr><td>Item #4 Name</td><td>Unavailable</td><td>Nov 21</td><td>$65</td></tr>
-                              <tr><td>Item #5 Name</td><td>Used</td><td>Nov 22</td><td>$78</td></tr>
-                              <tr><td>Item #6 Name</td><td>Used</td><td>Nov 23</td><td>-$88</td></tr>
-                              <tr><td>Item #7 Name</td><td>Old</td><td>Nov 22</td><td>$56</td></tr>
-                          </tbody>
-                      </table>
-                      <p><a href="#">Check all the sales</a></p>
-                 </div>
-                 <div className="widget weather">
-                     <h4>Weather</h4>
-                      {/* Placeholder content */}
-                      <p>32°F Partly Clouds</p>
-                      <p>Monday, Nov 01 2017</p>
-                      <p>Wind: 10km/h, Sunrise: 05:00 AM, Pressure: 1B</p>
-                 </div>
-                 <div className="widget quick-chat">
-                     <h4>Quick Chat</h4>
-                      {/* Placeholder content */}
-                     <div>Chat messages here...</div>
-                 </div>
-             </div>
-
-        </div>
-    );
+const cardStyle = {
+  background: '#fff',
+  borderRadius: '18px',
+  boxShadow: '0 2px 16px 0 rgba(60,72,100,.08)',
+  padding: '28px 32px',
+  marginBottom: '24px',
+  border: '1px solid #f0f1f6',
 };
+const sectionTitle = {
+  fontSize: '1.1rem',
+  fontWeight: 700,
+  marginBottom: 18,
+  color: '#222',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+};
+const metricCard = {
+  ...cardStyle,
+  flex: 1,
+  minWidth: 180,
+  marginRight: 24,
+  marginBottom: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  justifyContent: 'center',
+};
+const metricIcon = {
+  fontSize: 28,
+  borderRadius: '50%',
+  padding: 10,
+  marginRight: 12,
+  background: '#f5f7fa',
+  color: '#4f8cff',
+};
+const progressBar = (percent, color) => ({
+  width: percent + '%',
+  height: 8,
+  borderRadius: 6,
+  background: color,
+  transition: 'width 1s',
+});
+const circleChart = (color) => ({
+  width: 80,
+  height: 80,
+  display: 'inline-block',
+});
+const labelStyle = { fontWeight: 500, color: '#555', fontSize: 14 };
+const valueStyle = { fontWeight: 700, fontSize: 28, color: '#222' };
+const trendStyle = (positive) => ({ color: positive ? '#22c55e' : '#ef4444', fontWeight: 600, fontSize: 15, marginLeft: 6 });
 
-export default DashboardOverview; 
+export default function DashboardOverview() {
+  return (
+    <div style={{ background: '#f6f8fb', minHeight: '100vh', padding: '32px 0', height: '100vh', overflow: 'auto' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
+        {/* Header */}
+        <div style={{ marginBottom: 32 }}>
+          <h1 style={{ fontSize: 32, fontWeight: 800, color: '#222', marginBottom: 6 }}>Rental Car Dashboard</h1>
+          <div style={{ color: '#6b7280', fontSize: 16 }}>Monitor your fleet performance and bookings</div>
+        </div>
+        {/* Metrics */}
+        <div style={{ display: 'flex', gap: 24, marginBottom: 32 }}>
+          <div style={metricCard}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+              <span style={metricIcon}><i className="fas fa-car"></i></span>
+              <span style={labelStyle}>Total Bookings</span>
+            </div>
+            <div style={valueStyle}>2,847</div>
+            <div style={{ display: 'flex', alignItems: 'center', marginTop: 4 }}>
+              <span style={trendStyle(true)}>+12%</span>
+            </div>
+          </div>
+          <div style={metricCard}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+              <span style={{ ...metricIcon, color: '#22c55e', background: '#e7fbe9' }}><i className="fas fa-users"></i></span>
+              <span style={labelStyle}>Active Rentals</span>
+            </div>
+            <div style={valueStyle}>1,234</div>
+            <div style={{ display: 'flex', alignItems: 'center', marginTop: 4 }}>
+              <span style={trendStyle(true)}>+8%</span>
+            </div>
+          </div>
+          <div style={metricCard}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+              <span style={{ ...metricIcon, color: '#f59e42', background: '#fff7e6' }}><i className="fas fa-chart-line"></i></span>
+              <span style={labelStyle}>Fleet Utilization</span>
+            </div>
+            <div style={valueStyle}>87%</div>
+            <div style={{ display: 'flex', alignItems: 'center', marginTop: 4 }}>
+              <span style={trendStyle(false)}>-3%</span>
+            </div>
+          </div>
+          <div style={metricCard}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+              <span style={{ ...metricIcon, color: '#a855f7', background: '#f3e8ff' }}><i className="fas fa-dollar-sign"></i></span>
+              <span style={labelStyle}>Revenue</span>
+            </div>
+            <div style={valueStyle}>$45,678</div>
+            <div style={{ display: 'flex', alignItems: 'center', marginTop: 4 }}>
+              <span style={trendStyle(true)}>+15%</span>
+            </div>
+          </div>
+        </div>
+        {/* Booking Locations */}
+        <div style={{ ...cardStyle, marginBottom: 32 }}>
+          <div style={sectionTitle}><i className="fas fa-map-marker-alt"></i> Booking Locations</div>
+          <div style={{ display: 'flex', gap: 32, alignItems: 'stretch' }}>
+            <div style={{ flex: 1, background: '#e8f0fe', borderRadius: 16, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 180 }}>
+              <i className="fas fa-globe-americas" style={{ fontSize: 48, color: '#4f8cff', marginBottom: 12 }}></i>
+              <div style={{ fontWeight: 700, fontSize: 18, color: '#222', marginBottom: 4 }}>Interactive Map</div>
+              <div style={{ color: '#6b7280', fontSize: 15 }}>Booking distribution across cities</div>
+            </div>
+            <div style={{ flex: 1.2, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 18 }}>
+              {[{v:'2.5K',l:'Bookings from New York',p:85,c:'#4f8cff'},{v:'1.8K',l:'Bookings from Los Angeles',p:70,c:'#22c55e'},{v:'1.2K',l:'Bookings from Chicago',p:55,c:'#f59e42'},{v:'950',l:'Bookings from Miami',p:40,c:'#a855f7'}].map((item, idx) => (
+                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ minWidth: 48, fontWeight: 700, color: '#222', fontSize: 16 }}>{item.v}</div>
+                  <div style={{ flex: 1, color: '#6b7280', fontSize: 15 }}>{item.l}</div>
+                  <div style={{ flex: 2, background: '#f0f1f6', borderRadius: 6, height: 8, marginRight: 8 }}>
+                    <div style={progressBar(item.p, item.c)}></div>
+                  </div>
+                  <div style={{ minWidth: 36, textAlign: 'right', fontWeight: 600, color: '#222' }}>{item.p}%</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        {/* Business Metrics */}
+        <div style={{ ...cardStyle, marginBottom: 32 }}>
+          <div style={sectionTitle}>Business Metrics</div>
+          <div style={{ display: 'flex', gap: 48, justifyContent: 'center', alignItems: 'center' }}>
+            {[{v:75,l:'New Customers',c:'#4f8cff'},{v:60,l:'Repeat Bookings',c:'#22c55e'},{v:45,l:'Fleet Available',c:'#f59e42'}].map((item, idx) => (
+              <div key={idx} style={{ textAlign: 'center' }}>
+                <svg style={circleChart(item.c)} viewBox="0 0 36 36">
+                  <circle cx="18" cy="18" r="16" fill="none" stroke="#f0f1f6" strokeWidth="4" />
+                  <circle cx="18" cy="18" r="16" fill="none" stroke={item.c} strokeWidth="4" strokeDasharray={`${item.v},100`} strokeLinecap="round" />
+                  <text x="18" y="22" textAnchor="middle" fontSize="20" fontWeight="bold" fill="#222">{item.v}%</text>
+                </svg>
+                <div style={{ marginTop: 8, color: '#6b7280', fontWeight: 600 }}>{item.l}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* Bottom Widgets */}
+        <div style={{ display: 'flex', gap: 24 }}>
+          {/* Task Management */}
+          <div style={{ ...cardStyle, flex: 1, minWidth: 260 }}>
+            <div style={sectionTitle}><i className="fas fa-tasks"></i> Task Management</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {[
+                {label:'Inspect Vehicle #BMW-2023',p:'high',done:false},
+                {label:'Process Insurance Claim',p:'high',done:false},
+                {label:'Schedule Maintenance for Fleet',p:'medium',done:true},
+                {label:'Update Pricing for Weekend',p:'low',done:false},
+                {label:'Review Customer Feedback',p:'medium',done:true},
+                {label:'Prepare Monthly Report',p:'high',done:false},
+              ].map((item, idx) => (
+                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 10, opacity: item.done ? 0.6 : 1, textDecoration: item.done ? 'line-through' : 'none' }}>
+                  <input type="checkbox" checked={item.done} readOnly style={{ accentColor: '#4f8cff', width: 18, height: 18 }} />
+                  <span style={{ flex: 1, fontSize: 15 }}>{item.label}</span>
+                  <span style={{ padding: '2px 10px', borderRadius: 6, fontWeight: 600, fontSize: 13, background: item.p==='high'?'#fee2e2':item.p==='medium'?'#fef9c3':'#d1fae5', color: item.p==='high'?'#ef4444':item.p==='medium'?'#eab308':'#22c55e' }}>{item.p.charAt(0).toUpperCase()+item.p.slice(1)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* Fleet Status */}
+          <div style={{ ...cardStyle, flex: 1.2, minWidth: 320 }}>
+            <div style={sectionTitle}><i className="fas fa-car"></i> Fleet Status</div>
+            <div style={{ fontWeight: 700, fontSize: 22, color: '#22c55e', marginBottom: 18 }}>$12,450 Today</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 18 }}>
+              {[
+                {name:'BMW X5 2023',date:'Dec 15',status:'Available',price:'$89/day',c:'#22c55e',bg:'#d1fae5'},
+                {name:'Mercedes C-Class',date:'Dec 14',status:'Rented',price:'$75/day',c:'#4f8cff',bg:'#dbeafe'},
+                {name:'Audi A4 2022',date:'Dec 13',status:'Maintenance',price:'$65/day',c:'#f59e42',bg:'#fef9c3'},
+                {name:'Tesla Model 3',date:'Dec 12',status:'Available',price:'$95/day',c:'#22c55e',bg:'#d1fae5'},
+                {name:'Toyota Camry',date:'Dec 11',status:'Rented',price:'$45/day',c:'#4f8cff',bg:'#dbeafe'},
+              ].map((item, idx) => (
+                <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f6f8fb', borderRadius: 8, padding: '10px 14px' }}>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: 15 }}>{item.name}</div>
+                    <div style={{ fontSize: 13, color: '#6b7280' }}>{item.date}</div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <span style={{ display: 'inline-block', background: item.bg, color: item.c, fontWeight: 700, borderRadius: 6, padding: '2px 10px', fontSize: 13, marginBottom: 2 }}>{item.status}</span>
+                    <div style={{ fontWeight: 600, color: '#222', fontSize: 14 }}>{item.price}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button style={{ width: '100%', background: '#4f8cff', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 0', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>View All Vehicles</button>
+          </div>
+          {/* Weather & Quick Actions */}
+          <div style={{ ...cardStyle, flex: 1, minWidth: 260, background: 'linear-gradient(135deg,#e0e7ff 0%,#f0f1f6 100%)' }}>
+            <div style={sectionTitle}><i className="fas fa-sun"></i> Weather & Quick Actions</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 18 }}>
+              <div style={{ fontSize: 32, fontWeight: 700, color: '#4f8cff' }}>72°F</div>
+              <div>
+                <div style={{ fontWeight: 600, color: '#222', fontSize: 15 }}>Partly Cloudy</div>
+                <div style={{ color: '#6b7280', fontSize: 13 }}>Perfect weather for car rentals!</div>
+              </div>
+              <i className="fas fa-cloud-sun" style={{ fontSize: 32, color: '#4f8cff' }}></i>
+            </div>
+            <div style={{ color: '#6b7280', fontSize: 14, marginBottom: 18 }}><i className="fas fa-wind"></i> Wind: 8 mph</div>
+            <div style={{ background: '#fff', borderRadius: 8, padding: 12, marginBottom: 18 }}>
+              <div style={{ fontWeight: 600, color: '#222', fontSize: 15, marginBottom: 6 }}><i className="fas fa-comments"></i> Customer Support</div>
+              <div style={{ color: '#222', fontSize: 14, marginBottom: 4 }}><strong>John D.</strong> Need help with booking extension</div>
+              <div style={{ color: '#222', fontSize: 14 }}><strong>Sarah M.</strong> Thank you for the great service!</div>
+            </div>
+            <button style={{ width: '100%', background: '#222', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 0', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Open Chat Dashboard</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+} 
