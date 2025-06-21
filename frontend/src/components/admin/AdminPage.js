@@ -30,7 +30,7 @@ const AdminPage = ({ user }) => {
 
   const setActiveComponent = (component) => {
     // Preserve the current path while updating the tab parameter
-    navigate(`/admin?tab=${component}`, { replace: true });
+    navigate(`/adminSecret?tab=${component}`, { replace: true });
   };
 
   // Define fetchUsers outside useEffect so it can be called from other functions
