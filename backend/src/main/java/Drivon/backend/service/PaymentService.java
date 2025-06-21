@@ -83,6 +83,9 @@ public class PaymentService {
                 payment.setRentalEndDate(request.getRentalEndDate());
             }
 
+            // Set bookingId
+            payment.setBookingId(request.getBookingId());
+
             // Save to database (dùng hàm dùng chung)
             payment = savePayment(payment);
             logger.info("Created cash payment: {}", payment);
@@ -207,6 +210,7 @@ public class PaymentService {
                                 ? payment.getAdditionalRequirements() + ", "
                                 : "") + "Giảm " + request.getDiscountPercent() + "%");
                     }
+                    payment.setBookingId(request.getBookingId());
                     savePayment(payment);
                     logger.info("Saved PAID PayOS payment: {}", payment);
 

@@ -16,6 +16,7 @@ public class PaymentRequest {
     private String rentalEndDate;
     private String promotionCode;
     private Integer discountPercent;
+    private Integer bookingId;
 
     public void setOrderCode(Object orderCode) {
         if (orderCode instanceof String) {
@@ -117,5 +118,13 @@ public class PaymentRequest {
 
     public void setDiscountPercent(Integer discountPercent) {
         this.discountPercent = discountPercent;
+    }
+
+    public Integer getBookingId() {
+        return bookingId;
+    }
+
+    public void setBookingId(Integer bookingId) {
+        this.bookingId = bookingId;
     }
 }
