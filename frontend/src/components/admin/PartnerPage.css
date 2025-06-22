@@ -238,4 +238,174 @@
 .car-details strong, .partner-details strong {
   color: #333;
   margin-right: 8px;
+}
+
+/* --- Card List Modern Layout for PartnerPage (5 Columns) --- */
+.partner-list {
+  margin-top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.partner-card {
+  margin-bottom: 0;
+  border-radius: 0;
+  box-shadow: none;
+  border-top: 1px solid #e0e0e0;
+  border-bottom: none;
+  display: grid;
+  grid-template-columns: 1.5fr 1.2fr 1.2fr 1fr 120px;
+  align-items: center;
+  background: #fff;
+  padding: 16px 20px;
+  cursor: pointer;
+  min-height: 72px;
+}
+.partner-card:hover {
+  box-shadow: 0 4px 16px rgba(60, 72, 88, 0.16);
+  border: 1.5px solid #1976d2;
+}
+
+.partner-main {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-start;
+  padding-left: 0;
+  margin-left: 0;
+}
+.partner-avatar {
+  margin-left: 0;
+}
+.partner-main > div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding-left: 0;
+  margin-left: 0;
+}
+.partner-name, .partner-id {
+  text-align: left;
+  width: 100%;
+  padding-left: 0;
+  margin-left: 0;
+}
+.partner-name {
+  font-weight: 700;
+  font-size: 16px;
+  color: #222;
+}
+.partner-id {
+  font-size: 13px;
+  color: #888;
+}
+.partner-contact {
+  font-size: 13px;
+  color: #444;
+}
+.partner-contact .icon {
+  margin-right: 5px;
+  color: #1976d2;
+}
+.vehicle-info {
+  font-size: 14px;
+  color: #333;
+}
+.vehicle-name {
+  font-weight: 600;
+  color: #222;
+}
+.vehicle-detail {
+  font-size: 13px;
+  color: #888;
+}
+.pricing-info {
+  font-size: 14px;
+  align-items: flex-start;
+}
+.price {
+  color: #2e7d32;
+  font-weight: 700;
+  font-size: 15px;
+}
+.deposit {
+  font-size: 13px;
+  color: #888;
+}
+.status-col {
+  align-items: center;
+  flex-direction: row;
+  gap: 8px;
+  justify-content: flex-start;
+}
+.status-badge {
+  min-width: 70px;
+  max-width: 100px;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 16px;
+  background: #e6f4ea;
+  color: #1e7e34;
+  font-weight: 600;
+  font-size: 14px;
+  display: inline-block;
+  white-space: nowrap;
+}
+@media (max-width: 1100px) {
+  .partner-card {
+    grid-template-columns: 1.2fr 1fr 1fr 1fr 80px;
+    padding: 10px 6px;
+  }
+  .status-badge {
+    min-width: 60px;
+    font-size: 13px;
+  }
+}
+
+/* --- Select Status Styling for PartnerPage --- */
+.status-col select {
+  border-radius: 16px;
+  padding: 6px 10px;
+  min-width: 80px;
+  max-width: 110px;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  outline: none;
+  border: 1.5px solid #bdbdbd;
+  transition: border 0.2s, background 0.2s, color 0.2s;
+  cursor: pointer;
+}
+.status-col select.status-active,
+.status-col select.status-active:focus {
+  background: #e6f4ea;
+  color: #1e7e34;
+  border-color: #1e7e34;
+}
+.status-col select.status-pending,
+.status-col select.status-pending:focus {
+  background: #e3f2fd;
+  color: #1976d2;
+  border-color: #1976d2;
+}
+.status-col select.status-cancelled,
+.status-col select.status-cancelled:focus {
+  background: #fdecea;
+  color: #b71c1c;
+  border-color: #b71c1c;
+}
+.status-col select.status-expired,
+.status-col select.status-expired:focus {
+  background: #fff3cd;
+  color: #856404;
+  border-color: #856404;
+}
+.status-col select:focus {
+  box-shadow: 0 0 0 2px #1976d233;
+}
+.status-col select option {
+  background: #fff;
+  color: #333;
 } 
