@@ -7,8 +7,12 @@ import Loader from '../others/loader';
 import NotFoundCar from '../others/notFoundCar';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
+import { useCarData } from '../../contexts/CarDataContext';
+
 const RentCar = () => {
   const location = useLocation();
+  const { carsData, loading, error, fetchCarsData } = useCarData();
+  
   const [filters, setFilters] = useState({
     location: '',
     brand: '',
@@ -20,11 +24,6 @@ const RentCar = () => {
   // Thêm state cho price range slider
   const [priceRange, setPriceRange] = useState([0, 5000000]);
   const [search, setSearch] = useState("");
-  const [cars, setCars] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [carContracts, setCarContracts] = useState({});
-  const [reviewStats, setReviewStats] = useState({});
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -48,41 +47,10 @@ const RentCar = () => {
       
       if(locationParam) setSearch(locationParam);
     }
-    fetchCars();
-  }, [location.search]);
-
-  const fetchCars = async () => {
-    try {
-      const response = await axios.get('http://localhost:8080/api/cars/active-lease');
-      const carsData = response.data;
-      setCars(carsData);
-      
-      const contracts = {};
-      const stats = {};
-      for (const car of carsData) {
-        try {
-          const contractResponse = await axios.get(`http://localhost:8080/api/contracts/by-car/${car.licensePlate}`);
-          contracts[car.licensePlate] = contractResponse.data;
-        } catch (err) {
-          console.error(`Error fetching contract for car ${car.licensePlate}:`, err);
-        }
-
-        try {
-            const reviewResponse = await axios.get(`http://localhost:8080/api/reviews/car/${car.licensePlate}`);
-            stats[car.licensePlate] = reviewResponse.data;
-        } catch (err) {
-            console.error(`Error fetching reviews for car ${car.licensePlate}:`, err);
-            stats[car.licensePlate] = { averageRating: 0, totalReviews: 0 };
-        }
-      }
-      setCarContracts(contracts);
-      setReviewStats(stats);
-      setLoading(false);
-    } catch (err) {
-      setError('Failed to fetch cars');
-      setLoading(false);
-    }
-  };
+    
+    // Fetch cars data using context
+    fetchCarsData();
+  }, [location.search, fetchCarsData]);
 
   const handleChange = (e) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
@@ -109,7 +77,7 @@ const RentCar = () => {
     }
   }
 
-  const filteredCars = cars.filter(car => {
+  const filteredCars = carsData.filter(car => {
     if (car.status !== 'available') return false;
     const matchesSearch = car.brand.toLowerCase().includes(search.toLowerCase()) ||
                          car.model.toLowerCase().includes(search.toLowerCase()) ||
@@ -124,7 +92,7 @@ const RentCar = () => {
     const matchesFuel = !filters.fuel || car.fuelType === filters.fuel;
     const matchesType = !filters.type || (car.type && car.type.toLowerCase() === filters.type.toLowerCase());
     
-    const price = carContracts[car.licensePlate]?.pricePerDay;
+    const price = car.contract?.pricePerDay;
     const matchesPrice = price && price >= priceRange[0] && price <= priceRange[1];
 
     return matchesSearch && matchesBrand && matchesSeat && matchesFuel && matchesType && matchesPrice;
@@ -231,16 +199,16 @@ const RentCar = () => {
                       <p className="spec-item"><FaMapMarkerAlt /> {car.location}</p>
                       <p className="spec-item"><FaChair /> {car.seats} chỗ</p>
                   </div>
-                  {/* Tải dữ liệu rating và số chuyến từ database */}
+                  {/* Sử dụng dữ liệu từ context thay vì gọi API riêng */}
                   <div className="rating-trips">
-                      <span className="rating-stars"><FaStar /> {reviewStats[car.licensePlate]?.averageRating.toFixed(1) || 'Mới'}</span>
-                      <span className="total-trips"><FaCarSide /> {reviewStats[car.licensePlate]?.totalReviews || 0} chuyến</span>
+                      <span className="rating-stars"><FaStar /> {car.reviewStats?.averageRating?.toFixed(1) || 'Mới'}</span>
+                      <span className="total-trips"><FaCarSide /> {car.reviewStats?.totalReviews || 0} chuyến</span>
                   </div>
                       
                   <div className="car-price">
                       <span className="current-price">
-                        {carContracts[car.licensePlate]?.pricePerDay 
-                          ? carContracts[car.licensePlate].pricePerDay.toLocaleString('vi-VN') + ' VNĐ/ngày'
+                        {car.contract?.pricePerDay 
+                          ? car.contract.pricePerDay.toLocaleString('vi-VN') + ' VNĐ/ngày'
                           : 'Liên hệ'}
                       </span>
                   </div>

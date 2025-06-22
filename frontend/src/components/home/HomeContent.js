@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import '../css/HomeContent.css';
 import { useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Form, Button } from 'react-bootstrap';
-import api from '../../api/config';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
+import { useCarData } from '../../contexts/CarDataContext';
 
 const HomeContent = () => {
   const [form, setForm] = useState({
@@ -14,21 +14,27 @@ const HomeContent = () => {
   });
   const [locations, setLocations] = useState([]);
   const navigate = useNavigate();
+  const { carsData, fetchCarsData } = useCarData();
 
   useEffect(() => {
-    // Fetch all cars and extract unique locations
-    const fetchLocations = async () => {
+    // Fetch cars data using context
+    const loadData = async () => {
       try {
-        const response = await api.get('/api/cars/active-lease');
-        const cars = response.data;
-        const uniqueLocations = [...new Set(cars.map(car => car.location).filter(Boolean))];
-        setLocations(uniqueLocations);
+        await fetchCarsData();
       } catch (error) {
-        setLocations([]);
+        console.error('Error loading cars data:', error);
       }
     };
-    fetchLocations();
-  }, []);
+    loadData();
+  }, [fetchCarsData]);
+
+  useEffect(() => {
+    // Extract unique locations from cars data
+    if (carsData.length > 0) {
+      const uniqueLocations = [...new Set(carsData.map(car => car.location).filter(Boolean))];
+      setLocations(uniqueLocations);
+    }
+  }, [carsData]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });

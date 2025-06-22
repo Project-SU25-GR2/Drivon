@@ -6,7 +6,7 @@
   width: 100%;
   display: flex;
   align-items: center;
-  background-image: url('https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=1500&q=80');
+  background-image: url('../../../public/images/bg2.jpg');
   background-size: cover;
   background-position: center;
   overflow: hidden;
@@ -138,13 +138,14 @@
 .booking-card {
   position: relative;
   z-index: 2;
-  background: rgba(255, 255, 255, 0.95);
+  /* background: rgba(255, 255, 255, 0.95); */
+  background: rgba(255, 255, 255, 0.1) !important;
   border: none;
   border-radius: 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(5px);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  margin-top: 50px;
+  margin-top: 180px;
 }
 
 .booking-card:hover {
@@ -153,18 +154,36 @@
 }
 
 .booking-card h2 {
-  color: #1a237e;
+  color: #ffffff;
   font-weight: 700;
   font-size: 1.8rem;
   margin-bottom: 2rem;
   text-align: center;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .form-label {
-  color: #333;
+  color: #ffffff;
   font-weight: 500;
   font-size: 1rem;
   margin-bottom: 0.5rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Ensure all text in booking card is white */
+.booking-card .form-label,
+.booking-card label,
+.booking-card span,
+.booking-card div {
+  color: #ffffff !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Specific styling for price range text */
+.booking-card .d-flex.justify-content-between span {
+  color: #ffffff !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  font-weight: 500;
 }
 
 .form-control, .form-select {
