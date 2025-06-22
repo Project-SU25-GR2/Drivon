@@ -27,6 +27,8 @@ import CarRental404 from "./components/others/404";
 import TestNotification from "./components/others/TestNotification";
 import DebugAuth from "./components/others/DebugAuth";
 import { CarDataProvider } from "./contexts/CarDataContext";
+import { RentalHistoryProvider } from "./contexts/RentalHistoryContext";
+import { CarManagementProvider } from "./contexts/CarManagementContext";
 // import CarRental404 from "./components/others/404";
 
 function App() {
@@ -66,255 +68,259 @@ function App() {
   return (
     <GoogleOAuthProvider clientId="966794015874-5g0iktfn8junh19ctfuoua6bh9m815er.apps.googleusercontent.com">
       <CarDataProvider>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <MainLayout user={user} handleLogout={handleLogout}>
-                <HomeContent />
-              </MainLayout>
-            }
-          />
+        <RentalHistoryProvider>
+          <CarManagementProvider>
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <MainLayout user={user} handleLogout={handleLogout}>
+                    <HomeContent />
+                  </MainLayout>
+                }
+              />
 
-          <Route
-            path="/auth"
-            element={
-              user ? (
-                <Navigate to="/" replace />
-              ) : (
-                <MainLayout user={user} handleLogout={handleLogout}>
-                  <HomeContent />
-                </MainLayout>
-              )
-            }
-          />
+              <Route
+                path="/auth"
+                element={
+                  user ? (
+                    <Navigate to="/" replace />
+                  ) : (
+                    <MainLayout user={user} handleLogout={handleLogout}>
+                      <HomeContent />
+                    </MainLayout>
+                  )
+                }
+              />
 
-          <Route
-            path="/login"
-            element={
-              user ? (
-                <Navigate to="/" replace />
-              ) : (
-                <MainLayout user={user} handleLogout={handleLogout}>
-                  <Login onLoginSuccess={handleLoginSuccess} />
-                </MainLayout>
-              )
-            }
-          />
+              <Route
+                path="/login"
+                element={
+                  user ? (
+                    <Navigate to="/" replace />
+                  ) : (
+                    <MainLayout user={user} handleLogout={handleLogout}>
+                      <Login onLoginSuccess={handleLoginSuccess} />
+                    </MainLayout>
+                  )
+                }
+              />
 
-          <Route
-            path="/signup"
-            element={
-              user ? (
-                <Navigate to="/" replace />
-              ) : (
-                <MainLayout user={user} handleLogout={handleLogout}>
-                  <Signup onSignupSuccess={handleSignupSuccess} />
-                </MainLayout>
-              )
-            }
-          />
+              <Route
+                path="/signup"
+                element={
+                  user ? (
+                    <Navigate to="/" replace />
+                  ) : (
+                    <MainLayout user={user} handleLogout={handleLogout}>
+                      <Signup onSignupSuccess={handleSignupSuccess} />
+                    </MainLayout>
+                  )
+                }
+              />
 
-          <Route
-            path="/reset-password"
-            element={
-              user ? (
-                <Navigate to="/" replace />
-              ) : (
-                <MainLayout user={user} handleLogout={handleLogout}>
-                  <ResetPasswordPage />
-                </MainLayout>
-              )
-            }
-          />
+              <Route
+                path="/reset-password"
+                element={
+                  user ? (
+                    <Navigate to="/" replace />
+                  ) : (
+                    <MainLayout user={user} handleLogout={handleLogout}>
+                      <ResetPasswordPage />
+                    </MainLayout>
+                  )
+                }
+              />
 
-          <Route
-            path="/payment"
-            element={
-              user ? (
-                <MainLayout user={user} handleLogout={handleLogout}>
-                  <PaymentForm />
-                </MainLayout>
-              ) : (
-                <Navigate to="/auth" replace />
-              )
-            }
-          />
+              <Route
+                path="/payment"
+                element={
+                  user ? (
+                    <MainLayout user={user} handleLogout={handleLogout}>
+                      <PaymentForm />
+                    </MainLayout>
+                  ) : (
+                    <Navigate to="/auth" replace />
+                  )
+                }
+              />
 
-          <Route
-            path="/profile"
-            element={
-              user ? (
-                <MainLayout user={user} handleLogout={handleLogout}>
-                  <ProfilePage user={user} onUpdateUser={handleLoginSuccess} />
-                </MainLayout>
-              ) : (
-                <Navigate to="/auth" replace />
-              )
-            }
-          />
+              <Route
+                path="/profile"
+                element={
+                  user ? (
+                    <MainLayout user={user} handleLogout={handleLogout}>
+                      <ProfilePage user={user} onUpdateUser={handleLoginSuccess} />
+                    </MainLayout>
+                  ) : (
+                    <Navigate to="/auth" replace />
+                  )
+                }
+              />
 
-          <Route
-            path="/change-password"
-            element={
-              user ? (
-                <MainLayout user={user} handleLogout={handleLogout}>
-                  <ChangePasswordPage />
-                </MainLayout>
-              ) : (
-                <Navigate to="/auth" replace />
-              )
-            }
-          />
+              <Route
+                path="/change-password"
+                element={
+                  user ? (
+                    <MainLayout user={user} handleLogout={handleLogout}>
+                      <ChangePasswordPage />
+                    </MainLayout>
+                  ) : (
+                    <Navigate to="/auth" replace />
+                  )
+                }
+              />
 
-          <Route
-            path="/change-avatar"
-            element={
-              user ? (
-                <MainLayout user={user} handleLogout={handleLogout}>
-                  <ChangeAvatarPage />
-                </MainLayout>
-              ) : (
-                <Navigate to="/auth" replace />
-              )
-            }
-          />
+              <Route
+                path="/change-avatar"
+                element={
+                  user ? (
+                    <MainLayout user={user} handleLogout={handleLogout}>
+                      <ChangeAvatarPage />
+                    </MainLayout>
+                  ) : (
+                    <Navigate to="/auth" replace />
+                  )
+                }
+              />
 
-          <Route
-            path="/forgot-password"
-            element={
-              <MainLayout user={user} handleLogout={handleLogout}>
-                <ForgotPasswordPage />
-              </MainLayout>
-            }
-          />
+              <Route
+                path="/forgot-password"
+                element={
+                  <MainLayout user={user} handleLogout={handleLogout}>
+                    <ForgotPasswordPage />
+                  </MainLayout>
+                }
+              />
 
-          <Route
-            path="/adminSecret"
-            element={
-              <MainLayout user={user} handleLogout={handleLogout}>
-                <AdminPage user={user} />
-              </MainLayout>
-            }
-          />
+              <Route
+                path="/adminSecret"
+                element={
+                  <MainLayout user={user} handleLogout={handleLogout}>
+                    <AdminPage user={user} />
+                  </MainLayout>
+                }
+              />
 
-          <Route
-            path="/contracts"
-            element={
-              user ? (
-                <MainLayout user={user} handleLogout={handleLogout}>
-                  <ContractForm />
-                </MainLayout>
-              ) : (
-                <Navigate to="/auth" replace />
-              )
-            }
-          />
+              <Route
+                path="/contracts"
+                element={
+                  user ? (
+                    <MainLayout user={user} handleLogout={handleLogout}>
+                      <ContractForm />
+                    </MainLayout>
+                  ) : (
+                    <Navigate to="/auth" replace />
+                  )
+                }
+              />
 
-          <Route
-            path="/contracts/lease"
-            element={
-              user ? (
-                <MainLayout user={user} handleLogout={handleLogout}>
-                  <CarLeaseContractForm user={user} />
-                </MainLayout>
-              ) : (
-                <Navigate to="/auth" replace />
-              )
-            }
-          />
+              <Route
+                path="/contracts/lease"
+                element={
+                  user ? (
+                    <MainLayout user={user} handleLogout={handleLogout}>
+                      <CarLeaseContractForm user={user} />
+                    </MainLayout>
+                  ) : (
+                    <Navigate to="/auth" replace />
+                  )
+                }
+              />
 
-          <Route
-            path="/rent-your-car"
-            element={
-              <MainLayout user={user} handleLogout={handleLogout}>
-                <RentYourCarForm />
-              </MainLayout>
-            }
-          />
+              <Route
+                path="/rent-your-car"
+                element={
+                  <MainLayout user={user} handleLogout={handleLogout}>
+                    <RentYourCarForm />
+                  </MainLayout>
+                }
+              />
 
-          <Route
-            path="/rent-car"
-            element={
-              <MainLayout user={user} handleLogout={handleLogout}>
-                <RentCar />
-              </MainLayout>
-            }
-          />
-          <Route
-            path="/cars/:licensePlate"
-            element={
-              <MainLayout user={user} handleLogout={handleLogout}>
-                <ViewCarDetail />
-              </MainLayout>
-            }
-          />
-          <Route
-            path="/owner"
-            element={
-              <MainLayout user={user} handleLogout={handleLogout}>
-                <ManagerOwnerPage user={user} />
-              </MainLayout>
-            }
-          />
-          <Route
-            path="/rental-success"
-            element={
-              <MainLayout user={user} handleLogout={handleLogout}>
-                <RentalSuccess />
-              </MainLayout>
-            }
-          />
-          <Route
-            path="/payment-success"
-            element={
-              <MainLayout user={user} handleLogout={handleLogout}>
-                <RentalSuccess />
-              </MainLayout>
-            }
-          />
-          <Route path="/my-rentals" element={<MyRentals />} />
-          <Route
-            path="/404"
-            element={
-              <MainLayout user={user} handleLogout={handleLogout}>
-                <CarRental404 />
-              </MainLayout>
-            }
-          />
-          <Route
-            path="/messages"
-            element={
-              <MainLayout user={user} handleLogout={handleLogout}>
-                <Messages />
-              </MainLayout>
-            }
-          />
-          <Route
-            path="/test-notification"
-            element={
-              <MainLayout user={user} handleLogout={handleLogout}>
-                <TestNotification />
-              </MainLayout>
-            }
-          />
-          <Route
-            path="/debug-auth"
-            element={
-              <MainLayout user={user} handleLogout={handleLogout}>
-                <DebugAuth />
-              </MainLayout>
-            }
-          />
-          <Route
-            path="*"
-            element={
-              <MainLayout user={user} handleLogout={handleLogout}>
-                <CarRental404 />
-              </MainLayout>
-            }
-          />
-        </Routes>
+              <Route
+                path="/rent-car"
+                element={
+                  <MainLayout user={user} handleLogout={handleLogout}>
+                    <RentCar />
+                  </MainLayout>
+                }
+              />
+              <Route
+                path="/cars/:licensePlate"
+                element={
+                  <MainLayout user={user} handleLogout={handleLogout}>
+                    <ViewCarDetail />
+                  </MainLayout>
+                }
+              />
+              <Route
+                path="/owner"
+                element={
+                  <MainLayout user={user} handleLogout={handleLogout}>
+                    <ManagerOwnerPage user={user} />
+                  </MainLayout>
+                }
+              />
+              <Route
+                path="/rental-success"
+                element={
+                  <MainLayout user={user} handleLogout={handleLogout}>
+                    <RentalSuccess />
+                  </MainLayout>
+                }
+              />
+              <Route
+                path="/payment-success"
+                element={
+                  <MainLayout user={user} handleLogout={handleLogout}>
+                    <RentalSuccess />
+                  </MainLayout>
+                }
+              />
+              <Route path="/my-rentals" element={<MyRentals />} />
+              <Route
+                path="/404"
+                element={
+                  <MainLayout user={user} handleLogout={handleLogout}>
+                    <CarRental404 />
+                  </MainLayout>
+                }
+              />
+              <Route
+                path="/messages"
+                element={
+                  <MainLayout user={user} handleLogout={handleLogout}>
+                    <Messages />
+                  </MainLayout>
+                }
+              />
+              <Route
+                path="/test-notification"
+                element={
+                  <MainLayout user={user} handleLogout={handleLogout}>
+                    <TestNotification />
+                  </MainLayout>
+                }
+              />
+              <Route
+                path="/debug-auth"
+                element={
+                  <MainLayout user={user} handleLogout={handleLogout}>
+                    <DebugAuth />
+                  </MainLayout>
+                }
+              />
+              <Route
+                path="*"
+                element={
+                  <MainLayout user={user} handleLogout={handleLogout}>
+                    <CarRental404 />
+                  </MainLayout>
+                }
+              />
+            </Routes>
+          </CarManagementProvider>
+        </RentalHistoryProvider>
       </CarDataProvider>
     </GoogleOAuthProvider>
   );

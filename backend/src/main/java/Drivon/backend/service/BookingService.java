@@ -63,6 +63,20 @@ public class BookingService {
                 try {
                         Booking.BookingStatus newStatus = Booking.BookingStatus.valueOf(status.toLowerCase());
                         booking.setStatus(newStatus);
+                        
+                        // Cập nhật trạng thái xe dựa trên trạng thái booking
+                        Car car = booking.getCar();
+                        if (car != null) {
+                                if (newStatus == Booking.BookingStatus.ongoing || newStatus == Booking.BookingStatus.pending) {
+                                        car.setStatus("rented");
+                                        log.info("Updated car status to 'rented' for carId: {}", car.getLicensePlate());
+                                } else {
+                                        car.setStatus("available");
+                                        log.info("Updated car status to 'available' for carId: {}", car.getLicensePlate());
+                                }
+                                carRepository.save(car);
+                        }
+                        
                 } catch (IllegalArgumentException e) {
                         throw new RuntimeException("Invalid status: " + status);
                 }

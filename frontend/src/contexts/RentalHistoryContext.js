@@ -1,0 +1,114 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
+
+const RentalHistoryContext = createContext();
+
+export const useRentalHistory = () => {
+  const context = useContext(RentalHistoryContext);
+  if (!context) {
+    throw new Error('useRentalHistory must be used within a RentalHistoryProvider');
+  }
+  return context;
+};
+
+export const RentalHistoryProvider = ({ children }) => {
+  const [rentalsData, setRentalsData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [lastFetchTime, setLastFetchTime] = useState(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Cache timeout: 5 phút
+  const CACHE_TIMEOUT = 5 * 60 * 1000;
+
+  const shouldRefetch = () => {
+    if (!lastFetchTime) return true;
+    if (!isInitialized) return true;
+    return Date.now() - lastFetchTime > CACHE_TIMEOUT;
+  };
+
+  const fetchRentalsData = async (userId, forceRefresh = false) => {
+    if (!userId) {
+      setError('User ID is required');
+      return [];
+    }
+
+    if (!forceRefresh && !shouldRefetch()) {
+      return rentalsData;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await axios.get(`http://localhost:8080/api/bookings/owner/${userId}`);
+      const data = response.data;
+      
+      setRentalsData(data);
+      setLastFetchTime(Date.now());
+      setIsInitialized(true);
+      setLoading(false);
+      
+      return data;
+    } catch (err) {
+      setError('Failed to fetch rentals data');
+      setLoading(false);
+      throw err;
+    }
+  };
+
+  const refreshRentalsData = (userId) => {
+    return fetchRentalsData(userId, true);
+  };
+
+  const updateRentalStatus = async (rentalId, newStatus) => {
+    try {
+      await axios.put(
+        `http://localhost:8080/api/bookings/status/${rentalId}`,
+        { status: newStatus },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      
+      // Update local state
+      setRentalsData(prev => 
+        prev.map(rental => 
+          rental.id === rentalId 
+            ? { ...rental, status: newStatus }
+            : rental
+        )
+      );
+      
+      return true;
+    } catch (err) {
+      setError('Failed to update rental status');
+      throw err;
+    }
+  };
+
+  const getRentalsByFilter = (filterFn) => {
+    return rentalsData.filter(filterFn);
+  };
+
+  const value = {
+    rentalsData,
+    loading,
+    error,
+    lastFetchTime,
+    isInitialized,
+    fetchRentalsData,
+    refreshRentalsData,
+    updateRentalStatus,
+    getRentalsByFilter,
+    shouldRefetch
+  };
+
+  return (
+    <RentalHistoryContext.Provider value={value}>
+      {children}
+    </RentalHistoryContext.Provider>
+  );
+}; 

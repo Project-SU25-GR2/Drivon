@@ -42,7 +42,7 @@ CREATE TABLE cars (
     model VARCHAR(100),
     year INT,
     seats INT,
-    status ENUM('available', 'unavailable', 'hidden') DEFAULT 'available',
+    status ENUM('available', 'unavailable', 'hidden', 'rented') DEFAULT 'available',
     type ENUM('suv', 'sedan', 'mpv', 'hatchback', 'pickup'),
     transmission ENUM('manual', 'automatic'),
     fuel_type ENUM('gasoline', 'diesel', 'electric', 'hybrid'),

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import styles from "./RentalHistoryPage.module.css";
+import { useRentalHistory } from "../../contexts/RentalHistoryContext";
 
 const statusOptions = [
   { value: "pending", label: "Pending" },
@@ -11,34 +11,23 @@ const statusOptions = [
 ];
 
 const RentalHistoryPage = () => {
-  const [rentals, setRentals] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { rentalsData, loading, error, fetchRentalsData, updateRentalStatus } = useRentalHistory();
   const [statusFilter, setStatusFilter] = useState("");
 
   useEffect(() => {
-    const fetchRentals = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const user = JSON.parse(localStorage.getItem("user"));
-        if (!user || !user.userId) {
-          setError("Không tìm thấy thông tin người dùng.");
-          setLoading(false);
-          return;
-        }
-        const response = await axios.get(
-          `http://localhost:8080/api/bookings/owner/${user.userId}`
-        );
-        setRentals(response.data);
-      } catch (err) {
-        setError("Lỗi khi tải dữ liệu lịch sử thuê xe.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchRentals();
-  }, []);
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user && user.userId) {
+      fetchRentalsData(user.userId);
+    }
+  }, [fetchRentalsData]);
+
+  const handleStatusChange = async (rentalId, newStatus) => {
+    try {
+      await updateRentalStatus(rentalId, newStatus);
+    } catch (err) {
+      alert("Cập nhật trạng thái thất bại!");
+    }
+  };
 
   return (
     <div className={styles.mainContent}>
@@ -85,7 +74,7 @@ const RentalHistoryPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {rentals
+                {rentalsData
                   .filter(
                     (rental) =>
                       !statusFilter ||
@@ -112,29 +101,7 @@ const RentalHistoryPage = () => {
                             ?.toLowerCase()
                             .replace(" ", "-")}`}
                           value={rental.status}
-                          onChange={async (e) => {
-                            const newStatus = e.target.value;
-                            try {
-                              await axios.put(
-                                `http://localhost:8080/api/bookings/status/${rental.id}`,
-                                { status: newStatus },
-                                {
-                                  headers: {
-                                    "Content-Type": "application/json",
-                                  },
-                                }
-                              );
-                              setRentals((prev) =>
-                                prev.map((item) =>
-                                  item.id === rental.id
-                                    ? { ...item, status: newStatus }
-                                    : item
-                                )
-                              );
-                            } catch (err) {
-                              alert("Cập nhật trạng thái thất bại!");
-                            }
-                          }}
+                          onChange={(e) => handleStatusChange(rental.id, e.target.value)}
                         >
                           {statusOptions.map((opt) => (
                             <option key={opt.value} value={opt.value}>

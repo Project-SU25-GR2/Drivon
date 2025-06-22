@@ -1,55 +1,26 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import EditCarForm from "./EditCarForm";
 import AddCarForm from "./AddCarForm";
 import "./CarManagementPage.css";
+import { useCarManagement } from "../../contexts/CarManagementContext";
 
 const CarManagementPage = ({ user }) => {
-  const [cars, setCars] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { carsData, loading, error, fetchCarsData, deleteCar, updateCarStatus, addCar, updateCar } = useCarManagement();
   const [isEditing, setIsEditing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [currentCarToEdit, setCurrentCarToEdit] = useState(null);
 
   useEffect(() => {
-    const fetchCars = async () => {
-      try {
-        // Fetch cars for the current owner
-        const response = await axios.get(
-          `http://localhost:8080/api/cars/owner/${user.userId}`
-        );
-        console.log("API Response:", response.data);
-        console.log("User ID:", user.userId);
-
-        // Combine mainImage and otherImages into a single images array for display
-        const carsWithCombinedImages = response.data.map((car) => ({
-          ...car,
-          images: car.mainImage
-            ? [car.mainImage, ...(car.otherImages || [])]
-            : car.otherImages || [],
-        }));
-        setCars(carsWithCombinedImages);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching cars:", error);
-        setError("Failed to load cars. Please try again later.");
-        setLoading(false);
-      }
-    };
-
     if (user && user.userId) {
-      fetchCars();
+      fetchCarsData(user.userId);
     }
-  }, [user]);
+  }, [user, fetchCarsData]);
 
   const handleDeleteCar = async (licensePlate) => {
     if (window.confirm("Are you sure you want to delete this car?")) {
       try {
-        await axios.delete(`http://localhost:8080/api/cars/${licensePlate}`);
-        setCars(cars.filter((car) => car.licensePlate !== licensePlate));
+        await deleteCar(licensePlate);
       } catch (error) {
-        console.error("Error deleting car:", error);
         alert("Failed to delete car. Please try again.");
       }
     }
@@ -57,21 +28,8 @@ const CarManagementPage = ({ user }) => {
 
   const handleStatusChange = async (licensePlate, newStatus) => {
     try {
-      await axios.patch(
-        `http://localhost:8080/api/cars/${licensePlate}/status`,
-        {
-          status: newStatus,
-        }
-      );
-      setCars(
-        cars.map((car) =>
-          car.licensePlate === licensePlate
-            ? { ...car, status: newStatus }
-            : car
-        )
-      );
+      await updateCarStatus(licensePlate, newStatus);
     } catch (error) {
-      console.error("Error updating car status:", error);
       alert("Failed to update car status. Please try again.");
     }
   };
@@ -87,21 +45,7 @@ const CarManagementPage = ({ user }) => {
       JSON.stringify(updatedCar, null, 2)
     );
 
-    // Combine mainImage and otherImages into a single images array for the updated car
-    const updatedCarWithImages = {
-      ...updatedCar,
-      images: updatedCar.mainImage
-        ? [updatedCar.mainImage, ...(updatedCar.otherImages || [])]
-        : updatedCar.otherImages || [],
-    };
-
-    setCars(
-      cars.map((car) =>
-        car.licensePlate === updatedCarWithImages.licensePlate
-          ? updatedCarWithImages
-          : car
-      )
-    );
+    updateCar(updatedCar);
     setIsEditing(false);
     setCurrentCarToEdit(null);
   };
@@ -112,17 +56,8 @@ const CarManagementPage = ({ user }) => {
   };
 
   const handleAddNewCar = (newCar) => {
-    // Add the new car to the list with PENDING status
-    setCars([
-      ...cars,
-      {
-        ...newCar,
-        images: newCar.mainImage
-          ? [newCar.mainImage, ...(newCar.otherImages || [])]
-          : newCar.otherImages || [],
-      },
-    ]);
-    setIsAdding(false); // Close the add form
+    addCar(newCar);
+    setIsAdding(false);
   };
 
   const handleCloseAddModal = () => {
@@ -147,8 +82,8 @@ const CarManagementPage = ({ user }) => {
       </div>
 
       <div className="cars-grid">
-        {console.log("Rendering cars:", cars)}
-        {cars.map((car) => {
+        {console.log("Rendering cars:", carsData)}
+        {carsData.map((car) => {
           console.log("Car object before rendering image:", car);
           return (
             <div key={car.licensePlate} className="car-card">
@@ -220,7 +155,7 @@ const CarManagementPage = ({ user }) => {
         })}
       </div>
 
-      {cars.length === 0 && (
+      {carsData.length === 0 && (
         <div className="no-cars">
           <p>You don't have any approved cars yet.</p>
           <p>Register your car and wait for admin approval to start renting.</p>
