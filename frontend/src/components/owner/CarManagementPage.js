@@ -5,7 +5,16 @@ import "./CarManagementPage.css";
 import { useCarManagement } from "../../contexts/CarManagementContext";
 
 const CarManagementPage = ({ user }) => {
-  const { carsData, loading, error, fetchCarsData, deleteCar, updateCarStatus, addCar, updateCar } = useCarManagement();
+  const {
+    carsData,
+    loading,
+    error,
+    fetchCarsData,
+    deleteCar,
+    updateCarStatus,
+    addCar,
+    updateCar,
+  } = useCarManagement();
   const [isEditing, setIsEditing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [currentCarToEdit, setCurrentCarToEdit] = useState(null);
@@ -109,31 +118,50 @@ const CarManagementPage = ({ user }) => {
                 <h3>
                   {car.brand} {car.model}
                 </h3>
-                <div className="car-details">
-                  <p className="license-plate">
-                    <i className="fas fa-car"></i> License: {car.licensePlate}
-                  </p>
-                  <p className="year">
-                    <i className="fas fa-calendar"></i> Year: {car.year}
-                  </p>
-                  <p className="type">
-                    <i className="fas fa-tag"></i> Type: {car.type}
-                  </p>
-                  <p className="price">
-                    <i className="fas fa-dollar-sign"></i> Price: $
-                    {car.pricePerDay}/day
-                  </p>
-                  <p className="location">
-                    <i className="fas fa-map-marker-alt"></i> Location:{" "}
-                    {car.location}
-                  </p>
-                  <p className="seats">
-                    <i className="fas fa-chair"></i> Seats: {car.seats}
-                  </p>
-                  <p className="transmission">
-                    <i className="fas fa-cog"></i> Transmission:{" "}
-                    {car.transmission}
-                  </p>
+                <p className="car-desc">Premium SUV Experience</p>
+                <div className="car-attributes-row">
+                  <div className="car-attribute-box">
+                    <i className="fas fa-car"></i>
+                    <div>
+                      <div className="attr-title">License</div>
+                      <div className="attr-value">{car.licensePlate}</div>
+                    </div>
+                  </div>
+                  <div className="car-attribute-box">
+                    <i className="fas fa-calendar"></i>
+                    <div>
+                      <div className="attr-title">Year</div>
+                      <div className="attr-value">{car.year}</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="car-attributes-row">
+                  <div className="car-attribute-box">
+                    <i className="fas fa-user-friends"></i>
+                    <div>
+                      <div className="attr-title">Seats</div>
+                      <div className="attr-value">{car.seats} People</div>
+                    </div>
+                  </div>
+                  <div className="car-attribute-box">
+                    <i className="fas fa-cogs"></i>
+                    <div>
+                      <div className="attr-title">Transmission</div>
+                      <div className="attr-value">{car.transmission}</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="car-location-box">
+                  <i className="fas fa-map-marker-alt"></i>
+                  <span>{car.location}</span>
+                </div>
+                <div className="car-price-box">
+                  <i className="fas fa-dollar-sign"></i>
+                  <span>
+                    {car.pricePerDay
+                      ? `$${car.pricePerDay}/day`
+                      : "Contact for pricing"}
+                  </span>
                 </div>
               </div>
               <div className="car-actions">
