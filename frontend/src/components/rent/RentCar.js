@@ -24,6 +24,8 @@ const RentCar = () => {
   // Thêm state cho price range slider
   const [priceRange, setPriceRange] = useState([0, 5000000]);
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const carsPerPage = 12;
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -98,6 +100,17 @@ const RentCar = () => {
     return matchesSearch && matchesBrand && matchesSeat && matchesFuel && matchesType && matchesPrice;
   });
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredCars.length / carsPerPage);
+  const paginatedCars = filteredCars.slice((currentPage - 1) * carsPerPage, currentPage * carsPerPage);
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   if (loading) return <div className="loading"><Loader /></div>;
   if (error) return <div className="error">{error}</div>;
 
@@ -168,54 +181,70 @@ const RentCar = () => {
         {filteredCars.length === 0 ? (
           <NotFoundCar />
         ) : (
-          <div className="car-grid">
-            {filteredCars.map((car) => (
-              <Link to={`/cars/${car.licensePlate}`} key={car.licensePlate} className="car-card" style={{ textDecoration: 'none', color: 'inherit' }}>
-                <div className="car-image-container">
-                  {car.mainImage ? (
-                    <img 
-                      src={car.mainImage} 
-                      alt={`${car.brand} ${car.model}`} 
-                      className="car-image"
-                    />
-                  ) : (
-                    <div className="no-image">No Image Available</div>
-                  )}
-                </div>
+          <>
+            <div className="car-grid">
+              {paginatedCars.map((car) => (
+                <Link to={`/cars/${car.licensePlate}`} key={car.licensePlate} className="car-card" style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <div className="car-image-container">
+                    {car.mainImage ? (
+                      <img 
+                        src={car.mainImage} 
+                        alt={`${car.brand} ${car.model}`} 
+                        className="car-image"
+                      />
+                    ) : (
+                      <div className="no-image">No Image Available</div>
+                    )}
+                  </div>
 
-                <div className="car-info">
-                  <h3 className="car-name">{car.brand} {car.model} {car.year}</h3>
-                  <div className="car-specs-grid">
-                      <p className="spec-item"><FaCog /> {car.transmission === 'automatic' ? 'Số tự động' : 'Số sàn'}</p>
-                      <p className="spec-item"><FaGasPump /> {
-                        car.fuelType === 'gasoline' ? 'Xăng' :
-                        car.fuelType === 'diesel' ? 'Dầu diesel' :
-                        car.fuelType === 'electric' ? 'Điện' :
-                        car.fuelType === 'hybrid' ? 'Hybrid' :
-                        car.fuelType
-                      }</p>
-                      <p className="spec-item"><FaRoad /> {car.fuelConsumption}l/100km</p>
-                      <p className="spec-item"><FaWrench /> Sản xuất {car.year}</p>
-                      <p className="spec-item"><FaMapMarkerAlt /> {car.location}</p>
-                      <p className="spec-item"><FaChair /> {car.seats} chỗ</p>
+                  <div className="car-info">
+                    <h3 className="car-name">{car.brand} {car.model} {car.year}</h3>
+                    <div className="car-specs-grid">
+                        <p className="spec-item"><FaCog /> {car.transmission === 'automatic' ? 'Số tự động' : 'Số sàn'}</p>
+                        <p className="spec-item"><FaGasPump /> {
+                          car.fuelType === 'gasoline' ? 'Xăng' :
+                          car.fuelType === 'diesel' ? 'Dầu diesel' :
+                          car.fuelType === 'electric' ? 'Điện' :
+                          car.fuelType === 'hybrid' ? 'Hybrid' :
+                          car.fuelType
+                        }</p>
+                        <p className="spec-item"><FaRoad /> {car.fuelConsumption}l/100km</p>
+                        <p className="spec-item"><FaWrench /> Sản xuất {car.year}</p>
+                        <p className="spec-item"><FaMapMarkerAlt /> {car.location}</p>
+                        <p className="spec-item"><FaChair /> {car.seats} chỗ</p>
+                    </div>
+                    {/* Sử dụng dữ liệu từ context thay vì gọi API riêng */}
+                    <div className="rating-trips">
+                        <span className="rating-stars"><FaStar /> {car.reviewStats?.averageRating?.toFixed(1) || 'Mới'}</span>
+                        <span className="total-trips"><FaCarSide /> {car.reviewStats?.totalReviews || 0} chuyến</span>
+                    </div>
+                        
+                    <div className="car-price">
+                        <span className="current-price">
+                          {car.contract?.pricePerDay 
+                            ? car.contract.pricePerDay.toLocaleString('vi-VN') + ' VNĐ/ngày'
+                            : 'Liên hệ'}
+                        </span>
+                    </div>
                   </div>
-                  {/* Sử dụng dữ liệu từ context thay vì gọi API riêng */}
-                  <div className="rating-trips">
-                      <span className="rating-stars"><FaStar /> {car.reviewStats?.averageRating?.toFixed(1) || 'Mới'}</span>
-                      <span className="total-trips"><FaCarSide /> {car.reviewStats?.totalReviews || 0} chuyến</span>
-                  </div>
-                      
-                  <div className="car-price">
-                      <span className="current-price">
-                        {car.contract?.pricePerDay 
-                          ? car.contract.pricePerDay.toLocaleString('vi-VN') + ' VNĐ/ngày'
-                          : 'Liên hệ'}
-                      </span>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+                </Link>
+              ))}
+            </div>
+            {/* Pagination Controls */}
+            <div className="pagination-controls">
+              <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>&lt;</button>
+              {Array.from({ length: totalPages }, (_, i) => (
+                <button
+                  key={i + 1}
+                  className={currentPage === i + 1 ? 'active' : ''}
+                  onClick={() => handlePageChange(i + 1)}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>&gt;</button>
+            </div>
+          </>
         )}
       </div>
     </div>

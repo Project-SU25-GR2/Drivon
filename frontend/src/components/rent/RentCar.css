@@ -211,9 +211,11 @@ color: #333;
 
 .car-specs-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem 1rem; /* Adjusted gap */
-  margin-bottom: 0.75rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 15px;
 }
 
 .spec-item {
@@ -488,4 +490,48 @@ font-size: 0.8rem;
   .car-card {
     margin-bottom: 1rem;
   }
+}
+
+/* Pagination Controls */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2rem;
+}
+
+.pagination-controls button {
+  border: 1px solid #ddd;
+  background-color: #fff;
+  color: #337ab7;
+  padding: 8px 14px;
+  border-radius: 20px; /* More rounded */
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  min-width: 40px; /* Ensure consistent width */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.pagination-controls button:hover:not(:disabled) {
+  background-color: #f0f7ff;
+  border-color: #337ab7;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.pagination-controls button.active {
+  background-color: #337ab7;
+  color: #fff;
+  border-color: #337ab7;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(51, 122, 183, 0.3);
+}
+
+.pagination-controls button:disabled {
+  color: #ccc;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
