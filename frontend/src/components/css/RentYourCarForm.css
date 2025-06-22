@@ -175,6 +175,19 @@
   font-size: 0.85rem;
 }
 
+/* Submit Button Styles */
+.rent-car-form .SimpleButton {
+  grid-column: 1 / -1;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.rent-car-form button[type="submit"] {
+  grid-column: 1 / -1;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
 .submit-button {
   background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
   color: white;
@@ -198,8 +211,6 @@
 .submit-button:disabled {
   background: #bdc3c7;
   cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
 }
 
 @media (max-width: 768px) {
@@ -214,6 +225,17 @@
 
   .image-preview-grid {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+
+  /* Submit button responsive styles */
+  .rent-car-form .SimpleButton {
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .rent-car-form button[type="submit"] {
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
   }
 }
 
