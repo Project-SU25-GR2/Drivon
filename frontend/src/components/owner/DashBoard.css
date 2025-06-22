@@ -1,0 +1,152 @@
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-top: 24px;
+}
+
+.stat-card {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.stat-card::after {
+    content: '';
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.icon-wrapper i {
+    font-size: 24px;
+}
+
+.stat-card h3 {
+    font-size: 14px;
+    font-weight: 500;
+    color: #6b7280;
+    margin: 0;
+}
+
+.stat-card .stat-value {
+    font-size: 28px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+.progress-line {
+    height: 4px;
+    border-radius: 2px;
+    position: absolute;
+    bottom: 0;
+    left: 24px;
+    right: 24px;
+}
+
+/* Color Variants */
+/* Blue */
+.stat-card.blue .icon-wrapper {
+    background-color: #e0e7ff;
+    color: #4f46e5;
+}
+
+.stat-card.blue::after {
+    background-color: #6366f1;
+}
+
+.stat-card.blue .progress-line {
+    background-color: #a5b4fc;
+}
+
+.stat-card.blue .stat-value {
+    color: #4338ca;
+}
+
+/* Green */
+.stat-card.green .icon-wrapper {
+    background-color: #dcfce7;
+    color: #16a34a;
+}
+
+.stat-card.green::after {
+    background-color: #22c55e;
+}
+
+.stat-card.green .progress-line {
+    background-color: #86efac;
+}
+
+.stat-card.green .stat-value {
+    color: #15803d;
+}
+
+/* Purple */
+.stat-card.purple .icon-wrapper {
+    background-color: #f3e8ff;
+    color: #9333ea;
+}
+
+.stat-card.purple::after {
+    background-color: #a855f7;
+}
+
+.stat-card.purple .progress-line {
+    background-color: #d8b4fe;
+}
+
+.stat-card.purple .stat-value {
+    color: #7e22ce;
+}
+
+/* Orange */
+.stat-card.orange .icon-wrapper {
+    background-color: #ffedd5;
+    color: #f97316;
+}
+
+.stat-card.orange::after {
+    background-color: #fb923c;
+}
+
+.stat-card.orange .progress-line {
+    background-color: #fed7aa;
+}
+
+.stat-card.orange .stat-value {
+    color: #ea580c;
+}
+
+.stat-card.orange .stat-value {
+    color: #c2410c;
+}
+
+.owner-content-page {
+    background-color: white;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 100% !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+}

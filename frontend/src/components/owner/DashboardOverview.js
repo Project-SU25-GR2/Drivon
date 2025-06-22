@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import "./ManagerOwnerPage.css";
+import "./DashBoard.css"
 import { useCarManagement } from "../../contexts/CarManagementContext";
 import { useRentalHistory } from "../../contexts/RentalHistoryContext";
 
@@ -47,7 +47,7 @@ const DashboardOverview = ({ user }) => {
         let earnings = 0;
         try {
           const earningsRes = await axios.get(
-            `/api/earnings/owner/${user.userId}`
+            `http://localhost:8080/api/earnings/owner/${user.userId}`
           );
           console.log("Earnings API response:", earningsRes.data);
           earnings = Number(earningsRes.data?.totalEarnings) || 0;
@@ -60,7 +60,7 @@ const DashboardOverview = ({ user }) => {
         let averageRating = null;
         try {
           const ratingRes = await axios.get(
-            `/api/ratings/owner/${user.userId}`
+            `http://localhost:8080/api/ratings/owner/${user.userId}`
           );
           averageRating = ratingRes.data?.averageRating ?? null;
         } catch {
@@ -94,29 +94,41 @@ const DashboardOverview = ({ user }) => {
         </div>
       ) : (
         <div className="dashboard-stats">
-          <div className="stat-card">
-            <i className="fas fa-car"></i>
+          <div className="stat-card blue">
+            <div className="icon-wrapper">
+              <i className="fas fa-car"></i>
+            </div>
             <h3>Registered Cars</h3>
-            <p>{stats.totalCars}</p>
+            <p className="stat-value">{stats.totalCars}</p>
+            <div className="progress-line"></div>
           </div>
-          <div className="stat-card">
-            <i className="fas fa-calendar-check"></i>
+          <div className="stat-card green">
+            <div className="icon-wrapper">
+              <i className="fas fa-clock"></i>
+            </div>
             <h3>Active Rentals</h3>
-            <p>{stats.activeRentals}</p>
+            <p className="stat-value">{stats.activeRentals}</p>
+            <div className="progress-line"></div>
           </div>
-          <div className="stat-card">
-            <i className="fas fa-money-bill-wave"></i>
+          <div className="stat-card purple">
+            <div className="icon-wrapper">
+              <i className="fas fa-dollar-sign"></i>
+            </div>
             <h3>Revenue</h3>
-            <p>₫{stats.earnings.toLocaleString()}</p>
+            <p className="stat-value">₫{stats.earnings.toLocaleString()}</p>
+            <div className="progress-line"></div>
           </div>
-          <div className="stat-card">
-            <i className="fas fa-star"></i>
+          <div className="stat-card orange">
+            <div className="icon-wrapper">
+              <i className="fas fa-star"></i>
+            </div>
             <h3>Average Rating</h3>
-            <p>
+            <p className="stat-value">
               {stats.averageRating !== null && stats.averageRating > 0
                 ? `${stats.averageRating}/5`
                 : "N/A"}
             </p>
+            <div className="progress-line"></div>
           </div>
         </div>
       )}

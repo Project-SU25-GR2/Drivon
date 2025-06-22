@@ -175,13 +175,8 @@ const MainLayout = ({ user, handleLogout, children }) => {
                     className="user-dropdown-menu"
                   >
                     <Link to="/profile" className="dropdown-item" style={{ display: 'flex', alignItems: 'center', padding: '10px', textDecoration: 'none', color: '#222' }}>
-                      <img
-                        src={avatarUrl}
-                        alt="avatar"
-                        className="user-avatar-header"
-                        style={{ width: 28, height: 28, borderRadius: '50%', marginRight: 8 }}
-                      />
-                      <span>{user.fullName || user.email || "User"}</span>
+                      <i className="bi bi-person" style={{ marginRight: '8px' }}></i>
+                      Profile
                     </Link>
                     <Link to="/messages" className="dropdown-item" style={{ padding: '10px', display: 'block', textDecoration: 'none', color: '#222' }}>
                       <i className="bi bi-chat-dots" style={{ marginRight: '8px' }}></i>

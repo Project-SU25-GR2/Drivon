@@ -95,7 +95,7 @@ const CarManagementPage = ({ user }) => {
         {carsData.map((car) => {
           console.log("Car object before rendering image:", car);
           return (
-            <div key={car.licensePlate} className="car-card">
+            <div key={car.licensePlate} className="car-management-card">
               <div className="car-image">
                 {car.images && car.images.length > 0 ? (
                   <img

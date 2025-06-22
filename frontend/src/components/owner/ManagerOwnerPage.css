@@ -69,14 +69,6 @@
   overflow-x: hidden;
 }
 
-.owner-content-page {
-  margin: 0 !important;
-  background-color: white;
-  border-radius: 8px;
-  padding: 2rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
 .dashboard-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
