@@ -14,7 +14,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void configureMessageBroker(MessageBrokerRegistry config) {
         // Enable a simple memory-based message broker to send messages to clients
         // on destinations prefixed with /topic and /user
-        config.enableSimpleBroker("/topic", "/user");
+        config.enableSimpleBroker("/topic", "/user", "/notifications");
 
         // Set prefix for messages bound for @MessageMapping methods
         config.setApplicationDestinationPrefixes("/app");

@@ -17,7 +17,7 @@ import UIElementsPage from './UIElementsPage';
 import UserManagementPage from './UserManagementPage';
 import MultipleLevelsPage from './MultipleLevelsPage';
 import AdminNotificationManager from './AdminNotificationManager';
-import { addNotification } from '../../api/notification';
+import { createNotification } from '../../api/notification';
 
 // Component for Admin Page
 const AdminPage = ({ user }) => {
@@ -241,7 +241,7 @@ const AdminPage = ({ user }) => {
     e.preventDefault();
     setSending(true);
     try {
-      await addNotification(content, type);
+      await createNotification(content, type);
       alert('Đã gửi thông báo đến tất cả user!');
       setContent('');
       setShowForm(false);

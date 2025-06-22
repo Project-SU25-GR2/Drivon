@@ -44,6 +44,11 @@ api.interceptors.response.use(
   }
 );
 
+// API functions
+export const getAllUsers = () => {
+  return api.get('/api/users');
+};
+
 export default api;
 
 // Export the backend URL for WebSocket service

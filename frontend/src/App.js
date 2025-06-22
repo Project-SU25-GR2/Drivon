@@ -24,6 +24,8 @@ import RentalSuccess from "./components/car/RentalSuccess";
 import Messages from "./components/chat/Messages";
 import MyRentals from "./components/car/MyRentals";
 import CarRental404 from "./components/others/404";
+import TestNotification from "./components/others/TestNotification";
+import DebugAuth from "./components/others/DebugAuth";
 // import CarRental404 from "./components/others/404";
 function App() {
   const [user, setUser] = useState(null);
@@ -282,6 +284,22 @@ function App() {
           element={
             <MainLayout user={user} handleLogout={handleLogout}>
               <Messages />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/test-notification"
+          element={
+            <MainLayout user={user} handleLogout={handleLogout}>
+              <TestNotification />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/debug-auth"
+          element={
+            <MainLayout user={user} handleLogout={handleLogout}>
+              <DebugAuth />
             </MainLayout>
           }
         />
