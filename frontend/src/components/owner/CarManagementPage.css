@@ -52,6 +52,8 @@
 }
 
 .car-image {
+  margin-top: 10px;
+    margin-left: 35px;
   position: relative;
   height: 200px;
   overflow: hidden;
@@ -249,3 +251,5 @@
   background: #ffebee;
   border-radius: 10px;
 }
+
+

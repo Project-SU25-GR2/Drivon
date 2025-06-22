@@ -150,56 +150,57 @@ const PartnerPage = () => {
           <p>There are currently no partner contracts in the system.</p>
         </div>
       ) : (
-        <div className="table-container">
-          <table className="partner-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Phone</th>
-                <th>Email</th>
-                <th>Car Plate</th>
-                <th>Car Brand</th>
-                <th>Car Model</th>
-                <th>Car Year</th>
-                <th>Price/Day</th>
-                <th>Deposit</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {partners.map((partner) => (
-                <tr key={partner.id} onClick={() => handleSeeMore(partner)} style={{ cursor: 'pointer' }}>
-                  <td>{partner.name}</td>
-                  <td>{partner.phone}</td>
-                  <td>{partner.email}</td>
-                  <td>{partner.carId}</td>
-                  <td>{partner.car?.brand}</td>
-                  <td>{partner.car?.model}</td>
-                  <td>{partner.car?.year}</td>
-                  <td>{partner.pricePerDay?.toLocaleString('vi-VN')} VND</td>
-                  <td>{partner.deposit?.toLocaleString('vi-VN')} VND</td>
-                  <td>
-                    <select
-                      value={partner.status || ""}
-                      onChange={e => handleStatusChange(partner.id, e.target.value)}
-                      className={
-                        partner.status === 'ACTIVE_LEASE' ? 'status-active' :
-                        partner.status === 'CANCELLED_LEASE' ? 'status-cancelled' :
-                        partner.status === 'EXPIRED_LEASE' ? 'status-expired' :
-                        partner.status === 'PENDING_LEASE' ? 'status-pending' : ''
-                      }
-                      onClick={e => e.stopPropagation()}
-                    >
-                      <option value="PENDING_LEASE">PENDING</option>
-                      <option value="ACTIVE_LEASE">ACTIVE</option>
-                      <option value="CANCELLED_LEASE">CANCELLED</option>
-                      <option value="EXPIRED_LEASE">EXPIRED</option>
-                    </select>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="partner-list">
+          {partners.map((partner) => {
+            const initials = partner.name?.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+            return (
+              <div className="partner-card" key={partner.id} onClick={() => handleSeeMore(partner)}>
+                {/* 1. Partner */}
+                <div className="partner-col partner-main">
+                  <div>
+                    <div className="partner-name">{partner.name}</div>
+                    <div className="partner-id">ID: #{String(partner.id).padStart(4, '0')}</div>
+                  </div>
+                </div>
+                {/* 2. Contact */}
+                <div className="partner-col partner-contact">
+                  <div><span className="icon">📞</span> {partner.phone}</div>
+                  <div><span className="icon">✉️</span> {partner.email}</div>
+                </div>
+                {/* 3. Vehicle */}
+                <div className="partner-col vehicle-info">
+                  <div className="vehicle-name">{partner.car?.brand} {partner.car?.model}</div>
+                  <div className="vehicle-detail">Plate: {partner.carId}</div>
+                  <div className="vehicle-detail">Year: {partner.car?.year}</div>
+                </div>
+                {/* 4. Pricing */}
+                <div className="partner-col pricing-info">
+                  <div className="price">{partner.pricePerDay?.toLocaleString('vi-VN')} VND/day</div>
+                  <div className="deposit">Deposit: {partner.deposit?.toLocaleString('vi-VN')} VND</div>
+                </div>
+                {/* 5. Status */}
+                <div className="partner-col status-col">
+                  <select
+                    value={partner.status || ""}
+                    onChange={e => handleStatusChange(partner.id, e.target.value)}
+                    className={
+                      partner.status === 'ACTIVE_LEASE' ? 'status-active' :
+                      partner.status === 'CANCELLED_LEASE' ? 'status-cancelled' :
+                      partner.status === 'EXPIRED_LEASE' ? 'status-expired' :
+                      partner.status === 'PENDING_LEASE' ? 'status-pending' : ''
+                    }
+                    onClick={e => e.stopPropagation()}
+                    style={{ minWidth: 80, maxWidth: 110 }}
+                  >
+                    <option value="PENDING_LEASE">PENDING</option>
+                    <option value="ACTIVE_LEASE">ACTIVE</option>
+                    <option value="CANCELLED_LEASE">CANCELLED</option>
+                    <option value="EXPIRED_LEASE">EXPIRED</option>
+                  </select>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 
