@@ -164,7 +164,7 @@ const NotificationBell = () => {
   return (
     <div className="notification-bell">
       <div className="notification-icon" onClick={handleBellClick}>
-        <span className="bell-icon">🔔</span>
+        <i className="bi bi-bell-fill bell-icon"></i>
         {unreadCount > 0 && (
           <span className="notification-badge">{unreadCount}</span>
         )}

@@ -155,7 +155,6 @@ const MainLayout = ({ user, handleLogout, children }) => {
           <a href="#">Contact</a>
           <div className="search-box">
             <input type="text" placeholder="Search..." />
-            <button type="button"><i className="fas fa-search"></i></button>
           </div>
         </nav>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -169,7 +168,7 @@ const MainLayout = ({ user, handleLogout, children }) => {
                     className="user-avatar-header"
                     style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', marginRight: 8 }}
                   />
-                  <span style={{ fontWeight: 500, color: '#fff', fontSize: 16 }}>{user.fullName || user.email || "User"}</span>
+                  <span style={{ fontWeight: 500, color: '#000000', fontSize: 16 }}>{user.fullName || user.email || "User"}</span>
                 </div>
                 {menuOpen && (
                   <div
@@ -235,6 +234,7 @@ const MainLayout = ({ user, handleLogout, children }) => {
               </button>
             )}
           </div>
+          <i class="bi bi-chevron-down"></i>
           <NotificationBell />
         </div>
       </header>
