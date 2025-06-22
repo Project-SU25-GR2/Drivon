@@ -49,7 +49,9 @@ const DashboardOverview = ({ user }) => {
           const earningsRes = await axios.get(
             `/api/earnings/owner/${user.userId}`
           );
-          earnings = earningsRes.data?.totalEarnings || 0;
+          console.log("Earnings API response:", earningsRes.data);
+          earnings = Number(earningsRes.data?.totalEarnings) || 0;
+          console.log("Earnings value set:", earnings);
         } catch {
           earnings = 0;
         }
