@@ -506,7 +506,7 @@ font-size: 0.8rem;
   background-color: #fff;
   color: #337ab7;
   padding: 8px 14px;
-  border-radius: 20px; /* More rounded */
+  border-radius: 4px; /* Square corners */
   cursor: pointer;
   font-weight: 600;
   transition: all 0.3s ease;
