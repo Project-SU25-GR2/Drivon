@@ -324,4 +324,14 @@ public class PaymentService {
     public Payment getPaymentByBookingId(int bookingId) {
         return paymentRepository.findByBookingId(bookingId);
     }
+    
+    public void updatePaymentStatusByBookingId(int bookingId, String newStatus) {
+        Payment payment = paymentRepository.findByBookingId(bookingId);
+        if (payment != null) {
+            payment.setStatus(newStatus);
+            paymentRepository.save(payment);
+        } else {
+            logger.warn("No payment found for bookingId: {} to update status.", bookingId);
+        }
+    }
 }

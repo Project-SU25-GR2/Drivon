@@ -21,6 +21,7 @@ public class BookingService {
         private final BookingRepository bookingRepository;
         private final UserRepository userRepository;
         private final CarRepository carRepository;
+        private final PaymentService paymentService;
 
         public Booking createBooking(BookingRequest bookingRequest) {
                 User renter = userRepository.findById(bookingRequest.getRenterId())
@@ -67,16 +68,22 @@ public class BookingService {
                         // Cập nhật trạng thái xe dựa trên trạng thái booking
                         Car car = booking.getCar();
                         if (car != null) {
-                                if (newStatus == Booking.BookingStatus.ongoing || newStatus == Booking.BookingStatus.pending) {
+                                if (newStatus == Booking.BookingStatus.ongoing || newStatus == Booking.BookingStatus.approved) {
                                         car.setStatus("rented");
                                         log.info("Updated car status to 'rented' for carId: {}", car.getLicensePlate());
-                                } else {
+                                } else if (newStatus == Booking.BookingStatus.completed || newStatus == Booking.BookingStatus.cancelled) {
                                         car.setStatus("available");
                                         log.info("Updated car status to 'available' for carId: {}", car.getLicensePlate());
                                 }
                                 carRepository.save(car);
                         }
                         
+                        // Nếu trạng thái là 'completed', cập nhật payment status thành 'PAID'
+                        if (newStatus == Booking.BookingStatus.completed) {
+                                paymentService.updatePaymentStatusByBookingId(bookingId, "PAID");
+                                log.info("Updated payment status to 'PAID' for bookingId: {}", bookingId);
+                        }
+
                 } catch (IllegalArgumentException e) {
                         throw new RuntimeException("Invalid status: " + status);
                 }
