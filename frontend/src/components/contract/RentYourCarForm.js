@@ -27,6 +27,8 @@ const RentYourCarForm = () => {
     "VinFast",
     "Other"
   ];
+  
+  // danh sách tỉnh thành
 
   const locations = [
     "Hà Nội",
