@@ -56,4 +56,16 @@ public class BookingService {
         public List<Booking> getBookingsByOwnerId(Integer ownerId) {
                 return bookingRepository.findByCarOwnerId(ownerId);
         }
+
+        public Booking updateBookingStatus(Integer bookingId, String status) {
+                Booking booking = bookingRepository.findById(bookingId)
+                                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + bookingId));
+                try {
+                        Booking.BookingStatus newStatus = Booking.BookingStatus.valueOf(status.toLowerCase());
+                        booking.setStatus(newStatus);
+                } catch (IllegalArgumentException e) {
+                        throw new RuntimeException("Invalid status: " + status);
+                }
+                return bookingRepository.save(booking);
+        }
 }

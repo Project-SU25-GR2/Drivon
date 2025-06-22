@@ -25,6 +25,14 @@ public class BookingController {
     @GetMapping("/owner/{ownerId}")
     public ResponseEntity<List<Booking>> getBookingsByOwnerId(@PathVariable Integer ownerId) {
         List<Booking> bookings = bookingService.getBookingsByOwnerId(ownerId);
+        System.out.println("[BookingController] Bookings for ownerId=" + ownerId + ": " + bookings);
         return ResponseEntity.ok(bookings);
+    }
+
+    @PutMapping("/status/{bookingId}")
+    public ResponseEntity<Booking> updateBookingStatus(@PathVariable Integer bookingId, @RequestBody java.util.Map<String, String> body) {
+        String status = body.get("status");
+        Booking updatedBooking = bookingService.updateBookingStatus(bookingId, status);
+        return ResponseEntity.ok(updatedBooking);
     }
 }
