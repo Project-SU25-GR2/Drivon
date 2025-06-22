@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import './UserManagement.css';
+import { useUserData } from '../../contexts/UserDataContext';
 
 const LoadingSpinner = () => (
   <div className="loading-container">
@@ -14,49 +14,20 @@ const LoadingSpinner = () => (
 );
 
 const UserManagementPage = () => {
-    const [users, setUsers] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const { usersData, loading, error, fetchUsersData, updateUserRole, updateUserStatus, deleteUser } = useUserData();
     const [searchTerm, setSearchTerm] = useState('');
 
-    const fetchUsers = async () => {
-        try {
-            setLoading(true);
-            setError(null);
-            const response = await axios.get('http://localhost:8080/api/admin/users');
-            setUsers(response.data);
-        } catch (err) {
-            console.error('Error fetching users:', err);
-            setError('Failed to fetch users: ' + (err.response?.data?.message || err.message));
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
-        fetchUsers();
-    }, []);
+        // Fetch users data using context
+        fetchUsersData();
+    }, [fetchUsersData]);
 
     const handleUpdateRole = async (userId, newRole) => {
         try {
-            // Đảm bảo role được gửi đúng định dạng (chữ thường)
-            const formattedRole = newRole.toLowerCase();
-            
-            console.log('Đang cập nhật vai trò:', {
-                userId,
-                newRole: formattedRole
-            });
-
-            const response = await axios.put(`http://localhost:8080/api/admin/users/${userId}/role`, { 
-                role: formattedRole 
-            });
-            
-            console.log('Phản hồi từ server:', response.data);
+            await updateUserRole(userId, newRole);
             alert('Cập nhật vai trò người dùng thành công!');
-            fetchUsers();
         } catch (err) {
             console.error('Lỗi khi cập nhật vai trò:', err);
-            console.error('Chi tiết lỗi:', err.response?.data);
             alert('Không thể cập nhật vai trò người dùng: ' + (err.response?.data?.message || err.message));
         }
     };
@@ -64,9 +35,8 @@ const UserManagementPage = () => {
     const handleDeleteUser = async (userId) => {
         if (window.confirm('Are you sure you want to delete this user?')) {
             try {
-                await axios.delete(`http://localhost:8080/api/admin/users/${userId}`);
+                await deleteUser(userId);
                 alert('User deleted successfully!');
-                fetchUsers();
             } catch (err) {
                 console.error('Error deleting user:', err);
                 alert('Failed to delete user: ' + (err.response?.data?.message || err.message));
@@ -76,18 +46,15 @@ const UserManagementPage = () => {
 
     const handleUpdateStatus = async (userId, newStatus) => {
         try {
-            const response = await axios.put(`http://localhost:8080/api/admin/users/${userId}/status`, {
-                status: newStatus
-            });
+            await updateUserStatus(userId, newStatus);
             alert('Cập nhật trạng thái người dùng thành công!');
-            fetchUsers();
         } catch (err) {
             console.error('Lỗi khi cập nhật trạng thái người dùng:', err);
             alert('Không thể cập nhật trạng thái người dùng: ' + (err.response?.data?.message || err.message));
         }
     };
 
-    const filteredUsers = users.filter(user => 
+    const filteredUsers = usersData.filter(user => 
         (user.fullName || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().includes(searchTerm.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()) ||
         (user.email || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().includes(searchTerm.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase())
     );
@@ -97,7 +64,41 @@ const UserManagementPage = () => {
     }
 
     if (error) {
-        return <div className="admin-content-page" style={{ color: 'red' }}>Error: {error}</div>;
+        return (
+            <div className="admin-content-page">
+                <div style={{ 
+                    color: 'red', 
+                    padding: '20px', 
+                    backgroundColor: '#ffe6e6', 
+                    border: '1px solid #ff9999',
+                    borderRadius: '8px',
+                    margin: '20px 0'
+                }}>
+                    <h3>Error Loading Users</h3>
+                    <p>{error}</p>
+                    <p><strong>Troubleshooting steps:</strong></p>
+                    <ul>
+                        <li>Make sure the backend server is running on port 8080</li>
+                        <li>Check if the database connection is working</li>
+                        <li>Verify that the users table exists and has data</li>
+                        <li>Check the backend logs for more detailed error information</li>
+                    </ul>
+                    <button 
+                        onClick={() => fetchUsersData(true)} 
+                        style={{
+                            padding: '10px 20px',
+                            backgroundColor: '#007bff',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Retry
+                    </button>
+                </div>
+            </div>
+        );
     }
 
     return (
@@ -114,8 +115,8 @@ const UserManagementPage = () => {
                         />
                     </div>
                     <div className="user-stats">
-                        <span>Total Users: {users.length}</span>
-                        <span>Active Users: {users.filter(u => u.status?.toUpperCase() === 'ACTIVE').length}</span>
+                        <span>Total Users: {usersData.length}</span>
+                        <span>Active Users: {usersData.filter(u => u.status?.toUpperCase() === 'ACTIVE').length}</span>
                     </div>
                 </div>
 

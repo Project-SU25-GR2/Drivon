@@ -1,63 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import Loader from '../others/loader';
 import './PartnerPage.css';
+import { usePartnerData } from '../../contexts/PartnerDataContext';
 
 const PartnerPage = () => {
-  const [partners, setPartners] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { partnersData, loading, error, fetchPartnersData, updatePartnerStatus } = usePartnerData();
   const [selectedPartner, setSelectedPartner] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedImages, setSelectedImages] = useState({ main: null, others: [] });
 
   useEffect(() => {
-    const fetchPartners = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        console.log('Fetching partners from API...');
-        
-        const response = await axios.get('http://localhost:8080/api/admin/partners');
-        console.log('Partners API response:', response.data);
-        
-        setPartners(response.data);
-      } catch (err) {
-        console.error('Error fetching partners:', err);
-        console.error('Error response:', err.response);
-        console.error('Error status:', err.response?.status);
-        console.error('Error data:', err.response?.data);
-        
-        let errorMessage = 'Failed to fetch partners';
-        
-        if (err.response?.status === 500) {
-          errorMessage = 'Server error (500) - Backend service might be down or database connection issue';
-        } else if (err.response?.status === 404) {
-          errorMessage = 'API endpoint not found (404) - Check if backend is running';
-        } else if (err.code === 'ERR_NETWORK') {
-          errorMessage = 'Network error - Backend server is not running or not accessible';
-        } else if (err.response?.data?.message) {
-          errorMessage = `Server error: ${err.response.data.message}`;
-        } else {
-          errorMessage = `Error: ${err.message}`;
-        }
-        
-        setError(errorMessage);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPartners();
-  }, []);
+    // Fetch partners data using context
+    fetchPartnersData();
+  }, [fetchPartnersData]);
 
   const handleStatusChange = async (id, newStatus) => {
     try {
-      console.log(`Updating partner status: ${id} to ${newStatus}`);
-      await axios.put(`http://localhost:8080/api/admin/partners/${id}/status`, { status: newStatus });
-      setPartners(prev =>
-        prev.map(p => (p.id === id ? { ...p, status: newStatus } : p))
-      );
+      await updatePartnerStatus(id, newStatus);
     } catch (err) {
       console.error('Error updating partner status:', err);
       alert('Failed to update status: ' + (err.response?.data?.message || err.message));
@@ -117,7 +76,7 @@ const PartnerPage = () => {
             <li>Check the backend logs for more detailed error information</li>
           </ul>
           <button 
-            onClick={() => window.location.reload()} 
+            onClick={() => fetchPartnersData(true)} 
             style={{
               padding: '10px 20px',
               backgroundColor: '#007bff',
@@ -137,7 +96,7 @@ const PartnerPage = () => {
   return (
     <div className="partner-page">
       <h1>Partner Management</h1>
-      {partners.length === 0 ? (
+      {partnersData.length === 0 ? (
         <div style={{ 
           padding: '20px', 
           backgroundColor: '#f8f9fa', 
@@ -151,7 +110,7 @@ const PartnerPage = () => {
         </div>
       ) : (
         <div className="partner-list">
-          {partners.map((partner) => {
+          {partnersData.map((partner) => {
             const initials = partner.name?.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
             return (
               <div className="partner-card" key={partner.id} onClick={() => handleSeeMore(partner)}>
