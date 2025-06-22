@@ -1,0 +1,96 @@
+/* RentalHistoryPage.module.css */
+.mainContent {
+  width: 100vw;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  background: #f7f8fa;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.ownerContentPage {
+  width: 100%;
+  /* max-width: 1100px; */
+  min-height: 100vh;
+  margin: 0;
+  padding: 24px 0 0 0;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  display: block;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-end;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.h2Title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0;
+}
+
+.filters {
+  display: flex;
+  gap: 12px;
+}
+
+.rentalList {
+  width: 100%;
+  background: #fff;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0 8px;
+  margin: 0 auto;
+}
+
+table.table {
+  width: 100%;
+  min-width: 600px;
+  background: transparent;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 10px 8px;
+  text-align: left;
+}
+
+th {
+  background: #f2f4f8;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+tr {
+  border-bottom: 1px solid #ececec;
+}
+
+td select.form-select.status-badge {
+  min-width: 120px;
+  max-width: 180px;
+  white-space: normal;
+  overflow: visible;
+}
+
+@media (max-width: 900px) {
+  .ownerContentPage {
+    /* max-width: 100vw; */
+    padding: 0;
+  }
+  .rentalList {
+    min-width: 100%;
+    padding: 0 2px;
+  }
+  table.table {
+    min-width: 100%;
+  }
+}
