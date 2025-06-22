@@ -1,8 +1,16 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./ManagerOwnerPage.css";
+import { useCarManagement } from "../../contexts/CarManagementContext";
+import { useRentalHistory } from "../../contexts/RentalHistoryContext";
 
 const DashboardOverview = ({ user }) => {
+  const { carsData, fetchCarsData, loading: carsLoading } = useCarManagement();
+  const {
+    rentalsData,
+    fetchRentalsData,
+    loading: rentalsLoading,
+  } = useRentalHistory();
   const [stats, setStats] = useState({
     totalCars: 0,
     activeRentals: 0,
@@ -12,29 +20,36 @@ const DashboardOverview = ({ user }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (user && user.userId) {
+      fetchCarsData(user.userId);
+      fetchRentalsData(user.userId);
+    }
+  }, [user, fetchCarsData, fetchRentalsData]);
+
+  useEffect(() => {
+    setStats((prev) => ({ ...prev, totalCars: carsData.length }));
+  }, [carsData]);
+
+  useEffect(() => {
+    // Đếm số lượng booking có trạng thái ongoing hoặc active
+    const activeCount = rentalsData.filter(
+      (r) => r.status && ["ongoing", "active"].includes(r.status.toLowerCase())
+    ).length;
+    setStats((prev) => ({ ...prev, activeRentals: activeCount }));
+  }, [rentalsData]);
+
+  useEffect(() => {
     const fetchStats = async () => {
       if (!user || !user.userId) return;
       setLoading(true);
       try {
-        // Lấy số xe đã đăng ký
-        const carsRes = await axios.get(`/api/cars/owner/${user.userId}`);
-        const totalCars = Array.isArray(carsRes.data) ? carsRes.data.length : 0;
-
-        // Lấy số active rentals
-        const rentalsRes = await axios.get(
-          `/api/rentals/owner/${user.userId}?status=active`
-        );
-        const activeRentals = Array.isArray(rentalsRes.data)
-          ? rentalsRes.data.length
-          : 0;
-
         // Lấy doanh thu
         let earnings = 0;
         try {
           const earningsRes = await axios.get(
             `/api/earnings/owner/${user.userId}`
           );
-          earnings = earningsRes.data?.total || 0;
+          earnings = earningsRes.data?.totalEarnings || 0;
         } catch {
           earnings = 0;
         }
@@ -50,14 +65,17 @@ const DashboardOverview = ({ user }) => {
           averageRating = null;
         }
 
-        setStats({ totalCars, activeRentals, earnings, averageRating });
+        setStats((prev) => ({
+          ...prev,
+          earnings,
+          averageRating,
+        }));
       } catch (err) {
-        setStats({
-          totalCars: 0,
-          activeRentals: 0,
+        setStats((prev) => ({
+          ...prev,
           earnings: 0,
           averageRating: null,
-        });
+        }));
       } finally {
         setLoading(false);
       }
@@ -68,7 +86,7 @@ const DashboardOverview = ({ user }) => {
   return (
     <div className="owner-content-page">
       <h2>Dashboard Overview</h2>
-      {loading ? (
+      {loading || carsLoading || rentalsLoading ? (
         <div style={{ textAlign: "center", color: "#888", margin: "32px 0" }}>
           Loading...
         </div>
