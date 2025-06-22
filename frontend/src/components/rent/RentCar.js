@@ -56,6 +56,7 @@ const RentCar = () => {
 
   const handleChange = (e) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
+    setCurrentPage(1);
   };
 
   // Thêm hàm xử lý thay đổi price range slider
@@ -66,6 +67,7 @@ const RentCar = () => {
       minPrice: value[0].toString(),
       maxPrice: value[1].toString()
     });
+    setCurrentPage(1);
   };
 
   // Thêm hàm chuyển đổi fuelType sang tiếng Việt
@@ -121,7 +123,7 @@ const RentCar = () => {
           type="text"
           placeholder="Tìm xe theo tên, địa điểm..."
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
           className="search-input"
         />
         <div className="price-filter-container">
@@ -169,12 +171,12 @@ const RentCar = () => {
       </div>
       
       <div className="quick-filters">
-        <button className="btn-fast-search" onClick={() => setFilters({ ...filters, type: 'suv' })}>SUV</button>
-        <button className="btn-fast-search" onClick={() => setFilters({ ...filters, type: 'hatchback' })}>Hatchback</button>
-        <button className="btn-fast-search" onClick={() => setFilters({ ...filters, type: 'sedan' })}>Sedan</button>
-        <button className="btn-fast-search" onClick={() => setFilters({ ...filters, type: 'mpv' })}>MPV</button>
-        <button className="btn-fast-search" onClick={() => setFilters({ ...filters, type: 'pickup' })}>Pickup</button>
-        <button className="btn-fast-search" onClick={() => setFilters({ ...filters, type: '' })}>Tất cả</button>
+        <button className="btn-fast-search" onClick={() => { setFilters({ ...filters, type: 'suv' }); setCurrentPage(1); }}>SUV</button>
+        <button className="btn-fast-search" onClick={() => { setFilters({ ...filters, type: 'hatchback' }); setCurrentPage(1); }}>Hatchback</button>
+        <button className="btn-fast-search" onClick={() => { setFilters({ ...filters, type: 'sedan' }); setCurrentPage(1); }}>Sedan</button>
+        <button className="btn-fast-search" onClick={() => { setFilters({ ...filters, type: 'mpv' }); setCurrentPage(1); }}>MPV</button>
+        <button className="btn-fast-search" onClick={() => { setFilters({ ...filters, type: 'pickup' }); setCurrentPage(1); }}>Pickup</button>
+        <button className="btn-fast-search" onClick={() => { setFilters({ ...filters, type: '' }); setCurrentPage(1); }}>Tất cả</button>
       </div>
 
       <div className="car-list">
