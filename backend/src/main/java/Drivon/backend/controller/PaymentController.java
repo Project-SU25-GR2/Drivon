@@ -158,4 +158,17 @@ public class PaymentController {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
     }
+
+    @GetMapping("/booking/{bookingId}")
+    public ResponseEntity<?> getPaymentByBookingId(@PathVariable int bookingId) {
+        try {
+            Payment payment = paymentService.getPaymentByBookingId(bookingId);
+            if (payment == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(payment);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
 }

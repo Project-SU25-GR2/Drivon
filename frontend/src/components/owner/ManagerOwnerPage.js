@@ -5,7 +5,7 @@ import "./ManagerOwnerPage.css";
 // Import all owner components
 import DashboardOverview from "./DashboardOverview";
 import CarManagementPage from "./CarManagementPage";
-import RentalHistoryPage from "./RentalHistoryPage";
+import RentalHistoryPage from "./BookingManager";
 import EarningsPage from "./EarningsPage";
 import ProfilePage from "./ProfilePage";
 
@@ -81,7 +81,7 @@ const ManagerOwnerPage = ({ user }) => {
                 setActiveComponent("rental-history");
               }}
             >
-              <i className="fas fa-history"></i> Rental History
+              <i className="fas fa-history"></i> Booking Management
             </a>
           </li>
           <li>

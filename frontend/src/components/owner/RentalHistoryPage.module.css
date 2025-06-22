@@ -1,6 +1,6 @@
 /* RentalHistoryPage.module.css */
 .mainContent {
-  width: 100vw;
+  width: 100%;
   min-height: 100vh;
   margin: 0;
   padding: 0;
@@ -49,6 +49,7 @@
   box-shadow: none;
   padding: 0 8px;
   margin: 0 auto;
+  overflow-x: auto;
 }
 
 table.table {
@@ -75,8 +76,8 @@ tr {
 }
 
 td select.form-select.status-badge {
-  min-width: 120px;
-  max-width: 180px;
+  min-width: 100px;
+  max-width: 140px;
   white-space: normal;
   overflow: visible;
 }

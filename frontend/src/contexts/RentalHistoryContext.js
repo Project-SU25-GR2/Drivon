@@ -27,6 +27,19 @@ export const RentalHistoryProvider = ({ children }) => {
     return Date.now() - lastFetchTime > CACHE_TIMEOUT;
   };
 
+  const fetchPaymentStatus = async (bookingId) => {
+    try {
+      const response = await axios.get(`http://localhost:8080/api/payments/booking/${bookingId}`);
+      return response.data.status || 'Unknown';
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
+        return 'Not Paid';
+      }
+      console.error(`Failed to fetch payment status for booking ${bookingId}`, error);
+      return 'Error';
+    }
+  };
+
   const fetchRentalsData = async (userId, forceRefresh = false) => {
     if (!userId) {
       setError('User ID is required');
@@ -42,14 +55,21 @@ export const RentalHistoryProvider = ({ children }) => {
 
     try {
       const response = await axios.get(`http://localhost:8080/api/bookings/owner/${userId}`);
-      const data = response.data;
+      const rentals = response.data;
+
+      const rentalsWithPaymentStatus = await Promise.all(
+        rentals.map(async (rental) => {
+          const paymentStatus = await fetchPaymentStatus(rental.id);
+          return { ...rental, paymentStatus };
+        })
+      );
       
-      setRentalsData(data);
+      setRentalsData(rentalsWithPaymentStatus);
       setLastFetchTime(Date.now());
       setIsInitialized(true);
       setLoading(false);
       
-      return data;
+      return rentalsWithPaymentStatus;
     } catch (err) {
       setError('Failed to fetch rentals data');
       setLoading(false);

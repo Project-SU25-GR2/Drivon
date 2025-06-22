@@ -29,6 +29,18 @@ const RentalHistoryPage = () => {
     }
   };
 
+  const getPaymentStatusStyle = (status) => {
+    switch (status) {
+      case "PAID":
+        return { color: "green", fontWeight: "bold" };
+      case "PENDING":
+      case "Not Paid":
+        return { color: "red", fontWeight: "bold" };
+      default:
+        return {};
+    }
+  };
+
   return (
     <div className={styles.mainContent}>
       <div className={styles.ownerContentPage}>
@@ -110,7 +122,7 @@ const RentalHistoryPage = () => {
                           ))}
                         </select>
                       </td>
-                      <td>
+                      <td style={getPaymentStatusStyle(rental.paymentStatus)}>
                         {rental.totalPrice?.toLocaleString("vi-VN", {
                           style: "currency",
                           currency: "VND",
