@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Integer> {
     List<Booking> findByCarLicensePlate(String licensePlate);
+    List<Booking> findByCarOwnerId(Integer ownerId);
 }
