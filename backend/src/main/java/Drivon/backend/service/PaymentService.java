@@ -320,4 +320,8 @@ public class PaymentService {
     public Payment getPaymentByOrderCode(String orderCode) {
         return paymentRepository.findByOrderCode(orderCode);
     }
+
+    public Payment getPaymentByBookingId(int bookingId) {
+        return paymentRepository.findByBookingId(bookingId);
+    }
 }
