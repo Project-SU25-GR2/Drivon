@@ -78,7 +78,6 @@ const RentalHistoryPage = () => {
                 <th>End Date</th>
                 <th>Status</th>
                 <th>Total Amount</th>
-                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -141,11 +140,6 @@ const RentalHistoryPage = () => {
                         style: "currency",
                         currency: "VND",
                       })}
-                    </td>
-                    <td>
-                      <button className="btn btn-sm btn-info">
-                        <i className="fas fa-eye"></i>
-                      </button>
                     </td>
                   </tr>
                 ))}
