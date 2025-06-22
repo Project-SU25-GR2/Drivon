@@ -30,6 +30,9 @@ const Messages = () => {
 
   // Thêm state để điều khiển hiển thị sidebar khi đang trong đoạn chat
   const [showSidebar, setShowSidebar] = useState(false);
+  
+  // Thêm ref để tránh gửi tin nhắn tự động 2 lần
+  const hasAutoSentMessage = useRef(false);
 
   const scrollToBottom = () => {
     const chatBox = chatMessagesRef.current;
@@ -149,6 +152,11 @@ const Messages = () => {
   useEffect(() => {
     selectedUserRef.current = selectedUser;
   }, [selectedUser]);
+
+  // Reset auto-send flag khi component mount hoặc location.state thay đổi
+  useEffect(() => {
+    hasAutoSentMessage.current = false;
+  }, [location.state?.initialMessage]);
 
   // Handle tab visibility changes
   useEffect(() => {
@@ -351,8 +359,13 @@ const Messages = () => {
     if (selectedUser) {
       fetchMessages(currentUser.userId, selectedUser.id);
 
-      if (location.state?.initialMessage) {
-        handleSendMessage(new Event('submit'));
+      // Chỉ gửi tin nhắn tự động 1 lần khi có initialMessage và chưa gửi
+      if (location.state?.initialMessage && !hasAutoSentMessage.current) {
+        hasAutoSentMessage.current = true;
+        // Delay một chút để đảm bảo WebSocket đã kết nối
+        setTimeout(() => {
+          handleSendMessage(new Event('submit'));
+        }, 1000);
       }
       
       // Start polling for messages when a user is selected
@@ -363,6 +376,8 @@ const Messages = () => {
         clearInterval(messagesPollingRef.current);
         messagesPollingRef.current = null;
       }
+      // Reset flag khi không có user được chọn
+      hasAutoSentMessage.current = false;
     }
   }, [selectedUser?.id]);
 
@@ -449,6 +464,8 @@ const Messages = () => {
 
       if (location.state?.initialMessage) {
         navigate('/messages', { state: { selectedUser } });
+        // Clear initialMessage sau khi gửi thành công
+        window.history.replaceState({}, document.title);
       }
     } catch (error) {
       console.error('Error sending message:', error);

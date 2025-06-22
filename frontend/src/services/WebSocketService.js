@@ -1,6 +1,7 @@
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 import { BACKEND_URL } from '../api/config';
+import { useEffect, useRef } from 'react';
 
 class WebSocketService {
   constructor() {
@@ -142,9 +143,40 @@ class WebSocketService {
     );
 
     console.log('Subscribed to errors topic for user:', userId);
+
+    // Subscribe to personal notifications
+    const notificationSubscription = this.stompClient.subscribe(
+      `/user/${userId}/notifications/new`,
+      (message) => {
+        const newNotification = JSON.parse(message.body);
+        console.log('Received new notification for user:', userId, newNotification);
+        this.notifySubscribers('notifications', newNotification);
+      },
+      (error) => {
+        console.error('Error subscribing to notifications for user:', userId, error);
+      }
+    );
+
+    console.log('Subscribed to notifications topic for user:', userId);
+
+    // Subscribe to broadcast notifications
+    const broadcastNotificationSubscription = this.stompClient.subscribe(
+      '/notifications/broadcast',
+      (message) => {
+        const broadcastNotification = JSON.parse(message.body);
+        console.log('Received broadcast notification:', broadcastNotification);
+        this.notifySubscribers('notifications_broadcast', broadcastNotification);
+      },
+      (error) => {
+        console.error('Error subscribing to broadcast notifications:', error);
+      }
+    );
+
+    console.log('Subscribed to broadcast notifications topic');
   }
 
   subscribe(topic, callback) {
+    console.log('Subscribing to topic:', topic);
     if (!this.subscribers.has(topic)) {
       this.subscribers.set(topic, new Set());
     }
@@ -157,14 +189,22 @@ class WebSocketService {
   }
 
   unsubscribe(topic, callback) {
+    console.log('Unsubscribing from topic:', topic);
     if (this.subscribers.has(topic)) {
       this.subscribers.get(topic).delete(callback);
     }
   }
 
   notifySubscribers(topic, data) {
+    console.log('Notifying subscribers for topic:', topic, 'with data:', data);
     if (this.subscribers.has(topic)) {
-      this.subscribers.get(topic).forEach(callback => callback(data));
+      this.subscribers.get(topic).forEach(callback => {
+        try {
+          callback(data);
+        } catch (error) {
+          console.error('Error in subscriber callback:', error);
+        }
+      });
     }
   }
 
@@ -193,6 +233,56 @@ class WebSocketService {
     }
   }
 
+  sendNotification(notificationData) {
+    if (!this.isConnected) {
+      console.error('WebSocket not connected, cannot send notification');
+      return false;
+    }
+
+    if (!this.stompClient?.connected) {
+      console.error('STOMP client not connected, cannot send notification');
+      return false;
+    }
+
+    try {
+      console.log('Sending notification via WebSocket:', notificationData);
+      this.stompClient.publish({
+        destination: '/app/notification.send',
+        body: JSON.stringify(notificationData)
+      });
+      console.log('Notification sent successfully via WebSocket');
+      return true;
+    } catch (error) {
+      console.error('Error sending notification via WebSocket:', error);
+      return false;
+    }
+  }
+
+  sendBroadcastNotification(notificationData) {
+    if (!this.isConnected) {
+      console.error('WebSocket not connected, cannot send broadcast notification');
+      return false;
+    }
+
+    if (!this.stompClient?.connected) {
+      console.error('STOMP client not connected, cannot send broadcast notification');
+      return false;
+    }
+
+    try {
+      console.log('Sending broadcast notification via WebSocket:', notificationData);
+      this.stompClient.publish({
+        destination: '/app/notification.broadcast',
+        body: JSON.stringify(notificationData)
+      });
+      console.log('Broadcast notification sent successfully via WebSocket');
+      return true;
+    } catch (error) {
+      console.error('Error sending broadcast notification via WebSocket:', error);
+      return false;
+    }
+  }
+
   disconnect() {
     if (this.stompClient) {
       this.stompClient.deactivate();
@@ -215,10 +305,42 @@ class WebSocketService {
 
   // Add method to get current user ID
   getCurrentUserId() {
-    return this.stompClient?.connectHeaders?.login;
+    return this.currentUserId;
   }
 }
 
 // Create a singleton instance
 const webSocketService = new WebSocketService();
+
+// React Hook for WebSocket
+export const useWebSocket = () => {
+  const webSocketServiceRef = useRef(null);
+
+  useEffect(() => {
+    if (!webSocketServiceRef.current) {
+      webSocketServiceRef.current = new WebSocketService();
+    }
+
+    return () => {
+      if (webSocketServiceRef.current) {
+        webSocketServiceRef.current.disconnect();
+      }
+    };
+  }, []);
+
+  const subscribe = (topic, callback) => {
+    if (webSocketServiceRef.current) {
+      webSocketServiceRef.current.subscribe(topic, callback);
+    }
+  };
+
+  const unsubscribe = (topic, callback) => {
+    if (webSocketServiceRef.current) {
+      webSocketServiceRef.current.unsubscribe(topic, callback);
+    }
+  };
+
+  return { subscribe, unsubscribe };
+};
+
 export default webSocketService; 

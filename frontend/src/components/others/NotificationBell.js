@@ -1,43 +1,226 @@
-import React, { useState, useEffect, useRef } from 'react';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import Badge from '@mui/material/Badge';
-import NotificationList from './NotificationList';
-import { getNotifications } from '../../api/notification';
+import React, { useState, useEffect, useCallback } from 'react';
+import { getNotifications, getUnreadCount, markAsRead, markAllAsRead } from '../../api/notification';
+import webSocketService from '../../services/WebSocketService';
+import './NotificationList.css';
 
 const NotificationBell = () => {
-  const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
-  const bellRef = useRef();
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    fetchNotifications();
-    // Đóng dropdown khi click ngoài
-    const handleClickOutside = (event) => {
-      if (bellRef.current && !bellRef.current.contains(event.target)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+  // Tách riêng các function để tránh re-render
+  const loadNotifications = useCallback(async () => {
+    try {
+      setLoading(true);
+      console.log('Loading notifications...');
+      const response = await getNotifications();
+      console.log('Notifications loaded:', response.data);
+      setNotifications(response.data || []);
+    } catch (error) {
+      console.error('Error loading notifications:', error);
+      setNotifications([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const fetchNotifications = async () => {
+  const loadUnreadCount = useCallback(async () => {
     try {
-      const res = await getNotifications();
-      setNotifications(res.data);
-    } catch (err) {
-      setNotifications([]);
+      console.log('Loading unread count...');
+      const response = await getUnreadCount();
+      console.log('Unread count loaded:', response.data.count);
+      setUnreadCount(response.data.count || 0);
+    } catch (error) {
+      console.error('Error loading unread count:', error);
+      setUnreadCount(0);
+    }
+  }, []);
+
+  // Load data khi component mount
+  useEffect(() => {
+    console.log('NotificationBell mounted, loading data...');
+    loadNotifications();
+    loadUnreadCount();
+  }, [loadNotifications, loadUnreadCount]);
+
+  // Setup WebSocket subscriptions
+  useEffect(() => {
+    console.log('Setting up WebSocket subscriptions...');
+
+    const handleNewNotification = (data) => {
+      console.log('Received new notification:', data);
+      
+      // Add new notification to the list
+      const newNotification = {
+        notificationId: data.notificationId,
+        content: data.content,
+        type: data.type,
+        targetType: data.targetType,
+        isRead: false,
+        createdAt: data.createdAt
+      };
+
+      setNotifications(prev => [newNotification, ...prev]);
+      setUnreadCount(prev => prev + 1);
+    };
+
+    const handleBroadcastNotification = (data) => {
+      console.log('Received broadcast notification:', data);
+      
+      // Add new notification to the list
+      const newNotification = {
+        notificationId: data.notificationId,
+        content: data.content,
+        type: data.type,
+        targetType: data.targetType,
+        isRead: false,
+        createdAt: data.createdAt
+      };
+
+      setNotifications(prev => [newNotification, ...prev]);
+      setUnreadCount(prev => prev + 1);
+    };
+
+    // Subscribe to both personal and broadcast notifications
+    webSocketService.subscribe('notifications', handleNewNotification);
+    webSocketService.subscribe('notifications_broadcast', handleBroadcastNotification);
+
+    return () => {
+      console.log('Cleaning up WebSocket subscriptions...');
+      webSocketService.unsubscribe('notifications', handleNewNotification);
+      webSocketService.unsubscribe('notifications_broadcast', handleBroadcastNotification);
+    };
+  }, []);
+
+  const handleMarkAsRead = async (notificationId) => {
+    try {
+      await markAsRead(notificationId);
+      setNotifications(prev =>
+        prev.map(notif =>
+          notif.notificationId === notificationId
+            ? { ...notif, isRead: true }
+            : notif
+        )
+      );
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
     }
   };
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  const handleMarkAllAsRead = async () => {
+    try {
+      await markAllAsRead();
+      setNotifications(prev =>
+        prev.map(notif => ({ ...notif, isRead: true }))
+      );
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('vi-VN');
+  };
+
+  const getNotificationIcon = (type) => {
+    switch (type) {
+      case 'SYSTEM':
+        return '🔔';
+      case 'PROMO':
+        return '🎉';
+      default:
+        return '📢';
+    }
+  };
+
+  const getTargetTypeLabel = (targetType) => {
+    switch (targetType) {
+      case 'ALL_USERS':
+        return 'Tất cả người dùng';
+      case 'OWNER_ONLY':
+        return 'Chỉ chủ xe';
+      case 'USER_SPECIFIC':
+        return 'Người dùng cụ thể';
+      default:
+        return targetType;
+    }
+  };
+
+  const handleBellClick = () => {
+    console.log('Bell clicked, current state:', { isOpen, notificationsCount: notifications.length });
+    setIsOpen(!isOpen);
+    
+    // Load fresh data when opening
+    if (!isOpen) {
+      loadNotifications();
+      loadUnreadCount();
+    }
+  };
 
   return (
-    <div style={{ position: 'relative', display: 'inline-block' }} ref={bellRef}>
-      <Badge badgeContent={unreadCount} color="error">
-        <NotificationsIcon style={{ cursor: 'pointer' }} onClick={() => setOpen(!open)} />
-      </Badge>
-      {open && <NotificationList notifications={notifications} onRefresh={fetchNotifications} />}
+    <div className="notification-bell">
+      <div className="notification-icon" onClick={handleBellClick}>
+        <span className="bell-icon">🔔</span>
+        {unreadCount > 0 && (
+          <span className="notification-badge">{unreadCount}</span>
+        )}
+      </div>
+
+      {isOpen && (
+        <div className="notification-dropdown">
+          <div className="notification-header">
+            <h3>Thông báo ({notifications.length})</h3>
+            {unreadCount > 0 && (
+              <button 
+                className="mark-all-read-btn"
+                onClick={handleMarkAllAsRead}
+              >
+                Đánh dấu tất cả đã đọc
+              </button>
+            )}
+          </div>
+
+          <div className="notification-list">
+            {loading ? (
+              <div className="loading">Đang tải...</div>
+            ) : notifications.length === 0 ? (
+              <div className="no-notifications">Không có thông báo nào</div>
+            ) : (
+              notifications.map((notification) => (
+                <div
+                  key={notification.notificationId}
+                  className={`notification-item ${!notification.isRead ? 'unread' : ''}`}
+                  onClick={() => !notification.isRead && handleMarkAsRead(notification.notificationId)}
+                >
+                  <div className="notification-content">
+                    <div className="notification-header-item">
+                      <span className="notification-icon-item">
+                        {getNotificationIcon(notification.type)}
+                      </span>
+                      <span className="notification-type">
+                        {getTargetTypeLabel(notification.targetType)}
+                      </span>
+                      {!notification.isRead && (
+                        <span className="unread-indicator">●</span>
+                      )}
+                    </div>
+                    <div className="notification-text">
+                      {notification.content}
+                    </div>
+                    <div className="notification-time">
+                      {formatDate(notification.createdAt)}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

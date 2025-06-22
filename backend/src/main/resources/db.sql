@@ -139,15 +139,20 @@ CREATE TABLE complaints (
 );
 
 -- 10. Bảng notifications
+DROP TABLE IF EXISTS notifications;
+
 CREATE TABLE notifications (
-    notification_id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id BIGINT,
-    content TEXT,
-    type ENUM('system', 'message', 'promo'),
+    notification_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    content TEXT NOT NULL,
+    type VARCHAR(32) NOT NULL COMMENT 'Loại thông báo: SYSTEM, PROMO',
+    target_type VARCHAR(32) NOT NULL COMMENT 'Đối tượng nhận: ALL_USERS, OWNER_ONLY, USER_SPECIFIC',
+    target_user_id BIGINT NULL COMMENT 'User ID cụ thể nếu target_type = USER_SPECIFIC',
     is_read BOOLEAN DEFAULT FALSE,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
-);
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_target_type (target_type),
+    INDEX idx_target_user_id (target_user_id),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 11. Bảng support_requests
 CREATE TABLE support_requests (
@@ -416,3 +421,9 @@ set model ='Morning'
 WHERE model ='Q3';
 DELETE FROM users
 WHERE email = 'binhvuong6868999@gmail.comdsadasdasdasd';
+
+-- Thêm dữ liệu mẫu
+INSERT INTO notifications (content, type, target_type, target_user_id, is_read, created_at) VALUES
+('Chào mừng bạn đến với hệ thống thuê xe Drivon!', 'SYSTEM', 'ALL_USERS', NULL, FALSE, NOW()),
+('Có xe mới được thêm vào hệ thống', 'SYSTEM', 'ALL_USERS', NULL, FALSE, NOW()),
+('Thông báo đặc biệt cho chủ xe', 'SYSTEM', 'OWNER_ONLY', NULL, FALSE, NOW());

@@ -7,6 +7,7 @@ import ForgotPasswordPage from '../auth/ForgotPasswordPage';
 import Footer from '../layout/footer';
 import Loader from '../others/loader';
 import NotificationBell from '../others/NotificationBell';
+import webSocketService from '../../services/WebSocketService';
 import './MainLayout.css';
 
 const MainLayout = ({ user, handleLogout, children }) => {
@@ -28,6 +29,25 @@ const MainLayout = ({ user, handleLogout, children }) => {
 
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
+
+  // Connect WebSocket when user is available
+  useEffect(() => {
+    if (user && user.userId) {
+      console.log('Connecting WebSocket for user:', user.userId);
+      webSocketService.connect(user.userId, () => {
+        console.log('WebSocket connected successfully for user:', user.userId);
+      });
+    } else {
+      console.log('No user available, disconnecting WebSocket');
+      webSocketService.disconnect();
+    }
+
+    return () => {
+      if (user && user.userId) {
+        console.log('Cleaning up WebSocket for user:', user.userId);
+      }
+    };
+  }, [user]);
 
   // Check user role with timeout
   useEffect(() => {
