@@ -29,6 +29,8 @@ const AdminPage = ({ user }) => {
   const [content, setContent] = useState('');
   const [type, setType] = useState('SYSTEM');
   const [sending, setSending] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -38,6 +40,16 @@ const AdminPage = ({ user }) => {
   const setActiveComponent = (component) => {
     // Preserve the current path while updating the tab parameter
     navigate(`/adminSecret?tab=${component}`, { replace: true });
+    // Close mobile menu when selecting a component
+    setMobileMenuOpen(false);
+  };
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
   };
 
   // Define fetchUsers outside useEffect so it can be called from other functions
@@ -253,7 +265,10 @@ const AdminPage = ({ user }) => {
 
   return (
     <div className="admin-dashboard">
-      <div className="sidebar">
+      <div className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''} ${mobileMenuOpen ? 'mobile-open' : ''}`}>
+        <div className="sidebar-toggle" onClick={toggleSidebar}>
+          <i className="fas fa-chevron-left"></i>
+        </div>
         <div className="sidebar-header">
           {/* Logo and Adminator text */}
           <span>Adminator</span>
@@ -267,8 +282,10 @@ const AdminPage = ({ user }) => {
                 e.preventDefault();
                 setActiveComponent('dashboard');
               }}
+              data-title="Dashboard"
             >
-              <i className="fas fa-tachometer-alt"></i> Dashboard
+              <i className="fas fa-tachometer-alt"></i>
+              <span>Dashboard</span>
             </a>
           </li>
           <li>
@@ -279,8 +296,10 @@ const AdminPage = ({ user }) => {
                 e.preventDefault();
                 setActiveComponent('user-management');
               }}
+              data-title="User Management"
             >
-              <i className="fas fa-users"></i> User Management
+              <i className="fas fa-users"></i>
+              <span>User Management</span>
             </a>
           </li>
           <li>
@@ -291,8 +310,10 @@ const AdminPage = ({ user }) => {
                 e.preventDefault();
                 setActiveComponent('partner');
               }}
+              data-title="Partner"
             >
-              <i className="fas fa-handshake"></i> Partner
+              <i className="fas fa-handshake"></i>
+              <span>Partner</span>
             </a>
           </li>
           <li>
@@ -303,8 +324,10 @@ const AdminPage = ({ user }) => {
                 e.preventDefault();
                 setActiveComponent('calendar');
               }}
+              data-title="Calendar"
             >
-              <i className="fas fa-calendar-alt"></i> Calendar
+              <i className="fas fa-calendar-alt"></i>
+              <span>Calendar</span>
             </a>
           </li>
           <li>
@@ -315,8 +338,10 @@ const AdminPage = ({ user }) => {
                 e.preventDefault();
                 setActiveComponent('chat');
               }}
+              data-title="Chat"
             >
-              <i className="fas fa-comments"></i> Chat
+              <i className="fas fa-comments"></i>
+              <span>Chat</span>
             </a>
           </li>
           <li>
@@ -327,8 +352,10 @@ const AdminPage = ({ user }) => {
                 e.preventDefault();
                 setActiveComponent('charts');
               }}
+              data-title="Charts"
             >
-              <i className="fas fa-chart-bar"></i> Charts
+              <i className="fas fa-chart-bar"></i>
+              <span>Charts</span>
             </a>
           </li>
           <li>
@@ -339,8 +366,10 @@ const AdminPage = ({ user }) => {
                 e.preventDefault();
                 setActiveComponent('forms');
               }}
+              data-title="Forms"
             >
-              <i className="fas fa-file-alt"></i> Forms
+              <i className="fas fa-file-alt"></i>
+              <span>Forms</span>
             </a>
           </li>
           <li>
@@ -351,8 +380,10 @@ const AdminPage = ({ user }) => {
                 e.preventDefault();
                 setActiveComponent('ui-elements');
               }}
+              data-title="UI Elements"
             >
-              <i className="fas fa-cube"></i> UI Elements
+              <i className="fas fa-cube"></i>
+              <span>UI Elements</span>
             </a>
           </li>
           <li>
@@ -363,8 +394,10 @@ const AdminPage = ({ user }) => {
                 e.preventDefault();
                 setActiveComponent('tables');
               }}
+              data-title="Tables"
             >
-              <i className="fas fa-table"></i> Tables
+              <i className="fas fa-table"></i>
+              <span>Tables</span>
             </a>
           </li>
           <li>
@@ -375,8 +408,10 @@ const AdminPage = ({ user }) => {
                 e.preventDefault();
                 setActiveComponent('maps');
               }}
+              data-title="Maps"
             >
-              <i className="fas fa-map"></i> Maps
+              <i className="fas fa-map"></i>
+              <span>Maps</span>
             </a>
           </li>
           <li>
@@ -387,8 +422,10 @@ const AdminPage = ({ user }) => {
                 e.preventDefault();
                 setActiveComponent('pages');
               }}
+              data-title="Pages"
             >
-              <i className="fas fa-file"></i> Pages
+              <i className="fas fa-file"></i>
+              <span>Pages</span>
             </a>
           </li>
           <li>
@@ -399,8 +436,10 @@ const AdminPage = ({ user }) => {
                 e.preventDefault();
                 setActiveComponent('multiple-levels');
               }}
+              data-title="Multiple Levels"
             >
-              <i className="fas fa-layer-group"></i> Multiple Levels
+              <i className="fas fa-layer-group"></i>
+              <span>Multiple Levels</span>
             </a>
           </li>
           <li>
@@ -411,13 +450,19 @@ const AdminPage = ({ user }) => {
                 e.preventDefault();
                 setActiveComponent('notification-manager');
               }}
+              data-title="Quản lý thông báo"
             >
-              <i className="fas fa-bell"></i> Quản lý thông báo
+              <i className="fas fa-bell"></i>
+              <span>Quản lý thông báo</span>
             </a>
           </li>
         </ul>
       </div>
       <div className="main-content">
+        {/* Mobile menu toggle for small screens */}
+        <div className="mobile-menu-toggle" onClick={toggleMobileMenu}>
+          <i className="fas fa-bars"></i>
+        </div>
         {/* Header will go here */}
         {/* Dashboard content will go here */}
         {renderActiveComponent()}

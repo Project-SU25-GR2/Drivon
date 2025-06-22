@@ -13,12 +13,12 @@
 }
 
 .notification-icon:hover {
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 215, 0, 0.2);
 }
 
 .bell-icon {
   font-size: 20px;
-  color: #333;
+  color: #FFD700;
 }
 
 .notification-badge {

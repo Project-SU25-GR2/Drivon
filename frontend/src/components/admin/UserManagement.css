@@ -18,6 +18,7 @@
 .search-box {
     flex: 1;
     max-width: 300px;
+    background: linear-gradient(135deg, #b3b7c7 0%, #2c2731 100%);
 }
 
 .search-input {
