@@ -14,9 +14,13 @@ import { FaGasPump, FaCalendarAlt, FaUserFriends, FaCogs, FaRoad, FaMapMarkerAlt
 import { BsEvStationFill } from "react-icons/bs";
 import { BsFillFuelPumpDieselFill } from "react-icons/bs";
 import Loader from '../others/loader';
+import { useCarData } from '../../contexts/CarDataContext';
+
 const ViewCarDetail = () => {
   const { licensePlate } = useParams();
   const navigate = useNavigate();
+  const { carsData, getCarByLicensePlate, fetchCarsData } = useCarData();
+  
   const [car, setCar] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -90,52 +94,89 @@ const ViewCarDetail = () => {
   });
 
   useEffect(() => {
-    axios.get(`http://localhost:8080/api/cars/${licensePlate}`)
-      .then(res => {
-        console.log('Car data:', res.data);
-        setCar(res.data);
-        setMainImage(res.data.mainImage);
-        setOtherImages(res.data.otherImages || []);
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error('Error fetching car:', error);
-        setError('Không tìm thấy xe');
-        setLoading(false);
-      });
+    // Fetch cars data using context first
+    const loadCarData = async () => {
+      try {
+        await fetchCarsData();
+      } catch (error) {
+        console.error('Error loading cars data:', error);
+      }
+    };
+    loadCarData();
+  }, [fetchCarsData]);
 
-    // Fetch hợp đồng gần nhất của xe
-    axios.get(`http://localhost:8080/api/contracts/by-car/${licensePlate}`)
-      .then(res => {
-        console.log('Contract data:', res.data);
-        setContract(res.data);
-        // Set owner info from contract data
-        if (res.data) {
-          setOwnerInfo({
-            userId: res.data.customerId,
-            fullName: res.data.name,
-            email: res.data.email,
-            phone: res.data.phone
-          });
-        }
-      })
-      .catch(error => {
-        console.error('Error fetching contract:', error);
-        setContract(null);
-      });
+  useEffect(() => {
+    // Try to get car from context first
+    const carFromContext = getCarByLicensePlate(licensePlate);
+    
+    if (carFromContext) {
+      // Car found in context, use it
+      setCar(carFromContext);
+      setMainImage(carFromContext.mainImage);
+      setOtherImages(carFromContext.otherImages || []);
+      setContract(carFromContext.contract);
+      setReviewsData(carFromContext.reviewStats);
+      setReviewsLoading(false);
+      setLoading(false);
+      
+      // Set owner info from contract data
+      if (carFromContext.contract) {
+        setOwnerInfo({
+          userId: carFromContext.contract.customerId,
+          fullName: carFromContext.contract.name,
+          email: carFromContext.contract.email,
+          phone: carFromContext.contract.phone
+        });
+      }
+    } else {
+      // Car not found in context, fetch individually
+      axios.get(`http://localhost:8080/api/cars/${licensePlate}`)
+        .then(res => {
+          console.log('Car data:', res.data);
+          setCar(res.data);
+          setMainImage(res.data.mainImage);
+          setOtherImages(res.data.otherImages || []);
+          setLoading(false);
+        })
+        .catch(error => {
+          console.error('Error fetching car:', error);
+          setError('Không tìm thấy xe');
+          setLoading(false);
+        });
 
-    // Fetch reviews
-    setReviewsLoading(true);
-    axios.get(`http://localhost:8080/api/reviews/car/${licensePlate}`)
-      .then(res => {
-        setReviewsData(res.data);
-        setReviewsLoading(false);
-      })
-      .catch(error => {
-        console.error('Error fetching reviews:', error);
-        setReviewsLoading(false);
-      });
-  }, [licensePlate]);
+      // Fetch hợp đồng gần nhất của xe
+      axios.get(`http://localhost:8080/api/contracts/by-car/${licensePlate}`)
+        .then(res => {
+          console.log('Contract data:', res.data);
+          setContract(res.data);
+          // Set owner info from contract data
+          if (res.data) {
+            setOwnerInfo({
+              userId: res.data.customerId,
+              fullName: res.data.name,
+              email: res.data.email,
+              phone: res.data.phone
+            });
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching contract:', error);
+          setContract(null);
+        });
+
+      // Fetch reviews
+      setReviewsLoading(true);
+      axios.get(`http://localhost:8080/api/reviews/car/${licensePlate}`)
+        .then(res => {
+          setReviewsData(res.data);
+          setReviewsLoading(false);
+        })
+        .catch(error => {
+          console.error('Error fetching reviews:', error);
+          setReviewsLoading(false);
+        });
+    }
+  }, [licensePlate, carsData, getCarByLicensePlate]);
 
   useEffect(() => {
     function handleClickOutside(event) {

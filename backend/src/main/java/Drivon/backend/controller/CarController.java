@@ -4,6 +4,9 @@ import Drivon.backend.model.Car;
 import Drivon.backend.model.CarImage;
 import Drivon.backend.service.CarService;
 import Drivon.backend.repository.CarImageRepository;
+import Drivon.backend.service.ContractService;
+import Drivon.backend.service.ReviewService;
+import Drivon.backend.dto.ReviewResponseDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/cars")
@@ -23,6 +27,12 @@ public class CarController {
 
     @Autowired
     private CarImageRepository carImageRepository;
+
+    @Autowired
+    private ContractService contractService;
+
+    @Autowired
+    private ReviewService reviewService;
 
     @GetMapping
     public ResponseEntity<?> getAllCars() {
@@ -191,6 +201,70 @@ public class CarController {
             }
 
             return ResponseEntity.ok(carsWithImages);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    @GetMapping("/active-lease-with-details")
+    public ResponseEntity<?> getActiveLeaseCarsWithDetails() {
+        try {
+            List<Car> cars = carService.getActiveLeaseCars();
+            List<Map<String, Object>> carsWithDetails = new ArrayList<>();
+
+            for (Car car : cars) {
+                Map<String, Object> carData = new HashMap<>();
+                carData.put("licensePlate", car.getLicensePlate());
+                carData.put("brand", car.getBrand());
+                carData.put("model", car.getModel());
+                carData.put("year", car.getYear());
+                carData.put("seats", car.getSeats());
+                carData.put("description", car.getDescription());
+                carData.put("type", car.getType());
+                carData.put("transmission", car.getTransmission());
+                carData.put("fuelType", car.getFuelType());
+                carData.put("fuelConsumption", car.getFuelConsumption());
+                carData.put("status", car.getStatus());
+                carData.put("location", car.getLocation());
+                carData.put("ownerId", car.getOwnerId());
+                
+                // Get main image from cars table
+                carData.put("mainImage", car.getMainImage());
+
+                // Get other images from car_images table
+                List<CarImage> otherImages = carImageRepository.findByCarId(car.getLicensePlate());
+                List<String> otherImageUrls = new ArrayList<>();
+                for (CarImage image : otherImages) {
+                    otherImageUrls.add(image.getImageUrl());
+                }
+                carData.put("otherImages", otherImageUrls);
+
+                // Get contract details
+                try {
+                    Optional<Drivon.backend.model.Contract> contractOpt = contractService.getLatestContractByCar(car.getLicensePlate());
+                    if (contractOpt.isPresent()) {
+                        carData.put("contract", contractOpt.get());
+                    } else {
+                        carData.put("contract", null);
+                    }
+                } catch (Exception e) {
+                    carData.put("contract", null);
+                }
+
+                // Get review statistics
+                try {
+                    ReviewResponseDto reviewStats = reviewService.getReviewsForCar(car.getLicensePlate());
+                    carData.put("reviewStats", reviewStats);
+                } catch (Exception e) {
+                    carData.put("reviewStats", new ReviewResponseDto(0, 0, new HashMap<>(), new ArrayList<>()));
+                }
+
+                carsWithDetails.add(carData);
+            }
+
+            return ResponseEntity.ok(carsWithDetails);
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
             error.put("error", e.getMessage());
