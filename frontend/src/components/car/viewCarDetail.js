@@ -71,8 +71,16 @@ const ViewCarDetail = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const reviewsPerPage = 5;
 
-  // Lấy 2 đánh giá 5 sao đầu tiên để hiển thị
-  const topFiveStarReviews = reviewsData.reviews.filter(review => review.rating === 5).slice(0, 2);
+  // Lấy 2 đánh giá nổi bật: ưu tiên 5 sao, nếu không có thì lấy 2 đánh giá sao bất kỳ (cao nhất trước)
+  const topHighlightReviews = (() => {
+    const fiveStars = reviewsData.reviews.filter(review => review.rating === 5);
+    if (fiveStars.length > 0) {
+      return fiveStars.slice(0, 2);
+    }
+    // Nếu không có 5 sao, lấy 2 đánh giá sao cao nhất còn lại
+    const sorted = [...reviewsData.reviews].sort((a, b) => b.rating - a.rating);
+    return sorted.slice(0, 2);
+  })();
 
   // Lọc đánh giá cho modal
   const allReviewsFiltered = allReviewsFilter === 0 
@@ -494,12 +502,12 @@ const ViewCarDetail = () => {
             <div className="reviews-list">
               {reviewsLoading ? (
                 <p>Đang tải đánh giá...</p>
-              ) : topFiveStarReviews.length === 0 ? (
+              ) : topHighlightReviews.length === 0 ? (
                 <div className="no-reviews">
                   <p>Chưa có đánh giá nào nổi bật.</p>
                 </div>
               ) : (
-                topFiveStarReviews.map(review => (
+                topHighlightReviews.map(review => (
                   <div key={review.id} className="review-item">
                     <div className="review-header">
                       <div className="reviewer-info">
