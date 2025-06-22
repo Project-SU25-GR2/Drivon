@@ -230,7 +230,7 @@ const RentCar = () => {
                 </Link>
               ))}
             </div>
-            {/* Pagination Controls */}
+            {/* Nút phân trang */}
             <div className="pagination-controls">
               <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>&lt;</button>
               {Array.from({ length: totalPages }, (_, i) => (
