@@ -281,7 +281,14 @@ function App() {
                       </MainLayout>
                     }
                   />
-                  <Route path="/my-rentals" element={<MyRentals />} />
+                  <Route
+                    path="/my-rentals"
+                    element={
+                      <MainLayout user={user} handleLogout={handleLogout}>
+                        <MyRentals />
+                      </MainLayout>
+                    }
+                  />
                   <Route
                     path="/404"
                     element={

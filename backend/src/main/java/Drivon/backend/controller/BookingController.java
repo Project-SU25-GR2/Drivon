@@ -35,4 +35,14 @@ public class BookingController {
         Booking updatedBooking = bookingService.updateBookingStatus(bookingId, status);
         return ResponseEntity.ok(updatedBooking);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Booking> getBookingById(@PathVariable Integer id) {
+        Booking booking = bookingService.getBookingById(id);
+        if (booking != null) {
+            return ResponseEntity.ok(booking);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

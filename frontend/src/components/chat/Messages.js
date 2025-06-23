@@ -34,6 +34,8 @@ const Messages = () => {
   // Thêm ref để tránh gửi tin nhắn tự động 2 lần
   const hasAutoSentMessage = useRef(false);
 
+  const [loading, setLoading] = useState(false);
+
   const scrollToBottom = () => {
     const chatBox = chatMessagesRef.current;
     if (chatBox) {
@@ -43,42 +45,35 @@ const Messages = () => {
 
   const fetchMessages = async (userId1, userId2) => {
     try {
+      setLoading(true);
       const response = await axios.get(
         `http://localhost:8080/api/messages/conversation/${userId1}/${userId2}`
       );
-      
-      // Thay vì merge, set luôn danh sách tin nhắn mới từ server
       setMessages(response.data);
-      
-      // Get the conversation ID for this user pair
       const conversation = conversations.find(conv => conv.id === userId2);
       if (conversation && conversation.conversationId) {
         setSelectedConversationId(conversation.conversationId);
       }
     } catch (error) {
       console.error('Error fetching messages:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchConversations = async () => {
     try {
+      setLoading(true);
       const response = await axios.get(`http://localhost:8080/api/messages/conversations/${currentUser.userId}`);
-      
-      // Merge new conversations with existing ones to preserve unread counts and other state
       setConversations(prevConversations => {
         const newConversations = response.data;
-        
-        // Create a map of existing conversations by ID
         const existingConversationsMap = new Map();
         prevConversations.forEach(conv => {
           existingConversationsMap.set(conv.id, conv);
         });
-        
-        // Merge conversations, preserving existing state like unread counts
         const mergedConversations = newConversations.map(newConv => {
           const existingConv = existingConversationsMap.get(newConv.id);
           if (existingConv) {
-            // Preserve unread count and other state from existing conversation
             return {
               ...newConv,
               unread: existingConv.unread || newConv.unread || 0
@@ -86,20 +81,18 @@ const Messages = () => {
           }
           return newConv;
         });
-        
-        // Check if we have any new conversations
         const hasNewConversations = newConversations.some(newConv => 
           !existingConversationsMap.has(newConv.id)
         );
-        
         if (hasNewConversations) {
           console.log('New conversations found via polling');
         }
-        
         return mergedConversations;
       });
     } catch (error) {
       console.error('Error fetching conversations:', error);
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -18,9 +18,8 @@ import {
 } from "antd";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import MainLayout from "../home/MainLayout";
 import "../../styles/MyRentals.css";
-import { FrownOutlined, MehOutlined, SmileOutlined } from "@ant-design/icons";
+import { FrownOutlined, MehOutlined, SmileOutlined, CarOutlined, EnvironmentOutlined, CalendarOutlined, CreditCardOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 
@@ -38,6 +37,7 @@ const MyRentals = () => {
   const [hoverValue, setHoverValue] = useState(undefined);
   const [reviewedRentals, setReviewedRentals] = useState([]);
   const [isReviewSubmitted, setIsReviewSubmitted] = useState(false);
+  const [carsInfo, setCarsInfo] = useState({});
 
   const tooltips = ["Rất tệ", "Tệ", "Bình thường", "Tốt", "Rất tốt"];
 
@@ -65,7 +65,23 @@ const MyRentals = () => {
       const response = await axios.get(
         `http://localhost:8080/api/payments/user/${userId}`
       );
-      setRentals(response.data);
+      const payments = response.data;
+
+      // Lấy status booking cho từng payment
+      const paymentsWithBookingStatus = await Promise.all(
+        payments.map(async (payment) => {
+          if (!payment.bookingId) return payment;
+          try {
+            const bookingRes = await axios.get(`http://localhost:8080/api/bookings/${payment.bookingId}`);
+            console.log('Booking API trả về cho bookingId', payment.bookingId, ':', bookingRes.data);
+            return { ...payment, bookingStatus: bookingRes.data.status };
+          } catch (err) {
+            return { ...payment, bookingStatus: "Không xác định" };
+          }
+        })
+      );
+
+      setRentals(paymentsWithBookingStatus);
     } catch (error) {
       console.error("Error fetching rentals:", error);
       message.error("Không thể tải lịch sử đặt xe");
@@ -73,6 +89,24 @@ const MyRentals = () => {
       setLoading(false);
     }
   };
+
+  // Fetch car info for all rentals
+  useEffect(() => {
+    if (rentals.length > 0) {
+      const carIds = rentals.map(r => r.carId).filter(Boolean);
+      const uniqueCarIds = [...new Set(carIds)];
+      uniqueCarIds.forEach(carId => {
+        if (!carsInfo[carId]) {
+          axios.get(`http://localhost:8080/api/cars/${carId}`)
+            .then(res => {
+              setCarsInfo(prev => ({ ...prev, [carId]: res.data }));
+            })
+            .catch(() => {});
+        }
+      });
+    }
+    // eslint-disable-next-line
+  }, [rentals]);
 
   const getStatusColor = (status) => {
     switch (status?.toUpperCase()) {
@@ -82,6 +116,23 @@ const MyRentals = () => {
         return "warning";
       case "REFUNDED":
         return "error";
+      default:
+        return "default";
+    }
+  };
+
+  const getBookingStatusColor = (bookingStatus) => {
+    switch (bookingStatus?.toLowerCase()) {
+      case "pending":
+        return "default";
+      case "approved":
+        return "processing";
+      case "cancelled":
+        return "error";
+      case "ongoing":
+        return "warning";
+      case "completed":
+        return "success";
       default:
         return "default";
     }
@@ -155,38 +206,69 @@ const MyRentals = () => {
   const renderRentalCard = (rental) => {
     // A user can rate a car if the rental is paid.
     const canRate = rental.status?.toUpperCase() === "PAID";
-
+    const bookingStatus = rental.bookingStatus || rental.booking_status || rental.booking_status_text;
+    const car = carsInfo[rental.carId];
     return (
       <Col xs={24} sm={24} md={12} lg={8} xl={8} key={rental.paymentId}>
         <Card className="rental-card">
-          <div className="rental-header">
-            <Title level={4}>Mã đơn: {rental.orderCode}</Title>
-            <Tag color={getStatusColor(rental.status)}>{rental.status}</Tag>
+          <div className="rental-card-header">
+            <div className="rental-card-title">
+              <span className="rental-card-icon"><CarOutlined /></span>
+              <span>Đặt xe thành công</span>
+            </div>
+            <div className="rental-card-status">
+              <Tag className="status-paid">PAID</Tag>
+              <Tag className="status-completed">completed</Tag>
+            </div>
+            <div className="rental-card-order">Mã đơn: #{rental.orderCode}</div>
           </div>
-          <div className="rental-info">
-            <Text>Biển số xe: {rental.carId}</Text>
-            <Text>
-              Thời gian thuê: {formatDate(rental.rentalStartDate)} -{" "}
-              {formatDate(rental.rentalEndDate)}
-            </Text>
-            <Text>Phương thức thanh toán: {rental.paymentMethod}</Text>
-            <Text>
-              Yêu cầu thêm: {rental.additionalRequirements || "Không có"}
-            </Text>
-            <Text>Ngày đặt: {formatDate(rental.paymentDate)}</Text>
+          <div className="rental-card-section">
+            <span className="rental-card-section-icon"><EnvironmentOutlined /></span>
+            <div className="rental-card-section-content">
+              {car && (
+                <span className="rental-card-carinfo">{car.brand} {car.model} {car.year}</span>
+              )}
+              <span className="rental-card-section-label">Biển số xe: {rental.carId}</span>
+            </div>
           </div>
-          <div className="rental-actions">
-            <Button type="primary" onClick={() => handleViewDetails(rental)}>
-              Xem chi tiết
-            </Button>
-            {canRate && (
-              <Button
-                style={{ marginLeft: "8px" }}
-                onClick={() => handleRateCar(rental)}
-              >
-                Đánh giá xe
+          <div className="rental-card-section rental-card-time-section">
+            <span className="rental-card-section-icon rental-card-time-icon"><CalendarOutlined /></span>
+            <div className="rental-card-time-content">
+              <div className="rental-card-section-label">Thời gian thuê</div>
+              <div className="rental-card-time-value">{formatDate(rental.rentalStartDate).replace('lúc ', '')}</div>
+              <div className="rental-card-time-between">đến</div>
+              <div className="rental-card-time-value">{formatDate(rental.rentalEndDate).replace('lúc ', '')}</div>
+            </div>
+          </div>
+          <div className="rental-card-section">
+            <span className="rental-card-section-icon"><CreditCardOutlined /></span>
+            <span className="rental-card-section-label">Phương thức thanh toán</span>
+            <span className="rental-card-section-value">{rental.paymentMethod}</span>
+          </div>
+          <div className="rental-card-special">
+            <div>
+              <span className="special-label">Yêu cầu đặc biệt</span>
+              <span className="special-value">{rental.additionalRequirements || "Không có"}</span>
+            </div>
+            <div>
+              <span className="voucher-label">Voucher:</span>
+              <span className="voucher-value">{rental.discountPercent|| "0"}%</span>
+            </div>
+          </div>
+          <div className="rental-card-footer">
+            <div className="rental-card-date">
+              Đặt lúc: {formatDate(rental.paymentDate).replace('lúc ', '')}
+            </div>
+            <div className="rental-card-actions">
+              <Button className="detail-btn" type="primary" onClick={() => handleViewDetails(rental)}>
+                Xem chi tiết
               </Button>
-            )}
+              {canRate && (
+                <Button className="rate-btn" onClick={() => handleRateCar(rental)}>
+                  Đánh giá xe
+                </Button>
+              )}
+            </div>
           </div>
         </Card>
       </Col>
@@ -195,16 +277,21 @@ const MyRentals = () => {
 
   const renderRentalDetails = () => {
     if (!selectedRental) return null;
-
+    const bookingStatus = selectedRental.bookingStatus || selectedRental.booking_status || selectedRental.booking_status_text;
     return (
       <Descriptions bordered column={1} className="rental-details">
         <Descriptions.Item label="Mã đơn hàng">
           <Text strong>{selectedRental.orderCode}</Text>
         </Descriptions.Item>
-        <Descriptions.Item label="Trạng thái">
+        <Descriptions.Item label="Trạng thái thanh toán & booking">
           <Tag color={getStatusColor(selectedRental.status)}>
             {selectedRental.status}
           </Tag>
+          {bookingStatus && (
+            <Tag color={getBookingStatusColor(bookingStatus)} style={{ marginLeft: 4 }}>
+              {bookingStatus}
+            </Tag>
+          )}
         </Descriptions.Item>
         <Descriptions.Item label="Biển số xe">
           {selectedRental.carId}
@@ -237,27 +324,25 @@ const MyRentals = () => {
   }
 
   return (
-    <MainLayout user={user}>
-      <div className="my-rentals-container">
-        <div className="my-rentals-content">
-          <Title level={2} className="page-title">
-            Lịch sử đặt xe của tôi
-          </Title>
-          {loading ? (
-            <div className="loading-container">
-              <Spin size="large" />
-            </div>
-          ) : rentals.length === 0 ? (
-            <Empty
-              description="Bạn chưa có lịch sử đặt xe nào"
-              className="empty-state"
-            />
-          ) : (
-            <Row gutter={[24, 24]} className="rentals-grid">
-              {rentals.map(renderRentalCard)}
-            </Row>
-          )}
-        </div>
+    <div className="my-rentals-container">
+      <div className="my-rentals-content">
+        <Title level={2} className="page-title">
+          Lịch sử đặt xe của tôi
+        </Title>
+        {loading ? (
+          <div className="loading-container">
+            <Spin size="large" />
+          </div>
+        ) : rentals.length === 0 ? (
+          <Empty
+            description="Bạn chưa có lịch sử đặt xe nào"
+            className="empty-state"
+          />
+        ) : (
+          <Row gutter={[24, 24]} className="rentals-grid">
+            {rentals.map(renderRentalCard)}
+          </Row>
+        )}
       </div>
 
       <Modal
@@ -328,7 +413,7 @@ const MyRentals = () => {
           </>
         )}
       </Modal>
-    </MainLayout>
+    </div>
   );
 };
 

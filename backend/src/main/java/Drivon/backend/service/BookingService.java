@@ -89,4 +89,8 @@ public class BookingService {
                 }
                 return bookingRepository.save(booking);
         }
+
+        public Booking getBookingById(Integer id) {
+                return bookingRepository.findById(id).orElse(null);
+        }
 }
