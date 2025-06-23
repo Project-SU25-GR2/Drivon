@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import Loader from '../others/loader';
 import './PartnerPage.css';
 import { usePartnerData } from '../../contexts/PartnerDataContext';
+import { useUserData } from '../../contexts/UserDataContext';
 
 const PartnerPage = () => {
   const { partnersData, loading, error, fetchPartnersData, updatePartnerStatus } = usePartnerData();
+  const { updateUserRole } = useUserData();
   const [selectedPartner, setSelectedPartner] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedImages, setSelectedImages] = useState({ main: null, others: [] });
@@ -17,6 +19,25 @@ const PartnerPage = () => {
   const handleStatusChange = async (id, newStatus) => {
     try {
       await updatePartnerStatus(id, newStatus);
+      
+      // Lấy thông tin partner để có userId
+      const partner = partnersData.find(p => p.id === id);
+      if (partner && partner.userId) {
+        try {
+          if (newStatus === 'ACTIVE_LEASE') {
+            // Nếu status được đổi thành ACTIVE_LEASE, cập nhật role user thành owner
+            await updateUserRole(partner.userId, 'owner');
+            console.log(`Đã cập nhật role của user ${partner.userId} thành owner`);
+          } else if (newStatus === 'EXPIRED_LEASE' || newStatus === 'CANCELLED_LEASE') {
+            // Nếu status được đổi thành EXPIRED_LEASE hoặc CANCELLED_LEASE, đổi role về renter
+            await updateUserRole(partner.userId, 'renter');
+            console.log(`Đã cập nhật role của user ${partner.userId} về renter (do ${newStatus})`);
+          }
+        } catch (roleError) {
+          console.error('Lỗi khi cập nhật role user:', roleError);
+          // Không throw error để không ảnh hưởng đến việc cập nhật status partner
+        }
+      }
     } catch (err) {
       console.error('Error updating partner status:', err);
       alert('Failed to update status: ' + (err.response?.data?.message || err.message));
