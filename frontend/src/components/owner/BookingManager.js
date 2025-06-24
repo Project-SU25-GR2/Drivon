@@ -7,6 +7,7 @@ import {
   FaMoneyBillWave,
   FaCalendarAlt,
 } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const statusOptions = [
   { value: "pending", label: "Pending" },
@@ -112,6 +113,8 @@ const RentalHistoryPage = () => {
   const [statusFilter, setStatusFilter] = useState("");
   const [search, setSearch] = useState("");
   const [date, setDate] = useState("");
+  const [hoveredRow, setHoveredRow] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -201,7 +204,12 @@ const RentalHistoryPage = () => {
             </thead>
             <tbody>
               {filteredData.map((rental) => (
-                <tr key={rental.id}>
+                <tr
+                  key={rental.id}
+                  onMouseEnter={() => setHoveredRow(rental.id)}
+                  onMouseLeave={() => setHoveredRow(null)}
+                  style={{ position: "relative" }}
+                >
                   <td>
                     <b>
                       {rental.car?.brand} {rental.car?.model}
@@ -210,7 +218,34 @@ const RentalHistoryPage = () => {
                       {rental.car?.licensePlate}
                     </div>
                   </td>
-                  <td>
+                  <td style={{ position: "relative" }}>
+                    <button
+                      className="chatIconBtn"
+                      style={{
+                        background: "none",
+                        border: "none",
+                        marginRight: 8,
+                        cursor: "pointer",
+                        verticalAlign: "middle",
+                        fontSize: 20,
+                        color: "#6c63ff"
+                      }}
+                      title="Nhắn tin với người thuê"
+                      onClick={() => {
+                        console.log('Renter info:', rental.renter);
+                        navigate("/messages", {
+                          state: {
+                            selectedUser: {
+                              id: rental.renter?.userId || rental.renter?.id || rental.renter?._id,
+                              name: rental.renter?.fullName || rental.renter?.email || rental.renter?.id,
+                              avatar: rental.renter?.avatar || undefined,
+                            },
+                          },
+                        });
+                      }}
+                    >
+                      <i className="bi bi-chat-dots"></i>
+                    </button>
                     {rental.renter?.fullName ||
                       rental.renter?.email ||
                       rental.renter?.id}

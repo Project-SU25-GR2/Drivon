@@ -148,11 +148,11 @@ const MainLayout = ({ user, handleLogout, children }) => {
           DRI<span>VON</span>
         </div>
         <nav>
-          <Link to="/">Home</Link>
-          <Link to="/rent-car">Rent car</Link>
-          <Link to="/contracts">Contracts</Link>
-          <Link to="/rent-your-car">Become a Partner</Link>
-          <a href="#">Contact</a>
+          <Link to="/" className={location.pathname === "/" ? "active" : ""}>Home</Link>
+          <Link to="/rent-car" className={location.pathname.startsWith("/rent-car") ? "active" : ""}>Rent car</Link>
+          <Link to="/contracts" className={location.pathname.startsWith("/contracts") ? "active" : ""}>Contracts</Link>
+          <Link to="/rent-your-car" className={location.pathname.startsWith("/rent-your-car") ? "active" : ""}>Become a Partner</Link>
+          <Link to="/contact" className={location.pathname === "/contact" ? "active" : ""}>Contact</Link>
           <div className="search-box">
             <input type="text" placeholder="Search..." />
           </div>

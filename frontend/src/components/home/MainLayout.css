@@ -119,6 +119,11 @@ nav a:hover {
     color: #007bff;
 }
 
+.HomeLayout nav a.active {
+    border-bottom: 3px solid #FFD700;
+    padding-bottom: 2px;
+}
+
 .auth-payment-buttons {
     display: flex;
     gap: 1rem;

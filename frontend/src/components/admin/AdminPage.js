@@ -453,7 +453,7 @@ const AdminPage = ({ user }) => {
               data-title="Quản lý thông báo"
             >
               <i className="fas fa-bell"></i>
-              <span>Quản lý thông báo</span>
+              <span>Notification Management</span>
             </a>
           </li>
         </ul>

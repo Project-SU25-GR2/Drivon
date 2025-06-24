@@ -20,6 +20,7 @@ import Drivon.backend.repository.CarImageRepository;
 import java.util.ArrayList;
 import java.util.HashMap;
 import org.springframework.http.HttpStatus;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -127,18 +128,49 @@ public class AdminController {
 
             for (Contract contract : contracts) {
                 Map<String, Object> partner = new HashMap<>();
-                partner.put("id", contract.getId());
-                partner.put("contractNumber", contract.getContractNumber());
-                partner.put("name", contract.getName());
-                partner.put("phone", contract.getPhone());
-                partner.put("email", contract.getEmail());
-                partner.put("carId", contract.getCarId());
-                partner.put("pricePerDay", contract.getPricePerDay());
-                partner.put("deposit", contract.getDeposit());
-                partner.put("status", contract.getStatus());
+                
+                // Sử dụng reflection để truy cập các field private
+                try {
+                    java.lang.reflect.Field idField = Contract.class.getDeclaredField("id");
+                    java.lang.reflect.Field contractNumberField = Contract.class.getDeclaredField("contractNumber");
+                    java.lang.reflect.Field nameField = Contract.class.getDeclaredField("name");
+                    java.lang.reflect.Field phoneField = Contract.class.getDeclaredField("phone");
+                    java.lang.reflect.Field emailField = Contract.class.getDeclaredField("email");
+                    java.lang.reflect.Field carIdField = Contract.class.getDeclaredField("carId");
+                    java.lang.reflect.Field pricePerDayField = Contract.class.getDeclaredField("pricePerDay");
+                    java.lang.reflect.Field depositField = Contract.class.getDeclaredField("deposit");
+                    java.lang.reflect.Field statusField = Contract.class.getDeclaredField("status");
+                    
+                    idField.setAccessible(true);
+                    contractNumberField.setAccessible(true);
+                    nameField.setAccessible(true);
+                    phoneField.setAccessible(true);
+                    emailField.setAccessible(true);
+                    carIdField.setAccessible(true);
+                    pricePerDayField.setAccessible(true);
+                    depositField.setAccessible(true);
+                    statusField.setAccessible(true);
+                    
+                    partner.put("id", idField.get(contract));
+                    partner.put("contractNumber", contractNumberField.get(contract));
+                    partner.put("name", nameField.get(contract));
+                    partner.put("phone", phoneField.get(contract));
+                    partner.put("email", emailField.get(contract));
+                    partner.put("carId", carIdField.get(contract));
+                    partner.put("pricePerDay", pricePerDayField.get(contract));
+                    partner.put("deposit", depositField.get(contract));
+                    partner.put("status", statusField.get(contract));
+                    
+                    // Lấy userId từ email
+                    String email = (String) emailField.get(contract);
+                    Optional<User> user = userRepository.findByEmail(email);
+                    if (user.isPresent()) {
+                        partner.put("userId", user.get().getUserId());
+                    }
 
                 // Lấy thông tin xe
-                Car car = carService.getCarById(contract.getCarId());
+                    String carId = (String) carIdField.get(contract);
+                    Car car = carService.getCarById(carId);
                 if (car != null) {
                     Map<String, Object> carInfo = new HashMap<>();
                     carInfo.put("brand", car.getBrand());
@@ -156,7 +188,7 @@ public class AdminController {
                     carInfo.put("mainImage", car.getMainImage());
 
                     // Lấy other images từ table car_images
-                    List<CarImage> carImages = carImageRepository.findByCarId(contract.getCarId());
+                        List<CarImage> carImages = carImageRepository.findByCarId(carId);
                     List<String> otherImageUrls = new ArrayList<>();
                     for (CarImage image : carImages) {
                         otherImageUrls.add(image.getImageUrl());
@@ -164,6 +196,9 @@ public class AdminController {
                     carInfo.put("otherImages", otherImageUrls);
 
                     partner.put("car", carInfo);
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error accessing Contract fields: " + e.getMessage());
                 }
 
                 partners.add(partner);
@@ -183,9 +218,16 @@ public class AdminController {
         if (contract == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Contract not found");
         }
-        contract.setStatus(status);
+        
+        try {
+            java.lang.reflect.Field statusField = Contract.class.getDeclaredField("status");
+            statusField.setAccessible(true);
+            statusField.set(contract, status);
         contractService.save(contract);
         return ResponseEntity.ok("Status updated");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating status: " + e.getMessage());
+        }
     }
 
     @GetMapping("/check-role/{userId}")
