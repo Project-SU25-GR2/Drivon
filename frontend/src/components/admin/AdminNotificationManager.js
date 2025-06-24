@@ -50,12 +50,12 @@ const AdminNotificationManager = () => {
     e.preventDefault();
     
     if (!formData.content.trim()) {
-      setMessage('Vui lòng nhập nội dung thông báo');
+      setMessage('Please enter the notification content');
       return;
     }
 
     if (formData.targetType === 'USER_SPECIFIC' && !formData.targetUserId) {
-      setMessage('Vui lòng chọn người dùng cụ thể');
+      setMessage('Please select a specific user');
       return;
     }
 
@@ -83,10 +83,10 @@ const AdminNotificationManager = () => {
       // Reload notifications
       await loadNotifications();
 
-      setMessage('Thông báo đã được gửi thành công!');
+      setMessage('Notification sent successfully!');
     } catch (error) {
       console.error('Error sending notification:', error);
-      setMessage('Có lỗi xảy ra khi gửi thông báo');
+      setMessage('An error occurred while sending the notification');
     } finally {
       setLoading(false);
     }
@@ -94,17 +94,17 @@ const AdminNotificationManager = () => {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleString('vi-VN');
+    return date.toLocaleString('en-US');
   };
 
   const getTargetTypeLabel = (targetType) => {
     switch (targetType) {
       case 'ALL_USERS':
-        return 'Tất cả người dùng';
+        return 'All users';
       case 'OWNER_ONLY':
-        return 'Chỉ chủ xe';
+        return 'Car owners only';
       case 'USER_SPECIFIC':
-        return 'Người dùng cụ thể';
+        return 'Specific user';
       default:
         return targetType;
     }
@@ -113,9 +113,9 @@ const AdminNotificationManager = () => {
   const getTypeLabel = (type) => {
     switch (type) {
       case 'SYSTEM':
-        return 'Hệ thống';
+        return 'System';
       case 'PROMO':
-        return 'Khuyến mãi';
+        return 'Promotion';
       default:
         return type;
     }
@@ -128,19 +128,19 @@ const AdminNotificationManager = () => {
 
   return (
     <div className="admin-notification-manager">
-      <h2>Quản lý thông báo</h2>
+      <h2>Notification Management</h2>
 
-      {/* Form tạo thông báo */}
+      {/* Notification creation form */}
       <div className="notification-form-container">
-        <h3>Tạo thông báo mới</h3>
+        <h3>Create New Notification</h3>
         <form onSubmit={handleSubmit} className="notification-form">
           <div className="form-group">
-            <label>Nội dung thông báo:</label>
+            <label>Notification Content:</label>
             <textarea
               name="content"
               value={formData.content}
               onChange={handleInputChange}
-              placeholder="Nhập nội dung thông báo..."
+              placeholder="Enter notification content..."
               required
               rows="4"
             />
@@ -148,41 +148,41 @@ const AdminNotificationManager = () => {
 
           <div className="form-row">
             <div className="form-group">
-              <label>Loại thông báo:</label>
+              <label>Notification Type:</label>
               <select
                 name="type"
                 value={formData.type}
                 onChange={handleInputChange}
               >
-                <option value="SYSTEM">Hệ thống</option>
-                <option value="PROMO">Khuyến mãi</option>
+                <option value="SYSTEM">System</option>
+                <option value="PROMO">Promotion</option>
               </select>
             </div>
 
             <div className="form-group">
-              <label>Đối tượng nhận:</label>
+              <label>Recipient:</label>
               <select
                 name="targetType"
                 value={formData.targetType}
                 onChange={handleInputChange}
               >
-                <option value="ALL_USERS">Tất cả người dùng</option>
-                <option value="OWNER_ONLY">Chỉ chủ xe</option>
-                <option value="USER_SPECIFIC">Người dùng cụ thể</option>
+                <option value="ALL_USERS">All users</option>
+                <option value="OWNER_ONLY">Car owners only</option>
+                <option value="USER_SPECIFIC">Specific user</option>
               </select>
             </div>
           </div>
 
           {formData.targetType === 'USER_SPECIFIC' && (
             <div className="form-group">
-              <label>Chọn người dùng:</label>
+              <label>Select User:</label>
               <select
                 name="targetUserId"
                 value={formData.targetUserId}
                 onChange={handleInputChange}
                 required
               >
-                <option value="">Chọn người dùng...</option>
+                <option value="">Select user...</option>
                 {users.map(user => (
                   <option key={user.userId} value={user.userId}>
                     {user.fullName} ({user.email}) - {user.role}
@@ -193,23 +193,23 @@ const AdminNotificationManager = () => {
           )}
 
           {message && (
-            <div className={`message ${message.includes('thành công') ? 'success' : 'error'}`}>
+            <div className={`message ${message.includes('successfully') ? 'success' : 'error'}`}>
               {message}
             </div>
           )}
 
           <button type="submit" disabled={loading} className="submit-btn">
-            {loading ? 'Đang gửi...' : 'Gửi thông báo'}
+            {loading ? 'Sending...' : 'Send Notification'}
           </button>
         </form>
       </div>
 
-      {/* Danh sách thông báo */}
+      {/* Notification history */}
       <div className="notifications-list-container">
-        <h3>Lịch sử thông báo</h3>
+        <h3>Notification History</h3>
         <div className="notifications-list">
           {notifications.length === 0 ? (
-            <p>Chưa có thông báo nào</p>
+            <p>No notifications yet</p>
           ) : (
             notifications.map(notification => (
               <div key={notification.notificationId} className="notification-item">
@@ -234,7 +234,7 @@ const AdminNotificationManager = () => {
                     {formatDate(notification.createdAt)}
                   </span>
                   <span className="notification-status">
-                    {notification.isRead ? 'Đã đọc' : 'Chưa đọc'}
+                    {notification.isRead ? 'Read' : 'Unread'}
                   </span>
                 </div>
               </div>
