@@ -112,22 +112,9 @@ public class NotificationController {
     @GetMapping
     public ResponseEntity<List<Notification>> getNotifications(Principal principal) {
         System.out.println("getNotifications called with principal: " + (principal != null ? principal.getName() : "null"));
-        
-        if (principal == null) {
-            System.out.println("Principal is null, returning bad request");
-            return ResponseEntity.badRequest().build();
-        }
-
-        Long userId = notificationService.getUserIdByEmail(principal.getName());
-        System.out.println("User ID from email " + principal.getName() + ": " + userId);
-        
-        if (userId == null) {
-            System.out.println("User ID is null, returning bad request");
-            return ResponseEntity.badRequest().build();
-        }
-
-        List<Notification> notifications = notificationService.getNotificationsForUser(userId);
-        System.out.println("Found " + notifications.size() + " notifications for user " + userId);
+        // Luôn trả về tất cả thông báo trong database
+        List<Notification> notifications = notificationService.getAllNotificationsForUser();
+        System.out.println("Found " + notifications.size() + " notifications (all in DB)");
         return ResponseEntity.ok(notifications);
     }
 

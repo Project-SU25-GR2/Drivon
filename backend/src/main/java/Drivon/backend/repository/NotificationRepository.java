@@ -36,4 +36,8 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
            "(n.targetType = 'OWNER_ONLY' AND :userRole = 'owner') OR " +
            "(n.targetType = 'USER_SPECIFIC' AND n.targetUserId = :userId))")
     Long countUnreadNotificationsForUser(@Param("userId") Long userId, @Param("userRole") String userRole);
+    
+    // Lấy tất cả thông báo cho user (không phân biệt target_type hay role)
+    @Query("SELECT n FROM Notification n ORDER BY n.createdAt DESC")
+    List<Notification> findAllNotificationsForUser();
 } 

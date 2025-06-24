@@ -32,6 +32,7 @@ import { RentalHistoryProvider } from "./contexts/RentalHistoryContext";
 import { CarManagementProvider } from "./contexts/CarManagementContext";
 import { PartnerDataProvider } from "./contexts/PartnerDataContext";
 import { UserDataProvider } from "./contexts/UserDataContext";
+import webSocketService from "./services/WebSocketService";
 // import CarRental404 from "./components/others/404";
 
 function App() {
@@ -50,6 +51,19 @@ function App() {
     }
   }, []);
 
+  // Tự động connect WebSocket khi user thay đổi
+  useEffect(() => {
+    if (user && user.userId) {
+      webSocketService.connect(user.userId);
+    } else {
+      webSocketService.disconnect();
+    }
+    // Cleanup khi component unmount
+    return () => {
+      webSocketService.disconnect();
+    };
+  }, [user]);
+
   const handleLoginSuccess = (userData) => {
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
@@ -64,6 +78,7 @@ function App() {
     setUser(null);
     localStorage.removeItem("user");
     localStorage.removeItem("token");
+    webSocketService.disconnect(); // Ngắt kết nối khi logout
     // Reload the page and redirect to home
     window.location.href = "/";
   };
