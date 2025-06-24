@@ -176,4 +176,30 @@ public class NotificationController {
 
         return ResponseEntity.ok("All notifications marked as read");
     }
+
+    // Admin xoá thông báo
+    @PreAuthorize("hasRole('ADMIN') or hasRole('admin')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteNotification(@PathVariable Long id) {
+        notificationService.deleteNotification(id);
+        return ResponseEntity.ok("Notification deleted successfully");
+    }
+
+    // Admin cập nhật thông báo
+    @PreAuthorize("hasRole('ADMIN') or hasRole('admin')")
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateNotification(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+        String content = (String) body.get("content");
+        String typeStr = (String) body.getOrDefault("type", "SYSTEM");
+        String targetTypeStr = (String) body.getOrDefault("targetType", "ALL_USERS");
+        Long targetUserId = body.get("targetUserId") != null ? Long.valueOf(body.get("targetUserId").toString()) : null;
+        Notification.NotificationType type = Notification.NotificationType.valueOf(typeStr);
+        Notification.TargetType targetType = Notification.TargetType.valueOf(targetTypeStr);
+        Notification updated = notificationService.updateNotification(id, content, type, targetType, targetUserId);
+        if (updated != null) {
+            return ResponseEntity.ok(updated);
+        } else {
+            return ResponseEntity.badRequest().body("Notification not found");
+        }
+    }
 } 

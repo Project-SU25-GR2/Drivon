@@ -110,4 +110,22 @@ public class NotificationService {
     public List<Notification> getAllNotificationsForUser() {
         return notificationRepository.findAllNotificationsForUser();
     }
+
+    // Xoá thông báo theo ID
+    public void deleteNotification(Long notificationId) {
+        notificationRepository.deleteById(notificationId);
+    }
+
+    // Cập nhật nội dung/thông tin thông báo
+    public Notification updateNotification(Long notificationId, String content, Notification.NotificationType type, Notification.TargetType targetType, Long targetUserId) {
+        Notification notification = notificationRepository.findById(notificationId).orElse(null);
+        if (notification != null) {
+            notification.setContent(content);
+            notification.setType(type);
+            notification.setTargetType(targetType);
+            notification.setTargetUserId(targetUserId);
+            return notificationRepository.save(notification);
+        }
+        return null;
+    }
 } 

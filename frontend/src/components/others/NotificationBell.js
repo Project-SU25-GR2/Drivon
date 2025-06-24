@@ -137,16 +137,14 @@ const NotificationBell = () => {
     }
   };
 
-  const getTargetTypeLabel = (targetType) => {
-    switch (targetType) {
-      case 'ALL_USERS':
-        return 'Tất cả người dùng';
-      case 'OWNER_ONLY':
-        return 'Chỉ chủ xe';
-      case 'USER_SPECIFIC':
-        return 'Người dùng cụ thể';
+  const getTypeLabel = (type) => {
+    switch (type) {
+      case 'SYSTEM':
+        return 'System';
+      case 'PROMO':
+        return 'Promotion';
       default:
-        return targetType;
+        return type;
     }
   };
 
@@ -201,8 +199,8 @@ const NotificationBell = () => {
                       <span className="notification-icon-item">
                         {getNotificationIcon(notification.type)}
                       </span>
-                      <span className="notification-type">
-                        {getTargetTypeLabel(notification.targetType)}
+                      <span className={`notification-type${notification.type === 'PROMO' ? ' promotion' : ''}`}>
+                        {getTypeLabel(notification.type)}
                       </span>
                       {!notification.isRead && (
                         <span className="unread-indicator">●</span>

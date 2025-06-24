@@ -124,8 +124,21 @@
 
 .notification-type {
   font-size: 12px;
-  color: #666;
+  color: #fff;
   font-weight: 500;
+  padding: 2px 10px;
+  border-radius: 12px;
+  margin-left: 6px;
+  margin-right: 6px;
+  display: inline-block;
+}
+
+.notification-type {
+  background: #007bff; /* Mặc định: System */
+}
+
+.notification-type.promotion {
+  background: #ff9800;
 }
 
 .unread-indicator {

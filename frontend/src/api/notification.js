@@ -97,4 +97,26 @@ export const getAllNotifications = async () => {
     console.error('getAllNotifications error:', error);
     throw error;
   }
+};
+
+export const deleteNotification = async (id) => {
+  try {
+    const response = await axios.delete(`${getBackendUrl()}/api/notifications/${id}`, {
+      headers: getAuthHeader()
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateNotification = async (id, data) => {
+  try {
+    const response = await axios.put(`${getBackendUrl()}/api/notifications/${id}`, data, {
+      headers: getAuthHeader()
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
 }; 
