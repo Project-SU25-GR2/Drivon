@@ -105,4 +105,9 @@ public class NotificationService {
     public List<User> getAllOwners() {
         return userRepository.findByRole(UserRole.owner);
     }
+
+    // Lấy tất cả thông báo cho user (không phân biệt role hay target_type)
+    public List<Notification> getAllNotificationsForUser() {
+        return notificationRepository.findAllNotificationsForUser();
+    }
 } 
