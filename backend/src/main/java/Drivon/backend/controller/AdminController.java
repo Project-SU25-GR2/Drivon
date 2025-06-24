@@ -167,35 +167,35 @@ public class AdminController {
                     if (user.isPresent()) {
                         partner.put("userId", user.get().getUserId());
                     }
-                    
-                    // Lấy thông tin xe
+
+                // Lấy thông tin xe
                     String carId = (String) carIdField.get(contract);
                     Car car = carService.getCarById(carId);
-                    if (car != null) {
-                        Map<String, Object> carInfo = new HashMap<>();
-                        carInfo.put("brand", car.getBrand());
-                        carInfo.put("model", car.getModel());
-                        carInfo.put("year", car.getYear());
-                        carInfo.put("seats", car.getSeats());
-                        carInfo.put("description", car.getDescription());
-                        carInfo.put("type", car.getType());
-                        carInfo.put("transmission", car.getTransmission());
-                        carInfo.put("fuelType", car.getFuelType());
-                        carInfo.put("fuelConsumption", car.getFuelConsumption());
-                        carInfo.put("location", car.getLocation());
+                if (car != null) {
+                    Map<String, Object> carInfo = new HashMap<>();
+                    carInfo.put("brand", car.getBrand());
+                    carInfo.put("model", car.getModel());
+                    carInfo.put("year", car.getYear());
+                    carInfo.put("seats", car.getSeats());
+                    carInfo.put("description", car.getDescription());
+                    carInfo.put("type", car.getType());
+                    carInfo.put("transmission", car.getTransmission());
+                    carInfo.put("fuelType", car.getFuelType());
+                    carInfo.put("fuelConsumption", car.getFuelConsumption());
+                    carInfo.put("location", car.getLocation());
 
-                        // Lấy main image từ table cars
-                        carInfo.put("mainImage", car.getMainImage());
+                    // Lấy main image từ table cars
+                    carInfo.put("mainImage", car.getMainImage());
 
-                        // Lấy other images từ table car_images
+                    // Lấy other images từ table car_images
                         List<CarImage> carImages = carImageRepository.findByCarId(carId);
-                        List<String> otherImageUrls = new ArrayList<>();
-                        for (CarImage image : carImages) {
-                            otherImageUrls.add(image.getImageUrl());
-                        }
-                        carInfo.put("otherImages", otherImageUrls);
+                    List<String> otherImageUrls = new ArrayList<>();
+                    for (CarImage image : carImages) {
+                        otherImageUrls.add(image.getImageUrl());
+                    }
+                    carInfo.put("otherImages", otherImageUrls);
 
-                        partner.put("car", carInfo);
+                    partner.put("car", carInfo);
                     }
                 } catch (Exception e) {
                     System.err.println("Error accessing Contract fields: " + e.getMessage());
@@ -223,8 +223,8 @@ public class AdminController {
             java.lang.reflect.Field statusField = Contract.class.getDeclaredField("status");
             statusField.setAccessible(true);
             statusField.set(contract, status);
-            contractService.save(contract);
-            return ResponseEntity.ok("Status updated");
+        contractService.save(contract);
+        return ResponseEntity.ok("Status updated");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating status: " + e.getMessage());
         }

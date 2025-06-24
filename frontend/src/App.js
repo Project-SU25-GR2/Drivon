@@ -24,6 +24,7 @@ import RentalSuccess from "./components/car/RentalSuccess";
 import Messages from "./components/chat/Messages";
 import MyRentals from "./components/car/MyRentals";
 import CarRental404 from "./components/others/404";
+import ContactPage from "./components/others/ContactPage";
 import TestNotification from "./components/others/TestNotification";
 import DebugAuth from "./components/others/DebugAuth";
 import { CarDataProvider } from "./contexts/CarDataContext";
@@ -249,6 +250,16 @@ function App() {
                       </MainLayout>
                     }
                   />
+
+                  <Route
+                    path="/contact"
+                    element={
+                      <MainLayout user={user} handleLogout={handleLogout}>
+                        <ContactPage />
+                      </MainLayout>
+                    }
+                  />
+
                   <Route
                     path="/cars/:licensePlate"
                     element={
@@ -257,6 +268,7 @@ function App() {
                       </MainLayout>
                     }
                   />
+
                   <Route
                     path="/owner"
                     element={
@@ -265,6 +277,7 @@ function App() {
                       </MainLayout>
                     }
                   />
+
                   <Route
                     path="/rental-success"
                     element={
@@ -273,6 +286,7 @@ function App() {
                       </MainLayout>
                     }
                   />
+
                   <Route
                     path="/payment-success"
                     element={
@@ -281,6 +295,7 @@ function App() {
                       </MainLayout>
                     }
                   />
+
                   <Route
                     path="/my-rentals"
                     element={
@@ -289,6 +304,7 @@ function App() {
                       </MainLayout>
                     }
                   />
+
                   <Route
                     path="/404"
                     element={
@@ -297,6 +313,7 @@ function App() {
                       </MainLayout>
                     }
                   />
+
                   <Route
                     path="/messages"
                     element={
@@ -305,6 +322,7 @@ function App() {
                       </MainLayout>
                     }
                   />
+
                   <Route
                     path="/test-notification"
                     element={
@@ -313,6 +331,7 @@ function App() {
                       </MainLayout>
                     }
                   />
+
                   <Route
                     path="/debug-auth"
                     element={
@@ -321,6 +340,7 @@ function App() {
                       </MainLayout>
                     }
                   />
+
                   <Route
                     path="*"
                     element={
