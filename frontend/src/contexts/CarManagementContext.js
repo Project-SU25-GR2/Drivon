@@ -41,23 +41,23 @@ export const CarManagementProvider = ({ children }) => {
     setError(null);
 
     try {
-      const response = await axios.get(`http://localhost:8080/api/cars/owner/${userId}`);
+      const response = await axios.get(`http://localhost:8080/api/cars/owner/${userId}/with-contracts`);
       const data = response.data;
       
-      // Combine mainImage and otherImages into a single images array for display
-      const carsWithCombinedImages = data.map((car) => ({
+      // Process the data to combine images and ensure pricePerDay is available
+      const carsWithProcessedData = data.map((car) => ({
         ...car,
         images: car.mainImage
           ? [car.mainImage, ...(car.otherImages || [])]
           : car.otherImages || [],
       }));
       
-      setCarsData(carsWithCombinedImages);
+      setCarsData(carsWithProcessedData);
       setLastFetchTime(Date.now());
       setIsInitialized(true);
       setLoading(false);
       
-      return carsWithCombinedImages;
+      return carsWithProcessedData;
     } catch (err) {
       setError('Failed to fetch cars data');
       setLoading(false);
@@ -105,6 +105,8 @@ export const CarManagementProvider = ({ children }) => {
   const addCar = (newCar) => {
     const carWithImages = {
       ...newCar,
+      pricePerDay: newCar.pricePerDay || null,
+      contract: newCar.contract || null,
       images: newCar.mainImage
         ? [newCar.mainImage, ...(newCar.otherImages || [])]
         : newCar.otherImages || [],
@@ -116,6 +118,8 @@ export const CarManagementProvider = ({ children }) => {
   const updateCar = (updatedCar) => {
     const updatedCarWithImages = {
       ...updatedCar,
+      pricePerDay: updatedCar.pricePerDay || null,
+      contract: updatedCar.contract || null,
       images: updatedCar.mainImage
         ? [updatedCar.mainImage, ...(updatedCar.otherImages || [])]
         : updatedCar.otherImages || [],

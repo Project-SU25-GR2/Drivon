@@ -135,7 +135,9 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
           bookingId: newBooking.id,
           additionalRequirements: values.requirements,
           rentalStartDate: dateRange[0].startDate.toISOString(),
-          rentalEndDate: dateRange[0].endDate.toISOString()
+          rentalEndDate: dateRange[0].endDate.toISOString(),
+          promotionCode: selectedCoupon ? selectedCoupon.code : null,
+          discountPercent: selectedCoupon ? selectedCoupon.discount_percent : null
         };
         
         await axios.post('http://localhost:8080/api/payments/cash', cashPaymentData);

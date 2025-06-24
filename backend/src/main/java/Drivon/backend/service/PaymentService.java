@@ -77,14 +77,41 @@ public class PaymentService {
 
             // Convert ISO string dates to LocalDateTime
             if (request.getRentalStartDate() != null) {
-                payment.setRentalStartDate(request.getRentalStartDate());
+                try {
+                    payment.setRentalStartDate(LocalDateTime.parse(request.getRentalStartDate()));
+                } catch (Exception e) {
+                    try {
+                        payment.setRentalStartDate(java.time.Instant.parse(request.getRentalStartDate())
+                                .atZone(java.time.ZoneId.systemDefault()).toLocalDateTime());
+                    } catch (Exception e2) {
+                        logger.warn("Cannot parse rentalStartDate (ISO): {}", request.getRentalStartDate());
+                    }
+                }
             }
             if (request.getRentalEndDate() != null) {
-                payment.setRentalEndDate(request.getRentalEndDate());
+                try {
+                    payment.setRentalEndDate(LocalDateTime.parse(request.getRentalEndDate()));
+                } catch (Exception e) {
+                    try {
+                        payment.setRentalEndDate(java.time.Instant.parse(request.getRentalEndDate())
+                                .atZone(java.time.ZoneId.systemDefault()).toLocalDateTime());
+                    } catch (Exception e2) {
+                        logger.warn("Cannot parse rentalEndDate (ISO): {}", request.getRentalEndDate());
+                    }
+                }
             }
 
             // Set bookingId
             payment.setBookingId(request.getBookingId());
+
+            // Set promotion code and discount percent
+            payment.setPromotionCode(request.getPromotionCode());
+            payment.setDiscountPercent(request.getDiscountPercent());
+            if (request.getDiscountPercent() != null) {
+                payment.setAdditionalRequirements((payment.getAdditionalRequirements() != null
+                        ? payment.getAdditionalRequirements() + ", "
+                        : "") + "Giảm " + request.getDiscountPercent() + "%");
+            }
 
             // Save to database (dùng hàm dùng chung)
             payment = savePayment(payment);
@@ -112,6 +139,8 @@ public class PaymentService {
             response.put("rentalStartDate", payment.getRentalStartDate());
             response.put("rentalEndDate", payment.getRentalEndDate());
             response.put("createdAt", payment.getCreatedAt());
+            response.put("promotionCode", payment.getPromotionCode());
+            response.put("discountPercent", payment.getDiscountPercent());
 
             return response;
         } catch (Exception e) {

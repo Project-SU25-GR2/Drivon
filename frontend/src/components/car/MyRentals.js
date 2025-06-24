@@ -217,8 +217,14 @@ const MyRentals = () => {
               <span>Đặt xe thành công</span>
             </div>
             <div className="rental-card-status">
-              <Tag className="status-paid">PAID</Tag>
-              <Tag className="status-completed">completed</Tag>
+              <Tag color={getStatusColor(rental.status)}>
+                {rental.status}
+              </Tag>
+              {bookingStatus && (
+                <Tag color={getBookingStatusColor(bookingStatus)} style={{ marginLeft: 4 }}>
+                  {bookingStatus}
+                </Tag>
+              )}
             </div>
             <div className="rental-card-order">Mã đơn: #{rental.orderCode}</div>
           </div>

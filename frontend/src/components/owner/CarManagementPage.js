@@ -159,8 +159,8 @@ const CarManagementPage = ({ user }) => {
                   <i className="fas fa-dollar-sign"></i>
                   <span>
                     {car.pricePerDay
-                      ? `$${car.pricePerDay}/day`
-                      : "Contact for pricing"}
+                      ? `${car.pricePerDay.toLocaleString('vi-VN')} VNĐ/ngày`
+                      : "Liên hệ để biết giá"}
                   </span>
                 </div>
               </div>

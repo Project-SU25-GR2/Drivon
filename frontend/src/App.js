@@ -207,7 +207,7 @@ function App() {
                     }
                   />
 
-                  <Route
+                  {/* <Route
                     path="/contracts"
                     element={
                       user ? (
@@ -218,7 +218,7 @@ function App() {
                         <Navigate to="/auth" replace />
                       )
                     }
-                  />
+                  /> */}
 
                   <Route
                     path="/contracts/lease"
