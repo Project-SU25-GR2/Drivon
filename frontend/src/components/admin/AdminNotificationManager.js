@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { createNotification, getAllNotifications } from '../../api/notification';
+import { createNotification, getAllNotifications, deleteNotification, updateNotification } from '../../api/notification';
 import { getAllUsers } from '../../api/config';
 import './AdminPage.css';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 
 const AdminNotificationManager = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +15,8 @@ const AdminNotificationManager = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [editingId, setEditingId] = useState(null);
+  const [editData, setEditData] = useState({ content: '', type: 'SYSTEM', targetType: 'ALL_USERS', targetUserId: '' });
 
   useEffect(() => {
     loadUsers();
@@ -97,18 +100,7 @@ const AdminNotificationManager = () => {
     return date.toLocaleString('en-US');
   };
 
-  const getTargetTypeLabel = (targetType) => {
-    switch (targetType) {
-      case 'ALL_USERS':
-        return 'All users';
-      case 'OWNER_ONLY':
-        return 'Car owners only';
-      case 'USER_SPECIFIC':
-        return 'Specific user';
-      default:
-        return targetType;
-    }
-  };
+  const getTargetTypeLabel = (targetType) => '';
 
   const getTypeLabel = (type) => {
     switch (type) {
@@ -124,6 +116,48 @@ const AdminNotificationManager = () => {
   const getUserName = (userId) => {
     const user = users.find(u => u.userId === userId);
     return user ? `${user.fullName} (${user.email})` : `User ID: ${userId}`;
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this notification?')) {
+      try {
+        await deleteNotification(id);
+        await loadNotifications();
+      } catch (error) {
+        alert('Error deleting notification');
+      }
+    }
+  };
+
+  const handleEditClick = (notification) => {
+    setEditingId(notification.notificationId);
+    setEditData({
+      content: notification.content,
+      type: notification.type,
+      targetType: notification.targetType,
+      targetUserId: notification.targetUserId || ''
+    });
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleEditSave = async (id) => {
+    try {
+      const data = { ...editData };
+      if (data.targetType !== 'USER_SPECIFIC') data.targetUserId = null;
+      await updateNotification(id, data);
+      setEditingId(null);
+      await loadNotifications();
+    } catch (error) {
+      alert('Error updating notification');
+    }
+  };
+
+  const handleEditCancel = () => {
+    setEditingId(null);
   };
 
   return (
@@ -213,30 +247,72 @@ const AdminNotificationManager = () => {
           ) : (
             notifications.map(notification => (
               <div key={notification.notificationId} className="notification-item">
-                <div className="notification-header">
-                  <span className="notification-type">
-                    {getTypeLabel(notification.type)}
-                  </span>
-                  <span className="notification-target">
-                    {getTargetTypeLabel(notification.targetType)}
-                  </span>
-                  {notification.targetUserId && (
-                    <span className="notification-user">
-                      → {getUserName(notification.targetUserId)}
-                    </span>
-                  )}
-                </div>
-                <div className="notification-content">
-                  {notification.content}
-                </div>
-                <div className="notification-meta">
-                  <span className="notification-time">
-                    {formatDate(notification.createdAt)}
-                  </span>
-                  <span className="notification-status">
-                    {notification.isRead ? 'Read' : 'Unread'}
-                  </span>
-                </div>
+                {editingId === notification.notificationId ? (
+                  <div className="notification-edit-form">
+                    <textarea
+                      name="content"
+                      value={editData.content}
+                      onChange={handleEditChange}
+                      rows="3"
+                    />
+                    <select name="type" value={editData.type} onChange={handleEditChange}>
+                      <option value="SYSTEM">System</option>
+                      <option value="PROMO">Promotion</option>
+                    </select>
+                    <select name="targetType" value={editData.targetType} onChange={handleEditChange}>
+                      <option value="ALL_USERS">All users</option>
+                      <option value="OWNER_ONLY">Car owners only</option>
+                      <option value="USER_SPECIFIC">Specific user</option>
+                    </select>
+                    {editData.targetType === 'USER_SPECIFIC' && (
+                      <select name="targetUserId" value={editData.targetUserId} onChange={handleEditChange}>
+                        <option value="">Select user...</option>
+                        {users.map(user => (
+                          <option key={user.userId} value={user.userId}>
+                            {user.fullName} ({user.email}) - {user.role}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                    <button onClick={() => handleEditSave(notification.notificationId)} className="save-btn">Save</button>
+                    <button onClick={handleEditCancel} className="cancel-btn">Cancel</button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="notification-header">
+                      <span className="notification-type">
+                        {getTypeLabel(notification.type)}
+                      </span>
+                      <span className="notification-target">
+                        {getTargetTypeLabel(notification.targetType)}
+                      </span>
+                      {notification.targetUserId && (
+                        <span className="notification-user">
+                          → {getUserName(notification.targetUserId)}
+                        </span>
+                      )}
+                    </div>
+                    <div className="notification-content">
+                      {notification.content}
+                    </div>
+                    <div className="notification-meta">
+                      <span className="notification-time">
+                        {formatDate(notification.createdAt)}
+                      </span>
+                      <span className="notification-status">
+                        {notification.isRead ? 'Read' : 'Unread'}
+                      </span>
+                    </div>
+                    <div className="notification-actions">
+                      <button onClick={() => handleEditClick(notification)} className="icon-btn edit-btn" title="Edit">
+                        <FaEdit size={14} />
+                      </button>
+                      <button onClick={() => handleDelete(notification.notificationId)} className="icon-btn delete-btn" title="Delete">
+                        <FaTrash size={14} />
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             ))
           )}

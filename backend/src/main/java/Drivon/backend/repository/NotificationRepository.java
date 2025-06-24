@@ -40,4 +40,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     // Lấy tất cả thông báo cho user (không phân biệt target_type hay role)
     @Query("SELECT n FROM Notification n ORDER BY n.createdAt DESC")
     List<Notification> findAllNotificationsForUser();
+
+    // Xoá thông báo theo ID
+    void deleteById(Long notificationId);
 } 
