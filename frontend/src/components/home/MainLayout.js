@@ -154,7 +154,7 @@ const MainLayout = ({ user, handleLogout, children }) => {
         </button>
 
         {/* Logo */}
-        <div className="logo">
+        <div className="logo" style={{cursor: 'pointer'}} onClick={() => navigate('/') }>
           DRI<span>VON</span>
         </div>
 
@@ -239,7 +239,7 @@ const MainLayout = ({ user, handleLogout, children }) => {
           <div className="mobile-nav-overlay" onClick={() => setMobileMenuOpen(false)}>
             <div className="mobile-nav-content" onClick={(e) => e.stopPropagation()}>
               <div className="mobile-nav-header">
-                <div className="logo">DRI<span>VON</span></div>
+                <div className="logo" style={{cursor: 'pointer'}} onClick={() => { setMobileMenuOpen(false); navigate('/'); }}>DRI<span>VON</span></div>
                 <button 
                   className="close-mobile-menu"
                   onClick={() => setMobileMenuOpen(false)}

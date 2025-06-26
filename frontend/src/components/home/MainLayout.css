@@ -389,89 +389,53 @@
     color: #fff200;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
+/* Responsive Design - Gộp về 1 breakpoint 1200px */
+@media (max-width: 1200px) {
     .main-header {
         padding: 0.75rem 1rem;
         justify-content: space-between;
         gap: 0.5rem;
+        display: flex;
+        align-items: center;
     }
-
     .mobile-menu-btn {
         display: block !important;
         order: 1;
         flex-shrink: 0;
+        font-size: 20px;
+        padding: 6px;
     }
-
     .desktop-nav {
         display: none !important;
         width: 0;
         height: 0;
         overflow: hidden;
     }
-
     .user-name {
         display: none !important;
     }
-
     .header-right {
         gap: 8px;
         order: 3;
         flex-shrink: 0;
     }
-
     .logo {
-        font-size: 20px;
+        font-size: 18px;
         margin: 0;
         order: 2;
         flex: 1;
         text-align: center;
         min-width: 0;
     }
-
     .search-box {
         display: none !important;
         width: 0;
         height: 0;
         overflow: hidden;
     }
-
-    /* Đảm bảo layout flex hoạt động đúng */
-    .main-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-}
-
-@media (max-width: 480px) {
-    .main-header {
-        padding: 0.5rem 0.75rem;
-    }
-
-    .logo {
-        font-size: 18px;
-    }
-
-    .mobile-menu-btn {
-        font-size: 20px;
-        padding: 6px;
-    }
-
     .user-avatar-header {
         width: 28px;
         height: 28px;
-    }
-
-    .header-right {
-        gap: 6px;
-    }
-}
-
-/* Ẩn search box trên tablet cũng */
-@media (max-width: 900px) {
-    .search-box {
-        display: none !important;
     }
 }
 
