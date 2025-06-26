@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import SimpleButton from "../others/SimpleButton";
-
+import { API_URL } from '../../api/configApi';
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
@@ -33,8 +33,8 @@ const ForgotPasswordPage = () => {
     setError("");
 
     try {
-      await axios.post("http://localhost:8080/api/auth/send-reset-code", {
-        email,
+      await axios.post(`${API_URL}/auth/send-reset-code`, {
+        email,  
       });
       setMessage("Mã xác thực đã được gửi đến email của bạn");
       setCodeSent(true);
@@ -53,7 +53,7 @@ const ForgotPasswordPage = () => {
     setError("");
 
     try {
-      await axios.post("http://localhost:8080/api/auth/verify-reset-code", {
+      await axios.post(`${API_URL}/auth/verify-reset-code`, {
         email,
         code: verificationCode,
       });
@@ -86,7 +86,7 @@ const ForgotPasswordPage = () => {
     }
 
     try {
-      await axios.post("http://localhost:8080/api/auth/reset-password", {
+      await axios.post(`${API_URL}/auth/reset-password`, {
         email,
         code: verificationCode,
         newPassword,

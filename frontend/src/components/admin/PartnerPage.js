@@ -3,7 +3,7 @@ import Loader from '../others/loader';
 import './PartnerPage.css';
 import { usePartnerData } from '../../contexts/PartnerDataContext';
 import { useUserData } from '../../contexts/UserDataContext';
-
+import { API_URL } from '../../api/configApi';
 const PartnerPage = () => {
   const { partnersData, loading, error, fetchPartnersData, updatePartnerStatus } = usePartnerData();
   const { updateUserRole } = useUserData();

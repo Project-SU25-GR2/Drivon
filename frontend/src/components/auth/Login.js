@@ -4,6 +4,7 @@ import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import SimpleButton from "../others/SimpleButton";
 import { Link } from "react-router-dom";
+import { API_URL } from '../../api/configApi';
 
 const Login = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState("");
@@ -18,8 +19,8 @@ const Login = ({ onLoginSuccess }) => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/auth/login",
-        {
+        `${API_URL}/auth/login`,
+        {   
           email,
           password,
         }
@@ -43,7 +44,7 @@ const Login = ({ onLoginSuccess }) => {
     try {
       const decoded = jwtDecode(credentialResponse.credential);
       const response = await axios.post(
-        "http://localhost:8080/api/auth/google",
+        `${API_URL}/auth/google`,
         {
           email: decoded.email,
           name: decoded.name,
@@ -107,20 +108,40 @@ const Login = ({ onLoginSuccess }) => {
           Login
         </SimpleButton>
 
-        <div style={{ marginTop: "20px", textAlign: "center" }}>
+        <div style={{ 
+          marginTop: "20px", 
+          textAlign: "center",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center"
+        }}>
           <p>Or login with:</p>
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={handleGoogleError}
-            useOneTap
-            popup_type="popup"
-            popup_properties={{
-              width: 500,
-              height: 600,
-              left: window.screenX + (window.outerWidth - 500) / 2,
-              top: window.screenY + (window.outerHeight - 600) / 2,
-            }}
-          />
+          <div style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            width: "100%",
+            minHeight: "40px"
+          }}>
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+              useOneTap
+              popup_type="popup"
+              popup_properties={{
+                width: 500,
+                height: 600,
+                left: window.screenX + (window.outerWidth - 500) / 2,
+                top: window.screenY + (window.outerHeight - 600) / 2,
+              }}
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center"
+              }}
+            />
+          </div>
         </div>
       </form>
     </div>

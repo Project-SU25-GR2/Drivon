@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import cloudinaryConfig from "../../config/cloudinary"; // Import Cloudinary config
 import "./EditCarForm.css"; // We will create this CSS file next
-
+import { API_URL } from '../../api/configApi';  
 const EditCarForm = ({ car, onSave, onClose }) => {
   const [formData, setFormData] = useState({
     licensePlate: "",
@@ -307,7 +307,7 @@ const EditCarForm = ({ car, onSave, onClose }) => {
       console.log("Sending car data:", carData); // Debug log
 
       const response = await axios.put(
-        `http://localhost:8080/api/cars/${formData.licensePlate}`,
+        `${API_URL}/cars/${formData.licensePlate}`,
         carData
       );
 
@@ -325,7 +325,7 @@ const EditCarForm = ({ car, onSave, onClose }) => {
         };
         console.log("Sending image data:", imageData); // Debug log
 
-        await axios.post("http://localhost:8080/api/cars/images", imageData);
+        await axios.post(`${API_URL}/cars/images`, imageData);
       }
 
       onSave(response.data);

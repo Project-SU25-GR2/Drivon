@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
-
+import { API_URL } from '../api/configApi';
 const CarManagementContext = createContext();
 
 export const useCarManagement = () => {
@@ -41,7 +41,7 @@ export const CarManagementProvider = ({ children }) => {
     setError(null);
 
     try {
-      const response = await axios.get(`http://localhost:8080/api/cars/owner/${userId}/with-contracts`);
+      const response = await axios.get(`${API_URL}/cars/owner/${userId}/with-contracts`);
       const data = response.data;
       
       // Process the data to combine images and ensure pricePerDay is available
@@ -71,7 +71,7 @@ export const CarManagementProvider = ({ children }) => {
 
   const deleteCar = async (licensePlate) => {
     try {
-      await axios.delete(`http://localhost:8080/api/cars/${licensePlate}`);
+      await axios.delete(`${API_URL}/cars/${licensePlate}`);
       setCarsData(prev => prev.filter(car => car.licensePlate !== licensePlate));
       return true;
     } catch (err) {
@@ -83,7 +83,7 @@ export const CarManagementProvider = ({ children }) => {
   const updateCarStatus = async (licensePlate, newStatus) => {
     try {
       await axios.patch(
-        `http://localhost:8080/api/cars/${licensePlate}/status`,
+      `${API_URL}/cars/${licensePlate}/status`,
         { status: newStatus }
       );
       

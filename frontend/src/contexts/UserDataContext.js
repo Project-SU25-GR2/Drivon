@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
-
+import { API_URL } from '../api/configApi';
 const UserDataContext = createContext();
 
 export const useUserData = () => {
@@ -37,7 +37,7 @@ export const UserDataProvider = ({ children }) => {
 
     try {
       console.log('Fetching users from API...');
-      const response = await axios.get('http://localhost:8080/api/admin/users');
+      const response = await axios.get(`${API_URL}/admin/users`);
       console.log('Users API response:', response.data);
       
       const data = response.data;
@@ -87,7 +87,7 @@ export const UserDataProvider = ({ children }) => {
         newRole: formattedRole
       });
 
-      const response = await axios.put(`http://localhost:8080/api/admin/users/${userId}/role`, { 
+      const response = await axios.put(`${API_URL}/admin/users/${userId}/role`, { 
         role: formattedRole 
       });
       
@@ -108,7 +108,7 @@ export const UserDataProvider = ({ children }) => {
 
   const updateUserStatus = async (userId, newStatus) => {
     try {
-      const response = await axios.put(`http://localhost:8080/api/admin/users/${userId}/status`, {
+      const response = await axios.put(`${API_URL}/admin/users/${userId}/status`, {
         status: newStatus
       });
       
@@ -126,7 +126,7 @@ export const UserDataProvider = ({ children }) => {
 
   const deleteUser = async (userId) => {
     try {
-      await axios.delete(`http://localhost:8080/api/admin/users/${userId}`);
+        await axios.delete(`${API_URL}/admin/users/${userId}`);
       
       // Update local state
       setUsersData(prev => prev.filter(u => u.userId !== userId));

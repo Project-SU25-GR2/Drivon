@@ -9,7 +9,7 @@ import Loader from '../others/loader';
 import NotificationBell from '../others/NotificationBell';
 import webSocketService from '../../services/WebSocketService';
 import './MainLayout.css';
-
+import { API_URL } from '../../api/configApi';
 const MainLayout = ({ user, handleLogout, children }) => {
   const [authMode, setAuthMode] = useState("login"); // 'login', 'signup', or 'forgot'
   const [userRole, setUserRole] = useState(null);
@@ -71,7 +71,7 @@ const MainLayout = ({ user, handleLogout, children }) => {
       });
 
       try {
-        const roleCheckPromise = axios.get(`http://localhost:8080/api/admin/check-role/${user.userId}`);
+        const roleCheckPromise = axios.get(`${API_URL}/admin/check-role/${user.userId}`);
         
         // Race between role check and timeout
         const response = await Promise.race([roleCheckPromise, timeoutPromise]);

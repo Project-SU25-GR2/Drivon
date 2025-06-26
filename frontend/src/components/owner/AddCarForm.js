@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import cloudinaryConfig from "../../config/cloudinary";
 import "./EditCarForm.css"; // Reusing the same CSS as EditCarForm
+import { API_URL } from '../../api/configApi';
 
 const CAR_BRANDS = [
   "Toyota",
@@ -275,7 +276,7 @@ const AddCarForm = ({ onSave, onClose }) => {
       };
 
       const response = await axios.post(
-        "http://localhost:8080/api/cars",
+        `${API_URL}/cars`,
         carData
       );
       console.log("New car created:", response.data);

@@ -1,6 +1,6 @@
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
-import { BACKEND_URL } from '../api/config';
+import { API_URL } from '../api/configApi';
 import { useEffect, useRef } from 'react';
 
 class WebSocketService {
@@ -30,8 +30,9 @@ class WebSocketService {
   
     console.log('Initializing WebSocket connection for user:', userId);
     
-    // Use BACKEND_URL from config
-    const wsUrl = `${BACKEND_URL}/ws`;
+    // Sử dụng endpoint đúng cho WebSocket
+    // API_URL = "/api" trong production, nên cần thay thế thành "/ws"
+    const wsUrl = API_URL.replace('/api', '/ws');
     console.log('WebSocket URL:', wsUrl);
     
     const socket = new SockJS(wsUrl);

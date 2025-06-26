@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
-
+import { API_URL } from '../api/configApi';
 const CarDataContext = createContext();
 
 export const useCarData = () => {
@@ -36,7 +36,7 @@ export const CarDataProvider = ({ children }) => {
     setError(null);
 
     try {
-      const response = await axios.get('http://localhost:8080/api/cars/active-lease-with-details');
+      const response = await axios.get(`${API_URL}/cars/active-lease-with-details`);
       const data = response.data;
       
       setCarsData(data);

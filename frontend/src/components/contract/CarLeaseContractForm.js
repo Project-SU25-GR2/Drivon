@@ -6,7 +6,7 @@ import { useLocation } from "react-router-dom";
 import "../css/ContractForm.css";
 import cloudinaryConfig from "../../config/cloudinary";
 import SimpleButton from "../others/SimpleButton";
-
+import { API_URL } from '../../api/configApi';
 // Initialize pdfMake with fonts
 pdfMake.vfs = pdfFonts.pdfMake ? pdfFonts.pdfMake.vfs : pdfFonts.vfs;
 
@@ -274,7 +274,7 @@ const CarLeaseContractForm = ({ user }) => {
     // Kiểm tra carId đã tồn tại chưa
     try {
       const checkResponse = await axios.get(
-        `http://localhost:8080/api/contracts/check-car/${formData.carId}`
+        `${API_URL}/contracts/check-car/${formData.carId}`
       );
       if (checkResponse.data.exists) {
         setMessage(
@@ -340,7 +340,7 @@ const CarLeaseContractForm = ({ user }) => {
 
       // 3. Gửi thông tin hợp đồng + pdfUrl lên backend
       const response = await axios.post(
-        "http://localhost:8080/api/contracts/lease",
+        `${API_URL}/contracts/lease`,
         {
           ...formattedData,
           pdfUrl,
@@ -357,7 +357,7 @@ const CarLeaseContractForm = ({ user }) => {
           const mainImage = contractData.carData.images[0];
           const otherImages = contractData.carData.images.slice(1);
 
-          await axios.post("http://localhost:8080/api/cars/images", {
+          await axios.post(`${API_URL}/cars/images`, {
             carId: formData.carId,
             mainImage: mainImage,
             otherImages: otherImages,
@@ -371,14 +371,14 @@ const CarLeaseContractForm = ({ user }) => {
         setMessage("Contract created successfully!");
         setIsContractCreated(true);
         // Tạo URL từ pdfBlob và mở tab mới + tải file PDF về
-        const localPdfUrl = URL.createObjectURL(pdfBlob);
+        const localPdfUrl = API_URL.createObjectURL(pdfBlob);
         window.open(localPdfUrl, "_blank");
         const link = document.createElement("a");
         link.href = localPdfUrl;
         link.download = `hopdong_${newContractNumber}.pdf`;
         link.click();
         setTimeout(() => {
-          URL.revokeObjectURL(localPdfUrl);
+          API_URL.revokeObjectURL(localPdfUrl);
         }, 100);
       }
     } catch (error) {

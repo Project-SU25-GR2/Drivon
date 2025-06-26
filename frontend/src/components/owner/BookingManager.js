@@ -8,6 +8,7 @@ import {
   FaCalendarAlt,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from '../../api/configApi';
 
 const statusOptions = [
   { value: "pending", label: "Pending" },
@@ -16,7 +17,6 @@ const statusOptions = [
   { value: "ongoing", label: "Ongoing" },
   { value: "completed", label: "Completed" },
 ];
-
 const RentalStats = ({ stats }) => (
   <div className="statsGrid">
     <div className="statCard">

@@ -3,7 +3,7 @@ import { Modal, Spin, message } from 'antd';
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 import './QR_Bank.css';
-
+import { API_URL } from '../../api/configApi';
 const QR_Bank = ({ visible, onClose, qrCode, orderCode, userId }) => {
     const [loading, setLoading] = useState(false);
     const [stompClient, setStompClient] = useState(null);
@@ -11,7 +11,7 @@ const QR_Bank = ({ visible, onClose, qrCode, orderCode, userId }) => {
     useEffect(() => {
         if (visible && userId) {
             // Initialize WebSocket connection
-            const socket = new SockJS('http://localhost:8080/ws');
+            const socket = new SockJS(`${API_URL}/ws`);
             const client = new Client({
                 webSocketFactory: () => socket,
                 onConnect: () => {

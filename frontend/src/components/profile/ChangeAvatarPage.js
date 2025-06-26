@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import cloudinaryConfig  from '../../config/cloudinary';
 import '../css/ChangeAvatarPage.css';
-
+import { API_URL } from '../../api/configApi';
 const ChangeAvatarPage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -30,7 +30,7 @@ const ChangeAvatarPage = () => {
       }
 
       setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
+      setPreviewUrl(API_URL.createObjectURL(file));
       setUploadError(null);
       setUploadSuccess(false);
     } else {
@@ -64,7 +64,7 @@ const ChangeAvatarPage = () => {
         throw new Error('User not found');
       }
 
-      const response = await axios.put('http://localhost:8080/api/profile/update-avatar', {
+        const response = await axios.put(`${API_URL}/profile/update-avatar`, {
         email: user.email,
         avatarUrl: imageUrl
       });

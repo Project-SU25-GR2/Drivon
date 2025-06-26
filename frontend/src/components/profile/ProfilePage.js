@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import '../css/ProfilePage.css';
-
+import { API_URL } from '../../api/configApi';
 const ProfilePage = ({ user, onUpdateUser }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState({});
@@ -20,7 +20,7 @@ const ProfilePage = ({ user, onUpdateUser }) => {
 
   const checkPasswordStatus = async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/profile/check-password-status/${user.email}`);
+      const response = await axios.get(`${API_URL}/profile/check-password-status/${user.email}`);
       setHasPassword(response.data.hasPassword);
     } catch (err) {
       console.error('Error checking password status:', err);
@@ -66,7 +66,7 @@ const ProfilePage = ({ user, onUpdateUser }) => {
         return;
       }
 
-      const response = await axios.put('http://localhost:8080/api/profile/update', editedUser);
+      const response = await axios.put(`${API_URL}/profile/update`, editedUser);
       
       if (response.data) {
         onUpdateUser(response.data);

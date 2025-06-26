@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "../css/ProfilePage.css";
-
+import { API_URL } from '../../api/configApi';  
 const ProfilePage = ({ user }) => {
   // Cho phép chỉnh sửa address, bankAccount và bankName
   const [editInfo, setEditInfo] = useState({

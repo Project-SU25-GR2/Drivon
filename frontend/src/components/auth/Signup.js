@@ -3,7 +3,7 @@ import axios from 'axios';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
 import SimpleButton from '../others/SimpleButton';
-
+import { API_URL } from '../../api/configApi';
 const Signup = ({ onSignupSuccess }) => {
     const [formData, setFormData] = useState({
         fullName: '',
@@ -43,7 +43,7 @@ const Signup = ({ onSignupSuccess }) => {
         setIsLoading(true);
 
         try {
-            const response = await axios.post('http://localhost:8080/api/auth/signup', formData);
+            const response = await axios.post(`${API_URL}/auth/signup`, formData);
             if (response.data) {
                 setMessage('Đăng ký thành công. Vui lòng kiểm tra email để xác thực tài khoản.');
                 setShowVerification(true);
@@ -86,7 +86,7 @@ const Signup = ({ onSignupSuccess }) => {
         setIsLoading(true);
 
         try {
-            const response = await axios.post('http://localhost:8080/api/auth/verify-email', {
+            const response = await axios.post(`${API_URL}/auth/verify-email`, {
                 email: formData.email,
                 code: verificationCode
             });
@@ -124,7 +124,7 @@ const Signup = ({ onSignupSuccess }) => {
         setIsLoading(true);
 
         try {
-            const response = await axios.post('http://localhost:8080/api/auth/resend-verification', {
+            const response = await axios.post(`${API_URL}/auth/resend-verification`, {
                 email: formData.email
             });
             setMessage('Mã xác thực mới đã được gửi đến email của bạn.');
@@ -145,7 +145,7 @@ const Signup = ({ onSignupSuccess }) => {
         setIsLoading(true);
         try {
             const decoded = jwtDecode(credentialResponse.credential);
-            const response = await axios.post('http://localhost:8080/api/auth/google', {
+            const response = await axios.post(`${API_URL}/auth/google`, {
                 email: decoded.email,
                 name: decoded.name,
                 googleId: decoded.sub

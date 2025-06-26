@@ -18,7 +18,7 @@ import UserManagementPage from './UserManagementPage';
 import MultipleLevelsPage from './MultipleLevelsPage';
 import AdminNotificationManager from './AdminNotificationManager';
 import { createNotification } from '../../api/notification';
-
+import { API_URL } from '../../api/configApi';
 // Component for Admin Page
 const AdminPage = ({ user }) => {
   const [users, setUsers] = useState([]);
@@ -62,7 +62,7 @@ const AdminPage = ({ user }) => {
       const userData = JSON.parse(localStorage.getItem('user'));
 
       // Temporarily remove Authorization header for testing public endpoint
-      const response = await axios.get('http://localhost:8080/api/admin/users' /*, {
+      const response = await axios.get(`${URL}/admin/users` /*, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -93,7 +93,7 @@ const AdminPage = ({ user }) => {
       });
 
       try {
-        const roleCheckPromise = axios.get(`http://localhost:8080/api/admin/check-role/${user.userId}`);
+        const roleCheckPromise = axios.get(`${API_URL}/admin/check-role/${user.userId}`);
         
         // Race between role check and timeout
         const response = await Promise.race([roleCheckPromise, timeoutPromise]);
@@ -167,7 +167,7 @@ const AdminPage = ({ user }) => {
     console.log(`Updating role for user ${userId} to ${newRole}`);
     try {
       // Using axios.put to call the backend endpoint
-      const response = await axios.put(`http://localhost:8080/api/admin/users/${userId}/role`, { role: newRole });
+      const response = await axios.put(`${API_URL}/admin/users/${userId}/role`, { role: newRole });
       console.log('Update role response:', response.data);
       alert('User role updated successfully!');
       // After successful API call, refetch users to update the list
@@ -189,7 +189,7 @@ const AdminPage = ({ user }) => {
      if (window.confirm('Are you sure you want to delete this user?')) {
         try {
           // Using axios.delete to call the backend endpoint
-          const response = await axios.delete(`http://localhost:8080/api/admin/users/${userId}`);
+          const response = await axios.delete(`${API_URL}/admin/users/${userId}`);
           console.log('Delete user response:', response.data);
           alert('User deleted successfully!');
            // After successful API call, refetch users to update the list

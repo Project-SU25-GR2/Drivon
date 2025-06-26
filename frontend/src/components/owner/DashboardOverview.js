@@ -3,7 +3,7 @@ import axios from "axios";
 import "./DashBoard.css"
 import { useCarManagement } from "../../contexts/CarManagementContext";
 import { useRentalHistory } from "../../contexts/RentalHistoryContext";
-
+import { API_URL } from '../../api/configApi';
 const DashboardOverview = ({ user }) => {
   const { carsData, fetchCarsData, loading: carsLoading } = useCarManagement();
   const {
@@ -47,7 +47,7 @@ const DashboardOverview = ({ user }) => {
         let earnings = 0;
         try {
           const earningsRes = await axios.get(
-            `http://localhost:8080/api/earnings/owner/${user.userId}`
+            `${API_URL}/earnings/owner/${user.userId}`
           );
           console.log("Earnings API response:", earningsRes.data);
           earnings = Number(earningsRes.data?.totalEarnings) || 0;
@@ -60,7 +60,7 @@ const DashboardOverview = ({ user }) => {
         let averageRating = null;
         try {
           const ratingRes = await axios.get(
-            `http://localhost:8080/api/ratings/owner/${user.userId}`
+          `${API_URL}/ratings/owner/${user.userId}`
           );
           averageRating = ratingRes.data?.averageRating ?? null;
         } catch {

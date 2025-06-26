@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Result, Button, Card, Descriptions, Spin } from 'antd';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-
+import { API_URL } from '../../api/configApi';
 const MAX_RETRIES = 5;
 const RETRY_DELAY = 1000; // 1 giây
 
@@ -20,7 +20,7 @@ const RentalSuccess = () => {
 
     const fetchPayment = async (orderCode) => {
       try {
-        const res = await axios.get(`http://localhost:8080/api/payments/order/${orderCode}`);
+        const res = await axios.get(`${API_URL}/payments/order/${orderCode}`);
         if (res.data) {
           setBackendData(res.data);
           setLoading(false);

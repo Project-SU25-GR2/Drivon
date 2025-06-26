@@ -3,7 +3,7 @@ import { createNotification, getAllNotifications, deleteNotification, updateNoti
 import { getAllUsers } from '../../api/config';
 import './AdminPage.css';
 import { FaEdit, FaTrash } from 'react-icons/fa';
-
+import { API_URL } from '../../api/configApi';
 const AdminNotificationManager = () => {
   const [formData, setFormData] = useState({
     content: '',

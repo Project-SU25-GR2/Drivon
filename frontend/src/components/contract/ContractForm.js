@@ -3,10 +3,9 @@ import axios from 'axios';
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 import { useLocation } from 'react-router-dom';
-
+import { API_URL } from '../../api/configApi';
 // Initialize pdfMake with fonts
 pdfMake.vfs = pdfFonts.pdfMake ? pdfFonts.pdfMake.vfs : pdfFonts.vfs;
-
 const CarRentalContractForm = () => {
     const location = useLocation();
     const contractData = location.state?.contractData;
@@ -129,7 +128,7 @@ const CarRentalContractForm = () => {
 
     const sendVerificationCode = async () => {
         try {
-            const response = await axios.post('http://localhost:8080/api/contracts/send-code', {
+            const response = await axios.post(`${API_URL}/contracts/send-code`, {
                 email: formData.email
             });
             if (response.data.success) {
@@ -144,7 +143,7 @@ const CarRentalContractForm = () => {
 
     const verifyCode = async () => {
         try {
-            const response = await axios.post('http://localhost:8080/api/contracts/verify-code', {
+            const response = await axios.post(`${API_URL}/contracts/verify-code`, {
                 email: formData.email,
                 code: verificationCode
             });
@@ -254,7 +253,7 @@ const CarRentalContractForm = () => {
 
         try {
             console.log('Sending contract data:', formattedData);
-            const response = await axios.post('http://localhost:8080/api/contracts', formattedData);
+                const response = await axios.post(`${API_URL}/contracts`, formattedData);
 
             if (response.data) {
                 setMessage('Tạo hợp đồng thành công!');
@@ -264,7 +263,7 @@ const CarRentalContractForm = () => {
                 const pdfBlob = await generatePDF(response.data);
 
                 // Create a URL for the Blob
-                const pdfUrl = URL.createObjectURL(pdfBlob);
+                const pdfUrl = API_URL.createObjectURL(pdfBlob);
 
                 // Open PDF in a new tab
                 window.open(pdfUrl, '_blank');
@@ -277,7 +276,7 @@ const CarRentalContractForm = () => {
 
                 // Clean up the Blob URL after a short delay
                 setTimeout(() => {
-                    URL.revokeObjectURL(pdfUrl);
+                    API_URL.revokeObjectURL(pdfUrl);
                 }, 100);
 
             } else {

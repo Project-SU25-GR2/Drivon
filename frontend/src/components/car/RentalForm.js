@@ -6,7 +6,7 @@ import { DateRange } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 import './RentalForm.css';
-
+import { API_URL } from '../../api/configApi';
 const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, contract }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -86,7 +86,7 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
 
   useEffect(() => {
     if (showCouponModal) {
-      axios.get('http://localhost:8080/api/promotions')
+      axios.get(`${API_URL}/promotions`)
         .then(res => setCouponList(res.data))
         .catch(() => setCouponList([]));
     }
@@ -123,7 +123,7 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
     };
 
     try {
-      const bookingResponse = await axios.post('http://localhost:8080/api/bookings', bookingData);
+      const bookingResponse = await axios.post(`${API_URL}/bookings`, bookingData);
       const newBooking = bookingResponse.data;
 
       if (paymentMethod === 'cash') {
@@ -140,7 +140,7 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
           discountPercent: selectedCoupon ? selectedCoupon.discount_percent : null
         };
         
-        await axios.post('http://localhost:8080/api/payments/cash', cashPaymentData);
+        await axios.post(`${API_URL}/payments/cash`, cashPaymentData);
         
         const rentalData = {
           orderCode: cashPaymentData.orderCode,
@@ -161,8 +161,8 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
           orderCode: Date.now(),
           amount: amount,
           description: `Thuê xe ${car.licensePlate}`,
-          returnUrl: "http://localhost:3000/payment-success",
-          cancelUrl: `http://localhost:3000/rent-car/`,
+          returnUrl: `${API_URL}/payment-success`,
+          cancelUrl: `${API_URL}/rent-car/`,
           userId: user.userId,
           carId: car.licensePlate,
           bookingId: newBooking.id,
@@ -173,7 +173,7 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
           discountPercent: selectedCoupon ? selectedCoupon.discount_percent : 0,
         };
 
-        const paymentResponse = await axios.post('http://localhost:8080/api/payments/create', bankPaymentRequest);
+        const paymentResponse = await axios.post(`${API_URL}/payments/create`, bankPaymentRequest);
         if (paymentResponse.data.data && paymentResponse.data.data.checkoutUrl) {
           window.location.href = paymentResponse.data.data.checkoutUrl;
         } else {

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "../css/PaymentForm.css";
-
+import { API_URL } from '../../api/configApi';
 const PaymentForm = () => {
   const [formData, setFormData] = useState({
     amount: "",
@@ -34,7 +34,7 @@ const PaymentForm = () => {
       console.log("Sending request with data:", requestData);
 
       const response = await axios.post(
-        "http://localhost:8080/api/payments/create",
+        `${URL}/payments/create`,
         requestData
       );
 

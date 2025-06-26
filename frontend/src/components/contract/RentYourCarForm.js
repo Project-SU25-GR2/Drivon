@@ -4,7 +4,7 @@ import cloudinaryConfig  from '../../config/cloudinary';
 import '../css/RentYourCarForm.css';
 import { useNavigate } from 'react-router-dom';
 import SimpleButton from '../others/SimpleButton';
-
+import { API_URL } from '../../api/configApi';
 const RentYourCarForm = () => {
   const navigate = useNavigate();
   const carBrands = [
@@ -140,7 +140,7 @@ const RentYourCarForm = () => {
       setUploadError('Vui lòng chọn file hình ảnh');
       return;
     }
-    setMainPreviewUrl(URL.createObjectURL(file));
+    setMainPreviewUrl(API_URL.createObjectURL(file));
     setUploading(true);
     try {
       const formDataImg = new FormData();
@@ -170,7 +170,7 @@ const RentYourCarForm = () => {
         return;
       }
     }
-    const newPreviewUrls = files.map(file => URL.createObjectURL(file));
+    const newPreviewUrls = files.map(file => API_URL.createObjectURL(file));
     setOtherPreviewUrls(prev => [...prev, ...newPreviewUrls]);
     setUploading(true);
     try {
@@ -213,7 +213,7 @@ const RentYourCarForm = () => {
 
     // Kiểm tra carId đã tồn tại chưa
     try {
-      const checkResponse = await axios.get(`http://localhost:8080/api/contracts/check-car/${formData.licensePlate}`);
+      const checkResponse = await axios.get(`${API_URL}/contracts/check-car/${formData.licensePlate}`);
       if (checkResponse.data.exists) {
         setMessage('Car ID already exists in the system. Please choose another car.');
         return;

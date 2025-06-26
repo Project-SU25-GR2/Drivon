@@ -20,7 +20,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../../styles/MyRentals.css";
 import { FrownOutlined, MehOutlined, SmileOutlined, CarOutlined, EnvironmentOutlined, CalendarOutlined, CreditCardOutlined } from "@ant-design/icons";
-
+import { API_URL } from '../../api/configApi';
 const { Title, Text } = Typography;
 
 const MyRentals = () => {
@@ -63,7 +63,7 @@ const MyRentals = () => {
   const fetchRentals = async (userId) => {
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/payments/user/${userId}`
+        `${API_URL}/payments/user/${userId}`
       );
       const payments = response.data;
 
@@ -72,7 +72,7 @@ const MyRentals = () => {
         payments.map(async (payment) => {
           if (!payment.bookingId) return payment;
           try {
-            const bookingRes = await axios.get(`http://localhost:8080/api/bookings/${payment.bookingId}`);
+            const bookingRes = await axios.get(`${API_URL}/bookings/${payment.bookingId}`);
             console.log('Booking API trả về cho bookingId', payment.bookingId, ':', bookingRes.data);
             return { ...payment, bookingStatus: bookingRes.data.status };
           } catch (err) {
@@ -97,7 +97,7 @@ const MyRentals = () => {
       const uniqueCarIds = [...new Set(carIds)];
       uniqueCarIds.forEach(carId => {
         if (!carsInfo[carId]) {
-          axios.get(`http://localhost:8080/api/cars/${carId}`)
+          axios.get(`${API_URL}/cars/${carId}`)
             .then(res => {
               setCarsInfo(prev => ({ ...prev, [carId]: res.data }));
             })
@@ -180,7 +180,7 @@ const MyRentals = () => {
     }
     try {
       await axios.post(
-        `http://localhost:8080/api/reviews/car/${ratingRental.carId}`,
+        `${API_URL}/reviews/car/${ratingRental.carId}`, //đánh giá xe     
         {
           rating: rating,
           comment: comment,

@@ -5,6 +5,7 @@ import { Container, Row, Col, Card, Form, Button } from 'react-bootstrap';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { useCarData } from '../../contexts/CarDataContext';
+import { API_URL } from '../../api/configApi';    
 
 const HomeContent = () => {
   const [form, setForm] = useState({

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import "./EarningsPage.css";
+import { API_URL } from '../../api/configApi';
 const formatCurrency = (amount) => {
     return amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
 };
-
 const EarningsPage = () => {
     const [earnings, setEarnings] = useState({
         totalEarnings: 0,
@@ -28,7 +28,7 @@ const EarningsPage = () => {
 
             setLoading(true);
             try {
-                const response = await axios.get(`http://localhost:8080/api/earnings/owner/${user.userId}`, {
+                const response = await axios.get(`${API_URL}/earnings/owner/${user.userId}`, {
                     params: { month: selectedMonth }
                 });
                 const data = response.data;
