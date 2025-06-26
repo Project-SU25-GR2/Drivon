@@ -334,7 +334,7 @@ const MainLayout = ({ user, handleLogout, children }) => {
           outline: none;
         }
         .mobile-nav a:hover {
-          color: #007bff !important;
+          color: #FFD700 !important;
           background-color: #f5f5f5 !important;
         }
         .mobile-nav a {
@@ -342,9 +342,9 @@ const MainLayout = ({ user, handleLogout, children }) => {
           background: none !important;
         }
         .mobile-nav a.active {
-          color: #007bff !important;
-          background-color: #e3f2fd !important;
-          border-left: 3px solid #007bff;
+          color: #FFD700 !important;
+          background-color: #fffbe7 !important;
+          border-left: 3px solid #FFD700;
         }
       `}</style>
     </div>
