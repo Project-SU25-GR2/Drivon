@@ -16,6 +16,7 @@ const MainLayout = ({ user, handleLogout, children }) => {
   const [roleCheckComplete, setRoleCheckComplete] = useState(false);
   const [roleCheckLoading, setRoleCheckLoading] = useState(false);
   const [roleCheckError, setRoleCheckError] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const avatarUrl =
@@ -143,11 +144,22 @@ const MainLayout = ({ user, handleLogout, children }) => {
 
   return (
     <div className="HomeLayout">
-      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <header className="main-header">
+        {/* Mobile Menu Button */}
+        <button 
+          className="mobile-menu-btn"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          <i className="bi bi-list"></i>
+        </button>
+
+        {/* Logo */}
         <div className="logo">
           DRI<span>VON</span>
         </div>
-        <nav>
+
+        {/* Desktop Navigation */}
+        <nav className="desktop-nav">
           <Link to="/" className={location.pathname === "/" ? "active" : ""}>Home</Link>
           <Link to="/rent-car" className={location.pathname.startsWith("/rent-car") ? "active" : ""}>Rent car</Link>
           <Link to="/contracts" className={location.pathname.startsWith("/contracts") ? "active" : ""}>Contracts</Link>
@@ -157,81 +169,97 @@ const MainLayout = ({ user, handleLogout, children }) => {
             <input type="text" placeholder="Search..." />
           </div>
         </nav>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div className="user-menu-container" style={{ position: 'relative', display: 'inline-block' }} ref={menuRef}>
+
+        {/* Right Side - User Menu & Notifications */}
+        <div className="header-right">
+          <div className="user-menu-container" ref={menuRef}>
             {user ? (
               <>
-                <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => setMenuOpen((open) => !open)}>
+                <div className="user-menu-trigger" onClick={() => setMenuOpen((open) => !open)}>
                   <img
                     src={avatarUrl}
                     alt="avatar"
                     className="user-avatar-header"
-                    style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', marginRight: 8 }}
                   />
-                  <span style={{ fontWeight: 500, color: '#000000', fontSize: 16 }}>{user.fullName || user.email || "User"}</span>
+                  <span className="user-name">{user.fullName || user.email || "User"}</span>
                 </div>
                 {menuOpen && (
-                  <div
-                    className="user-dropdown-menu"
-                  >
-                    <Link to="/profile" className="dropdown-item" style={{ display: 'flex', alignItems: 'center', padding: '10px', textDecoration: 'none', color: '#222' }}>
-                      <i className="bi bi-person" style={{ marginRight: '8px' }}></i>
+                  <div className="user-dropdown-menu">
+                    <Link to="/profile" className="dropdown-item">
+                      <i className="bi bi-person"></i>
                       Profile
                     </Link>
-                    <Link to="/messages" className="dropdown-item" style={{ padding: '10px', display: 'block', textDecoration: 'none', color: '#222' }}>
-                      <i className="bi bi-chat-dots" style={{ marginRight: '8px' }}></i>
+                    <Link to="/messages" className="dropdown-item">
+                      <i className="bi bi-chat-dots"></i>
                       Messages
                     </Link>
-                    <Link to="/my-rentals" className="dropdown-item" style={{ padding: '10px', display: 'block', textDecoration: 'none', color: '#222' }}>
-                      <i className="bi bi-car-front" style={{ marginRight: '8px' }}></i>
+                    <Link to="/my-rentals" className="dropdown-item">
+                      <i className="bi bi-car-front"></i>
                       My Rentals
                     </Link>
-                    <Link to="/payment" className="dropdown-item" style={{ padding: '10px', display: 'block', textDecoration: 'none', color: '#222' }}>
-                      <i className="bi bi-credit-card" style={{ marginRight: '8px' }}></i>
+                    <Link to="/payment" className="dropdown-item">
+                      <i className="bi bi-credit-card"></i>
                       Payment
                     </Link>
                     
                     {/* Admin Dashboard Button */}
                     {userRole === "admin" && (
-                      <Link to="/adminSecret" className="dropdown-item" style={{ padding: '10px', display: 'block', textDecoration: 'none', color: '#222' }}>
-                        <i className="bi bi-speedometer2" style={{ marginRight: '8px' }}></i>
+                      <Link to="/adminSecret" className="dropdown-item">
+                        <i className="bi bi-speedometer2"></i>
                         Admin Dashboard
                       </Link>
                     )}
                     
                     {/* Owner Dashboard Button */}
                     {userRole === "owner" && (
-                      <Link to="/owner" className="dropdown-item" style={{ padding: '10px', display: 'block', textDecoration: 'none', color: '#222' }}>
-                        <i className="bi bi-gear" style={{ marginRight: '8px' }}></i>
+                      <Link to="/owner" className="dropdown-item">
+                        <i className="bi bi-gear"></i>
                         Owner Dashboard
                       </Link>
                     )}
                     
-                    <button onClick={handleLogout} className="dropdown-item logout-button" style={{ padding: '10px', width: '100%', textAlign: 'left', border: 'none', cursor: 'pointer' }}>Logout</button>
+                    <button onClick={handleLogout} className="dropdown-item logout-button">Logout</button>
                   </div>
                 )}
               </>
             ) : (
               <button 
+                className="login-btn"
                 onClick={() => navigate('/auth')}
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: '#007bff',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '500'
-                }}
               >
                 Login / Signup
               </button>
             )}
           </div>
-          <i class="bi bi-chevron-down"></i>
           <NotificationBell />
         </div>
+
+        {/* Mobile Navigation Overlay */}
+        {mobileMenuOpen && (
+          <div className="mobile-nav-overlay" onClick={() => setMobileMenuOpen(false)}>
+            <div className="mobile-nav-content" onClick={(e) => e.stopPropagation()}>
+              <div className="mobile-nav-header">
+                <div className="logo">DRI<span>VON</span></div>
+                <button 
+                  className="close-mobile-menu"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <i className="bi bi-x"></i>
+                </button>
+              </div>
+              <nav className="mobile-nav">
+                <Link to="/" className={location.pathname === "/" ? "active" : ""} onClick={() => setMobileMenuOpen(false)}>Home</Link>
+                <Link to="/rent-car" className={location.pathname.startsWith("/rent-car") ? "active" : ""} onClick={() => setMobileMenuOpen(false)}>Rent car</Link>
+                <Link to="/contracts" className={location.pathname.startsWith("/contracts") ? "active" : ""} onClick={() => setMobileMenuOpen(false)}>Contracts</Link>
+                <Link to="/rent-your-car" className={location.pathname.startsWith("/rent-your-car") ? "active" : ""} onClick={() => setMobileMenuOpen(false)}>Become a Partner</Link>
+                <Link to="/contact" className={location.pathname === "/contact" ? "active" : ""} onClick={() => setMobileMenuOpen(false)}>Contact</Link>
+                <div className="mobile-search-box">
+                  <input type="text" placeholder="Search..." />
+                </div>
+              </nav>
+            </div>
+          </div>
+        )}
       </header>
 
       {showAuthForm && (
@@ -304,6 +332,19 @@ const MainLayout = ({ user, handleLogout, children }) => {
           background: #f5f5f5;
           color: #1a73e8;
           outline: none;
+        }
+        .mobile-nav a:hover {
+          color: #007bff !important;
+          background-color: #f5f5f5 !important;
+        }
+        .mobile-nav a {
+          color: #222 !important;
+          background: none !important;
+        }
+        .mobile-nav a.active {
+          color: #007bff !important;
+          background-color: #e3f2fd !important;
+          border-left: 3px solid #007bff;
         }
       `}</style>
     </div>

@@ -81,7 +81,8 @@
     flex-direction: column;
 }
 
-header {
+/* Main Header */
+.main-header {
     background-color: #ffffff;
     color: #000000;
     padding: 1rem 2rem;
@@ -89,39 +90,389 @@ header {
     justify-content: space-between;
     align-items: center;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    gap: 1rem;
+}
+
+/* Mobile Menu Button - Ẩn trên desktop */
+.mobile-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #333;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.mobile-menu-btn:hover {
+    background-color: #f5f5f5;
 }
 
 .logo {
     font-size: 24px;
     font-weight: bold;
     color: #000000;
+    flex-shrink: 0;
 }
+
 .HomeLayout .logo{
     color: #000000;
 }
+
 .logo span {
     color: #007bff;
 }
 
-nav {
+/* Desktop Navigation */
+.desktop-nav {
     display: flex;
     gap: 1.5rem;
-    padding-left: 40px
+    padding-left: 40px;
+    align-items: center;
+    flex: 1;
 }
 
-.HomeLayout nav a {
+.HomeLayout .desktop-nav a {
     text-decoration: none;
     color: #333;
     font-weight: 500;
+    white-space: nowrap;
 }
 
-nav a:hover {
+.desktop-nav a:hover {
     color: #007bff;
 }
 
-.HomeLayout nav a.active {
+.HomeLayout .desktop-nav a.active {
     border-bottom: 3px solid #FFD700;
     padding-bottom: 2px;
+}
+
+/* Header Right Side */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* User Menu */
+.user-menu-container {
+    position: relative;
+    display: inline-block;
+}
+
+.user-menu-trigger {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    gap: 8px;
+}
+
+.user-avatar-header {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-name {
+    font-weight: 500;
+    color: #000000;
+    font-size: 16px;
+}
+
+.login-btn {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.login-btn:hover {
+    background-color: #0056b3;
+}
+
+/* User Dropdown Menu */
+.user-dropdown-menu {
+    position: absolute;
+    top: 40px;
+    right: 0;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    min-width: 180px;
+    z-index: 1000;
+}
+
+.user-dropdown-menu .dropdown-item {
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #222;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.user-dropdown-menu .dropdown-item i {
+    margin-right: 8px;
+}
+
+.user-dropdown-menu .dropdown-item:hover,
+.user-dropdown-menu .dropdown-item:focus {
+    background: #f5f5f5;
+    color: #1a73e8;
+    border-radius: 8px;
+    outline: none;
+}
+
+.logout-button {
+    width: 100%;
+    text-align: left;
+    border: none;
+    cursor: pointer;
+    background-color: #dc3545;
+    color: white;
+}
+
+.logout-button:hover {
+    background-color: #c82333;
+}
+
+/* Mobile Navigation Overlay */
+.mobile-nav-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.mobile-nav-content {
+    background-color: white;
+    width: 280px;
+    height: 100%;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+.mobile-nav-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.close-mobile-menu {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #666;
+    cursor: pointer;
+    padding: 4px;
+}
+
+.close-mobile-menu:hover {
+    color: #333;
+}
+
+.mobile-nav {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 0;
+}
+
+.mobile-nav a {
+    padding: 12px 1rem;
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    border-bottom: 1px solid #f5f5f5;
+    transition: background-color 0.2s;
+}
+
+.mobile-nav a:hover {
+    background-color: #120707;
+    color: #007bff;
+}
+
+.mobile-nav a.active {
+    background-color: #e3f2fd;
+    color: #007bff;
+    border-left: 3px solid #007bff;
+}
+
+.mobile-search-box {
+    margin: 1rem;
+    padding: 8px 12px;
+    background: #f5f5f5;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.mobile-search-box input {
+    border: none;
+    outline: none;
+    background: transparent;
+    width: 100%;
+    font-size: 14px;
+}
+
+.mobile-search-box input::placeholder {
+    color: #999;
+}
+
+/* Search Box */
+.search-box {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border-radius: 24px;
+    padding: 2px 10px 2px 16px;
+    margin-left: 1.5rem;
+    margin-right: 1.5rem;
+    height: 36px;
+}
+
+.search-box input[type="text"] {
+    border: none;
+    outline: none;
+    background: transparent;
+    color: #333;
+    font-size: 15px;
+    width: 140px;
+    padding: 6px 0;
+}
+
+.search-box input[type="text"]::placeholder {
+    color: #bbb;
+}
+
+.search-box button {
+    background: none;
+    border: none;
+    color: #ffd700;
+    font-size: 18px;
+    cursor: pointer;
+    margin-left: 6px;
+    display: flex;
+    align-items: center;
+}
+
+.search-box button:hover {
+    color: #fff200;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-header {
+        padding: 0.75rem 1rem;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+
+    .mobile-menu-btn {
+        display: block !important;
+        order: 1;
+        flex-shrink: 0;
+    }
+
+    .desktop-nav {
+        display: none !important;
+        width: 0;
+        height: 0;
+        overflow: hidden;
+    }
+
+    .user-name {
+        display: none !important;
+    }
+
+    .header-right {
+        gap: 8px;
+        order: 3;
+        flex-shrink: 0;
+    }
+
+    .logo {
+        font-size: 20px;
+        margin: 0;
+        order: 2;
+        flex: 1;
+        text-align: center;
+        min-width: 0;
+    }
+
+    .search-box {
+        display: none !important;
+        width: 0;
+        height: 0;
+        overflow: hidden;
+    }
+
+    /* Đảm bảo layout flex hoạt động đúng */
+    .main-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-header {
+        padding: 0.5rem 0.75rem;
+    }
+
+    .logo {
+        font-size: 18px;
+    }
+
+    .mobile-menu-btn {
+        font-size: 20px;
+        padding: 6px;
+    }
+
+    .user-avatar-header {
+        width: 28px;
+        height: 28px;
+    }
+
+    .header-right {
+        gap: 6px;
+    }
+}
+
+/* Ẩn search box trên tablet cũng */
+@media (max-width: 900px) {
+    .search-box {
+        display: none !important;
+    }
 }
 
 .auth-payment-buttons {
@@ -136,25 +487,6 @@ nav a:hover {
     gap: 0.5rem;
     text-decoration: none;
     color: #333;
-}
-
-.user-avatar-header {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-}
-
-.logout-button {
-    padding: 8px 16px;
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.logout-button:hover {
-    background-color: #c82333;
 }
 
 .payment-button {
@@ -193,94 +525,12 @@ nav a:hover {
     color: #0056b3;
 }
 
-.search-box {
-    display: flex;
-    align-items: center;
-    background: #fff;
-    border-radius: 24px;
-    padding: 2px 10px 2px 16px;
-    margin-left: 1.5rem;
-    margin-right: 1.5rem;
-    height: 36px;
-}
-
-.search-box input[type="text"] {
-    border: none;
-    outline: none;
-    background: transparent;
-    color: #fff;
-    font-size: 15px;
-    width: 140px;
-    padding: 6px 0;
-}
-
-.search-box input[type="text"]::placeholder {
-    color: #bbb;
-}
-
-.search-box button {
-    background: none;
-    border: none;
-    color: #ffd700;
-    font-size: 18px;
-    cursor: pointer;
-    margin-left: 6px;
-    display: flex;
-    align-items: center;
-}
-
-.search-box button:hover {
-    color: #fff200;
-}
-
-@media (max-width: 900px) {
-    .search-box {
-        margin: 0.5rem 0;
-        width: 100%;
-        justify-content: center;
-    }
-
-    .search-box input[type="text"] {
-        width: 100px;
-    }
-}
-
-.user-dropdown-menu .dropdown-item {
-    padding: 10px;
-    display: block;
-    text-decoration: none;
-    color: #222;
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
-    /* Giữ bo góc luôn */
-    transition: background 0.2s ease, color 0.2s ease;
-}
-
-.user-dropdown-menu .dropdown-item:hover,
-.user-dropdown-menu .dropdown-item:focus {
-    background: #f5f5f5;
-    color: #1a73e8;
-    border-radius: 8px;
-    /* Đảm bảo hover vẫn có bo góc */
-    outline: none;
-}
-.user-dropdown-menu{
-    position: absolute;
-    top: 40px;
-    right: 0;
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    min-width: 180px;
-    z-index: 1000;
-}
 .loading {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 80vh;
-  }
+}
 
 .HomeLayout header {
     background-color: #ffffff;
