@@ -496,6 +496,19 @@ import { showErrorToast, showSuccessToast } from '../toast/notification';
                 style={{ display: 'none' }}
               />
             </label>
+            <label className="upload-button" htmlFor="car-other-images">
+              <i className="bi bi-plus-lg"></i>
+              <span>Cccd Images</span>
+              <input
+                type="file"
+                id="car-other-images"
+                accept="image/*"
+                multiple
+                onChange={handleOtherImagesChange}
+                disabled={uploading}
+                style={{ display: 'none' }}
+              />
+            </label>
             <div className="image-preview-grid">
               {otherPreviewUrls.map((url, index) => (
                 <div key={index} className="image-preview-item">

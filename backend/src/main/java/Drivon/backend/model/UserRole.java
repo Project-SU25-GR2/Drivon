@@ -3,5 +3,7 @@ package Drivon.backend.model;
 public enum UserRole {
     renter,
     owner,
-    admin
+    admin,
+    verify_owner,
+    verify_user
 } 

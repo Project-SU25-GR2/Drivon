@@ -213,7 +213,7 @@ const MainLayout = ({ user, handleLogout, children }) => {
                     )}
                     
                     {/* Owner Dashboard Button */}
-                    {userRole === "owner" && (
+                    {(userRole === "owner" ||userRole === "verify_owner") && (
                       <Link to="/owner" className="dropdown-item">
                         <i className="bi bi-gear"></i>
                         Owner Dashboard
