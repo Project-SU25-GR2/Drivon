@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import SimpleButton from "../others/SimpleButton";
-
+import { API_URL } from '../../api/configApi';
 const ResetPasswordPage = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -27,7 +27,7 @@ const ResetPasswordPage = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/auth/reset-password",
+        `${API_URL}/auth/reset-password`,
         {
           token,
           newPassword,

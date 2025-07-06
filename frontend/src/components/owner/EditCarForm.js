@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import cloudinaryConfig from "../../config/cloudinary"; // Import Cloudinary config
 import "./EditCarForm.css"; // We will create this CSS file next
+import { API_URL } from '../../api/configApi';  
+import { useParams, useNavigate } from 'react-router-dom';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
 
 const EditCarForm = ({ car, onSave, onClose }) => {
   const [formData, setFormData] = useState({
@@ -163,7 +166,7 @@ const EditCarForm = ({ car, onSave, onClose }) => {
   const handleImageUpload = async () => {
     // This is for the main image (single file upload)
     if (!selectedMainImageFile) {
-      alert("Please select a main image file to upload.");
+      showErrorToast("Please select a main image file to upload.");
       return;
     }
 
@@ -185,10 +188,11 @@ const EditCarForm = ({ car, onSave, onClose }) => {
         mainImage: uploadedImageUrl,
       }));
       setSelectedMainImageFile(null);
-      alert("Main image uploaded successfully!");
+      showSuccessToast("Main image uploaded successfully!");
     } catch (err) {
       console.error("Error uploading main image to Cloudinary:", err);
       setError("Failed to upload main image. Please try again.");
+      showErrorToast("Failed to upload main image. Please try again.");
     } finally {
       setUploadingImage(false);
     }
@@ -197,7 +201,7 @@ const EditCarForm = ({ car, onSave, onClose }) => {
   const handleOtherImageUpload = async () => {
     // This is for other images (multiple file upload)
     if (selectedOtherImageFiles.length === 0) {
-      alert(
+      showErrorToast(
         "Please select at least one image file to upload for other images."
       );
       return;
@@ -231,10 +235,11 @@ const EditCarForm = ({ car, onSave, onClose }) => {
         otherImages: [...prevData.otherImages, ...uploadedUrls],
       }));
       setSelectedOtherImageFiles([]); // Clear selected files
-      alert("Other images uploaded and added successfully!");
+      showSuccessToast("Other images uploaded and added successfully!");
     } catch (err) {
       console.error("Error uploading other images to Cloudinary:", err);
       setError("Failed to upload other images. Please try again.");
+      showErrorToast("Failed to upload other images. Please try again.");
     } finally {
       setUploadingImage(false);
     }
@@ -307,7 +312,7 @@ const EditCarForm = ({ car, onSave, onClose }) => {
       console.log("Sending car data:", carData); // Debug log
 
       const response = await axios.put(
-        `http://localhost:8080/api/cars/${formData.licensePlate}`,
+        `${API_URL}/cars/${formData.licensePlate}`,
         carData
       );
 
@@ -325,11 +330,11 @@ const EditCarForm = ({ car, onSave, onClose }) => {
         };
         console.log("Sending image data:", imageData); // Debug log
 
-        await axios.post("http://localhost:8080/api/cars/images", imageData);
+        await axios.post(`${API_URL}/cars/images`, imageData);
       }
 
       onSave(response.data);
-      alert("Car updated successfully!");
+      showSuccessToast("Car updated successfully!");
     } catch (err) {
       console.error("Error updating car:", err);
       console.error("Error details:", {
@@ -341,6 +346,7 @@ const EditCarForm = ({ car, onSave, onClose }) => {
       setError(
         `Failed to update car: ${err.response?.data?.error || err.message}`
       );
+      showErrorToast(`Failed to update car: ${err.response?.data?.error || err.message}`);
     } finally {
       setLoading(false);
     }

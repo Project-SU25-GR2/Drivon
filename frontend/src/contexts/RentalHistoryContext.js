@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
-
+import { API_URL } from '../api/configApi';
 const RentalHistoryContext = createContext();
 
 export const useRentalHistory = () => {
@@ -29,7 +29,7 @@ export const RentalHistoryProvider = ({ children }) => {
 
   const fetchPaymentStatus = async (bookingId) => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/payments/booking/${bookingId}`);
+      const response = await axios.get(`${API_URL}/payments/booking/${bookingId}`);
       return response.data.status || 'Unknown';
     } catch (error) {
       if (error.response && error.response.status === 404) {
@@ -54,7 +54,7 @@ export const RentalHistoryProvider = ({ children }) => {
     setError(null);
 
     try {
-      const response = await axios.get(`http://localhost:8080/api/bookings/owner/${userId}`);
+      const response = await axios.get(`${API_URL}/bookings/owner/${userId}`);
       const rentals = response.data;
 
       const rentalsWithPaymentStatus = await Promise.all(
@@ -84,7 +84,7 @@ export const RentalHistoryProvider = ({ children }) => {
   const updateRentalStatus = async (rentalId, newStatus) => {
     try {
       await axios.put(
-        `http://localhost:8080/api/bookings/status/${rentalId}`,
+      `${API_URL}/bookings/status/${rentalId}`,
         { status: newStatus },
         {
           headers: {

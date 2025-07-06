@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
-
+import { API_URL } from '../api/configApi';
 const PartnerDataContext = createContext();
 
 export const usePartnerData = () => {
@@ -37,7 +37,7 @@ export const PartnerDataProvider = ({ children }) => {
 
     try {
       console.log('Fetching partners from API...');
-      const response = await axios.get('http://localhost:8080/api/admin/partners');
+      const response = await axios.get(`${API_URL}/admin/partners`);
       console.log('Partners API response:', response.data);
       
       const data = response.data;
@@ -80,7 +80,7 @@ export const PartnerDataProvider = ({ children }) => {
   const updatePartnerStatus = async (id, newStatus) => {
     try {
       console.log(`Updating partner status: ${id} to ${newStatus}`);
-      await axios.put(`http://localhost:8080/api/admin/partners/${id}/status`, { status: newStatus });
+      await axios.put(`${API_URL}/admin/partners/${id}/status`, { status: newStatus });
       
       // Update local state
       setPartnersData(prev =>

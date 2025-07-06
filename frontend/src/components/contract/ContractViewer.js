@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './css/ContractViewer.css';
-
+import { API_URL } from '../../api/configApi';
 const ContractViewer = ({ carData }) => {
   const [contractData, setContractData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -12,7 +12,7 @@ const ContractViewer = ({ carData }) => {
       try {
         setLoading(true);
         // Gọi API để tạo hợp đồng
-        const response = await axios.post('http://localhost:8080/api/contracts/generate', {
+        const response = await axios.post(`${API_URL}/contracts/generate`, {
           carData: carData,
           // Thêm các thông tin khác nếu cần
         });

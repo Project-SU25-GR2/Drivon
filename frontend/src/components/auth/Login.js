@@ -4,22 +4,23 @@ import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import SimpleButton from "../others/SimpleButton";
 import { Link } from "react-router-dom";
+import { API_URL } from '../../api/configApi';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
 
 const Login = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     setIsLoading(true);
 
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/auth/login",
-        {
+        `${API_URL}/auth/login`,
+        {   
           email,
           password,
         }
@@ -27,10 +28,11 @@ const Login = ({ onLoginSuccess }) => {
 
       if (response.data) {
         const userDataWithToken = { ...response.data.user, token: response.data.token };
+        showSuccessToast('Đăng nhập thành công!');
         onLoginSuccess(userDataWithToken);
       }
     } catch (err) {
-      setError(
+      showErrorToast(
         err.response?.data?.message || "Login failed. Please try again."
       );
     } finally {
@@ -43,7 +45,7 @@ const Login = ({ onLoginSuccess }) => {
     try {
       const decoded = jwtDecode(credentialResponse.credential);
       const response = await axios.post(
-        "http://localhost:8080/api/auth/google",
+        `${API_URL}/auth/google`,
         {
           email: decoded.email,
           name: decoded.name,
@@ -53,10 +55,11 @@ const Login = ({ onLoginSuccess }) => {
 
       if (response.data) {
         const userDataWithToken = { ...response.data.user, token: response.data.token };
+        showSuccessToast('Đăng nhập Google thành công!');
         onLoginSuccess(userDataWithToken);
       }
     } catch (err) {
-      setError(
+      showErrorToast(
         err.response?.data?.message || "Google login failed. Please try again."
       );
     } finally {
@@ -65,16 +68,14 @@ const Login = ({ onLoginSuccess }) => {
   };
 
   const handleGoogleError = () => {
-    setError("Google login failed. Please try again.");
+    showErrorToast("Google login failed. Please try again.");
   };
 
   return (
     <div style={{ maxWidth: "400px", margin: "0 auto", padding: "20px" }}>
       <h2>Login</h2>
       <form onSubmit={handleSubmit} className="auth-form">
-        {error && (
-          <div style={{ color: "red", marginBottom: "10px" }}>{error}</div>
-        )}
+
         <div>
           <input
             type="email"
@@ -107,20 +108,40 @@ const Login = ({ onLoginSuccess }) => {
           Login
         </SimpleButton>
 
-        <div style={{ marginTop: "20px", textAlign: "center" }}>
+        <div style={{ 
+          marginTop: "20px", 
+          textAlign: "center",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center"
+        }}>
           <p>Or login with:</p>
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={handleGoogleError}
-            useOneTap
-            popup_type="popup"
-            popup_properties={{
-              width: 500,
-              height: 600,
-              left: window.screenX + (window.outerWidth - 500) / 2,
-              top: window.screenY + (window.outerHeight - 600) / 2,
-            }}
-          />
+          <div style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            width: "100%",
+            minHeight: "40px"
+          }}>
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+              useOneTap
+              popup_type="popup"
+              popup_properties={{
+                width: 500,
+                height: 600,
+                left: window.screenX + (window.outerWidth - 500) / 2,
+                top: window.screenY + (window.outerHeight - 600) / 2,
+              }}
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center"
+              }}
+            />
+          </div>
         </div>
       </form>
     </div>

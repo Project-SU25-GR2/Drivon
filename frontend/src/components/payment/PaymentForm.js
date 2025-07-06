@@ -1,6 +1,9 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useNavigate, useLocation } from 'react-router-dom';
 import "../css/PaymentForm.css";
+import { API_URL } from '../../api/configApi';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
 
 const PaymentForm = () => {
   const [formData, setFormData] = useState({
@@ -34,14 +37,14 @@ const PaymentForm = () => {
       console.log("Sending request with data:", requestData);
 
       const response = await axios.post(
-        "http://localhost:8080/api/payments/create",
+        `${URL}/payments/create`,
         requestData
       );
 
       console.log("Response from server:", response.data);
 
       if (response.data.error) {
-        alert("Error: " + response.data.error);
+        showErrorToast("Error: " + response.data.error);
         return;
       }
 
@@ -49,7 +52,7 @@ const PaymentForm = () => {
         window.location.href = response.data.data.checkoutUrl;
       } else {
         console.error("Unexpected response format:", response.data);
-        alert(
+        showErrorToast(
           "No checkout URL received from server. Please check console for details."
         );
       }
@@ -58,7 +61,7 @@ const PaymentForm = () => {
         "Payment creation failed:",
         error.response?.data || error.message
       );
-      alert(
+      showErrorToast(
         "Payment creation failed: " +
           (error.response?.data?.error || error.message)
       );

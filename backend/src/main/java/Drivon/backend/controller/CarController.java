@@ -164,6 +164,65 @@ public class CarController {
         }
     }
 
+    @GetMapping("/owner/{ownerId}/with-contracts")
+    public ResponseEntity<?> getCarsByOwnerIdWithContracts(@PathVariable Long ownerId) {
+        try {
+            List<Car> cars = carService.getCarsByOwnerId(ownerId);
+            List<Map<String, Object>> carsWithDetails = new ArrayList<>();
+
+            for (Car car : cars) {
+                Map<String, Object> carData = new HashMap<>();
+                carData.put("licensePlate", car.getLicensePlate());
+                carData.put("brand", car.getBrand());
+                carData.put("model", car.getModel());
+                carData.put("year", car.getYear());
+                carData.put("seats", car.getSeats());
+                carData.put("description", car.getDescription());
+                carData.put("type", car.getType());
+                carData.put("transmission", car.getTransmission());
+                carData.put("fuelType", car.getFuelType());
+                carData.put("fuelConsumption", car.getFuelConsumption());
+                carData.put("status", car.getStatus());
+                carData.put("location", car.getLocation());
+                carData.put("ownerId", car.getOwnerId());
+
+                // Get main image from cars table
+                carData.put("mainImage", car.getMainImage());
+
+                // Get other images from car_images table
+                List<CarImage> otherImages = carImageRepository.findByCarId(car.getLicensePlate());
+                List<String> otherImageUrls = new ArrayList<>();
+                for (CarImage image : otherImages) {
+                    otherImageUrls.add(image.getImageUrl());
+                }
+                carData.put("otherImages", otherImageUrls);
+
+                // Get contract details
+                try {
+                    Optional<Drivon.backend.model.Contract> contractOpt = contractService.getLatestContractByCar(car.getLicensePlate());
+                    if (contractOpt.isPresent()) {
+                        carData.put("contract", contractOpt.get());
+                        carData.put("pricePerDay", contractOpt.get().getPricePerDay());
+                    } else {
+                        carData.put("contract", null);
+                        carData.put("pricePerDay", null);
+                    }
+                } catch (Exception e) {
+                    carData.put("contract", null);
+                    carData.put("pricePerDay", null);
+                }
+
+                carsWithDetails.add(carData);
+            }
+
+            return ResponseEntity.ok(carsWithDetails);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
     @GetMapping("/active-lease")
     public ResponseEntity<?> getActiveLeaseCars() {
         try {

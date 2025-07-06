@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import axios from "axios";
 import SimpleButton from "../others/SimpleButton";
-
+import { API_URL } from '../../api/configApi';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState(1); // 1: email, 2: verification code, 3: new password
   const [codeSent, setCodeSent] = useState(false);
@@ -29,18 +29,16 @@ const ForgotPasswordPage = () => {
   const handleSendCode = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setMessage("");
-    setError("");
 
     try {
-      await axios.post("http://localhost:8080/api/auth/send-reset-code", {
-        email,
+      await axios.post(`${API_URL}/auth/send-reset-code`, {
+        email,  
       });
-      setMessage("Mã xác thực đã được gửi đến email của bạn");
+      showSuccessToast("Mã xác thực đã được gửi đến email của bạn");
       setCodeSent(true);
       setStep(2);
     } catch (err) {
-      setError(err.response?.data || "Không thể gửi mã xác thực");
+      showErrorToast(err.response?.data || "Không thể gửi mã xác thực");
     } finally {
       setIsLoading(false);
     }
@@ -49,18 +47,16 @@ const ForgotPasswordPage = () => {
   const handleVerifyCode = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setMessage("");
-    setError("");
 
     try {
-      await axios.post("http://localhost:8080/api/auth/verify-reset-code", {
+      await axios.post(`${API_URL}/auth/verify-reset-code`, {
         email,
         code: verificationCode,
       });
-      setMessage("Mã xác thực hợp lệ");
+      showSuccessToast("Mã xác thực hợp lệ");
       setStep(3);
     } catch (err) {
-      setError(err.response?.data || "Mã xác thực không hợp lệ");
+      showErrorToast(err.response?.data || "Mã xác thực không hợp lệ");
     } finally {
       setIsLoading(false);
     }
@@ -69,32 +65,30 @@ const ForgotPasswordPage = () => {
   const handleResetPassword = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setMessage("");
-    setError("");
 
     const passwordError = validatePassword(newPassword);
     if (passwordError) {
-      setError(passwordError);
+      showErrorToast(passwordError);
       setIsLoading(false);
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError("Mật khẩu không khớp");
+      showErrorToast("Mật khẩu không khớp");
       setIsLoading(false);
       return;
     }
 
     try {
-      await axios.post("http://localhost:8080/api/auth/reset-password", {
+      await axios.post(`${API_URL}/auth/reset-password`, {
         email,
         code: verificationCode,
         newPassword,
       });
-      setMessage("Đặt lại mật khẩu thành công");
+      showSuccessToast("Đặt lại mật khẩu thành công");
       setTimeout(() => (window.location.href = "/auth"), 2000);
     } catch (err) {
-      setError(err.response?.data || "Không thể đặt lại mật khẩu");
+      showErrorToast(err.response?.data || "Không thể đặt lại mật khẩu");
     } finally {
       setIsLoading(false);
     }
@@ -116,10 +110,6 @@ const ForgotPasswordPage = () => {
             />
           </div>
 
-          {message && <div className="success-message">{message}</div>}
-
-          {error && <div className="error-message">{error}</div>}
-
           <SimpleButton type="submit" isLoading={isLoading}>
             Gửi mã xác thực
           </SimpleButton>
@@ -139,10 +129,6 @@ const ForgotPasswordPage = () => {
               maxLength="6"
             />
           </div>
-
-          {message && <div className="success-message">{message}</div>}
-
-          {error && <div className="error-message">{error}</div>}
 
           <SimpleButton type="submit" isLoading={isLoading}>
             Xác thực
@@ -191,10 +177,6 @@ const ForgotPasswordPage = () => {
               <li>Chứa ít nhất 1 số</li>
             </ul>
           </div>
-
-          {message && <div className="success-message">{message}</div>}
-
-          {error && <div className="error-message">{error}</div>}
 
           <SimpleButton type="submit" isLoading={isLoading}>
             Đặt lại mật khẩu

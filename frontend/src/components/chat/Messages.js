@@ -4,6 +4,8 @@ import axios from 'axios';
 import webSocketService from '../../services/WebSocketService';
 import './Messages.css';
 import Loader from '../others/loader';
+import { API_URL } from '../../api/configApi';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
 const Messages = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -47,7 +49,7 @@ const Messages = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `http://localhost:8080/api/messages/conversation/${userId1}/${userId2}`
+        `${API_URL}/messages/conversation/${userId1}/${userId2}`
       );
       setMessages(response.data);
       const conversation = conversations.find(conv => conv.id === userId2);
@@ -64,7 +66,7 @@ const Messages = () => {
   const fetchConversations = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:8080/api/messages/conversations/${currentUser.userId}`);
+      const response = await axios.get(`${API_URL}/messages/conversations/${currentUser.userId}`);
       setConversations(prevConversations => {
         const newConversations = response.data;
         const existingConversationsMap = new Map();
@@ -243,7 +245,7 @@ const Messages = () => {
           console.log('Conversation not found in current list, fetching conversations...');
           const fetchAndSelectConversation = async () => {
             try {
-              const response = await axios.get(`http://localhost:8080/api/messages/conversations/${currentUser.userId}`);
+              const response = await axios.get(`${API_URL}/messages/conversations/${currentUser.userId}`);
               const updatedConversations = response.data;
               const foundConversation = updatedConversations.find(conv => conv.id === newMessage.sender_id);
               if (foundConversation) {
@@ -462,7 +464,7 @@ const Messages = () => {
       }
     } catch (error) {
       console.error('Error sending message:', error);
-      alert('Failed to send message. Please try again.');
+      showErrorToast('Failed to send message. Please try again.');
       // Put the message back in the input field so user can try again
       setMessage(messageContent);
     }
@@ -480,7 +482,7 @@ const Messages = () => {
     
     // Mark conversation as read
     if (user.conversationId) {
-      axios.put(`http://localhost:8080/api/messages/read/${currentUser.userId}/${user.conversationId}`);
+      axios.put(`${API_URL}/messages/read/${currentUser.userId}/${user.conversationId}`);
     }
     
     setConversations(prev =>
@@ -554,12 +556,13 @@ const Messages = () => {
                   onClick={async () => {
                     if (window.confirm('Bạn có chắc muốn xóa toàn bộ đoạn chat này?')) {
                       try {
-                        await axios.delete(`http://localhost:8080/api/messages/conversation/${currentUser.userId}/${selectedUser.id}`);
+                        await axios.delete(`${API_URL}/messages/conversation/${currentUser.userId}/${selectedUser.id}`);
                         setMessages([]);
                         setSelectedUser(null);
                         fetchConversations();
+                        showSuccessToast('Chat deleted successfully!');
                       } catch (err) {
-                        alert('Xóa đoạn chat thất bại!');
+                        showErrorToast('Failed to delete chat.');
                       }
                     }
                   }}

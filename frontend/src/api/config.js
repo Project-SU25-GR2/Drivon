@@ -2,9 +2,7 @@ import axios from 'axios';
 
 // Get the current hostname for dynamic backend URL
 const getBackendUrl = () => {
-  const host = window.location.hostname;
-  const port = '8080'; // Backend port
-  return `http://${host}:${port}`;
+  return '/api';
 };
 
 const api = axios.create({

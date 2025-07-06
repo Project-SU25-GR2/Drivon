@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from '../../api/configApi';
 
 const ChangePasswordPage = () => {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -23,7 +24,7 @@ const ChangePasswordPage = () => {
         }
 
         const response = await axios.get(
-          `http://localhost:8080/api/profile/check-password-status/${user.email}`
+          `${API_URL}/profile/check-password-status/${user.email}`
         );
         setHasPassword(response.data.hasPassword);
       } catch (err) {
@@ -89,7 +90,7 @@ const ChangePasswordPage = () => {
         : { email: user.email, newPassword };
 
       const response = await axios.post(
-        `http://localhost:8080${endpoint}`,
+        `${API_URL}${endpoint}`, 
         payload
       );
 

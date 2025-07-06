@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import cloudinaryConfig  from '../../config/cloudinary';
 import '../css/ChangeAvatarPage.css';
+import { API_URL } from '../../api/configApi';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
 
 const ChangeAvatarPage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -17,6 +19,7 @@ const ChangeAvatarPage = () => {
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
         setUploadError('Kích thước file không được vượt quá 5MB');
+        showErrorToast('File size must not exceed 5MB');
         setSelectedFile(null);
         setPreviewUrl(null);
         return;
@@ -24,13 +27,14 @@ const ChangeAvatarPage = () => {
 
       if (!file.type.startsWith('image/')) {
         setUploadError('Vui lòng chọn file hình ảnh');
+        showErrorToast('Please select an image file');
         setSelectedFile(null);
         setPreviewUrl(null);
         return;
       }
 
       setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
+      setPreviewUrl(API_URL.createObjectURL(file));
       setUploadError(null);
       setUploadSuccess(false);
     } else {
@@ -42,6 +46,7 @@ const ChangeAvatarPage = () => {
   const handleUpload = async () => {
     if (!selectedFile) {
       setUploadError('Vui lòng chọn ảnh để tải lên.');
+      showErrorToast('Please select an image to upload');
       return;
     }
 
@@ -64,7 +69,7 @@ const ChangeAvatarPage = () => {
         throw new Error('User not found');
       }
 
-      const response = await axios.put('http://localhost:8080/api/profile/update-avatar', {
+        const response = await axios.put(`${API_URL}/profile/update-avatar`, {
         email: user.email,
         avatarUrl: imageUrl
       });
@@ -74,13 +79,16 @@ const ChangeAvatarPage = () => {
 
       setUploadSuccess(true);
       setUploadError(null);
+      showSuccessToast('Avatar updated successfully!');
       
       setTimeout(() => {
         window.location.href = '/profile';
       }, 1500);
     } catch (error) {
       console.error('Error uploading avatar:', error);
-      setUploadError(error.response?.data?.error || 'Có lỗi xảy ra khi tải ảnh lên.');
+      const errorMessage = error.response?.data?.error || 'Có lỗi xảy ra khi tải ảnh lên.';
+      setUploadError(errorMessage);
+      showErrorToast(errorMessage);
     } finally {
       setUploading(false);
     }

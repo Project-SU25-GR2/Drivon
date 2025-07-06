@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { getNotifications, getUnreadCount, markAsRead, markAllAsRead } from '../../api/notification';
 import webSocketService from '../../services/WebSocketService';
 import './NotificationList.css';
+import { showErrorToast } from './notification';
 
 const NotificationBell = () => {
   const [notifications, setNotifications] = useState([]);
@@ -20,6 +21,7 @@ const NotificationBell = () => {
     } catch (error) {
       console.error('Error loading notifications:', error);
       setNotifications([]);
+      showErrorToast('Failed to load notifications');
     } finally {
       setLoading(false);
     }
@@ -34,6 +36,7 @@ const NotificationBell = () => {
     } catch (error) {
       console.error('Error loading unread count:', error);
       setUnreadCount(0);
+      // showErrorToast('Failed to load unread count');
     }
   }, []);
 
@@ -106,6 +109,7 @@ const NotificationBell = () => {
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
       console.error('Error marking notification as read:', error);
+      showErrorToast('Failed to mark notification as read');
     }
   };
 
@@ -118,6 +122,7 @@ const NotificationBell = () => {
       setUnreadCount(0);
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
+      showErrorToast('Failed to mark all notifications as read');
     }
   };
 

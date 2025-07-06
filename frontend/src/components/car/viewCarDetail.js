@@ -15,7 +15,7 @@ import { BsEvStationFill } from "react-icons/bs";
 import { BsFillFuelPumpDieselFill } from "react-icons/bs";
 import Loader from '../others/loader';
 import { useCarData } from '../../contexts/CarDataContext';
-
+import { API_URL } from '../../api/configApi';
 const ViewCarDetail = () => {
   const { licensePlate } = useParams();
   const navigate = useNavigate();
@@ -138,7 +138,7 @@ const ViewCarDetail = () => {
       }
     } else {
       // Car not found in context, fetch individually
-      axios.get(`http://localhost:8080/api/cars/${licensePlate}`)
+      axios.get(`${API_URL}/cars/${licensePlate}`)
         .then(res => {
           console.log('Car data:', res.data);
           setCar(res.data);
@@ -153,7 +153,7 @@ const ViewCarDetail = () => {
         });
 
       // Fetch hợp đồng gần nhất của xe
-      axios.get(`http://localhost:8080/api/contracts/by-car/${licensePlate}`)
+      axios.get(`${API_URL}/contracts/by-car/${licensePlate}`)
         .then(res => {
           console.log('Contract data:', res.data);
           setContract(res.data);
@@ -174,7 +174,7 @@ const ViewCarDetail = () => {
 
       // Fetch reviews
       setReviewsLoading(true);
-      axios.get(`http://localhost:8080/api/reviews/car/${licensePlate}`)
+      axios.get(`${API_URL}/reviews/car/${licensePlate}`)
         .then(res => {
           setReviewsData(res.data);
           setReviewsLoading(false);
@@ -208,14 +208,14 @@ const ViewCarDetail = () => {
 
   useEffect(() => {
     if (showCouponModal) {
-      axios.get('http://localhost:8080/api/promotions')
+      axios.get(`${API_URL}/promotions`)
         .then(res => setCouponList(res.data))
         .catch(() => setCouponList([]));
     }
   }, [showCouponModal]);
 
   useEffect(() => {
-    axios.get('http://localhost:8080/api/cars')
+    axios.get(`${API_URL}/cars`)
       .then(res => setAllCars(res.data))
       .catch(() => setAllCars([]));
   }, []);
@@ -229,7 +229,7 @@ const ViewCarDetail = () => {
       const newContracts = {};
       await Promise.all(carsToFetch.map(async (item) => {
         try {
-          const res = await axios.get(`http://localhost:8080/api/contracts/by-car/${item.licensePlate}`);
+          const res = await axios.get(`${API_URL}/contracts/by-car/${item.licensePlate}`);
           newContracts[item.licensePlate] = res.data;
         } catch {
           newContracts[item.licensePlate] = null;

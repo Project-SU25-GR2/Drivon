@@ -1,5 +1,4 @@
--- Xóa database nếu đã tồn tại
-DROP DATABASE IF EXISTS car_rental_system2;
+
 
 -- Tạo database và sử dụng
 CREATE DATABASE car_rental_system2;
@@ -20,6 +19,15 @@ CREATE TABLE users (
     phone_verified BOOLEAN DEFAULT FALSE,
     google_id VARCHAR(100) UNIQUE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE user_image (
+    image_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    image_url TEXT NOT NULL,
+    document_type ENUM('cccd', 'license', 'passport', 'other') NOT NULL,
+    description TEXT,
+    uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
 -- 2. Bảng user_verification
@@ -42,7 +50,7 @@ CREATE TABLE cars (
     model VARCHAR(100),
     year INT,
     seats INT,
-    status ENUM('available', 'unavailable', 'hidden', 'rented') DEFAULT 'available',
+    status ENUM('available', 'unavailable', 'hidden') DEFAULT 'available',
     type ENUM('suv', 'sedan', 'mpv', 'hatchback', 'pickup'),
     transmission ENUM('manual', 'automatic'),
     fuel_type ENUM('gasoline', 'diesel', 'electric', 'hybrid'),
@@ -52,7 +60,7 @@ CREATE TABLE cars (
     main_image TEXT,
     FOREIGN KEY (owner_id) REFERENCES users(user_id) ON DELETE SET NULL ON UPDATE CASCADE
 );
-
+show create table cars;
 -- 4. Bảng car_images
 CREATE TABLE car_images (
     image_id BIGINT PRIMARY KEY AUTO_INCREMENT,
@@ -109,7 +117,9 @@ CREATE TABLE payments (
     FOREIGN KEY (booking_id) REFERENCES bookings(booking_id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL ON UPDATE CASCADE
 );
-
+show create table payments;
+ALTER TABLE payments
+DROP FOREIGN KEY FK1un2r8jiovdq34iwr8mcr91bo;
 -- 8. Bảng reviews
 CREATE TABLE reviews (
     review_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -139,20 +149,15 @@ CREATE TABLE complaints (
 );
 
 -- 10. Bảng notifications
-DROP TABLE IF EXISTS notifications;
-
 CREATE TABLE notifications (
-    notification_id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    content TEXT NOT NULL,
-    type VARCHAR(32) NOT NULL COMMENT 'Loại thông báo: SYSTEM, PROMO',
-    target_type VARCHAR(32) NOT NULL COMMENT 'Đối tượng nhận: ALL_USERS, OWNER_ONLY, USER_SPECIFIC',
-    target_user_id BIGINT NULL COMMENT 'User ID cụ thể nếu target_type = USER_SPECIFIC',
+    notification_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT,
+    content TEXT,
+    type ENUM('system', 'message', 'promo'),
     is_read BOOLEAN DEFAULT FALSE,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_target_type (target_type),
-    INDEX idx_target_user_id (target_user_id),
-    INDEX idx_created_at (created_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
 
 -- 11. Bảng support_requests
 CREATE TABLE support_requests (
@@ -225,17 +230,6 @@ CREATE TABLE rental_contracts (
     FOREIGN KEY (owner_id) REFERENCES users(user_id),
     FOREIGN KEY (booking_id) REFERENCES bookings(booking_id)
 );
-/* 17. Bảng messages:
-CREATE TABLE messages (
-    message_id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    sender_id BIGINT NOT NULL,
-    receiver_id BIGINT NOT NULL,
-    content TEXT NOT NULL,
-    sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    is_read BOOLEAN DEFAULT FALSE,
-    FOREIGN KEY (sender_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (receiver_id) REFERENCES users(user_id) ON DELETE CASCADE
-); */
 
 
 -- Drop existing tables if they exist (in correct order due to foreign keys)
@@ -252,7 +246,8 @@ CREATE TABLE conversations (
     FOREIGN KEY (user1_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (user2_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
-
+ALTER TABLE conversations 
+ADD UNIQUE KEY unique_user_pair (user1_id, user2_id);
 -- 19. Recreate messages table
 CREATE TABLE messages (
     message_id BIGINT PRIMARY KEY AUTO_INCREMENT,
@@ -276,23 +271,6 @@ CREATE TABLE user_conversations (
     FOREIGN KEY (conversation_id) REFERENCES conversations(conversation_id) ON DELETE CASCADE,
     FOREIGN KEY (last_seen_message_id) REFERENCES messages(message_id) ON DELETE SET NULL
 );
-select*from messages;
-select*from conversations;
-select*from user_conversations;
--- Verify the structure
-SELECT 'conversations table structure:' as info;
-DESCRIBE conversations;
-
-SELECT 'messages table structure:' as info;
-DESCRIBE messages;
-
-SELECT 'user_conversations table structure:' as info;
-DESCRIBE user_conversations;
-
--- Test insert
-INSERT INTO conversations (user1_id, user2_id) VALUES (1, 2);
-SELECT 'Test conversation created successfully' as result; 
-
 
 -- VIEW: income_report
 CREATE VIEW income_report AS
@@ -325,7 +303,6 @@ GROUP BY status;
 select*from users;
 SHOW CREATE TABLE users;
 INSERT INTO `users` (`email`, `phone`, `password`, `full_name`, `avatar_url`, `address`, `role`, `status`, `email_verified`, `phone_verified`, `google_id`, `created_at`, `enabled`, `reset_password_token`, `reset_password_token_expiry`) VALUES 
-('binhvuong221004@gmail.com', NULL, '$2a$10$fUeykt7adP60sqWAeH5fIuAqjvnGbAqVicjJnIS6GM8OAlehbFUne', 'VƯƠNG TRẦN BÌNH', 'https://res.cloudinary.com/dxhcqas4b/image/upload/v1750058698/dopcvgbvkcyhtdhgcxeb.jpg', NULL, 'renter', 'active', 1, 0, '110187410235061916164', '2025-06-05 14:52:25.757500', 1, NULL, NULL),
 ('warmhouse.charity.contact@gmail.com', '0394672210', '$2a$10$yiru8TtU.uXAYvd6UMTmdOdOVsyHTlxt8r9KB1GCMzP9vrUyELMhK', 'Trần Bình Vương', 'https://res.cloudinary.com/dxhcqas4b/image/upload/v1749170969/wqyfz0uopurvoxiphx8z.jpg', 'xóm 4, nghi lâm, nghi lộc', 'admin', 'active', 1, 0, '116249314416777410764', '2025-06-06 00:49:13.432059', 1, NULL, NULL),
 ('vantdde180061@fpt.edu.vn', '0375277717', '$2a$10$xf1VczSHfJhQJuMD.uM1n.T8Z7Otnzg3i02wePmkyUyVgQb6Kbnu2', 'To Dinh Van (K18 DN)', NULL, NULL, 'admin', 'active', 1, 0, '103036093340334673905', '2025-06-06 01:04:00.301430', 1, NULL, NULL),
 ('lethecuong2k4@gmail.com', NULL, NULL, 'Cường', 'https://res.cloudinary.com/dxhcqas4b/image/upload/v1749884082/cokt9korpzgng9oqpdxm.jpg', NULL, 'admin', 'active', 1, 0, '102928243161293663830', '2025-06-14 06:54:13.516203', 1, NULL, NULL),
@@ -338,17 +315,17 @@ INSERT INTO `users` (`email`, `phone`, `password`, `full_name`, `avatar_url`, `a
 /**/;
 
 INSERT INTO `cars` (`license_plate`, `owner_id`, `brand`, `model`, `year`, `seats`, `status`, `type`, `transmission`, `fuel_type`, `fuel_consumption`, `description`, `location`, `main_image`) VALUES 
-('37A40262', 2, 'Kia', 'sportage', 2024, 5, 'available', 'suv', 'automatic', 'gasoline', 8, 'màu xanh rêu', 'Nghệ An', 'https://res.cloudinary.com/dxhcqas4b/image/upload/v1750004763/gved8wcyporhcyrjeuao.webp'),
-('38A1234', 8, 'Toyota', 'Camry', 2019, 5, 'available', 'sedan', 'automatic', 'gasoline', 5.8, 'Xe Camry cụ', 'Hà Tĩnh', 'https://res.cloudinary.com/dxhcqas4b/image/upload/v1749914635/nqvrsmjhqgdhksrivdln.png'),
-('38A1235', 8, 'Kia', 'Morning', 2018, 4, 'available', 'hatchback', 'manual', 'gasoline', 5, 'Xe Kia Morning', 'Hà Tĩnh', 'https://res.cloudinary.com/dxhcqas4b/image/upload/v1749914830/kdrn4tpqtthyrj7t8yt9.jpg'),
-('38A14204', 8, 'Toyota', 'Vios', 2016, 5, 'available', 'sedan', 'manual', 'gasoline', 5.8, 'Xe Vios G đời 2016', 'Hà Tĩnh', 'https://res.cloudinary.com/dxhcqas4b/image/upload/v1750002706/h7pwlztgae4olzzodn8h.jpg'),
-('43A99900', 2, 'Ford', 'Raptor', 2024, 4, 'available', 'pickup', 'automatic', 'diesel', 10, 'màu đen, độ cản', 'TP HCM', 'https://res.cloudinary.com/dxhcqas4b/image/upload/v1749966332/sn2euer3rd66bb5e92kj.jpg'),
-('43A99995', 2, 'BMW', '750i M sport', 2024, 4, 'available', 'sedan', 'automatic', 'gasoline', 10, 'màu đen', 'TP HCM', 'https://res.cloudinary.com/dxhcqas4b/image/upload/v1749914582/g6dhh5gi1anvcydc22tt.jpg'),
-('43A99997', 2, 'VinFast', 'Vf9', 2024, 7, 'available', 'suv', 'automatic', 'electric', 10, 'màu xám', 'Hạ Long', 'https://res.cloudinary.com/dxhcqas4b/image/upload/v1749914214/kltcz77lx55pdpmdhb8w.jpg'),
-('43A99998', 2, 'Toyota', 'Camry', 2024, 4, 'available', 'sedan', 'automatic', 'gasoline', 9.9, 'màu đen', 'Hà Nội', 'https://res.cloudinary.com/dxhcqas4b/image/upload/v1749914025/zpj6asnw0xuqrluyke8c.jpg'),
-('43A99999', 2, 'Ford', 'Everest', 2024, 7, 'available', 'suv', 'automatic', 'gasoline', 9, 'màu đen', 'Đã Nẵng', 'https://res.cloudinary.com/dxhcqas4b/image/upload/v1750038127/lehjtzxzx3d2abrhusdj.png'),
-('79A13334', 2, 'Toyota', 'Vios', 2022, 5, 'available', 'sedan', 'automatic', 'gasoline', 5, 'Màu trắng', 'khánh hòa', 'https://res.cloudinary.com/dxhcqas4b/image/upload/v1749922416/jpvagdeke5ofmugmsct8.webp'),
-('79A13337', 2, 'Hyundai', 'Sonata', 2025, 5, 'available', 'sedan', 'automatic', 'gasoline', 10, 'Màu trắng', 'Khánh Hoà', 'https://res.cloudinary.com/dxhcqas4b/image/upload/v1749959652/ryetlxpk1tk9lw4s7tzx.png');
+('37A40262', 1, 'Kia', 'sportage', 2024, 5, 'available', 'suv', 'automatic', 'gasoline', 8, 'màu xanh rêu', 'Nghệ An', 'https://res.cloudinary.com/dxhcqas4b/image/upload/v1750004763/gved8wcyporhcyrjeuao.webp'),
+('38A1234', 1, 'Toyota', 'Camry', 2019, 5, 'available', 'sedan', 'automatic', 'gasoline', 5.8, 'Xe Camry cụ', 'Hà Tĩnh', 'https://res.cloudinary.com/dxhcqas4b/image/upload/v1749914635/nqvrsmjhqgdhksrivdln.png'),
+('38A1235', 1, 'Kia', 'Morning', 2018, 4, 'available', 'hatchback', 'manual', 'gasoline', 5, 'Xe Kia Morning', 'Hà Tĩnh', 'https://res.cloudinary.com/dxhcqas4b/image/upload/v1749914830/kdrn4tpqtthyrj7t8yt9.jpg'),
+('38A14204', 1, 'Toyota', 'Vios', 2016, 5, 'available', 'sedan', 'manual', 'gasoline', 5.8, 'Xe Vios G đời 2016', 'Hà Tĩnh', 'https://res.cloudinary.com/dxhcqas4b/image/upload/v1750002706/h7pwlztgae4olzzodn8h.jpg'),
+('43A99900', 1, 'Ford', 'Raptor', 2024, 4, 'available', 'pickup', 'automatic', 'diesel', 10, 'màu đen, độ cản', 'TP HCM', 'https://res.cloudinary.com/dxhcqas4b/image/upload/v1749966332/sn2euer3rd66bb5e92kj.jpg'),
+('43A99995', 1, 'BMW', '750i M sport', 2024, 4, 'available', 'sedan', 'automatic', 'gasoline', 10, 'màu đen', 'TP HCM', 'https://res.cloudinary.com/dxhcqas4b/image/upload/v1749914582/g6dhh5gi1anvcydc22tt.jpg'),
+('43A99997', 1, 'VinFast', 'Vf9', 2024, 7, 'available', 'suv', 'automatic', 'electric', 10, 'màu xám', 'Hạ Long', 'https://res.cloudinary.com/dxhcqas4b/image/upload/v1749914214/kltcz77lx55pdpmdhb8w.jpg'),
+('43A99998', 1, 'Toyota', 'Camry', 2024, 4, 'available', 'sedan', 'automatic', 'gasoline', 9.9, 'màu đen', 'Hà Nội', 'https://res.cloudinary.com/dxhcqas4b/image/upload/v1749914025/zpj6asnw0xuqrluyke8c.jpg'),
+('43A99999', 1, 'Ford', 'Everest', 2024, 7, 'available', 'suv', 'automatic', 'gasoline', 9, 'màu đen', 'Đã Nẵng', 'https://res.cloudinary.com/dxhcqas4b/image/upload/v1750038127/lehjtzxzx3d2abrhusdj.png'),
+('79A13334', 1, 'Toyota', 'Vios', 2022, 5, 'available', 'sedan', 'automatic', 'gasoline', 5, 'Màu trắng', 'khánh hòa', 'https://res.cloudinary.com/dxhcqas4b/image/upload/v1749922416/jpvagdeke5ofmugmsct8.webp'),
+('79A13337', 1, 'Hyundai', 'Sonata', 2025, 5, 'available', 'sedan', 'automatic', 'gasoline', 10, 'Màu trắng', 'Khánh Hoà', 'https://res.cloudinary.com/dxhcqas4b/image/upload/v1749959652/ryetlxpk1tk9lw4s7tzx.png');
 /**/;
 
 INSERT INTO `car_images` (`car_id`, `image_url`) VALUES 
@@ -391,13 +368,13 @@ INSERT INTO `contract_partners` (`contract_number`, `start_date`, `end_date`, `c
 ('HD202506146073', '2025-06-14', '2025-07-14', '37A40262', '1', 500000, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', '040204000628', 'binhvuong221004@gmail.com', 1000000, 'https://res.cloudinary.com/dxhcqas4b/raw/upload/v1749913991/xwqeaa4ig7cirixe4d4x.pdf', NULL),
 ('HD202506149104', '2025-06-14', '2025-07-14', '43A99998', '1', 500000, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', '040204000628', 'binhvuong221004@gmail.com', 1000000, 'https://res.cloudinary.com/dxhcqas4b/raw/upload/v1749914124/clcuocf55kbzan006gwo.pdf', NULL),
 ('HD202506144270', '2025-06-14', '2025-07-14', '43A99997', '1', 900000, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', '040204000628', 'binhvuong221004@gmail.com', 1500000, 'https://res.cloudinary.com/dxhcqas4b/raw/upload/v1749914308/i4zzxh2qur2crtrqca6d.pdf', NULL),
-('HD202506147038', '2025-06-14', '2025-07-14', '38A14204', '7', 800000, 'ACTIVE_LEASE', 'Minh Quân Phạm', '0915440074', '040204007036', 'quanhk1402@gmail.com', 199999, 'https://res.cloudinary.com/dxhcqas4b/raw/upload/v1749914387/mkbg6um50gjdh1cp7fel.pdf', NULL),
+('HD202506147038', '2025-06-14', '2025-07-14', '38A14204', '1', 800000, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', '040204000628', 'binhvuong221004@gmail.com', 199999, 'https://res.cloudinary.com/dxhcqas4b/raw/upload/v1749914387/mkbg6um50gjdh1cp7fel.pdf', NULL),
 ('HD202506146676', '2025-06-14', '2025-07-14', '43A99995', '1', 1000000, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', '040204000628', 'binhvuong221004@gmail.com', 2000000, 'https://res.cloudinary.com/dxhcqas4b/raw/upload/v1749914612/nn1dg6e72twacrf3dxee.pdf', NULL),
-('HD202506146865', '2025-06-14', '2025-07-14', '38A1234', '7', 900000, 'ACTIVE_LEASE', 'Minh Quân Phạm', '0915440074', '040204007036', 'quanhk1402@gmail.com', 500000, 'https://res.cloudinary.com/dxhcqas4b/raw/upload/v1749914669/fn0hcitwijmsgxgqvqyl.pdf', NULL),
-('HD202506147807', '2025-06-14', '2025-07-14', '38A1235', '7', 350000, 'ACTIVE_LEASE', 'Minh Quân Phạm', '0915440074', '040204007036', 'quanhk1402@gmail.com', 499999, 'https://res.cloudinary.com/dxhcqas4b/raw/upload/v1749914895/y3ligrtfrfj4izd0xbnu.pdf', NULL),
-('HD202506157594', '2025-06-14', '2025-07-14', '79A13334', '1', 300000, 'ACTIVE_LEASE', 'Lê Minh Khoa', '0819967139', '035556544545', 'khoalmde180055@fpt.edu.vn', 600000, 'https://res.cloudinary.com/dxhcqas4b/raw/upload/v1749922486/gwdyxopubnfifum755o3.pdf', NULL),
-('HD202506152933', '2025-06-15', '2025-07-15', '79A13337', '1', 400000, 'ACTIVE_LEASE', 'Lê Minh Khoa', '0819967139', '035556544545', 'khoalmde180055@fpt.edu.vn', 699999, 'https://res.cloudinary.com/dxhcqas4b/raw/upload/v1749959728/i5v6omsf9yxottwqikje.pdf', NULL),
-('HD202506151517', '2025-06-15', '2025-07-15', '43A99900', '9', 800000, 'ACTIVE_LEASE', 'Vương Trần Bình', '0394672210', '040204000628', 'tranbinhvuong123456@gmail.com', 1500000, 'https://res.cloudinary.com/dxhcqas4b/raw/upload/v1749966362/f799japnk0dheapgm9ax.pdf', NULL);
+('HD202506146865', '2025-06-14', '2025-07-14', '38A1234', '1', 900000, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', '040204000628', 'binhvuong221004@gmail.com', 500000, 'https://res.cloudinary.com/dxhcqas4b/raw/upload/v1749914669/fn0hcitwijmsgxgqvqyl.pdf', NULL),
+('HD202506147807', '2025-06-14', '2025-07-14', '38A1235', '1', 350000, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', '040204000628', 'binhvuong221004@gmail.com', 499999, 'https://res.cloudinary.com/dxhcqas4b/raw/upload/v1749914895/y3ligrtfrfj4izd0xbnu.pdf', NULL),
+('HD202506157594', '2025-06-14', '2025-07-14', '79A13334', '1', 300000, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', '040204000628', 'binhvuong221004@gmail.com', 600000, 'https://res.cloudinary.com/dxhcqas4b/raw/upload/v1749922486/gwdyxopubnfifum755o3.pdf', NULL),
+('HD202506152933', '2025-06-15', '2025-07-15', '79A13337', '1', 400000, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', '040204000628', 'binhvuong221004@gmail.com', 699999, 'https://res.cloudinary.com/dxhcqas4b/raw/upload/v1749959728/i5v6omsf9yxottwqikje.pdf', NULL),
+('HD202506151517', '2025-06-15', '2025-07-15', '43A99900', '1', 800000, 'ACTIVE_LEASE', 'Vương Trần Bình', '0394672210', '040204000628', 'tranbinhvuong123456@gmail.com', 1500000, 'https://res.cloudinary.com/dxhcqas4b/raw/upload/v1749966362/f799japnk0dheapgm9ax.pdf', NULL);
 /**/;
 
 INSERT INTO `promotions` (`code`, `discount_percent`, `valid_until`, `max_uses`) VALUES 
@@ -409,21 +386,65 @@ USE car_rental_system2;
 select*from email_verification_tokens ;
 select*from car_images;
 select*from users;
-select*from contract_partners;
+select*from messages;
+drop table messages;
+
 select*from rental_contracts;
 -- SET SQL_SAFE_UPDATES = 0;
 -- DELETE FROM cars;
 -- SET SQL_SAFE_UPDATES = 1; -- (bật lại nếu muốn an toàn)
 select*from cars;
 select*from promotions;
+select*from contract_partners;
 update cars
-set model ='Morning'
-WHERE model ='Q3';
-DELETE FROM users
-WHERE email = 'binhvuong6868999@gmail.comdsadasdasdasd';
+set status = 'available'
+where status = 'rented';
 
--- Thêm dữ liệu mẫu
-INSERT INTO notifications (content, type, target_type, target_user_id, is_read, created_at) VALUES
-('Chào mừng bạn đến với hệ thống thuê xe Drivon!', 'SYSTEM', 'ALL_USERS', NULL, FALSE, NOW()),
-('Có xe mới được thêm vào hệ thống', 'SYSTEM', 'ALL_USERS', NULL, FALSE, NOW()),
-('Thông báo đặc biệt cho chủ xe', 'SYSTEM', 'OWNER_ONLY', NULL, FALSE, NOW());
+update users
+set role = 'admin'
+where user_id = 18;
+update payments
+set status = 'PAID'
+where status = 'PENDING';
+
+DELETE FROM cars
+WHERE license_plate = '29A00001';
+delete from contract_partners
+where contract_number='HD202506146865';
+DELETE FROM payments
+WHERE status= 'PAID';
+SHOW TABLES;
+INSERT INTO reviews (
+    booking_id, reviewer_id, reviewee_id,
+    rating, comment, created_at
+) VALUES (
+    1, 5, 2, 5,
+    'dịch vụ và xe tốt !', '2025-06-20'
+);
+select*from conversations;
+select*from cars;
+select*from payments;
+select*from promotions;
+select*from rental_contracts;
+select*from reviews;
+select*From bookings;
+-- drop table booking;
+select*from payments;
+drop table bookings;
+drop table complaints;
+drop table reviews;
+drop table rental_contracts;
+select*from bookings;
+ALTER TABLE reviews
+MODIFY COLUMN review_id BIGINT AUTO_INCREMENT;
+ALTER TABLE reviews
+DROP COLUMN user_id;
+show tables;
+
+
+ALTER TABLE contract_partners DROP FOREIGN KEY contract_partners_ibfk_1;
+ALTER TABLE contract_partners
+ADD CONSTRAINT fk_car
+FOREIGN KEY (car_id) REFERENCES cars(license_plate) ON DELETE CASCADE ON UPDATE CASCADE;
+
+

@@ -10,7 +10,9 @@ public class CashPaymentRequest {
     private Long userId;
     private String carId;
     private String additionalRequirements;
-    private LocalDateTime rentalStartDate;
-    private LocalDateTime rentalEndDate;
+    private String rentalStartDate;
+    private String rentalEndDate;
     private Integer bookingId;
+    private String promotionCode;
+    private Integer discountPercent;
 }

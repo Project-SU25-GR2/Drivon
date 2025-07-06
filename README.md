@@ -1,5 +1,4 @@
 # CARRENTAL - Dự án Thuê Xe
-<a href="https://www.facebook.com/ekanC">Liên hệ</a>
 ## Giới thiệu
 
 Đây là dự án ứng dụng thuê xe (CARRENTAL), được phát triển với kiến trúc client-server sử dụng Spring Boot cho Backend và ReactJS cho Frontend.

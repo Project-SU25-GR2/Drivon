@@ -8,6 +8,8 @@ import {
   FaCalendarAlt,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from '../../api/configApi';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
 
 const statusOptions = [
   { value: "pending", label: "Pending" },
@@ -16,7 +18,6 @@ const statusOptions = [
   { value: "ongoing", label: "Ongoing" },
   { value: "completed", label: "Completed" },
 ];
-
 const RentalStats = ({ stats }) => (
   <div className="statsGrid">
     <div className="statCard">
@@ -151,8 +152,9 @@ const RentalHistoryPage = () => {
   const handleStatusChange = async (rentalId, newStatus) => {
     try {
       await updateRentalStatus(rentalId, newStatus);
+      showSuccessToast("Status updated successfully!");
     } catch (err) {
-      alert("Cập nhật trạng thái thất bại!");
+      showErrorToast("Failed to update status!");
     }
   };
 

@@ -1,0 +1,72 @@
+server {
+    listen 443 ssl;
+    server_name binhvuong.id.vn www.binhvuong.id.vn;
+
+    # Đường dẫn đến thư mục build
+    root /home/root/react-app/build;
+    index index.html;
+
+    # Cấu hình cho React Router
+    location / {
+        try_files $uri $uri/ /index.html;
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+    }
+
+    # Cấu hình cho static files
+    location /static/ {
+        expires 1y;
+        add_header Cache-Control "public, no-transform";
+    }
+
+    # Cấu hình cho API
+    location /api/ {
+        proxy_pass http://localhost:8080/api/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Cấu hình cho WebSocket (SockJS)
+    location /ws/ {
+        proxy_pass http://localhost:8080/ws/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # Thêm timeout cho WebSocket
+        proxy_read_timeout 86400;
+        proxy_send_timeout 86400;
+        proxy_connect_timeout 86400;
+        
+        # Disable buffering for real-time communication
+        proxy_buffering off;
+    }
+
+    # Cấu hình SSL
+    ssl_certificate /etc/letsencrypt/live/binhvuong.id.vn/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/binhvuong.id.vn/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    # Cấu hình bảo mật
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header X-Content-Type-Options "nosniff" always;
+}
+
+# Chuyển hướng HTTP sang HTTPS
+server {
+    listen 80;
+    server_name binhvuong.id.vn www.binhvuong.id.vn;
+    return 301 https://$server_name$request_uri;
+} 

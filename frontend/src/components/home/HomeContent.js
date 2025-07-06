@@ -5,6 +5,8 @@ import { Container, Row, Col, Card, Form, Button } from 'react-bootstrap';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { useCarData } from '../../contexts/CarDataContext';
+import { API_URL } from '../../api/configApi';
+import { showErrorToast } from '../notification/notification';
 
 const HomeContent = () => {
   const [form, setForm] = useState({
@@ -23,6 +25,7 @@ const HomeContent = () => {
         await fetchCarsData();
       } catch (error) {
         console.error('Error loading cars data:', error);
+        showErrorToast('Failed to load cars data');
       }
     };
     loadData();
@@ -111,14 +114,14 @@ const HomeContent = () => {
               </div>
             </div>
             <div className="intro-buttons">
-                  <Button 
-                    variant="primary" 
-                    size="lg" 
+                  <Button
+                    variant="primary"
+                    size="lg"
                     className="me-3"
                     onClick={() => navigate('/rent-car')}
                   >
                     Rent a Car
-                  </Button>                
+                  </Button>
                 </div>
           </Col>
 

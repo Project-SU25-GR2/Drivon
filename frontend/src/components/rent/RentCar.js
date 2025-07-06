@@ -8,7 +8,7 @@ import NotFoundCar from '../others/notFoundCar';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { useCarData } from '../../contexts/CarDataContext';
-
+import { API_URL } from '../../api/configApi';  
 const RentCar = () => {
   const location = useLocation();
   const { carsData, loading, error, fetchCarsData } = useCarData();

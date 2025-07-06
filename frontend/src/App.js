@@ -25,7 +25,7 @@ import Messages from "./components/chat/Messages";
 import MyRentals from "./components/car/MyRentals";
 import CarRental404 from "./components/others/404";
 import ContactPage from "./components/others/ContactPage";
-import TestNotification from "./components/others/TestNotification";
+import TestNotification from "./components/notification/TestNotification";
 import DebugAuth from "./components/others/DebugAuth";
 import { CarDataProvider } from "./contexts/CarDataContext";
 import { RentalHistoryProvider } from "./contexts/RentalHistoryContext";
@@ -85,6 +85,7 @@ function App() {
 
   return (
     <GoogleOAuthProvider clientId="966794015874-5g0iktfn8junh19ctfuoua6bh9m815er.apps.googleusercontent.com">
+      <div id="toast"></div>
       <CarDataProvider>
         <RentalHistoryProvider>
           <CarManagementProvider>
@@ -222,7 +223,7 @@ function App() {
                     }
                   />
 
-                  <Route
+                  {/* <Route
                     path="/contracts"
                     element={
                       user ? (
@@ -233,7 +234,7 @@ function App() {
                         <Navigate to="/auth" replace />
                       )
                     }
-                  />
+                  /> */}
 
                   <Route
                     path="/contracts/lease"

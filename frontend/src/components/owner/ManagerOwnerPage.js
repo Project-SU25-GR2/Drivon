@@ -8,7 +8,7 @@ import CarManagementPage from "./CarManagementPage";
 import RentalHistoryPage from "./BookingManager";
 import EarningsPage from "./EarningsPage";
 import ProfilePage from "./ProfilePage";
-
+import { API_URL } from '../../api/configApi';  
 const ManagerOwnerPage = ({ user }) => {
   const navigate = useNavigate();
   const location = useLocation();

@@ -16,9 +16,10 @@ import CalendarPage from './CalendarPage';
 import UIElementsPage from './UIElementsPage';
 import UserManagementPage from './UserManagementPage';
 import MultipleLevelsPage from './MultipleLevelsPage';
-import AdminNotificationManager from './AdminNotificationManager';
+import AdminNotificationManager from '../notification/AdminNotificationManager';
 import { createNotification } from '../../api/notification';
-
+import { API_URL } from '../../api/configApi';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
 // Component for Admin Page
 const AdminPage = ({ user }) => {
   const [users, setUsers] = useState([]);
@@ -62,7 +63,7 @@ const AdminPage = ({ user }) => {
       const userData = JSON.parse(localStorage.getItem('user'));
 
       // Temporarily remove Authorization header for testing public endpoint
-      const response = await axios.get('http://localhost:8080/api/admin/users' /*, {
+      const response = await axios.get(`${URL}/admin/users` /*, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -93,7 +94,7 @@ const AdminPage = ({ user }) => {
       });
 
       try {
-        const roleCheckPromise = axios.get(`http://localhost:8080/api/admin/check-role/${user.userId}`);
+        const roleCheckPromise = axios.get(`${API_URL}/admin/check-role/${user.userId}`);
         
         // Race between role check and timeout
         const response = await Promise.race([roleCheckPromise, timeoutPromise]);
@@ -167,9 +168,9 @@ const AdminPage = ({ user }) => {
     console.log(`Updating role for user ${userId} to ${newRole}`);
     try {
       // Using axios.put to call the backend endpoint
-      const response = await axios.put(`http://localhost:8080/api/admin/users/${userId}/role`, { role: newRole });
+      const response = await axios.put(`${API_URL}/admin/users/${userId}/role`, { role: newRole });
       console.log('Update role response:', response.data);
-      alert('User role updated successfully!');
+      showSuccessToast('User role updated successfully!');
       // After successful API call, refetch users to update the list
       // We need to re-call the fetchUsers function
       // Since fetchUsers depends on 'user', and we removed the role check for testing,
@@ -180,7 +181,7 @@ const AdminPage = ({ user }) => {
     } catch (err) {
       console.error('Error updating role:', err);
       setError('Failed to update user role: ' + (err.response?.data?.message || err.message));
-      alert('Failed to update user role: ' + (err.response?.data?.message || err.message));
+      showErrorToast('Failed to update user role: ' + (err.response?.data?.message || err.message));
     }
   };
 
@@ -189,15 +190,15 @@ const AdminPage = ({ user }) => {
      if (window.confirm('Are you sure you want to delete this user?')) {
         try {
           // Using axios.delete to call the backend endpoint
-          const response = await axios.delete(`http://localhost:8080/api/admin/users/${userId}`);
+          const response = await axios.delete(`${API_URL}/admin/users/${userId}`);
           console.log('Delete user response:', response.data);
-          alert('User deleted successfully!');
+          showSuccessToast('User deleted successfully!');
            // After successful API call, refetch users to update the list
            setTimeout(fetchUsers, 100);
         } catch (err) {
           console.error('Error deleting user:', err);
           setError('Failed to delete user: ' + (err.response?.data?.message || err.message));
-          alert('Failed to delete user: ' + (err.response?.data?.message || err.message));
+          showErrorToast('Failed to delete user: ' + (err.response?.data?.message || err.message));
         }
      }
   };
@@ -254,11 +255,11 @@ const AdminPage = ({ user }) => {
     setSending(true);
     try {
       await createNotification(content, type);
-      alert('Đã gửi thông báo đến tất cả user!');
+      showSuccessToast('Đã gửi thông báo đến tất cả user!');
       setContent('');
       setShowForm(false);
     } catch {
-      alert('Gửi thông báo thất bại!');
+      showErrorToast('Gửi thông báo thất bại!');
     }
     setSending(false);
   };

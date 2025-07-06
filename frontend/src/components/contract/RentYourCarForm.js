@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import cloudinaryConfig  from '../../config/cloudinary';
 import '../css/RentYourCarForm.css';
 import { useNavigate } from 'react-router-dom';
 import SimpleButton from '../others/SimpleButton';
+import { API_URL } from '../../api/configApi';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
+  const RentYourCarForm = () => {
+    const navigate = useNavigate();
+    
 
-const RentYourCarForm = () => {
-  const navigate = useNavigate();
   const carBrands = [
     "Toyota",
     "Honda",
@@ -101,7 +104,6 @@ const RentYourCarForm = () => {
     model: '',
     year: '',
     licensePlate: '',
-    dailyRate: '',
     location: '',
     description: '',
     type: '',
@@ -116,9 +118,7 @@ const RentYourCarForm = () => {
   const [mainPreviewUrl, setMainPreviewUrl] = useState('');
   const [otherImages, setOtherImages] = useState([]);
   const [otherPreviewUrls, setOtherPreviewUrls] = useState([]);
-  const [uploadError, setUploadError] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [message, setMessage] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -130,14 +130,13 @@ const RentYourCarForm = () => {
 
   const handleMainImageChange = async (e) => {
     const file = e.target.files[0];
-    setUploadError(null);
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
-      setUploadError('Kích thước file không được vượt quá 5MB');
+      showErrorToast('Kích thước file không được vượt quá 5MB');
       return;
     }
     if (!file.type.startsWith('image/')) {
-      setUploadError('Vui lòng chọn file hình ảnh');
+      showErrorToast('Vui lòng chọn file hình ảnh');
       return;
     }
     setMainPreviewUrl(URL.createObjectURL(file));
@@ -150,8 +149,9 @@ const RentYourCarForm = () => {
       const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/upload`;
       const response = await axios.post(cloudinaryUrl, formDataImg);
       setMainImage(response.data.secure_url);
+      showSuccessToast('Ảnh chính đã được tải lên thành công');
     } catch (error) {
-      setUploadError('Có lỗi xảy ra khi tải ảnh lên.');
+      showErrorToast('Có lỗi xảy ra khi tải ảnh lên.');
     } finally {
       setUploading(false);
     }
@@ -159,14 +159,13 @@ const RentYourCarForm = () => {
 
   const handleOtherImagesChange = async (e) => {
     const files = Array.from(e.target.files);
-    setUploadError(null);
     for (const file of files) {
       if (file.size > 5 * 1024 * 1024) {
-        setUploadError('Kích thước file không được vượt quá 5MB');
+        showErrorToast('Kích thước file không được vượt quá 5MB');
         return;
       }
       if (!file.type.startsWith('image/')) {
-        setUploadError('Vui lòng chọn file hình ảnh');
+        showErrorToast('Vui lòng chọn file hình ảnh');
         return;
       }
     }
@@ -185,8 +184,9 @@ const RentYourCarForm = () => {
       });
       const uploadedUrls = await Promise.all(uploadPromises);
       setOtherImages(prev => [...prev, ...uploadedUrls]);
+      showSuccessToast(`${files.length} ảnh đã được tải lên thành công`);
     } catch (error) {
-      setUploadError('Có lỗi xảy ra khi tải ảnh lên.');
+      showErrorToast('Có lỗi xảy ra khi tải ảnh lên.');
     } finally {
       setUploading(false);
     }
@@ -205,7 +205,7 @@ const RentYourCarForm = () => {
     e.preventDefault();
     
     if (!validateForm()) {
-      setMessage('Vui lòng điền đầy đủ thông tin hợp lệ');
+      showErrorToast('Vui lòng điền đầy đủ thông tin hợp lệ');
       return;
     }
 
@@ -213,13 +213,13 @@ const RentYourCarForm = () => {
 
     // Kiểm tra carId đã tồn tại chưa
     try {
-      const checkResponse = await axios.get(`http://localhost:8080/api/contracts/check-car/${formData.licensePlate}`);
+      const checkResponse = await axios.get(`${API_URL}/contracts/check-car/${formData.licensePlate}`);
       if (checkResponse.data.exists) {
-        setMessage('Car ID already exists in the system. Please choose another car.');
+        showErrorToast('Car ID already exists in the system. Please choose another car.');
         return;
       }
     } catch (error) {
-      setMessage('Error checking car ID: ' + (error.response?.data?.error || error.message));
+      showErrorToast('Error checking car ID: ' + (error.response?.data?.error || error.message));
       return;
     }
 
@@ -242,7 +242,7 @@ const RentYourCarForm = () => {
           model: formData.model,
           year: formData.year,
           licensePlate: formData.licensePlate,
-          dailyRate: formData.dailyRate,
+
           type: formData.type,
           location: formData.location,
           description: formData.description,
@@ -258,17 +258,34 @@ const RentYourCarForm = () => {
       console.log('Contract data before navigation:', contractData);
 
       // Chuyển hướng đến trang hợp đồng với dữ liệu
+      showSuccessToast('Thông tin xe đã được gửi thành công! Đang chuyển đến trang hợp đồng...');
       navigate('/contracts/lease', { state: { contractData } });
       
     } catch (error) {
       console.error('Error submitting form:', error);
-      setMessage('Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại sau.');
+      showErrorToast('Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại sau.');
     }
   };
 
   const validateForm = () => {
-    // Implement form validation logic here
-    return true; // Placeholder return, actual implementation needed
+    // Kiểm tra các trường bắt buộc
+    if (!formData.brand || !formData.model || !formData.year || !formData.licensePlate || 
+        !formData.type || !formData.location || !formData.seats || 
+        !formData.transmission || !formData.fuelType || !formData.fuelConsumption || 
+        !formData.description) {
+      return false;
+    }
+    
+    // Kiểm tra giá trị hợp lệ
+    if (parseInt(formData.seats) < 2 || parseInt(formData.seats) > 16) {
+      return false;
+    }
+    
+    if (parseFloat(formData.fuelConsumption) <= 0) {
+      return false;
+    }
+    
+    return true;
   };
 
   return (
@@ -329,6 +346,7 @@ const RentYourCarForm = () => {
             required
           />
         </div>
+        
         <div className="form-group">
           <label htmlFor="type">Type</label>
           <select
@@ -478,6 +496,19 @@ const RentYourCarForm = () => {
                 style={{ display: 'none' }}
               />
             </label>
+            <label className="upload-button" htmlFor="car-other-images">
+              <i className="bi bi-plus-lg"></i>
+              <span>Cccd Images</span>
+              <input
+                type="file"
+                id="car-other-images"
+                accept="image/*"
+                multiple
+                onChange={handleOtherImagesChange}
+                disabled={uploading}
+                style={{ display: 'none' }}
+              />
+            </label>
             <div className="image-preview-grid">
               {otherPreviewUrls.map((url, index) => (
                 <div key={index} className="image-preview-item">
@@ -486,9 +517,6 @@ const RentYourCarForm = () => {
                 </div>
               ))}
             </div>
-            {uploadError && (
-              <div className="upload-error">{uploadError}</div>
-            )}
             <small className="upload-info">
               <i className="bi bi-info-circle me-1"></i>
               Hỗ trợ các định dạng: JPG, PNG, GIF. Kích thước tối đa: 5MB
@@ -504,9 +532,6 @@ const RentYourCarForm = () => {
           {uploading ? 'Uploading...' : 'Submit'}
         </SimpleButton>
       </form>
-      {message && (
-        <div className="form-message">{message}</div>
-      )}
       
       <div className="partner-introduction">
         <h2>Lợi ích khi trở thành đối tác của chúng tôi</h2>
