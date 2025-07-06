@@ -1,14 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../css/ProfilePage.css";
-import { API_URL } from '../../api/configApi';  
+import { API_URL } from "../../api/configApi";
+import axios from "axios";
+
 const ProfilePage = ({ user }) => {
-  // Cho phép chỉnh sửa address, bankAccount và bankName
   const [editInfo, setEditInfo] = useState({
-    address: user?.address || "",
-    bankAccount: user?.bankAccount || "",
-    bankName: user?.bankName || "",
+    bankAccount: "",
+    bankName: "",
   });
   const [isEditing, setIsEditing] = useState(false);
+  const [bankInfo, setBankInfo] = useState({ bankAccount: "", bankName: "" });
+
+  // Fetch bank info when loading the page
+  useEffect(() => {
+    const fetchBankInfo = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/owner-bank/${user.userId}`);
+        if (res.data) {
+          setBankInfo({
+            bankAccount: res.data.accountNumber,
+            bankName: res.data.bankName,
+          });
+        }
+      } catch {
+        setBankInfo({ bankAccount: "", bankName: "" });
+      }
+    };
+    if (user?.userId) fetchBankInfo();
+  }, [user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -18,13 +37,28 @@ const ProfilePage = ({ user }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Lưu lại address, bankAccount, bankName vào localStorage (hoặc gọi API nếu có)
-    const updatedUser = { ...user, ...editInfo };
-    localStorage.setItem("user", JSON.stringify(updatedUser));
-    setIsEditing(false);
-    window.location.reload(); // reload để cập nhật thông tin trên toàn app
+    try {
+      const ownerId = user.userId;
+      const payload = {
+        ownerId,
+        accountNumber: editInfo.bankAccount,
+        bankName: editInfo.bankName,
+      };
+      await axios.post(`${API_URL}/owner-bank/update`, payload);
+      setIsEditing(false);
+      // Fetch the latest bank info after update
+      const res = await axios.get(`${API_URL}/owner-bank/${user.userId}`);
+      if (res.data) {
+        setBankInfo({
+          bankAccount: res.data.accountNumber,
+          bankName: res.data.bankName,
+        });
+      }
+    } catch (error) {
+      alert("Failed to update bank info!");
+    }
   };
 
   return (
@@ -52,17 +86,6 @@ const ProfilePage = ({ user }) => {
         </div>
         {isEditing ? (
           <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label>Address</label>
-              <input
-                type="text"
-                name="address"
-                value={editInfo.address}
-                onChange={handleChange}
-                className="form-control"
-                required
-              />
-            </div>
             <div className="form-group">
               <label>Bank Account</label>
               <input
@@ -92,17 +115,9 @@ const ProfilePage = ({ user }) => {
         ) : (
           <div className="profile-info">
             <div className="info-group">
-              <label>Address</label>
-              <p>
-                {user?.address || (
-                  <span style={{ color: "gray" }}>Chưa cập nhật</span>
-                )}
-              </p>
-            </div>
-            <div className="info-group">
               <label>Bank Account</label>
               <p>
-                {user?.bankAccount || (
+                {bankInfo.bankAccount || (
                   <span style={{ color: "gray" }}>Chưa cập nhật</span>
                 )}
               </p>
@@ -110,7 +125,7 @@ const ProfilePage = ({ user }) => {
             <div className="info-group">
               <label>Bank Name</label>
               <p>
-                {user?.bankName || (
+                {bankInfo.bankName || (
                   <span style={{ color: "gray" }}>Chưa cập nhật</span>
                 )}
               </p>
