@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { API_URL } from '../../api/configApi';
-import { showErrorToast, showSuccessToast } from '../toast/notification';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
 import './PromotionPage.css';
 
 const PromotionPage = () => {
@@ -133,8 +133,8 @@ const PromotionPage = () => {
                                         <td>{promo.usedCount ?? ''}</td>
                                         <td>
                                             <button className="save-promotion-button" onClick={() => handleEditSave(promo.promo_id)}>Save</button>
-                                            <button className="save-promotion-button" onClick={() => handleEditSave(promo.promo_id)}>Lưu</button>
-                                            <button className="cancel-promotion-button" onClick={handleEditCancel}>Hủy</button>
+                                            
+                                            <button className="cancel-promotion-button" onClick={handleEditCancel}>Cancel</button>
                                         </td>
                                     </>
                                 ) : (
@@ -145,8 +145,8 @@ const PromotionPage = () => {
                                         <td>{promo.maxUses ?? ''}</td>
                                         <td>{promo.usedCount ?? ''}</td>
                                         <td>
-                                            <button className="edit-promotion-button" onClick={() => handleEditClick(promo)}>Sửa</button>
-                                            <button className="delete-promotion-button" onClick={() => handleDeletePromotion(promo.promo_id)}>Xóa</button>
+                                            <button className="edit-promotion-button" onClick={() => handleEditClick(promo)}>Edit</button>
+                                            <button className="delete-promotion-button" onClick={() => handleDeletePromotion(promo.promo_id)}>Remove</button>
                                         </td>
                                     </>
                                 )}
