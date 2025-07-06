@@ -3,7 +3,7 @@ import { Link, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import '../css/ProfilePage.css';
 import { API_URL } from '../../api/configApi';
-import { showErrorToast, showSuccessToast } from '../toast/notification';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
 import cloudinaryConfig from '../../config/cloudinary';
 import { FiUpload, FiTrash2 } from 'react-icons/fi';
 

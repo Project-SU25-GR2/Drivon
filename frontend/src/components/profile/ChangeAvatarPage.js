@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import cloudinaryConfig  from '../../config/cloudinary';
 import '../css/ChangeAvatarPage.css';
 import { API_URL } from '../../api/configApi';
-import { showErrorToast, showSuccessToast } from '../toast/notification';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
 
 const ChangeAvatarPage = () => {
   const [selectedFile, setSelectedFile] = useState(null);

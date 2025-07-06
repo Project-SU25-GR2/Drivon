@@ -5,7 +5,7 @@ import '../css/RentYourCarForm.css';
 import { useNavigate } from 'react-router-dom';
 import SimpleButton from '../others/SimpleButton';
 import { API_URL } from '../../api/configApi';
-import { showErrorToast, showSuccessToast } from '../toast/notification';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
   const RentYourCarForm = () => {
     const navigate = useNavigate();
     

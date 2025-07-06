@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import SimpleButton from "../others/SimpleButton";
 import { API_URL } from '../../api/configApi';
-import { showErrorToast, showSuccessToast } from '../toast/notification';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");
   const [verificationCode, setVerificationCode] = useState("");

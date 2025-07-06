@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createNotification } from '../../api/notification';
-import { showErrorToast, showSuccessToast } from '../toast/notification';
+import { showErrorToast, showSuccessToast } from './notification';
 
 const TestNotification = () => {
   const [content, setContent] = useState('');

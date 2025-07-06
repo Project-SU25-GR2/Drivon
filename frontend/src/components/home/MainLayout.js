@@ -6,11 +6,11 @@ import Signup from '../auth/Signup';
 import ForgotPasswordPage from '../auth/ForgotPasswordPage';
 import Footer from '../layout/footer';
 import Loader from '../others/loader';
-import NotificationBell from '../others/NotificationBell';
+import NotificationBell from '../notification/NotificationBell';
 import webSocketService from '../../services/WebSocketService';
 import './MainLayout.css';
 import { API_URL } from '../../api/configApi';
-import { showErrorToast } from '../toast/notification';
+import { showErrorToast } from '../notification/notification';
 const MainLayout = ({ user, handleLogout, children }) => {
   const [authMode, setAuthMode] = useState("login"); // 'login', 'signup', or 'forgot'
   const [userRole, setUserRole] = useState(null);

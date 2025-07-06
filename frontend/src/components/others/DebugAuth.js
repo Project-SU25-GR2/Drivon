@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getNotifications, getUnreadCount } from '../../api/notification';
-import { showErrorToast } from '../toast/notification';
+import { showErrorToast } from '../notification/notification';
 
 const DebugAuth = () => {
   const [user, setUser] = useState(null);
