@@ -10,6 +10,11 @@ import {
 import { useNavigate } from "react-router-dom";
 import { API_URL } from '../../api/configApi';
 import { showErrorToast, showSuccessToast } from '../toast/notification';
+import pdfMake from 'pdfmake/build/pdfmake';
+import 'pdfmake/build/vfs_fonts';
+
+// Register fonts
+pdfMake.vfs = pdfMake.vfs || {};
 
 const statusOptions = [
   { value: "pending", label: "Pending" },
@@ -95,13 +100,10 @@ const RentalFilters = ({
     </select>
     <input
       className="dateInput"
-      type="date"
+      type="month"
       value={date}
       onChange={(e) => setDate(e.target.value)}
     />
-    <button className="filterBtn" onClick={onFilter}>
-      Filter
-    </button>
     <button className="exportBtn" onClick={onExport}>
       Export
     </button>
@@ -113,7 +115,7 @@ const RentalHistoryPage = () => {
     useRentalHistory();
   const [statusFilter, setStatusFilter] = useState("");
   const [search, setSearch] = useState("");
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 7));
   const [hoveredRow, setHoveredRow] = useState(null);
   const navigate = useNavigate();
 
@@ -145,7 +147,7 @@ const RentalHistoryPage = () => {
       rental.renter?.fullName?.toLowerCase().includes(search.toLowerCase()) ||
       rental.pickupLocation?.toLowerCase().includes(search.toLowerCase()) ||
       rental.dropoffLocation?.toLowerCase().includes(search.toLowerCase());
-    const matchesDate = !date || rental.startTime?.slice(0, 10) === date;
+    const matchesDate = !date || (rental.startTime && rental.startTime.slice(0, 7) === date);
     return matchesStatus && matchesSearch && matchesDate;
   });
 
@@ -170,6 +172,147 @@ const RentalHistoryPage = () => {
     }
   };
 
+  const exportToPDF = () => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      const currentDate = new Date().toLocaleDateString('vi-VN');
+      
+      // Prepare table data
+      const tableBody = [
+        [
+          { text: 'Car', style: 'tableHeader' },
+          { text: 'Renter', style: 'tableHeader' },
+          { text: 'Start Date', style: 'tableHeader' },
+          { text: 'End Date', style: 'tableHeader' },
+          { text: 'Pickup Location', style: 'tableHeader' },
+          { text: 'Dropoff Location', style: 'tableHeader' },
+          { text: 'Status', style: 'tableHeader' },
+          { text: 'Total Amount', style: 'tableHeader' }
+        ]
+      ];
+
+      // Add rental data to table
+      filteredData.forEach((rental) => {
+        tableBody.push([
+          `${rental.car?.brand} ${rental.car?.model}\n${rental.car?.licensePlate}`,
+          rental.renter?.fullName || rental.renter?.email || rental.renter?.id,
+          rental.startTime ? new Date(rental.startTime).toLocaleDateString('vi-VN') : '',
+          rental.endTime ? new Date(rental.endTime).toLocaleDateString('vi-VN') : '',
+          rental.pickupLocation || '',
+          rental.dropoffLocation || '',
+          rental.status || '',
+          `${rental.totalPrice?.toLocaleString("vi-VN")} đ` || '0 đ'
+        ]);
+      });
+
+      // PDF document definition
+      const docDefinition = {
+        content: [
+          {
+            text: 'RENTAL HISTORY REPORT',
+            style: 'header',
+            alignment: 'center',
+            margin: [0, 0, 0, 20]
+          },
+          {
+            text: `Generated on: ${currentDate}`,
+            style: 'subheader',
+            alignment: 'center',
+            margin: [0, 0, 0, 20]
+          },
+          {
+            text: 'Summary Statistics',
+            style: 'sectionHeader',
+            margin: [0, 0, 0, 10]
+          },
+          {
+            columns: [
+              {
+                text: `Total Rentals: ${stats.totalRentals}`,
+                style: 'statText'
+              },
+              {
+                text: `Completed: ${stats.completed}`,
+                style: 'statText'
+              },
+              {
+                text: `This Month: ${stats.thisMonth}`,
+                style: 'statText'
+              },
+              {
+                text: `Total Revenue: ${stats.totalRevenue?.toLocaleString("vi-VN")} đ`,
+                style: 'statText'
+              }
+            ],
+            margin: [0, 0, 0, 20]
+          },
+          {
+            text: 'Rental Details',
+            style: 'sectionHeader',
+            margin: [0, 0, 0, 10]
+          },
+          {
+            table: {
+              headerRows: 1,
+              widths: ['*', '*', '*', '*', '*', '*', '*', '*'],
+              body: tableBody
+            },
+            layout: {
+              fillColor: function (rowIndex, node, columnIndex) {
+                return (rowIndex === 0) ? '#f0f0f0' : null;
+              }
+            }
+          }
+        ],
+        styles: {
+          header: {
+            fontSize: 18,
+            bold: true,
+            color: '#2c3e50'
+          },
+          subheader: {
+            fontSize: 12,
+            color: '#7f8c8d'
+          },
+          sectionHeader: {
+            fontSize: 14,
+            bold: true,
+            color: '#34495e',
+            margin: [0, 10, 0, 5]
+          },
+          statText: {
+            fontSize: 10,
+            color: '#2c3e50'
+          },
+          tableHeader: {
+            bold: true,
+            fontSize: 9,
+            color: '#2c3e50',
+            alignment: 'center'
+          }
+        },
+        defaultStyle: {
+          fontSize: 8
+        },
+        pageMargins: [40, 60, 40, 60],
+        pageSize: 'A4'
+      };
+
+      // Generate and download PDF
+      const pdfDoc = pdfMake.createPdf(docDefinition);
+      const fileName = `rental_history_${currentDate.replace(/\//g, '-')}.pdf`;
+
+      // Vừa tải xuống vừa mở trong tab mới
+      pdfDoc.download(fileName);
+      pdfDoc.open();
+
+      showSuccessToast("PDF exported successfully!");
+    } catch (error) {
+      console.error('PDF export error:', error);
+      showErrorToast("Failed to export PDF!");
+    }
+  };
+
   return (
     <div className="mainContent">
       <h2 className="h2Title">Rental History</h2>
@@ -183,7 +326,7 @@ const RentalHistoryPage = () => {
         date={date}
         setDate={setDate}
         onFilter={() => {}}
-        onExport={() => {}}
+        onExport={exportToPDF}
       />
       <div className="rentalList">
         {loading ? (
@@ -252,8 +395,8 @@ const RentalHistoryPage = () => {
                       rental.renter?.email ||
                       rental.renter?.id}
                   </td>
-                  <td>{rental.startTime?.slice(0, 10)}</td>
-                  <td>{rental.endTime?.slice(0, 10)}</td>
+                  <td>{rental.startTime ? new Date(rental.startTime).toLocaleDateString('vi-VN') : ''}</td>
+                  <td>{rental.endTime ? new Date(rental.endTime).toLocaleDateString('vi-VN') : ''}</td>
                   <td>
                     <span className="locationTag">{rental.pickupLocation}</span>
                   </td>
