@@ -13,8 +13,8 @@ public class Promotion {
     private String code;
     private Integer discount_percent;
     private Date valid_until;
-    @Column(name = "max_users")
-    private Integer maxUsers;
+    @Column(name = "max_uses")
+    private Integer maxUses;
 
     public Long getPromo_id() {
         return promo_id;
@@ -48,11 +48,11 @@ public class Promotion {
         this.valid_until = valid_until;
     }
 
-    public Integer getMaxUsers() {
-        return maxUsers;
+    public Integer getMaxUses() {
+        return maxUses;
     }
 
-    public void setMaxUsers(Integer maxUsers) {
-        this.maxUsers = maxUsers;
+    public void setMaxUses(Integer maxUses) {
+        this.maxUses = maxUses;
     }
 }

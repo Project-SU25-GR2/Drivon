@@ -30,6 +30,9 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    color: #222 !important;
+    background: none !important;
+    font-weight: 400;
 }
 
 .promotion-table th {
@@ -42,7 +45,8 @@
 .promotion-table th:first-child,
 .promotion-table td:first-child {
     text-align: left;
-    width: 7%;
+    width: 10%;
+    padding-right: 24px;
 }
 
 .promotion-table th:last-child,
@@ -54,15 +58,30 @@
 .promotion-table th:nth-child(2),
 .promotion-table td:nth-child(2) {
     text-align: left;
-    width: 28%;
+    width: 16%;
 }
 
 .promotion-table th:nth-child(3),
-.promotion-table td:nth-child(3),
+.promotion-table td:nth-child(3) {
+    text-align: center;
+    width: 12%;
+}
+
 .promotion-table th:nth-child(4),
 .promotion-table td:nth-child(4) {
     text-align: center;
     width: 25%;
+}
+
+.promotion-table th:nth-child(5),
+.promotion-table td:nth-child(5),
+.promotion-table th:nth-child(6),
+.promotion-table td:nth-child(6) {
+    text-align: center;
+    width: 10%;
+    min-width: 70px;
+    padding-left: 8px;
+    padding-right: 8px;
 }
 
 .promotion-table tr:hover {

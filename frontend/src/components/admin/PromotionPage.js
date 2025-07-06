@@ -40,7 +40,7 @@ const PromotionPage = () => {
                 code: newCode,
                 discount_percent: parseInt(newDiscount),
                 valid_until: newValidUntil,
-                maxUsers: newMaxUsers ? parseInt(newMaxUsers) : null
+                maxUses: newMaxUsers ? parseInt(newMaxUsers) : null
             });
             showSuccessToast('Thêm mã giảm giá thành công!');
             setNewCode(''); setNewDiscount(''); setNewValidUntil(''); setNewMaxUsers('');
@@ -91,7 +91,7 @@ const PromotionPage = () => {
                                 <td>{promo.code}</td>
                                 <td>{promo.discount_percent}%</td>
                                 <td>{promo.valid_until ? new Date(promo.valid_until).toLocaleDateString() : ''}</td>
-                                <td>{promo.maxUsers ?? ''}</td>
+                                <td>{promo.maxUses ?? ''}</td>
                                 <td>{promo.usedCount ?? ''}</td>
                                 <td>
                                     <button className="delete-promotion-button" onClick={() => handleDeletePromotion(promo.promo_id)}>Xóa</button>

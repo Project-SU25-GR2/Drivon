@@ -2,10 +2,14 @@ package Drivon.backend.controller;
 
 import Drivon.backend.model.Promotion;
 import Drivon.backend.repository.PromotionRepository;
+import Drivon.backend.repository.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/api/promotions")
@@ -13,9 +17,25 @@ public class PromotionController {
     @Autowired
     private PromotionRepository promotionRepository;
 
+    @Autowired
+    private PaymentRepository paymentRepository;
+
     @GetMapping
-    public List<Promotion> getAllPromotions() {
-        return promotionRepository.findAll();
+    public List<Map<String, Object>> getAllPromotions() {
+        List<Promotion> promotions = promotionRepository.findAll();
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Promotion promo : promotions) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("promo_id", promo.getPromo_id());
+            map.put("code", promo.getCode());
+            map.put("discount_percent", promo.getDiscount_percent());
+            map.put("valid_until", promo.getValid_until());
+            map.put("maxUses", promo.getMaxUses() != null ? promo.getMaxUses() : 0);
+            long usedCount = paymentRepository.countByPromotionCode(promo.getCode());
+            map.put("usedCount", usedCount);
+            result.add(map);
+        }
+        return result;
     }
 
     @PostMapping
