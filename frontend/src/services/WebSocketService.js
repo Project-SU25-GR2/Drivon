@@ -182,11 +182,6 @@ class WebSocketService {
       this.subscribers.set(topic, new Set());
     }
     this.subscribers.get(topic).add(callback);
-    
-    // If we have a current user ID, ensure we're subscribed to their topics
-    if (this.currentUserId) {
-      this.subscribeToTopics(this.currentUserId);
-    }
   }
 
   unsubscribe(topic, callback) {
