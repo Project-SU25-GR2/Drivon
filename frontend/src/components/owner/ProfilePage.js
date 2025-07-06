@@ -10,6 +10,7 @@ const ProfilePage = ({ user }) => {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [bankInfo, setBankInfo] = useState({ bankAccount: "", bankName: "" });
+  const [error, setError] = useState("");
 
   // Fetch bank info when loading the page
   useEffect(() => {
@@ -39,6 +40,12 @@ const ProfilePage = ({ user }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    // Kiểm tra Bank Account chỉ chứa số
+    if (!/^[0-9]+$/.test(editInfo.bankAccount)) {
+      setError("Bank Account must contain only numbers.");
+      return;
+    }
     try {
       const ownerId = user.userId;
       const payload = {
@@ -85,17 +92,32 @@ const ProfilePage = ({ user }) => {
           </div>
         </div>
         {isEditing ? (
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} className="profile-edit-form">
             <div className="form-group">
-              <label>Bank Account</label>
+              <label htmlFor="bankAccount">Bank Account</label>
               <input
                 type="text"
                 name="bankAccount"
+                id="bankAccount"
                 value={editInfo.bankAccount}
-                onChange={handleChange}
-                className="form-control"
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setEditInfo((prev) => ({ ...prev, bankAccount: value }));
+                }}
                 required
+                minLength={8}
+                maxLength={16}
+                pattern="[0-9]*"
+                inputMode="numeric"
+                autoComplete="off"
+                placeholder="Please enter your Account Number (numbers only)"
               />
+              <small style={{ color: "#888" }}>
+                Please enter your Account Number (numbers only).
+              </small>
+              {error && (
+                <div style={{ color: "red", marginTop: 4 }}>{error}</div>
+              )}
             </div>
             <div className="form-group">
               <label>Bank Name</label>
