@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './UserManagement.css';
 import { useUserData } from '../../contexts/UserDataContext';
-import { showErrorToast, showSuccessToast } from '../toast/notification';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
 
 const LoadingSpinner = () => (
   <div className="loading-container">

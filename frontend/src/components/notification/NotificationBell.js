@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { getNotifications, getUnreadCount, markAsRead, markAllAsRead } from '../../api/notification';
 import webSocketService from '../../services/WebSocketService';
 import './NotificationList.css';
-import { showErrorToast } from '../toast/notification';
+import { showErrorToast } from './notification';
 
 const NotificationBell = () => {
   const [notifications, setNotifications] = useState([]);

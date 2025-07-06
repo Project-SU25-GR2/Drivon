@@ -4,7 +4,7 @@ import cloudinaryConfig from "../../config/cloudinary"; // Import Cloudinary con
 import "./EditCarForm.css"; // We will create this CSS file next
 import { API_URL } from '../../api/configApi';  
 import { useParams, useNavigate } from 'react-router-dom';
-import { showErrorToast, showSuccessToast } from '../toast/notification';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
 
 const EditCarForm = ({ car, onSave, onClose }) => {
   const [formData, setFormData] = useState({

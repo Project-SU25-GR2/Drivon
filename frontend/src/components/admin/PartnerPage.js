@@ -4,7 +4,7 @@ import './PartnerPage.css';
 import { usePartnerData } from '../../contexts/PartnerDataContext';
 import { useUserData } from '../../contexts/UserDataContext';
 import { API_URL } from '../../api/configApi';
-import { showErrorToast, showSuccessToast } from '../toast/notification';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
 const PartnerPage = () => {
   const { partnersData, loading, error, fetchPartnersData, updatePartnerStatus } = usePartnerData();
   const { updateUserRole } = useUserData();

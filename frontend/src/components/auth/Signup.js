@@ -4,7 +4,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
 import SimpleButton from '../others/SimpleButton';
 import { API_URL } from '../../api/configApi';
-import { showErrorToast, showSuccessToast } from '../toast/notification';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
 const Signup = ({ onSignupSuccess }) => {
     const [formData, setFormData] = useState({
         fullName: '',
