@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import "./DashBoard.css"
+import "./DashBoard.css";
 import { useCarManagement } from "../../contexts/CarManagementContext";
 import { useRentalHistory } from "../../contexts/RentalHistoryContext";
-import { API_URL } from '../../api/configApi';
+import { API_URL } from "../../api/configApi";
 const DashboardOverview = ({ user }) => {
   const { carsData, fetchCarsData, loading: carsLoading } = useCarManagement();
   const {
@@ -20,6 +20,7 @@ const DashboardOverview = ({ user }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log("user in DashboardOverview:", user);
     if (user && user.userId) {
       fetchCarsData(user.userId);
       fetchRentalsData(user.userId);
@@ -40,49 +41,45 @@ const DashboardOverview = ({ user }) => {
 
   useEffect(() => {
     const fetchStats = async () => {
-      if (!user || !user.userId) return;
-      setLoading(true);
       try {
-        // Lấy doanh thu
-        let earnings = 0;
-        try {
-          const earningsRes = await axios.get(
-            `${API_URL}/earnings/owner/${user.userId}`
-          );
-          console.log("Earnings API response:", earningsRes.data);
-          earnings = Number(earningsRes.data?.totalEarnings) || 0;
-          console.log("Earnings value set:", earnings);
-        } catch {
-          earnings = 0;
-        }
+        // Fetch earnings
+        const earningsRes = await axios.get(
+          `${API_URL}/earnings/owner/${user.userId}`
+        );
+        const totalEarnings = earningsRes.data?.totalEarnings ?? 0;
 
-        // Lấy average rating
-        let averageRating = null;
-        try {
-          const ratingRes = await axios.get(
-          `${API_URL}/ratings/owner/${user.userId}`
-          );
-          averageRating = ratingRes.data?.averageRating ?? null;
-        } catch {
-          averageRating = null;
-        }
+        // Fetch total cars
+        const carsRes = await axios.get(`${API_URL}/cars/owner/${user.userId}`);
+        const totalCars = carsRes.data?.length ?? 0;
 
-        setStats((prev) => ({
-          ...prev,
-          earnings,
+        // Fetch average rating - Sử dụng endpoint mới
+        const ratingRes = await axios.get(
+          `${API_URL}/reviews/owner/${user.userId}`
+        );
+        const averageRating = ratingRes.data?.averageRating ?? null;
+
+        // Fetch total bookings
+        const bookingsRes = await axios.get(
+          `${API_URL}/bookings/owner/${user.userId}`
+        );
+        const totalBookings = bookingsRes.data?.length ?? 0;
+
+        setStats({
+          earnings: totalEarnings,
+          totalCars,
           averageRating,
-        }));
-      } catch (err) {
-        setStats((prev) => ({
-          ...prev,
-          earnings: 0,
-          averageRating: null,
-        }));
+          totalBookings,
+        });
+      } catch (error) {
+        console.error("Error fetching stats:", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchStats();
+
+    if (user?.userId) {
+      fetchStats();
+    }
   }, [user]);
 
   return (
