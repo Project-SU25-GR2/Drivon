@@ -44,11 +44,11 @@ const PromotionPage = () => {
                 valid_until: newValidUntil,
                 maxUses: newMaxUsers ? parseInt(newMaxUsers) : null
             });
-            showSuccessToast('Thêm mã giảm giá thành công!');
+            showSuccessToast('Promotion added successfully!');
             setNewCode(''); setNewDiscount(''); setNewValidUntil(''); setNewMaxUsers('');
             fetchPromotions();
         } catch (err) {
-            showErrorToast('Không thể thêm mã giảm giá');
+            showErrorToast('Failed to add promotion');
         }
     };
 
@@ -56,10 +56,10 @@ const PromotionPage = () => {
         if (!window.confirm('Bạn có chắc muốn xóa mã này?')) return;
         try {
             await axios.delete(`${API_URL}/promotions/${promo_id}`);
-            showSuccessToast('Đã xóa mã giảm giá!');
+            showSuccessToast('Promotion deleted successfully!');
             fetchPromotions();
         } catch (err) {
-            showErrorToast('Không thể xóa mã giảm giá');
+            showErrorToast('Failed to delete promotion');
         }
     };
 
@@ -85,11 +85,11 @@ const PromotionPage = () => {
                 valid_until: editData.valid_until,
                 maxUses: editData.maxUses ? parseInt(editData.maxUses) : null
             });
-            showSuccessToast('Cập nhật mã giảm giá thành công!');
+            showSuccessToast('Promotion updated successfully!');
             setEditId(null);
             fetchPromotions();
         } catch (err) {
-            showErrorToast('Không thể cập nhật mã giảm giá');
+            showErrorToast('Failed to update promotion');
         }
     };
 
@@ -99,25 +99,25 @@ const PromotionPage = () => {
 
     return (
         <div className="promotion-management-container">
-            <h2>Quản lý mã giảm giá</h2>
+            <h2>Promotion Management</h2>
             <form className="add-promotion-form" onSubmit={handleAddPromotion}>
-                <input type="text" placeholder="Mã code" value={newCode} onChange={e => setNewCode(e.target.value)} />
-                <input type="number" placeholder="% giảm" value={newDiscount} onChange={e => setNewDiscount(e.target.value)} min={1} max={100} />
+                <input type="text" placeholder="Code" value={newCode} onChange={e => setNewCode(e.target.value)} />
+                <input type="number" placeholder="Discount %" value={newDiscount} onChange={e => setNewDiscount(e.target.value)} min={1} max={100} />
                 <input type="date" value={newValidUntil} onChange={e => setNewValidUntil(e.target.value)} />
-                <input type="number" placeholder="Số lượt tối đa" value={newMaxUsers} onChange={e => setNewMaxUsers(e.target.value)} min={1} />
-                <button type="submit">Thêm mã</button>
+                <input type="number" placeholder="Max uses" value={newMaxUsers} onChange={e => setNewMaxUsers(e.target.value)} min={1} />
+                <button type="submit">Add</button>
             </form>
-            {loading ? <p>Đang tải...</p> : error ? <p style={{color:'red'}}>{error}</p> : (
+            {loading ? <p>Loading...</p> : error ? <p style={{color:'red'}}>{error}</p> : (
                 <table className="promotion-table">
                     <thead>
                         <tr>
                             <th>ID</th>
                             <th>Code</th>
-                            <th>% Giảm</th>
-                            <th>Hạn dùng</th>
-                            <th>Số lượt tối đa</th>
-                            <th>Số lần đã sử dụng</th>
-                            <th>Hành động</th>
+                            <th>Discount %</th>
+                            <th>Valid until</th>
+                            <th>Max uses</th>
+                            <th>Used count</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -132,6 +132,7 @@ const PromotionPage = () => {
                                         <td><input name="maxUses" type="number" min={1} value={editData.maxUses} onChange={handleEditChange} /></td>
                                         <td>{promo.usedCount ?? ''}</td>
                                         <td>
+                                            <button className="save-promotion-button" onClick={() => handleEditSave(promo.promo_id)}>Save</button>
                                             <button className="save-promotion-button" onClick={() => handleEditSave(promo.promo_id)}>Lưu</button>
                                             <button className="cancel-promotion-button" onClick={handleEditCancel}>Hủy</button>
                                         </td>
