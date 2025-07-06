@@ -3,6 +3,29 @@ import "../css/ProfilePage.css";
 import { API_URL } from "../../api/configApi";
 import axios from "axios";
 
+const BANK_LIST = [
+  "Vietcombank",
+  "VietinBank",
+  "BIDV",
+  "Agribank",
+  "Techcombank",
+  "ACB",
+  "MB Bank",
+  "VPBank",
+  "Sacombank",
+  "MSB",
+  "TPBank",
+  "HDBank",
+  "VIB",
+  "DongA Bank",
+  "Nam A Bank",
+  "Viet Capital",
+  "Shinhan Bank",
+  "HSBC",
+  "Woori Bank",
+  "CIMB",
+];
+
 const ProfilePage = ({ user }) => {
   const [editInfo, setEditInfo] = useState({
     bankAccount: "",
@@ -120,15 +143,25 @@ const ProfilePage = ({ user }) => {
               )}
             </div>
             <div className="form-group">
-              <label>Bank Name</label>
-              <input
-                type="text"
+              <label htmlFor="bankName">Bank Name</label>
+              <select
                 name="bankName"
+                id="bankName"
                 value={editInfo.bankName}
-                onChange={handleChange}
-                className="form-control"
+                onChange={(e) =>
+                  setEditInfo((prev) => ({ ...prev, bankName: e.target.value }))
+                }
                 required
-              />
+              >
+                <option value="" disabled>
+                  Select your bank
+                </option>
+                {BANK_LIST.map((bank) => (
+                  <option key={bank} value={bank}>
+                    {bank}
+                  </option>
+                ))}
+              </select>
             </div>
             <button type="submit" className="btn btn-success">
               Save Info
