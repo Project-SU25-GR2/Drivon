@@ -4,6 +4,7 @@ import Drivon.backend.model.Promotion;
 import Drivon.backend.repository.PromotionRepository;
 import Drivon.backend.repository.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -44,8 +45,12 @@ public class PromotionController {
     }
 
     @DeleteMapping("/{id}")
-    public void deletePromotion(@PathVariable("id") Long id) {
+    public ResponseEntity<?> deletePromotion(@PathVariable("id") Long id) {
+        if (!promotionRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
         promotionRepository.deleteById(id);
+        return ResponseEntity.ok().body("Promotion deleted successfully");
     }
 
     @PutMapping("/{id}")
