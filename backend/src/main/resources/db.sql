@@ -1,3 +1,5 @@
+
+
 -- Tạo database và sử dụng
 CREATE DATABASE car_rental_system2;
 USE car_rental_system2;
@@ -146,21 +148,15 @@ CREATE TABLE complaints (
     FOREIGN KEY (target_user_id) REFERENCES users(user_id) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
--- 10. Bảng notifications (Cập nhật theo entity Java)
-DROP TABLE IF EXISTS notifications;
+-- 10. Bảng notifications
 CREATE TABLE notifications (
-    notification_id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    content TEXT NOT NULL,
-    type ENUM('SYSTEM', 'PROMO') NOT NULL DEFAULT 'SYSTEM',
-    target_type ENUM('ALL_USERS', 'OWNER_ONLY', 'USER_SPECIFIC') NOT NULL DEFAULT 'ALL_USERS',
-    target_user_id BIGINT NULL,
+    notification_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT,
+    content TEXT,
+    type ENUM('system', 'message', 'promo'),
     is_read BOOLEAN DEFAULT FALSE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (target_user_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
-    INDEX idx_target_type (target_type),
-    INDEX idx_target_user (target_user_id),
-    INDEX idx_is_read (is_read),
-    INDEX idx_created_at (created_at)
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- 11. Bảng support_requests
