@@ -12,6 +12,8 @@ const PromotionPage = () => {
     const [newDiscount, setNewDiscount] = useState('');
     const [newValidUntil, setNewValidUntil] = useState('');
     const [newMaxUsers, setNewMaxUsers] = useState('');
+    const [editId, setEditId] = useState(null);
+    const [editData, setEditData] = useState({ code: '', discount_percent: '', valid_until: '', maxUses: '' });
 
     useEffect(() => {
         fetchPromotions();
@@ -61,6 +63,40 @@ const PromotionPage = () => {
         }
     };
 
+    const handleEditClick = (promo) => {
+        setEditId(promo.promo_id);
+        setEditData({
+            code: promo.code,
+            discount_percent: promo.discount_percent,
+            valid_until: promo.valid_until ? new Date(promo.valid_until).toISOString().slice(0, 10) : '',
+            maxUses: promo.maxUses ?? ''
+        });
+    };
+
+    const handleEditChange = (e) => {
+        setEditData({ ...editData, [e.target.name]: e.target.value });
+    };
+
+    const handleEditSave = async (promo_id) => {
+        try {
+            await axios.put(`${API_URL}/promotions/${promo_id}`, {
+                code: editData.code,
+                discount_percent: parseInt(editData.discount_percent),
+                valid_until: editData.valid_until,
+                maxUses: editData.maxUses ? parseInt(editData.maxUses) : null
+            });
+            showSuccessToast('Cập nhật mã giảm giá thành công!');
+            setEditId(null);
+            fetchPromotions();
+        } catch (err) {
+            showErrorToast('Không thể cập nhật mã giảm giá');
+        }
+    };
+
+    const handleEditCancel = () => {
+        setEditId(null);
+    };
+
     return (
         <div className="promotion-management-container">
             <h2>Quản lý mã giảm giá</h2>
@@ -88,14 +124,31 @@ const PromotionPage = () => {
                         {promotions.map(promo => (
                             <tr key={promo.promo_id}>
                                 <td>{promo.promo_id}</td>
-                                <td>{promo.code}</td>
-                                <td>{promo.discount_percent}%</td>
-                                <td>{promo.valid_until ? new Date(promo.valid_until).toLocaleDateString() : ''}</td>
-                                <td>{promo.maxUses ?? ''}</td>
-                                <td>{promo.usedCount ?? ''}</td>
-                                <td>
-                                    <button className="delete-promotion-button" onClick={() => handleDeletePromotion(promo.promo_id)}>Xóa</button>
-                                </td>
+                                {editId === promo.promo_id ? (
+                                    <>
+                                        <td><input name="code" value={editData.code} onChange={handleEditChange} /></td>
+                                        <td><input name="discount_percent" type="number" min={1} max={100} value={editData.discount_percent} onChange={handleEditChange} /></td>
+                                        <td><input name="valid_until" type="date" value={editData.valid_until} onChange={handleEditChange} /></td>
+                                        <td><input name="maxUses" type="number" min={1} value={editData.maxUses} onChange={handleEditChange} /></td>
+                                        <td>{promo.usedCount ?? ''}</td>
+                                        <td>
+                                            <button className="save-promotion-button" onClick={() => handleEditSave(promo.promo_id)}>Lưu</button>
+                                            <button className="cancel-promotion-button" onClick={handleEditCancel}>Hủy</button>
+                                        </td>
+                                    </>
+                                ) : (
+                                    <>
+                                        <td>{promo.code}</td>
+                                        <td>{promo.discount_percent}%</td>
+                                        <td>{promo.valid_until ? new Date(promo.valid_until).toLocaleDateString() : ''}</td>
+                                        <td>{promo.maxUses ?? ''}</td>
+                                        <td>{promo.usedCount ?? ''}</td>
+                                        <td>
+                                            <button className="edit-promotion-button" onClick={() => handleEditClick(promo)}>Sửa</button>
+                                            <button className="delete-promotion-button" onClick={() => handleDeletePromotion(promo.promo_id)}>Xóa</button>
+                                        </td>
+                                    </>
+                                )}
                             </tr>
                         ))}
                     </tbody>

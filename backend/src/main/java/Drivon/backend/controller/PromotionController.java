@@ -47,4 +47,15 @@ public class PromotionController {
     public void deletePromotion(@PathVariable("id") Long id) {
         promotionRepository.deleteById(id);
     }
+
+    @PutMapping("/{id}")
+    public Promotion updatePromotion(@PathVariable("id") Long id, @RequestBody Promotion updatedPromotion) {
+        return promotionRepository.findById(id).map(promo -> {
+            promo.setCode(updatedPromotion.getCode());
+            promo.setDiscount_percent(updatedPromotion.getDiscount_percent());
+            promo.setValid_until(updatedPromotion.getValid_until());
+            promo.setMaxUses(updatedPromotion.getMaxUses());
+            return promotionRepository.save(promo);
+        }).orElseThrow(() -> new RuntimeException("Promotion not found"));
+    }
 }
