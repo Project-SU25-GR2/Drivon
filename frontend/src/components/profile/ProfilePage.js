@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import '../css/ProfilePage.css';
 import { API_URL } from '../../api/configApi';
 import { showErrorToast, showSuccessToast } from '../toast/notification';
+import cloudinaryConfig from '../../config/cloudinary';
+import { FiUpload, FiTrash2 } from 'react-icons/fi';
+
 const ProfilePage = ({ user, onUpdateUser }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState({});
@@ -11,10 +14,27 @@ const ProfilePage = ({ user, onUpdateUser }) => {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [hasPassword, setHasPassword] = useState(true);
+  const [userImages, setUserImages] = useState([]);
+  const [docType, setDocType] = useState('cccd');
+  const [docDesc, setDocDesc] = useState('');
+  const [docFile, setDocFile] = useState(null);
+  const [docPreview, setDocPreview] = useState(null);
+  const [docUploading, setDocUploading] = useState(false);
+  const [docUploadError, setDocUploadError] = useState(null);
+  const [docEditMode, setDocEditMode] = useState(false);
+  const [pendingDocFile, setPendingDocFile] = useState(null);
+  const [pendingDocPreview, setPendingDocPreview] = useState(null);
+  const [pendingDocType, setPendingDocType] = useState('cccd');
+  const [pendingDocDesc, setPendingDocDesc] = useState('');
+  const docUrlInput = useRef();
+  const fileInputRef = useRef();
 
   useEffect(() => {
     setEditedUser({ ...user });
     checkPasswordStatus();
+    if (user && user.userId) {
+      fetchUserImages();
+    }
     setLoading(false);
     setError(null);
   }, [user]);
@@ -26,6 +46,15 @@ const ProfilePage = ({ user, onUpdateUser }) => {
     } catch (err) {
       console.error('Error checking password status:', err);
       showErrorToast('Failed to check password status');
+    }
+  };
+
+  const fetchUserImages = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/user/image`, { params: { userId: user.userId } });
+      setUserImages(res.data);
+    } catch (err) {
+      showErrorToast('Không thể tải danh sách giấy tờ');
     }
   };
 
@@ -93,6 +122,113 @@ const ProfilePage = ({ user, onUpdateUser }) => {
 
   const getDefaultAvatarUrl = (name) => {
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0D8ABC&color=fff&size=128`;
+  };
+
+  const handleDocFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setDocUploadError('Kích thước file không được vượt quá 5MB');
+        setDocFile(null);
+        setDocPreview(null);
+        return;
+      }
+      if (!file.type.startsWith('image/')) {
+        setDocUploadError('Vui lòng chọn file hình ảnh');
+        setDocFile(null);
+        setDocPreview(null);
+        return;
+      }
+      setDocFile(file);
+      setDocPreview(URL.createObjectURL(file));
+      setDocUploadError(null);
+    } else {
+      setDocFile(null);
+      setDocPreview(null);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleDocFileChange({ target: { files: e.dataTransfer.files } });
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleClickDropZone = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleDocEditToggle = () => {
+    if (!docEditMode) {
+      setPendingDocFile(null);
+      setPendingDocPreview(null);
+      setPendingDocType(docType);
+      setPendingDocDesc(docDesc);
+    }
+    setDocEditMode(!docEditMode);
+  };
+
+  const handleDocCancel = () => {
+    setPendingDocFile(null);
+    setPendingDocPreview(null);
+    setPendingDocType(docType);
+    setPendingDocDesc(docDesc);
+    setDocEditMode(false);
+  };
+
+  const handleDocSave = async (e) => {
+    e.preventDefault();
+    setDocUploading(true);
+    setDocUploadError(null);
+    try {
+      let imageUrl = null;
+      if (pendingDocFile) {
+        // Upload lên Cloudinary
+        const formData = new FormData();
+        formData.append('file', pendingDocFile);
+        formData.append('upload_preset', cloudinaryConfig.uploadPreset);
+        formData.append('api_key', cloudinaryConfig.apiKey);
+        const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/upload`;
+        const cloudinaryResponse = await axios.post(cloudinaryUrl, formData);
+        imageUrl = cloudinaryResponse.data.secure_url;
+      }
+      if (imageUrl) {
+        await axios.post(`${API_URL}/user/image`, {
+          userId: user.userId,
+          imageUrl,
+          documentType: pendingDocType,
+          description: pendingDocDesc
+        });
+        showSuccessToast('Tải lên giấy tờ thành công!');
+        setDocFile(null);
+        setDocPreview(null);
+        setDocDesc('');
+        fetchUserImages();
+      }
+      setDocEditMode(false);
+    } catch (err) {
+      setDocUploadError('Tải lên giấy tờ thất bại!');
+      showErrorToast('Tải lên giấy tờ thất bại!');
+    }
+    setDocUploading(false);
+  };
+
+  const handleDeleteUserImage = async (imageId) => {
+    if (!window.confirm('Bạn có chắc muốn xoá giấy tờ này?')) return;
+    try {
+      await axios.delete(`${API_URL}/user/image/${imageId}`);
+      showSuccessToast('Đã xoá giấy tờ!');
+      fetchUserImages();
+    } catch (err) {
+      showErrorToast('Xoá giấy tờ thất bại!');
+    }
   };
 
   if (!user) {
@@ -279,6 +415,106 @@ const ProfilePage = ({ user, onUpdateUser }) => {
               </div>
               <i className="bi bi-chevron-right"></i>
             </Link>
+          </div>
+        </div>
+
+        <div className="profile-section">
+          <div className="section-header">
+            <h3>
+              <i className="bi bi-card-image me-2"></i>
+              Giấy tờ tuỳ thân
+            </h3>
+            <button onClick={handleDocEditToggle} className="btn btn-outline-primary btn-sm">
+              <i className="bi bi-pencil-square me-2"></i>
+              {docEditMode ? 'Đóng' : 'Chỉnh sửa'}
+            </button>
+          </div>
+          <form className="doc-upload-form" onSubmit={handleDocSave}>
+            <div className="row g-2 align-items-end">
+              <div className="col-md-6">
+                <label>Hình ảnh</label>
+                <div
+                  className="doc-dropzone"
+                  onDrop={docEditMode ? handleDrop : undefined}
+                  onDragOver={docEditMode ? handleDragOver : undefined}
+                  onClick={docEditMode ? handleClickDropZone : undefined}
+                  style={{ cursor: docEditMode ? 'pointer' : 'not-allowed', opacity: docEditMode ? 1 : 0.6 }}
+                >
+                  {pendingDocPreview ? (
+                    <img src={pendingDocPreview} alt="Preview" style={{ maxHeight: 120, margin: '0 auto', display: 'block' }} />
+                  ) : (
+                    <div className="doc-dropzone-placeholder">
+                      <FiUpload size={48} color="#4fc3f7" />
+                      <p>Kéo thả ảnh vào đây hoặc click để chọn</p>
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    ref={fileInputRef}
+                    onChange={e => {
+                      if (!docEditMode) return;
+                      const file = e.target.files[0];
+                      if (file) {
+                        setPendingDocFile(file);
+                        setPendingDocPreview(URL.createObjectURL(file));
+                      }
+                    }}
+                    disabled={!docEditMode || docUploading}
+                  />
+                </div>
+                {docUploading && <div className="text-info mt-2">Đang tải lên...</div>}
+              </div>
+              <div className="col-md-6">
+                <label>Loại giấy tờ</label>
+                <select className="form-select mb-2" value={pendingDocType} onChange={e => setPendingDocType(e.target.value)} disabled={!docEditMode}>
+                  <option value="cccd">CCCD</option>
+                  <option value="license">Bằng lái</option>
+                  <option value="passport">Hộ chiếu</option>
+                  <option value="other">Khác</option>
+                </select>
+                <label>Mô tả</label>
+                <input type="text" className="form-control" value={pendingDocDesc} onChange={e => setPendingDocDesc(e.target.value)} placeholder="Mô tả giấy tờ" disabled={!docEditMode} />
+              </div>
+            </div>
+            {docEditMode && (
+              <div className="form-actions mt-3">
+                <button type="submit" className="btn btn-primary me-2" disabled={docUploading}>Lưu thay đổi</button>
+                <button type="button" className="btn btn-light" onClick={handleDocCancel} disabled={docUploading}>Huỷ</button>
+              </div>
+            )}
+            {docUploadError && <div className="text-danger mt-2">{docUploadError}</div>}
+          </form>
+          <div className="doc-list mt-3">
+            {userImages.length === 0 ? (
+              <div className="text-muted">Chưa có giấy tờ nào.</div>
+            ) : (
+              <div className="row g-3 justify-content-center">
+                {userImages.map(img => (
+                  <div className="col-md-6" key={img.imageId}>
+                    <div className="card h-100 mx-auto position-relative" style={{maxWidth:340}}>
+                      {docEditMode && (
+                        <button
+                          className="btn btn-sm btn-danger position-absolute"
+                          style={{top:8, right:8, zIndex:2}}
+                          title="Xoá giấy tờ"
+                          onClick={() => handleDeleteUserImage(img.imageId)}
+                        >
+                          <FiTrash2 />
+                        </button>
+                      )}
+                      <img src={img.imageUrl} alt={img.documentType} className="card-img-top" style={{maxHeight:180, objectFit:'contain'}} />
+                      <div className="card-body">
+                        <h6 className="card-title">{img.documentType.toUpperCase()}</h6>
+                        <p className="card-text">{img.description}</p>
+                        <small className="text-muted">Tải lên: {img.uploadedAt ? new Date(img.uploadedAt).toLocaleString() : ''}</small>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
