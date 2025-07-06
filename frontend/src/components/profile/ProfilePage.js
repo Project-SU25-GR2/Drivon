@@ -490,31 +490,29 @@ const ProfilePage = ({ user, onUpdateUser }) => {
             {userImages.length === 0 ? (
               <div className="text-muted">Chưa có giấy tờ nào.</div>
             ) : (
-              <div className="d-flex justify-content-center">
-                <div className="row g-3 justify-content-center">
-                  {userImages.map(img => (
-                    <div className="col-md-8" key={img.imageId}>
-                      <div className="card h-100 mx-auto position-relative" style={{maxWidth:340}}>
-                        {docEditMode && (
-                          <button
-                            className="btn btn-sm btn-danger position-absolute"
-                            style={{top:8, right:8, zIndex:2}}
-                            title="Xoá giấy tờ"
-                            onClick={() => handleDeleteUserImage(img.imageId)}
-                          >
-                            <FiTrash2 />
-                          </button>
-                        )}
-                        <img src={img.imageUrl} alt={img.documentType} className="card-img-top" style={{maxHeight:180, objectFit:'contain'}} />
-                        <div className="card-body">
-                          <h6 className="card-title">{img.documentType.toUpperCase()}</h6>
-                          <p className="card-text">{img.description}</p>
-                          <small className="text-muted">Tải lên: {img.uploadedAt ? new Date(img.uploadedAt).toLocaleString() : ''}</small>
-                        </div>
+              <div className="row g-3 justify-content-center">
+                {userImages.map(img => (
+                  <div className="col-md-6" key={img.imageId}>
+                    <div className="card h-100 mx-auto position-relative" style={{maxWidth:340}}>
+                      {docEditMode && (
+                        <button
+                          className="btn btn-sm btn-danger position-absolute"
+                          style={{top:8, right:8, zIndex:2}}
+                          title="Xoá giấy tờ"
+                          onClick={() => handleDeleteUserImage(img.imageId)}
+                        >
+                          <FiTrash2 />
+                        </button>
+                      )}
+                      <img src={img.imageUrl} alt={img.documentType} className="card-img-top" style={{maxHeight:180, objectFit:'contain'}} />
+                      <div className="card-body">
+                        <h6 className="card-title">{img.documentType.toUpperCase()}</h6>
+                        <p className="card-text">{img.description}</p>
+                        <small className="text-muted">Tải lên: {img.uploadedAt ? new Date(img.uploadedAt).toLocaleString() : ''}</small>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
