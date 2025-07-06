@@ -5,7 +5,7 @@ import { jwtDecode } from "jwt-decode";
 import SimpleButton from "../others/SimpleButton";
 import { Link } from "react-router-dom";
 import { API_URL } from '../../api/configApi';
-import { showErrorToast, showSuccessToast } from '../toast/notification';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
 
 const Login = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState("");

@@ -3,7 +3,7 @@ import axios from "axios";
 import cloudinaryConfig from "../../config/cloudinary";
 import "./EditCarForm.css"; // Reusing the same CSS as EditCarForm
 import { API_URL } from '../../api/configApi';
-import { showErrorToast, showSuccessToast } from '../toast/notification';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
 
 const CAR_BRANDS = [
   "Toyota",

@@ -16,10 +16,10 @@ import CalendarPage from './CalendarPage';
 import UIElementsPage from './UIElementsPage';
 import UserManagementPage from './UserManagementPage';
 import MultipleLevelsPage from './MultipleLevelsPage';
-import AdminNotificationManager from './AdminNotificationManager';
+import AdminNotificationManager from '../notification/AdminNotificationManager';
 import { createNotification } from '../../api/notification';
 import { API_URL } from '../../api/configApi';
-import { showErrorToast, showSuccessToast } from '../toast/notification';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
 // Component for Admin Page
 const AdminPage = ({ user }) => {
   const [users, setUsers] = useState([]);

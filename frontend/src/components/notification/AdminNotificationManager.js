@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { createNotification, getAllNotifications, deleteNotification, updateNotification } from '../../api/notification';
 import { getAllUsers } from '../../api/config';
-import './AdminPage.css';
+import '../admin/AdminPage.css';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import { API_URL } from '../../api/configApi';
-import { showErrorToast, showSuccessToast } from '../toast/notification';
+import { showErrorToast, showSuccessToast } from './notification';
+
 const AdminNotificationManager = () => {
   const [formData, setFormData] = useState({
     content: '',
