@@ -12,7 +12,7 @@ import FormsPage from './FormsPage';
 import ChartsPage from './ChartsPage';
 import TablesPage from './TablesPage';
 import PartnerPage from './PartnerPage';
-import CalendarPage from './CalendarPage';
+import PromotionPage from './PromotionPage';
 import UIElementsPage from './UIElementsPage';
 import UserManagementPage from './UserManagementPage';
 import MultipleLevelsPage from './MultipleLevelsPage';
@@ -236,7 +236,7 @@ const AdminPage = ({ user }) => {
       case 'partner':
         return <PartnerPage />;
       case 'calendar':
-        return <CalendarPage />;
+        return <PromotionPage />;
       case 'ui-elements':
         return <UIElementsPage />;
       case 'user-management':
@@ -325,10 +325,10 @@ const AdminPage = ({ user }) => {
                 e.preventDefault();
                 setActiveComponent('calendar');
               }}
-              data-title="Calendar"
+              data-title="Promotion"
             >
-              <i className="fas fa-calendar-alt"></i>
-              <span>Calendar</span>
+              <i className="fas fa-gift"></i>
+              <span>Promotion</span>
             </a>
           </li>
           <li>

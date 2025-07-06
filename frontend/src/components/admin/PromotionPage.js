@@ -1,68 +1,69 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { API_URL } from '../../api/configApi';
+import { showErrorToast, showSuccessToast } from '../toast/notification';
+import './PromotionPage.css';
 
-const CalendarPage = () => {
+const PromotionPage = () => {
+    const [promotions, setPromotions] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [newCode, setNewCode] = useState('');
     const [newDiscount, setNewDiscount] = useState('');
     const [newValidUntil, setNewValidUntil] = useState('');
     const [newMaxUsers, setNewMaxUsers] = useState('');
-    const [promotions, setPromotions] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
 
-    const handleAddPromotion = async (e) => {
-        e.preventDefault();
+    useEffect(() => {
+        fetchPromotions();
+    }, []);
+
+    const fetchPromotions = async () => {
         setLoading(true);
-        setError('');
-
         try {
-            const response = await fetch('/api/promotions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    code: newCode,
-                    discount_percent: newDiscount,
-                    valid_until: newValidUntil,
-                    max_users: newMaxUsers
-                })
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                setPromotions([...promotions, data]);
-                setNewCode('');
-                setNewDiscount('');
-                setNewValidUntil('');
-                setNewMaxUsers('');
-            } else {
-                setError('Có lỗi xảy ra khi thêm mã khuyến mãi');
-            }
+            const res = await axios.get(`${API_URL}/promotions`);
+            setPromotions(res.data);
         } catch (err) {
-            setError('Có lỗi xảy ra khi thêm mã khuyến mãi');
+            setError('Không thể tải danh sách mã giảm giá');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleDeletePromotion = async (id) => {
+    const handleAddPromotion = async (e) => {
+        e.preventDefault();
+        if (!newCode || !newDiscount || !newValidUntil) {
+            showErrorToast('Vui lòng nhập đầy đủ thông tin');
+            return;
+        }
         try {
-            const response = await fetch(`/api/promotions/${id}`, {
-                method: 'DELETE'
+            await axios.post(`${API_URL}/promotions`, {
+                code: newCode,
+                discount_percent: parseInt(newDiscount),
+                valid_until: newValidUntil,
+                max_users: newMaxUsers ? parseInt(newMaxUsers) : null
             });
-
-            if (response.ok) {
-                setPromotions(promotions.filter(promo => promo.promo_id !== id));
-            } else {
-                setError('Có lỗi xảy ra khi xóa mã khuyến mãi');
-            }
+            showSuccessToast('Thêm mã giảm giá thành công!');
+            setNewCode(''); setNewDiscount(''); setNewValidUntil(''); setNewMaxUsers('');
+            fetchPromotions();
         } catch (err) {
-            setError('Có lỗi xảy ra khi xóa mã khuyến mãi');
+            showErrorToast('Không thể thêm mã giảm giá');
+        }
+    };
+
+    const handleDeletePromotion = async (promo_id) => {
+        if (!window.confirm('Bạn có chắc muốn xóa mã này?')) return;
+        try {
+            await axios.delete(`${API_URL}/promotions/${promo_id}`);
+            showSuccessToast('Đã xóa mã giảm giá!');
+            fetchPromotions();
+        } catch (err) {
+            showErrorToast('Không thể xóa mã giảm giá');
         }
     };
 
     return (
-        <div>
+        <div className="promotion-management-container">
+            <h2>Quản lý mã giảm giá</h2>
             <form className="add-promotion-form" onSubmit={handleAddPromotion}>
                 <input type="text" placeholder="Mã code" value={newCode} onChange={e => setNewCode(e.target.value)} />
                 <input type="number" placeholder="% giảm" value={newDiscount} onChange={e => setNewDiscount(e.target.value)} min={1} max={100} />
@@ -102,4 +103,4 @@ const CalendarPage = () => {
     );
 };
 
-export default CalendarPage; 
+export default PromotionPage; 

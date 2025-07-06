@@ -17,4 +17,14 @@ public class PromotionController {
     public List<Promotion> getAllPromotions() {
         return promotionRepository.findAll();
     }
-} 
+
+    @PostMapping
+    public Promotion createPromotion(@RequestBody Promotion promotion) {
+        return promotionRepository.save(promotion);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deletePromotion(@PathVariable("id") Long id) {
+        promotionRepository.deleteById(id);
+    }
+}
