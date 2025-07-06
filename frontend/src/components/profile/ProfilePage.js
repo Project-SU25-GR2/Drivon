@@ -22,8 +22,8 @@ const ProfilePage = ({ user, onUpdateUser }) => {
   const [docUploading, setDocUploading] = useState(false);
   const [docUploadError, setDocUploadError] = useState(null);
   const [docEditMode, setDocEditMode] = useState(false);
-  const [pendingDocFile, setPendingDocFile] = useState(null);
-  const [pendingDocPreview, setPendingDocPreview] = useState(null);
+  const [pendingDocFiles, setPendingDocFiles] = useState([]);
+  const [pendingDocPreviews, setPendingDocPreviews] = useState([]);
   const [pendingDocType, setPendingDocType] = useState('cccd');
   const [pendingDocDesc, setPendingDocDesc] = useState('');
   const docUrlInput = useRef();
@@ -167,8 +167,8 @@ const ProfilePage = ({ user, onUpdateUser }) => {
 
   const handleDocEditToggle = () => {
     if (!docEditMode) {
-      setPendingDocFile(null);
-      setPendingDocPreview(null);
+      setPendingDocFiles([]);
+      setPendingDocPreviews([]);
       setPendingDocType(docType);
       setPendingDocDesc(docDesc);
     }
@@ -176,11 +176,23 @@ const ProfilePage = ({ user, onUpdateUser }) => {
   };
 
   const handleDocCancel = () => {
-    setPendingDocFile(null);
-    setPendingDocPreview(null);
+    setPendingDocFiles([]);
+    setPendingDocPreviews([]);
     setPendingDocType(docType);
     setPendingDocDesc(docDesc);
     setDocEditMode(false);
+  };
+
+  const handleDocFilesChange = (e) => {
+    if (!docEditMode) return;
+    const files = Array.from(e.target.files);
+    const validFiles = files.filter(file => file.size <= 5 * 1024 * 1024 && file.type.startsWith('image/'));
+    if (validFiles.length !== files.length) {
+      setDocUploadError('Chỉ chọn ảnh, mỗi file tối đa 5MB!');
+      return;
+    }
+    setPendingDocFiles(prev => [...prev, ...validFiles]);
+    setPendingDocPreviews(prev => [...prev, ...validFiles.map(file => URL.createObjectURL(file))]);
   };
 
   const handleDocSave = async (e) => {
@@ -188,30 +200,36 @@ const ProfilePage = ({ user, onUpdateUser }) => {
     setDocUploading(true);
     setDocUploadError(null);
     try {
-      let imageUrl = null;
-      if (pendingDocFile) {
-        // Upload lên Cloudinary
+      if (pendingDocFiles.length === 0) {
+        setDocUploadError('Vui lòng chọn ít nhất 1 ảnh giấy tờ');
+        setDocUploading(false);
+        return;
+      }
+      // Upload tất cả ảnh lên Cloudinary
+      const uploadPromises = pendingDocFiles.map(async (file) => {
         const formData = new FormData();
-        formData.append('file', pendingDocFile);
+        formData.append('file', file);
         formData.append('upload_preset', cloudinaryConfig.uploadPreset);
         formData.append('api_key', cloudinaryConfig.apiKey);
         const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/upload`;
         const cloudinaryResponse = await axios.post(cloudinaryUrl, formData);
-        imageUrl = cloudinaryResponse.data.secure_url;
-      }
-      if (imageUrl) {
+        return cloudinaryResponse.data.secure_url;
+      });
+      const imageUrls = await Promise.all(uploadPromises);
+      // Gửi từng ảnh lên backend
+      for (const imageUrl of imageUrls) {
         await axios.post(`${API_URL}/user/image`, {
           userId: user.userId,
           imageUrl,
           documentType: pendingDocType,
           description: pendingDocDesc
         });
-        showSuccessToast('Tải lên giấy tờ thành công!');
-        setDocFile(null);
-        setDocPreview(null);
-        setDocDesc('');
-        fetchUserImages();
       }
+      showSuccessToast('Tải lên giấy tờ thành công!');
+      setPendingDocFiles([]);
+      setPendingDocPreviews([]);
+      setDocDesc('');
+      fetchUserImages();
       setDocEditMode(false);
     } catch (err) {
       setDocUploadError('Tải lên giấy tờ thất bại!');
@@ -230,6 +248,13 @@ const ProfilePage = ({ user, onUpdateUser }) => {
       showErrorToast('Xoá giấy tờ thất bại!');
     }
   };
+
+  // Group userImages theo documentType
+  const groupedImages = userImages.reduce((acc, img) => {
+    if (!acc[img.documentType]) acc[img.documentType] = [];
+    acc[img.documentType].push(img);
+    return acc;
+  }, {});
 
   if (!user) {
     return <Navigate to="/auth" replace />;
@@ -440,30 +465,41 @@ const ProfilePage = ({ user, onUpdateUser }) => {
                   onClick={docEditMode ? handleClickDropZone : undefined}
                   style={{ cursor: docEditMode ? 'pointer' : 'not-allowed', opacity: docEditMode ? 1 : 0.6 }}
                 >
-                  {pendingDocPreview ? (
-                    <img src={pendingDocPreview} alt="Preview" style={{ maxHeight: 120, margin: '0 auto', display: 'block' }} />
-                  ) : (
-                    <div className="doc-dropzone-placeholder">
-                      <FiUpload size={48} color="#4fc3f7" />
-                      <p>Kéo thả ảnh vào đây hoặc click để chọn</p>
-                    </div>
-                  )}
+                  <div className="doc-dropzone-placeholder">
+                    <FiUpload size={48} color="#4fc3f7" />
+                    <p>Kéo thả ảnh vào đây hoặc click để chọn</p>
+                  </div>
                   <input
                     type="file"
                     accept="image/*"
+                    multiple
                     style={{ display: 'none' }}
                     ref={fileInputRef}
-                    onChange={e => {
-                      if (!docEditMode) return;
-                      const file = e.target.files[0];
-                      if (file) {
-                        setPendingDocFile(file);
-                        setPendingDocPreview(URL.createObjectURL(file));
-                      }
-                    }}
+                    onChange={handleDocFilesChange}
                     disabled={!docEditMode || docUploading}
                   />
                 </div>
+                {pendingDocPreviews.length > 0 && (
+                  <div className="d-flex flex-wrap justify-content-center gap-2 mt-2">
+                    {pendingDocPreviews.map((url, idx) => (
+                      <div key={idx} style={{ position: 'relative', display: 'inline-block' }}>
+                        <img src={url} alt="Preview" style={{ maxHeight: 140, maxWidth: 140, border: '1px solid #eee', borderRadius: 4 }} />
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-danger"
+                          style={{ position: 'absolute', top: 4, right: 4, padding: '2px 6px', borderRadius: '50%', zIndex: 2 }}
+                          title="Xoá ảnh này"
+                          onClick={() => {
+                            setPendingDocFiles(files => files.filter((_, i) => i !== idx));
+                            setPendingDocPreviews(previews => previews.filter((_, i) => i !== idx));
+                          }}
+                        >
+                          <FiTrash2 size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 {docUploading && <div className="text-info mt-2">Đang tải lên...</div>}
               </div>
               <div className="col-md-6">
@@ -491,24 +527,32 @@ const ProfilePage = ({ user, onUpdateUser }) => {
               <div className="text-muted">Chưa có giấy tờ nào.</div>
             ) : (
               <div className="row g-3 justify-content-center">
-                {userImages.map(img => (
-                  <div className="col-md-6" key={img.imageId}>
-                    <div className="card h-100 mx-auto position-relative" style={{maxWidth:340}}>
-                      {docEditMode && (
-                        <button
-                          className="btn btn-sm btn-danger position-absolute"
-                          style={{top:8, right:8, zIndex:2}}
-                          title="Xoá giấy tờ"
-                          onClick={() => handleDeleteUserImage(img.imageId)}
-                        >
-                          <FiTrash2 />
-                        </button>
-                      )}
-                      <img src={img.imageUrl} alt={img.documentType} className="card-img-top" style={{maxHeight:180, objectFit:'contain'}} />
-                      <div className="card-body">
-                        <h6 className="card-title">{img.documentType.toUpperCase()}</h6>
-                        <p className="card-text">{img.description}</p>
-                        <small className="text-muted">Tải lên: {img.uploadedAt ? new Date(img.uploadedAt).toLocaleString() : ''}</small>
+                {Object.entries(groupedImages).map(([docType, images]) => (
+                  <div className="col-md-12 d-flex justify-content-center" key={docType}>
+                    <div className="card h-100 mx-auto position-relative" style={{maxWidth:1200, width:'100%'}}>
+                      <div className="card-body text-center">
+                        <h5 className="card-title mb-3 text-center">{docType.toUpperCase()}</h5>
+                        <div className="d-flex flex-row flex-wrap justify-content-center align-items-start gap-4 mb-2">
+                          {images.map((img, idx) => (
+                            <div key={img.imageId} style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '0 8px' }}>
+                              <img src={img.imageUrl} alt={img.documentType} style={{ maxHeight: 240, maxWidth: 320, border: '1px solid #eee', borderRadius: 8 }} />
+                              {docEditMode && (
+                                <button
+                                  className="btn btn-sm btn-danger"
+                                  style={{ position: 'absolute', top: 8, right: 8, padding: '4px 10px', borderRadius: '50%', zIndex: 2 }}
+                                  title="Xoá giấy tờ"
+                                  onClick={() => handleDeleteUserImage(img.imageId)}
+                                >
+                                  <FiTrash2 size={20} />
+                                </button>
+                              )}
+                              <div className="mt-3 text-center" style={{minWidth:180}}>
+                                {img.description && <div className="text-muted small">{img.description}</div>}
+                                <small className="text-muted">Tải lên: {img.uploadedAt ? new Date(img.uploadedAt).toLocaleString() : ''}</small>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>
