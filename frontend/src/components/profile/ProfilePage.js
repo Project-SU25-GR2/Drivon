@@ -3,6 +3,7 @@ import { Link, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import '../css/ProfilePage.css';
 import { API_URL } from '../../api/configApi';
+import { showErrorToast, showSuccessToast } from '../toast/notification';
 const ProfilePage = ({ user, onUpdateUser }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState({});
@@ -24,6 +25,7 @@ const ProfilePage = ({ user, onUpdateUser }) => {
       setHasPassword(response.data.hasPassword);
     } catch (err) {
       console.error('Error checking password status:', err);
+      showErrorToast('Failed to check password status');
     }
   };
 
@@ -71,11 +73,14 @@ const ProfilePage = ({ user, onUpdateUser }) => {
       if (response.data) {
         onUpdateUser(response.data);
         setSuccessMessage('Cập nhật thông tin thành công!');
+        showSuccessToast('Profile updated successfully!');
         setIsEditing(false);
       }
     } catch (err) {
       console.error('Error updating profile:', err);
-      setError(err.response?.data?.error || 'Có lỗi xảy ra khi cập nhật thông tin.');
+      const errorMessage = err.response?.data?.error || 'Có lỗi xảy ra khi cập nhật thông tin.';
+      setError(errorMessage);
+      showErrorToast(errorMessage);
     }
   };
 

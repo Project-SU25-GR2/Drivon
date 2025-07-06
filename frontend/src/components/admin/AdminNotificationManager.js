@@ -4,6 +4,7 @@ import { getAllUsers } from '../../api/config';
 import './AdminPage.css';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import { API_URL } from '../../api/configApi';
+import { showErrorToast, showSuccessToast } from '../toast/notification';
 const AdminNotificationManager = () => {
   const [formData, setFormData] = useState({
     content: '',
@@ -53,12 +54,12 @@ const AdminNotificationManager = () => {
     e.preventDefault();
     
     if (!formData.content.trim()) {
-      setMessage('Please enter the notification content');
+      showErrorToast('Please enter the notification content');
       return;
     }
 
     if (formData.targetType === 'USER_SPECIFIC' && !formData.targetUserId) {
-      setMessage('Please select a specific user');
+      showErrorToast('Please select a specific user');
       return;
     }
 
@@ -86,10 +87,10 @@ const AdminNotificationManager = () => {
       // Reload notifications
       await loadNotifications();
 
-      setMessage('Notification sent successfully!');
+      showSuccessToast('Notification sent successfully!');
     } catch (error) {
       console.error('Error sending notification:', error);
-      setMessage('An error occurred while sending the notification');
+      showErrorToast('An error occurred while sending the notification');
     } finally {
       setLoading(false);
     }
@@ -123,8 +124,9 @@ const AdminNotificationManager = () => {
       try {
         await deleteNotification(id);
         await loadNotifications();
+        showSuccessToast('Notification deleted successfully!');
       } catch (error) {
-        alert('Error deleting notification');
+        showErrorToast('Error deleting notification');
       }
     }
   };
@@ -151,8 +153,9 @@ const AdminNotificationManager = () => {
       await updateNotification(id, data);
       setEditingId(null);
       await loadNotifications();
+      showSuccessToast('Notification updated successfully!');
     } catch (error) {
-      alert('Error updating notification');
+      showErrorToast('Error updating notification');
     }
   };
 

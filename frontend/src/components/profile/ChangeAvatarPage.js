@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import cloudinaryConfig  from '../../config/cloudinary';
 import '../css/ChangeAvatarPage.css';
 import { API_URL } from '../../api/configApi';
+import { showErrorToast, showSuccessToast } from '../toast/notification';
+
 const ChangeAvatarPage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -17,6 +19,7 @@ const ChangeAvatarPage = () => {
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
         setUploadError('Kích thước file không được vượt quá 5MB');
+        showErrorToast('File size must not exceed 5MB');
         setSelectedFile(null);
         setPreviewUrl(null);
         return;
@@ -24,6 +27,7 @@ const ChangeAvatarPage = () => {
 
       if (!file.type.startsWith('image/')) {
         setUploadError('Vui lòng chọn file hình ảnh');
+        showErrorToast('Please select an image file');
         setSelectedFile(null);
         setPreviewUrl(null);
         return;
@@ -42,6 +46,7 @@ const ChangeAvatarPage = () => {
   const handleUpload = async () => {
     if (!selectedFile) {
       setUploadError('Vui lòng chọn ảnh để tải lên.');
+      showErrorToast('Please select an image to upload');
       return;
     }
 
@@ -74,13 +79,16 @@ const ChangeAvatarPage = () => {
 
       setUploadSuccess(true);
       setUploadError(null);
+      showSuccessToast('Avatar updated successfully!');
       
       setTimeout(() => {
         window.location.href = '/profile';
       }, 1500);
     } catch (error) {
       console.error('Error uploading avatar:', error);
-      setUploadError(error.response?.data?.error || 'Có lỗi xảy ra khi tải ảnh lên.');
+      const errorMessage = error.response?.data?.error || 'Có lỗi xảy ra khi tải ảnh lên.';
+      setUploadError(errorMessage);
+      showErrorToast(errorMessage);
     } finally {
       setUploading(false);
     }

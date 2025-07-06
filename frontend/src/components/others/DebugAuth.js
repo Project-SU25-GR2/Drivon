@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getNotifications, getUnreadCount } from '../../api/notification';
+import { showErrorToast } from '../toast/notification';
 
 const DebugAuth = () => {
   const [user, setUser] = useState(null);
@@ -19,6 +20,7 @@ const DebugAuth = () => {
         setUser(JSON.parse(storedUser));
       } catch (e) {
         console.error('Error parsing user:', e);
+        showErrorToast('Error parsing user data');
       }
     }
     
@@ -37,6 +39,7 @@ const DebugAuth = () => {
     } catch (error) {
       console.error('Notifications API error:', error);
       setError(error.message || 'Unknown error');
+      showErrorToast('Notifications API error: ' + (error.message || 'Unknown error'));
     } finally {
       setLoading(false);
     }
@@ -54,6 +57,7 @@ const DebugAuth = () => {
     } catch (error) {
       console.error('Unread count API error:', error);
       setError(error.message || 'Unknown error');
+      showErrorToast('Unread count API error: ' + (error.message || 'Unknown error'));
     } finally {
       setLoading(false);
     }

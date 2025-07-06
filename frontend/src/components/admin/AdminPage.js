@@ -19,6 +19,7 @@ import MultipleLevelsPage from './MultipleLevelsPage';
 import AdminNotificationManager from './AdminNotificationManager';
 import { createNotification } from '../../api/notification';
 import { API_URL } from '../../api/configApi';
+import { showErrorToast, showSuccessToast } from '../toast/notification';
 // Component for Admin Page
 const AdminPage = ({ user }) => {
   const [users, setUsers] = useState([]);
@@ -169,7 +170,7 @@ const AdminPage = ({ user }) => {
       // Using axios.put to call the backend endpoint
       const response = await axios.put(`${API_URL}/admin/users/${userId}/role`, { role: newRole });
       console.log('Update role response:', response.data);
-      alert('User role updated successfully!');
+      showSuccessToast('User role updated successfully!');
       // After successful API call, refetch users to update the list
       // We need to re-call the fetchUsers function
       // Since fetchUsers depends on 'user', and we removed the role check for testing,
@@ -180,7 +181,7 @@ const AdminPage = ({ user }) => {
     } catch (err) {
       console.error('Error updating role:', err);
       setError('Failed to update user role: ' + (err.response?.data?.message || err.message));
-      alert('Failed to update user role: ' + (err.response?.data?.message || err.message));
+      showErrorToast('Failed to update user role: ' + (err.response?.data?.message || err.message));
     }
   };
 
@@ -191,13 +192,13 @@ const AdminPage = ({ user }) => {
           // Using axios.delete to call the backend endpoint
           const response = await axios.delete(`${API_URL}/admin/users/${userId}`);
           console.log('Delete user response:', response.data);
-          alert('User deleted successfully!');
+          showSuccessToast('User deleted successfully!');
            // After successful API call, refetch users to update the list
            setTimeout(fetchUsers, 100);
         } catch (err) {
           console.error('Error deleting user:', err);
           setError('Failed to delete user: ' + (err.response?.data?.message || err.message));
-          alert('Failed to delete user: ' + (err.response?.data?.message || err.message));
+          showErrorToast('Failed to delete user: ' + (err.response?.data?.message || err.message));
         }
      }
   };
@@ -254,11 +255,11 @@ const AdminPage = ({ user }) => {
     setSending(true);
     try {
       await createNotification(content, type);
-      alert('Đã gửi thông báo đến tất cả user!');
+      showSuccessToast('Đã gửi thông báo đến tất cả user!');
       setContent('');
       setShowForm(false);
     } catch {
-      alert('Gửi thông báo thất bại!');
+      showErrorToast('Gửi thông báo thất bại!');
     }
     setSending(false);
   };

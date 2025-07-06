@@ -4,6 +4,7 @@ import './PartnerPage.css';
 import { usePartnerData } from '../../contexts/PartnerDataContext';
 import { useUserData } from '../../contexts/UserDataContext';
 import { API_URL } from '../../api/configApi';
+import { showErrorToast, showSuccessToast } from '../toast/notification';
 const PartnerPage = () => {
   const { partnersData, loading, error, fetchPartnersData, updatePartnerStatus } = usePartnerData();
   const { updateUserRole } = useUserData();
@@ -28,19 +29,24 @@ const PartnerPage = () => {
             // Nếu status được đổi thành ACTIVE_LEASE, cập nhật role user thành owner
             await updateUserRole(partner.userId, 'owner');
             console.log(`Đã cập nhật role của user ${partner.userId} thành owner`);
+            showSuccessToast(`Đã cập nhật role của user ${partner.userId} thành owner`);
           } else if (newStatus === 'EXPIRED_LEASE' || newStatus === 'CANCELLED_LEASE') {
             // Nếu status được đổi thành EXPIRED_LEASE hoặc CANCELLED_LEASE, đổi role về renter
             await updateUserRole(partner.userId, 'renter');
             console.log(`Đã cập nhật role của user ${partner.userId} về renter (do ${newStatus})`);
+            showSuccessToast(`Đã cập nhật role của user ${partner.userId} về renter`);
           }
         } catch (roleError) {
           console.error('Lỗi khi cập nhật role user:', roleError);
+          showErrorToast('Lỗi khi cập nhật role user: ' + (roleError.response?.data?.message || roleError.message));
           // Không throw error để không ảnh hưởng đến việc cập nhật status partner
         }
       }
+      
+      showSuccessToast(`Đã cập nhật trạng thái partner thành ${newStatus}`);
     } catch (err) {
       console.error('Error updating partner status:', err);
-      alert('Failed to update status: ' + (err.response?.data?.message || err.message));
+      showErrorToast('Failed to update status: ' + (err.response?.data?.message || err.message));
     }
   };
 

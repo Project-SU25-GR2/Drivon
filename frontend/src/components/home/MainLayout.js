@@ -10,6 +10,7 @@ import NotificationBell from '../others/NotificationBell';
 import webSocketService from '../../services/WebSocketService';
 import './MainLayout.css';
 import { API_URL } from '../../api/configApi';
+import { showErrorToast } from '../toast/notification';
 const MainLayout = ({ user, handleLogout, children }) => {
   const [authMode, setAuthMode] = useState("login"); // 'login', 'signup', or 'forgot'
   const [userRole, setUserRole] = useState(null);
@@ -98,6 +99,7 @@ const MainLayout = ({ user, handleLogout, children }) => {
         console.error('Error checking user role:', error);
         setUserRole(null);
         setRoleCheckComplete(true);
+        showErrorToast('Failed to check user role');
       } finally {
         setRoleCheckLoading(false);
       }

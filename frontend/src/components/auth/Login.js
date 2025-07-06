@@ -5,16 +5,16 @@ import { jwtDecode } from "jwt-decode";
 import SimpleButton from "../others/SimpleButton";
 import { Link } from "react-router-dom";
 import { API_URL } from '../../api/configApi';
+import { showErrorToast, showSuccessToast } from '../toast/notification';
 
 const Login = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     setIsLoading(true);
 
     try {
@@ -28,10 +28,11 @@ const Login = ({ onLoginSuccess }) => {
 
       if (response.data) {
         const userDataWithToken = { ...response.data.user, token: response.data.token };
+        showSuccessToast('Đăng nhập thành công!');
         onLoginSuccess(userDataWithToken);
       }
     } catch (err) {
-      setError(
+      showErrorToast(
         err.response?.data?.message || "Login failed. Please try again."
       );
     } finally {
@@ -54,10 +55,11 @@ const Login = ({ onLoginSuccess }) => {
 
       if (response.data) {
         const userDataWithToken = { ...response.data.user, token: response.data.token };
+        showSuccessToast('Đăng nhập Google thành công!');
         onLoginSuccess(userDataWithToken);
       }
     } catch (err) {
-      setError(
+      showErrorToast(
         err.response?.data?.message || "Google login failed. Please try again."
       );
     } finally {
@@ -66,16 +68,14 @@ const Login = ({ onLoginSuccess }) => {
   };
 
   const handleGoogleError = () => {
-    setError("Google login failed. Please try again.");
+    showErrorToast("Google login failed. Please try again.");
   };
 
   return (
     <div style={{ maxWidth: "400px", margin: "0 auto", padding: "20px" }}>
       <h2>Login</h2>
       <form onSubmit={handleSubmit} className="auth-form">
-        {error && (
-          <div style={{ color: "red", marginBottom: "10px" }}>{error}</div>
-        )}
+
         <div>
           <input
             type="email"

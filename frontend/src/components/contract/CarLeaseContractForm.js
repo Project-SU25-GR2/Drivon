@@ -371,14 +371,14 @@ const CarLeaseContractForm = ({ user }) => {
         setMessage("Contract created successfully!");
         setIsContractCreated(true);
         // Tạo URL từ pdfBlob và mở tab mới + tải file PDF về
-        const localPdfUrl = API_URL.createObjectURL(pdfBlob);
+        const localPdfUrl = URL.createObjectURL(pdfBlob);
         window.open(localPdfUrl, "_blank");
         const link = document.createElement("a");
         link.href = localPdfUrl;
         link.download = `hopdong_${newContractNumber}.pdf`;
         link.click();
         setTimeout(() => {
-          API_URL.revokeObjectURL(localPdfUrl);
+          URL.revokeObjectURL(localPdfUrl);
         }, 100);
       }
     } catch (error) {

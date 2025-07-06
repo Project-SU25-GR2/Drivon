@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { createNotification } from '../../api/notification';
+import { showErrorToast, showSuccessToast } from '../toast/notification';
 
 const TestNotification = () => {
   const [content, setContent] = useState('');
@@ -13,6 +14,7 @@ const TestNotification = () => {
     
     if (!content.trim()) {
       setMessage('Vui lòng nhập nội dung');
+      showErrorToast('Please enter notification content');
       return;
     }
 
@@ -23,10 +25,12 @@ const TestNotification = () => {
       await createNotification(content, type, targetType);
 
       setMessage('Thông báo đã được gửi thành công!');
+      showSuccessToast('Notification sent successfully!');
       setContent('');
     } catch (error) {
       console.error('Error sending notification:', error);
       setMessage('Có lỗi xảy ra khi gửi thông báo');
+      showErrorToast('Failed to send notification');
     } finally {
       setLoading(false);
     }

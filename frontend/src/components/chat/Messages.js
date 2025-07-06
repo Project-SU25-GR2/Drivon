@@ -5,6 +5,7 @@ import webSocketService from '../../services/WebSocketService';
 import './Messages.css';
 import Loader from '../others/loader';
 import { API_URL } from '../../api/configApi';
+import { showErrorToast, showSuccessToast } from '../toast/notification';
 const Messages = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -463,7 +464,7 @@ const Messages = () => {
       }
     } catch (error) {
       console.error('Error sending message:', error);
-      alert('Failed to send message. Please try again.');
+      showErrorToast('Failed to send message. Please try again.');
       // Put the message back in the input field so user can try again
       setMessage(messageContent);
     }
@@ -559,8 +560,9 @@ const Messages = () => {
                         setMessages([]);
                         setSelectedUser(null);
                         fetchConversations();
+                        showSuccessToast('Chat deleted successfully!');
                       } catch (err) {
-                        alert('Xóa đoạn chat thất bại!');
+                        showErrorToast('Failed to delete chat.');
                       }
                     }
                   }}

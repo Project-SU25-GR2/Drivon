@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './UserManagement.css';
 import { useUserData } from '../../contexts/UserDataContext';
+import { showErrorToast, showSuccessToast } from '../toast/notification';
 
 const LoadingSpinner = () => (
   <div className="loading-container">
@@ -25,10 +26,10 @@ const UserManagementPage = () => {
     const handleUpdateRole = async (userId, newRole) => {
         try {
             await updateUserRole(userId, newRole);
-            alert('Cập nhật vai trò người dùng thành công!');
+            showSuccessToast('Cập nhật vai trò người dùng thành công!');
         } catch (err) {
             console.error('Lỗi khi cập nhật vai trò:', err);
-            alert('Không thể cập nhật vai trò người dùng: ' + (err.response?.data?.message || err.message));
+            showErrorToast('Không thể cập nhật vai trò người dùng: ' + (err.response?.data?.message || err.message));
         }
     };
 
@@ -36,10 +37,10 @@ const UserManagementPage = () => {
         if (window.confirm('Are you sure you want to delete this user?')) {
             try {
                 await deleteUser(userId);
-                alert('User deleted successfully!');
+                showSuccessToast('User deleted successfully!');
             } catch (err) {
                 console.error('Error deleting user:', err);
-                alert('Failed to delete user: ' + (err.response?.data?.message || err.message));
+                showErrorToast('Failed to delete user: ' + (err.response?.data?.message || err.message));
             }
         }
     };
@@ -47,10 +48,10 @@ const UserManagementPage = () => {
     const handleUpdateStatus = async (userId, newStatus) => {
         try {
             await updateUserStatus(userId, newStatus);
-            alert('Cập nhật trạng thái người dùng thành công!');
+            showSuccessToast('Cập nhật trạng thái người dùng thành công!');
         } catch (err) {
             console.error('Lỗi khi cập nhật trạng thái người dùng:', err);
-            alert('Không thể cập nhật trạng thái người dùng: ' + (err.response?.data?.message || err.message));
+            showErrorToast('Không thể cập nhật trạng thái người dùng: ' + (err.response?.data?.message || err.message));
         }
     };
 

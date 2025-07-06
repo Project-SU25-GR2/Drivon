@@ -3,6 +3,7 @@ import axios from "axios";
 import cloudinaryConfig from "../../config/cloudinary";
 import "./EditCarForm.css"; // Reusing the same CSS as EditCarForm
 import { API_URL } from '../../api/configApi';
+import { showErrorToast, showSuccessToast } from '../toast/notification';
 
 const CAR_BRANDS = [
   "Toyota",
@@ -133,7 +134,7 @@ const AddCarForm = ({ onSave, onClose }) => {
 
   const handleImageUpload = async () => {
     if (!selectedMainImageFile) {
-      alert("Please select a main image file to upload.");
+      showErrorToast("Please select a main image file to upload.");
       return;
     }
 
@@ -155,10 +156,11 @@ const AddCarForm = ({ onSave, onClose }) => {
         mainImage: uploadedImageUrl,
       }));
       setSelectedMainImageFile(null);
-      alert("Main image uploaded successfully!");
+      showSuccessToast("Main image uploaded successfully!");
     } catch (err) {
       console.error("Error uploading main image to Cloudinary:", err);
       setError("Failed to upload main image. Please try again.");
+      showErrorToast("Failed to upload main image. Please try again.");
     } finally {
       setUploadingImage(false);
     }
@@ -166,7 +168,7 @@ const AddCarForm = ({ onSave, onClose }) => {
 
   const handleOtherImageUpload = async () => {
     if (selectedOtherImageFiles.length === 0) {
-      alert(
+      showErrorToast(
         "Please select at least one image file to upload for other images."
       );
       return;
@@ -200,10 +202,11 @@ const AddCarForm = ({ onSave, onClose }) => {
         otherImages: [...prevData.otherImages, ...uploadedUrls],
       }));
       setSelectedOtherImageFiles([]);
-      alert("Other images uploaded and added successfully!");
+      showSuccessToast("Other images uploaded and added successfully!");
     } catch (err) {
       console.error("Error uploading other images to Cloudinary:", err);
       setError("Failed to upload other images. Please try again.");
+      showErrorToast("Failed to upload other images. Please try again.");
     } finally {
       setUploadingImage(false);
     }
@@ -282,12 +285,13 @@ const AddCarForm = ({ onSave, onClose }) => {
       console.log("New car created:", response.data);
 
       onSave(response.data);
-      alert("Car registered successfully! Waiting for admin approval.");
+      showSuccessToast("Car registered successfully! Waiting for admin approval.");
     } catch (err) {
       console.error("Error registering car:", err);
       setError(
         `Failed to register car: ${err.response?.data?.error || err.message}`
       );
+      showErrorToast(`Failed to register car: ${err.response?.data?.error || err.message}`);
     } finally {
       setLoading(false);
     }

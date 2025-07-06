@@ -3,7 +3,8 @@ import EditCarForm from "./EditCarForm";
 import AddCarForm from "./AddCarForm";
 import "./CarManagementPage.css";
 import { useCarManagement } from "../../contexts/CarManagementContext";
-import { API_URL } from '../../api/configApi';    
+import { API_URL } from '../../api/configApi';
+import { showErrorToast, showSuccessToast } from '../toast/notification';    
 const CarManagementPage = ({ user }) => {
   const {
     carsData,
@@ -29,8 +30,9 @@ const CarManagementPage = ({ user }) => {
     if (window.confirm("Are you sure you want to delete this car?")) {
       try {
         await deleteCar(licensePlate);
+        showSuccessToast("Car deleted successfully!");
       } catch (error) {
-        alert("Failed to delete car. Please try again.");
+        showErrorToast("Failed to delete car. Please try again.");
       }
     }
   };
@@ -38,8 +40,9 @@ const CarManagementPage = ({ user }) => {
   const handleStatusChange = async (licensePlate, newStatus) => {
     try {
       await updateCarStatus(licensePlate, newStatus);
+      showSuccessToast("Car status updated successfully!");
     } catch (error) {
-      alert("Failed to update car status. Please try again.");
+      showErrorToast("Failed to update car status. Please try again.");
     }
   };
 
