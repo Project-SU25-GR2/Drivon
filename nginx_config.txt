@@ -1,6 +1,5 @@
 server {
-    listen 443 ssl;
-    server_name binhvuong.id.vn www.binhvuong.id.vn;
+    server_name youngltc.id.vn www.youngltc.id.vn;
 
     # Đường dẫn đến thư mục build
     root /home/root/react-app/build;
@@ -51,12 +50,6 @@ server {
         proxy_buffering off;
     }
 
-    # Cấu hình SSL
-    ssl_certificate /etc/letsencrypt/live/binhvuong.id.vn/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/binhvuong.id.vn/privkey.pem;
-    include /etc/letsencrypt/options-ssl-nginx.conf;
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
-
     # Cấu hình bảo mật
     add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
     add_header X-Frame-Options "SAMEORIGIN" always;
@@ -67,6 +60,6 @@ server {
 # Chuyển hướng HTTP sang HTTPS
 server {
     listen 80;
-    server_name binhvuong.id.vn www.binhvuong.id.vn;
+    server_name youngltc.id.vn www.youngltc.id.vn;
     return 301 https://$server_name$request_uri;
 } 

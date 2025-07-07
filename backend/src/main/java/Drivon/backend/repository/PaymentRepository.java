@@ -16,4 +16,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     Payment findByBookingId(int bookingId);
 
     List<Payment> findByCarIdIn(List<String> carIds);
+
+    long countByPromotionCode(String promotionCode);
 }

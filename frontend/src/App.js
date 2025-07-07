@@ -25,7 +25,7 @@ import Messages from "./components/chat/Messages";
 import MyRentals from "./components/car/MyRentals";
 import CarRental404 from "./components/others/404";
 import ContactPage from "./components/others/ContactPage";
-import TestNotification from "./components/others/TestNotification";
+import TestNotification from "./components/notification/TestNotification";
 import DebugAuth from "./components/others/DebugAuth";
 import { CarDataProvider } from "./contexts/CarDataContext";
 import { RentalHistoryProvider } from "./contexts/RentalHistoryContext";

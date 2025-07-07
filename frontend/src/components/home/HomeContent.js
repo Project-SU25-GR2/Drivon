@@ -6,7 +6,7 @@ import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { useCarData } from '../../contexts/CarDataContext';
 import { API_URL } from '../../api/configApi';
-import { showErrorToast } from '../toast/notification';
+import { showErrorToast } from '../notification/notification';
 
 const HomeContent = () => {
   const [form, setForm] = useState({

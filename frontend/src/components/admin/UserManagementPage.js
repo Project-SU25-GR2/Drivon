@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './UserManagement.css';
 import { useUserData } from '../../contexts/UserDataContext';
-import { showErrorToast, showSuccessToast } from '../toast/notification';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
 
 const LoadingSpinner = () => (
   <div className="loading-container">
@@ -150,6 +150,8 @@ const UserManagementPage = () => {
                                         <option value="renter">Renter</option>
                                         <option value="owner">Owner</option>
                                         <option value="admin">Admin</option>
+                                        <option value="verify_owner">Verify Owner</option>
+                                        <option value="verify_user">Verify User</option>
                                     </select>
                                 </td>
                                 <td>

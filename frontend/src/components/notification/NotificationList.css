@@ -1,0 +1,181 @@
+/* Notification Bell Styles */
+.notification-bell {
+  position: relative;
+  display: inline-block;
+}
+
+.notification-icon {
+  position: relative;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.notification-icon:hover {
+  background-color: rgba(255, 215, 0, 0.2);
+}
+
+.bell-icon {
+  font-size: 20px;
+  color: #FFD700;
+}
+
+.notification-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #ff4444;
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 350px;
+  max-height: 500px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  background: #f8f9fa;
+}
+
+.notification-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.mark-all-read-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.mark-all-read-btn:hover {
+  background: #0056b3;
+}
+
+.notification-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.notification-item {
+  padding: 12px 15px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.notification-item:hover {
+  background-color: #f8f9fa;
+}
+
+.notification-item.unread {
+  background-color: #e3f2fd;
+}
+
+.notification-item.unread:hover {
+  background-color: #bbdefb;
+}
+
+.notification-content {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.notification-header-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.notification-icon-item {
+  font-size: 16px;
+}
+
+.notification-type {
+  font-size: 12px;
+  color: #fff;
+  font-weight: 500;
+  padding: 2px 10px;
+  border-radius: 12px;
+  margin-left: 6px;
+  margin-right: 6px;
+  display: inline-block;
+}
+
+.notification-type {
+  background: #007bff; /* Mặc định: System */
+}
+
+.notification-type.promotion {
+  background: #ff9800;
+}
+
+.unread-indicator {
+  color: #007bff;
+  font-size: 14px;
+  margin-left: auto;
+}
+
+.notification-text {
+  font-size: 14px;
+  line-height: 1.4;
+  color: #333;
+}
+
+.notification-time {
+  font-size: 12px;
+  color: #888;
+  font-style: italic;
+}
+
+.loading {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+}
+
+.no-notifications {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .notification-dropdown {
+    width: 300px;
+    right: -50px;
+  }
+} 

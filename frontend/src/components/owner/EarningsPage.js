@@ -4,9 +4,8 @@ import "./EarningsPage.css";
 import { API_URL } from '../../api/configApi';
 import pdfMake from 'pdfmake/build/pdfmake';
 import 'pdfmake/build/vfs_fonts';
-import { showErrorToast, showSuccessToast } from '../toast/notification';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
 
-// Register fonts
 pdfMake.vfs = pdfMake.vfs || {};
 
 const statusOptions = [

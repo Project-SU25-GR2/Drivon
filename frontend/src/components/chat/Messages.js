@@ -5,7 +5,7 @@ import webSocketService from '../../services/WebSocketService';
 import './Messages.css';
 import Loader from '../others/loader';
 import { API_URL } from '../../api/configApi';
-import { showErrorToast, showSuccessToast } from '../toast/notification';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
 const Messages = () => {
   const location = useLocation();
   const navigate = useNavigate();

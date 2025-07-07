@@ -13,16 +13,46 @@ public class Promotion {
     private String code;
     private Integer discount_percent;
     private Date valid_until;
+    @Column(name = "max_uses")
+    private Integer maxUses;
 
-    public Long getPromo_id() { return promo_id; }
-    public void setPromo_id(Long promo_id) { this.promo_id = promo_id; }
+    public Long getPromo_id() {
+        return promo_id;
+    }
 
-    public String getCode() { return code; }
-    public void setCode(String code) { this.code = code; }
+    public void setPromo_id(Long promo_id) {
+        this.promo_id = promo_id;
+    }
 
-    public Integer getDiscount_percent() { return discount_percent; }
-    public void setDiscount_percent(Integer discount_percent) { this.discount_percent = discount_percent; }
+    public String getCode() {
+        return code;
+    }
 
-    public Date getValid_until() { return valid_until; }
-    public void setValid_until(Date valid_until) { this.valid_until = valid_until; }
-} 
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public Integer getDiscount_percent() {
+        return discount_percent;
+    }
+
+    public void setDiscount_percent(Integer discount_percent) {
+        this.discount_percent = discount_percent;
+    }
+
+    public Date getValid_until() {
+        return valid_until;
+    }
+
+    public void setValid_until(Date valid_until) {
+        this.valid_until = valid_until;
+    }
+
+    public Integer getMaxUses() {
+        return maxUses;
+    }
+
+    public void setMaxUses(Integer maxUses) {
+        this.maxUses = maxUses;
+    }
+}

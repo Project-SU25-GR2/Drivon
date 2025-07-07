@@ -9,11 +9,10 @@ import {
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from '../../api/configApi';
-import { showErrorToast, showSuccessToast } from '../toast/notification';
 import pdfMake from 'pdfmake/build/pdfmake';
 import 'pdfmake/build/vfs_fonts';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
 
-// Register fonts
 pdfMake.vfs = pdfMake.vfs || {};
 
 const statusOptions = [

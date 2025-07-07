@@ -57,7 +57,8 @@ public class AdminController {
             }
             // Chuyển đổi role về chữ thường để khớp với enum
             String lowerCaseRole = newRole.toLowerCase();
-            if (!lowerCaseRole.equals("renter") && !lowerCaseRole.equals("owner") && !lowerCaseRole.equals("admin")) {
+            if (!lowerCaseRole.equals("renter") && !lowerCaseRole.equals("owner") && !lowerCaseRole.equals("admin")
+                    && !lowerCaseRole.equals("verify_owner") && !lowerCaseRole.equals("verify_user")) {
                 return ResponseEntity.badRequest().body("Invalid role.");
             }
 
@@ -128,7 +129,7 @@ public class AdminController {
 
             for (Contract contract : contracts) {
                 Map<String, Object> partner = new HashMap<>();
-                
+
                 // Sử dụng reflection để truy cập các field private
                 try {
                     java.lang.reflect.Field idField = Contract.class.getDeclaredField("id");
@@ -140,7 +141,7 @@ public class AdminController {
                     java.lang.reflect.Field pricePerDayField = Contract.class.getDeclaredField("pricePerDay");
                     java.lang.reflect.Field depositField = Contract.class.getDeclaredField("deposit");
                     java.lang.reflect.Field statusField = Contract.class.getDeclaredField("status");
-                    
+
                     idField.setAccessible(true);
                     contractNumberField.setAccessible(true);
                     nameField.setAccessible(true);
@@ -150,7 +151,7 @@ public class AdminController {
                     pricePerDayField.setAccessible(true);
                     depositField.setAccessible(true);
                     statusField.setAccessible(true);
-                    
+
                     partner.put("id", idField.get(contract));
                     partner.put("contractNumber", contractNumberField.get(contract));
                     partner.put("name", nameField.get(contract));
@@ -160,7 +161,7 @@ public class AdminController {
                     partner.put("pricePerDay", pricePerDayField.get(contract));
                     partner.put("deposit", depositField.get(contract));
                     partner.put("status", statusField.get(contract));
-                    
+
                     // Lấy userId từ email
                     String email = (String) emailField.get(contract);
                     Optional<User> user = userRepository.findByEmail(email);
@@ -168,34 +169,34 @@ public class AdminController {
                         partner.put("userId", user.get().getUserId());
                     }
 
-                // Lấy thông tin xe
+                    // Lấy thông tin xe
                     String carId = (String) carIdField.get(contract);
                     Car car = carService.getCarById(carId);
-                if (car != null) {
-                    Map<String, Object> carInfo = new HashMap<>();
-                    carInfo.put("brand", car.getBrand());
-                    carInfo.put("model", car.getModel());
-                    carInfo.put("year", car.getYear());
-                    carInfo.put("seats", car.getSeats());
-                    carInfo.put("description", car.getDescription());
-                    carInfo.put("type", car.getType());
-                    carInfo.put("transmission", car.getTransmission());
-                    carInfo.put("fuelType", car.getFuelType());
-                    carInfo.put("fuelConsumption", car.getFuelConsumption());
-                    carInfo.put("location", car.getLocation());
+                    if (car != null) {
+                        Map<String, Object> carInfo = new HashMap<>();
+                        carInfo.put("brand", car.getBrand());
+                        carInfo.put("model", car.getModel());
+                        carInfo.put("year", car.getYear());
+                        carInfo.put("seats", car.getSeats());
+                        carInfo.put("description", car.getDescription());
+                        carInfo.put("type", car.getType());
+                        carInfo.put("transmission", car.getTransmission());
+                        carInfo.put("fuelType", car.getFuelType());
+                        carInfo.put("fuelConsumption", car.getFuelConsumption());
+                        carInfo.put("location", car.getLocation());
 
-                    // Lấy main image từ table cars
-                    carInfo.put("mainImage", car.getMainImage());
+                        // Lấy main image từ table cars
+                        carInfo.put("mainImage", car.getMainImage());
 
-                    // Lấy other images từ table car_images
+                        // Lấy other images từ table car_images
                         List<CarImage> carImages = carImageRepository.findByCarId(carId);
-                    List<String> otherImageUrls = new ArrayList<>();
-                    for (CarImage image : carImages) {
-                        otherImageUrls.add(image.getImageUrl());
-                    }
-                    carInfo.put("otherImages", otherImageUrls);
+                        List<String> otherImageUrls = new ArrayList<>();
+                        for (CarImage image : carImages) {
+                            otherImageUrls.add(image.getImageUrl());
+                        }
+                        carInfo.put("otherImages", otherImageUrls);
 
-                    partner.put("car", carInfo);
+                        partner.put("car", carInfo);
                     }
                 } catch (Exception e) {
                     System.err.println("Error accessing Contract fields: " + e.getMessage());
@@ -218,15 +219,16 @@ public class AdminController {
         if (contract == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Contract not found");
         }
-        
+
         try {
             java.lang.reflect.Field statusField = Contract.class.getDeclaredField("status");
             statusField.setAccessible(true);
             statusField.set(contract, status);
-        contractService.save(contract);
-        return ResponseEntity.ok("Status updated");
+            contractService.save(contract);
+            return ResponseEntity.ok("Status updated");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating status: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error updating status: " + e.getMessage());
         }
     }
 
