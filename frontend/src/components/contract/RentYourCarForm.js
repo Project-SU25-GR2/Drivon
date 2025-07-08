@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import cloudinaryConfig  from '../../config/cloudinary';
-import '../css/RentYourCarForm.css';
+import './RentYourCarForm.css';
 import { useNavigate } from 'react-router-dom';
 import SimpleButton from '../others/SimpleButton';
 import { API_URL } from '../../api/configApi';
@@ -371,10 +371,18 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
   };
 
   return (
-    <div className="rent-your-car-container">
-      <h2>Become a Partner</h2>
-      <form onSubmit={handleSubmit} className="rent-car-form">
-        <div className="form-group">
+    <div className="partner-container" aria-label="Become a Partner Registration">
+      <h2>Register Your Vehicle</h2>
+      <p style={{textAlign:'center', color:'#666', marginBottom:'2rem', fontSize:'1.08rem'}}>Fill out the form below to get started with your partnership</p>
+      <form onSubmit={handleSubmit} className="partner-form" aria-label="Vehicle Registration Form">
+        {/* --- Vehicle Information Card --- */}
+        <div className="partner-form-group full-width" style={{marginBottom:'0.5rem'}}>
+          <div style={{background:'#f8f9fa', borderRadius:8, boxShadow:'0 1px 4px rgba(0,0,0,0.04)', padding:'1.2rem 1rem 0.5rem 1rem', marginBottom:'0.5rem'}}>
+            <h3 style={{color:'#2980b9', fontSize:'1.15rem', fontWeight:600, marginBottom:'0.7rem'}}>Vehicle Information</h3>
+          </div>
+        </div>
+        {/* --- All vehicle info fields (as before) --- */}
+        <div className="partner-form-group">
           <label htmlFor="brand">Car Brand</label>
           <select
             id="brand"
@@ -382,7 +390,7 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
             value={formData.brand}
             onChange={handleChange}
             required
-            className="select-input"
+            className="partner-select-input"
           >
             <option value="">Select a brand</option>
             {carBrands.map((brand) => (
@@ -393,7 +401,7 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
           </select>
         </div>
 
-        <div className="form-group">
+        <div className="partner-form-group">
           <label htmlFor="model">Car Model</label>
           <input
             type="text"
@@ -405,7 +413,7 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
           />
         </div>
 
-        <div className="form-group">
+        <div className="partner-form-group">
           <label htmlFor="year">Year</label>
           <input
             type="number"
@@ -417,7 +425,7 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
           />
         </div>
 
-        <div className="form-group">
+        <div className="partner-form-group">
           <label htmlFor="licensePlate">License Plate</label>
           <input
             type="text"
@@ -429,7 +437,7 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
           />
         </div>
         
-        <div className="form-group">
+        <div className="partner-form-group">
           <label htmlFor="type">Type</label>
           <select
             id="type"
@@ -437,7 +445,7 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
             value={formData.type}
             onChange={handleChange}
             required
-            className="select-input"
+            className="partner-select-input"
           >
             <option value="">Select a type</option>
             <option value="suv">SUV</option>
@@ -448,7 +456,7 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
           </select>
         </div>
 
-        <div className="form-group">
+        <div className="partner-form-group">
           <label htmlFor="location">Location</label>
           <select
             id="location"
@@ -456,7 +464,7 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
             value={formData.location}
             onChange={handleChange}
             required
-            className="select-input"
+            className="partner-select-input"
           >
             <option value="">Select a location</option>
             {locations.map((location) => (
@@ -467,7 +475,7 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
           </select>
         </div>
 
-        <div className="form-group">
+        <div className="partner-form-group">
           <label htmlFor="seats">Seats</label>
           <input
             type="number"
@@ -481,7 +489,7 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
           />
         </div>
 
-        <div className="form-group">
+        <div className="partner-form-group">
           <label htmlFor="transmission">Transmission</label>
           <select
             id="transmission"
@@ -489,7 +497,7 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
             value={formData.transmission}
             onChange={handleChange}
             required
-            className="select-input"
+            className="partner-select-input"
           >
             <option value="">Select transmission</option>
             <option value="manual">Manual</option>
@@ -497,7 +505,7 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
           </select>
         </div>
 
-        <div className="form-group">
+        <div className="partner-form-group">
           <label htmlFor="fuelType">Fuel Type</label>
           <select
             id="fuelType"
@@ -505,7 +513,7 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
             value={formData.fuelType}
             onChange={handleChange}
             required
-            className="select-input"
+            className="partner-select-input"
           >
             <option value="">Select fuel type</option>
             <option value="gasoline">Gasoline</option>
@@ -515,7 +523,7 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
           </select>
         </div>
 
-        <div className="form-group">
+        <div className="partner-form-group">
           <label htmlFor="fuelConsumption">Fuel Consumption (liters/100km)</label>
           <input
             type="number"
@@ -528,7 +536,8 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
             min="0"
           />
         </div>
-        <div className="form-group">
+        {/* Move Description to the last row, full width */}
+        <div className="partner-form-group full-width">
           <label htmlFor="description">Description</label>
           <textarea
             id="description"
@@ -540,180 +549,179 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
             required
           />
         </div>
-        <div className="form-group">
-          <label>Car Images</label>
-          <div className="image-upload-section">
-            <div className="image-preview-grid">
-              {mainPreviewUrl && (
-                <div className="image-preview-item">
-                  <img src={mainPreviewUrl} alt="Main Preview" />
-                  <button type="button" className="remove-image-btn" onClick={removeMainImage}>×</button>
+        {/* --- Images & Documents Section --- */}
+        <div className="partner-form-group full-width" style={{marginTop:'1.2rem', marginBottom:'0.5rem'}}>
+          <div style={{background:'#f8f9fa', borderRadius:8, boxShadow:'0 1px 4px rgba(0,0,0,0.04)', padding:'1.2rem 1rem 0.5rem 1rem', marginBottom:'0.5rem'}}>
+            <h3 style={{color:'#2980b9', fontSize:'1.15rem', fontWeight:600, marginBottom:'0.7rem'}}>Images & Documents</h3>
+          </div>
+        </div>
+        {/* 2-column image/document upload layout */}
+        <div className="partner-form-group full-width">
+          <div className="partner-image-docs-grid">
+            {/* Left column: Car Images & Other Car Images (separated) */}
+            <div className="partner-image-docs-col partner-image-docs-card">
+              <label style={{fontWeight:600, marginBottom:8}}>Car Images</label>
+              <div className="partner-image-upload-section">
+                <div className="partner-image-preview-grid">
+                  {mainPreviewUrl && (
+                    <div className="partner-image-preview-item">
+                      <img src={mainPreviewUrl} alt="Main Preview" />
+                      <button type="button" className="partner-remove-image-btn" onClick={removeMainImage}>×</button>
+                    </div>
+                  )}
+                  {!mainPreviewUrl && (
+                    <label className="partner-upload-button" htmlFor="car-main-image">
+                      <i className="bi bi-plus-lg"></i>
+                      <span>Car Images</span>
+                      <input
+                        type="file"
+                        id="car-main-image"
+                        accept="image/*"
+                        onChange={handleMainImageChange}
+                        disabled={uploading}
+                        style={{ display: 'none' }}
+                      />
+                    </label>
+                  )}
                 </div>
-              )}
-              {!mainPreviewUrl && (
-                <label className="upload-button" htmlFor="car-main-image">
+              </div>
+              <label style={{fontWeight:600, margin:'16px 0 8px 0'}}>Other Car Images</label>
+              <div className="partner-image-upload-section">
+                <label className="partner-upload-button" htmlFor="car-other-images">
                   <i className="bi bi-plus-lg"></i>
-                  <span>Car Images</span>
+                  <span>Other Car Images</span>
                   <input
                     type="file"
-                    id="car-main-image"
+                    id="car-other-images"
                     accept="image/*"
-                    onChange={handleMainImageChange}
+                    multiple
+                    onChange={handleOtherImagesChange}
                     disabled={uploading}
                     style={{ display: 'none' }}
                   />
                 </label>
-              )}
-            </div>
-            <label className="upload-button" htmlFor="car-other-images">
-              <i className="bi bi-plus-lg"></i>
-              <span>Other Car Images</span>
-              <input
-                type="file"
-                id="car-other-images"
-                accept="image/*"
-                multiple
-                onChange={handleOtherImagesChange}
-                disabled={uploading}
-                style={{ display: 'none' }}
-              />
-            </label>
-            <div className="image-preview-grid">
-              {otherPreviewUrls.map((url, index) => (
-                <div key={index} className="image-preview-item">
-                  <img src={url} alt={`Other Preview ${index + 1}`} />
-                  <button type="button" className="remove-image-btn" onClick={() => removeOtherImage(index)}>×</button>
+                <div className="partner-image-preview-grid">
+                  {otherPreviewUrls.map((url, index) => (
+                    <div key={index} className="partner-image-preview-item">
+                      <img src={url} alt={`Other Preview ${index + 1}`} />
+                      <button type="button" className="partner-remove-image-btn" onClick={() => removeOtherImage(index)}>×</button>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
-            <small className="upload-info">
-              <i className="bi bi-info-circle me-1"></i>
-              Supported formats: JPG, PNG, GIF. Max size: 5MB
-            </small>
+            {/* Right column: Cavet & Other Documents */}
+            <div className="partner-image-docs-col partner-image-docs-card">
+              <label style={{fontWeight:600, marginBottom:8}}>Vehicle Registration (Cavet) Images</label>
+              <div className="partner-image-upload-section">
+                <label className="partner-upload-button" htmlFor="car-cavet-images">
+                  <i className="bi bi-plus-lg"></i>
+                  <span>Upload Registration</span>
+                  <input
+                    type="file"
+                    id="car-cavet-images"
+                    accept="image/*"
+                    multiple
+                    onChange={handleCavetImagesChange}
+                    disabled={uploading}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+                <div className="partner-image-preview-grid">
+                  {cavetPreviewUrls.map((url, index) => (
+                    <div key={index} className="partner-image-preview-item">
+                      <img src={url} alt={`Cavet Preview ${index + 1}`} />
+                      <button type="button" className="partner-remove-image-btn" onClick={() => removeCavetImage(index)}>×</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <label style={{fontWeight:600, margin:'16px 0 8px 0'}}>Other Documents (if needed)</label>
+              <div className="partner-image-upload-section">
+                <label className="partner-upload-button" htmlFor="car-other-doc-images">
+                  <i className="bi bi-plus-lg"></i>
+                  <span>Upload Other Documents</span>
+                  <input
+                    type="file"
+                    id="car-other-doc-images"
+                    accept="image/*"
+                    multiple
+                    onChange={handleOtherDocImagesChange}
+                    disabled={uploading}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+                <div className="partner-image-preview-grid">
+                  {otherDocPreviewUrls.map((url, index) => (
+                    <div key={index} className="partner-image-preview-item">
+                      <img src={url} alt={`Other Doc Preview ${index + 1}`} />
+                      <button type="button" className="partner-remove-image-btn" onClick={() => removeOtherDocImage(index)}>×</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+          <small className="partner-upload-info" style={{marginTop:'0.7rem', display:'block'}}>
+            <i className="bi bi-info-circle me-1" aria-hidden="true"></i>
+            Supported formats: JPG, PNG, GIF. Max size: 5MB
+          </small>
+        </div>
+        {/* --- Important Notes Card --- */}
+        <div className="partner-form-group full-width" style={{margin:'0.5rem 0 1.5rem 0'}}>
+          <div style={{background:'#eaf6fb', border:'1.5px solid #b3e0fc', borderRadius:8, boxShadow:'0 1px 4px rgba(41,128,185,0.07)', padding:'1.1rem 1.2rem', display:'flex', alignItems:'flex-start', gap:'0.8rem'}} aria-label="Important Notes">
+            <span style={{fontSize:'1.5rem', color:'#2980b9', marginTop:'0.1rem'}} aria-hidden="true">
+              <i className="bi bi-info-circle-fill"></i>
+            </span>
+            <span>
+              <strong style={{color:'#2c3e50'}}>Vehicle document note:</strong><br/>
+              <span style={{display:'block', margin:'0.3rem 0 0.1rem 0.2rem'}}>
+                <span style={{color:'#27ae60', fontWeight:500}}>&#10003; Owner vehicle:</span> <span style={{color:'#34495e'}}>Upload a photo/scan of the vehicle registration with the same name as the Partner.</span>
+              </span>
+              <span style={{display:'block', margin:'0.1rem 0 0 0.2rem'}}>
+                <span style={{color:'#e67e22', fontWeight:500}}>&#9888; Not owner vehicle:</span> <span style={{color:'#34495e'}}>A valid authorization letter or car rental contract is required (with signature and clear information).</span>
+              </span>
+            </span>
           </div>
         </div>
-        <div className="form-group">
-          <label>Vehicle Registration (Cavet) Images</label>
-          <div className="image-upload-section">
-            <label className="upload-button" htmlFor="car-cavet-images">
-              <i className="bi bi-plus-lg"></i>
-              <span>Upload Registration</span>
-              <input
-                type="file"
-                id="car-cavet-images"
-                accept="image/*"
-                multiple
-                onChange={handleCavetImagesChange}
-                disabled={uploading}
-                style={{ display: 'none' }}
-              />
-            </label>
-            <div className="image-preview-grid">
-              {cavetPreviewUrls.map((url, index) => (
-                <div key={index} className="image-preview-item">
-                  <img src={url} alt={`Cavet Preview ${index + 1}`} />
-                  <button type="button" className="remove-image-btn" onClick={() => removeCavetImage(index)}>×</button>
-                </div>
-              ))}
-            </div>
-            <small className="upload-info">
-              <i className="bi bi-info-circle me-1"></i>
-              Supported formats: JPG, PNG, GIF. Max size: 5MB
-            </small>
-          </div>
-        </div>
-        <div className="form-group">
-          <label>Other Documents (if needed)</label>
-          <div className="image-upload-section">
-            <label className="upload-button" htmlFor="car-other-doc-images">
-              <i className="bi bi-plus-lg"></i>
-              <span>Upload Other Documents</span>
-              <input
-                type="file"
-                id="car-other-doc-images"
-                accept="image/*"
-                multiple
-                onChange={handleOtherDocImagesChange}
-                disabled={uploading}
-                style={{ display: 'none' }}
-              />
-            </label>
-            <div className="image-preview-grid">
-              {otherDocPreviewUrls.map((url, index) => (
-                <div key={index} className="image-preview-item">
-                  <img src={url} alt={`Other Doc Preview ${index + 1}`} />
-                  <button type="button" className="remove-image-btn" onClick={() => removeOtherDocImage(index)}>×</button>
-                </div>
-              ))}
-            </div>
-            <small className="upload-info">
-              <i className="bi bi-info-circle me-1"></i>
-              Supported formats: JPG, PNG, GIF. Max size: 5MB
-            </small>
-          </div>
-        </div>
-
+        {/* --- Submit Button --- */}
         <SimpleButton
           type="submit"
           disabled={uploading}
           isLoading={uploading}
+          aria-label="Submit Registration"
         >
           {uploading ? 'Uploading...' : 'Submit'}
         </SimpleButton>
-        <div className="car-ownership-note" style={{
-          marginTop: '1rem',
-          fontSize: '0.95rem',
-          color: '#34495e',
-          background: '#f8f9fa',
-          border: '1px solid #e0e0e0',
-          borderRadius: '8px',
-          padding: '0.9rem 1.2rem',
-          gridColumn: '1 / -1',
-          display: 'flex',
-          alignItems: 'flex-start',
-          gap: '0.7rem'
-        }}>
-          <span style={{fontSize: '1.3rem', color: '#2980b9', marginTop: '0.1rem'}}>
-            <i className="bi bi-exclamation-circle-fill"></i>
-          </span>
-          <span>
-            <strong style={{color: '#2c3e50'}}>Vehicle document note:</strong><br/>
-            <span style={{display: 'block', margin: '0.3rem 0 0.1rem 0.2rem'}}>
-              <span style={{color: '#27ae60', fontWeight: 500}}>&#10003; Owner vehicle:</span> <span style={{color: '#34495e'}}>Upload a photo/scan of the vehicle registration with the same name as the Partner.</span>
-            </span>
-            <span style={{display: 'block', margin: '0.1rem 0 0 0.2rem'}}>
-              <span style={{color: '#e67e22', fontWeight: 500}}>&#9888; Not owner vehicle:</span> <span style={{color: '#34495e'}}>A valid authorization letter or car rental contract is required (with signature and clear information).</span>
-            </span>
-          </span>
-        </div>
       </form>
-      
-      <div className="partner-introduction">
+      {/* --- Benefits Section --- */}
+      <div className="partner-introduction" style={{marginTop:'2.5rem'}} aria-label="Benefits of Becoming Our Partner">
         <h2>Benefits of Becoming Our Partner</h2>
-        <div className="intro-content">
-          <div className="benefits-grid">
-            <div className="benefit-item">
-              <i className="bi bi-cash-stack"></i>
+        <div className="partner-intro-content">
+          <div className="partner-benefits-grid">
+            <div className="partner-benefit-item" aria-label="Stable Income">
+              <i className="bi bi-cash-stack" aria-hidden="true"></i>
               <h3>Stable Income</h3>
               <p>Earn extra income from your car when it's not in use</p>
             </div>
-            <div className="benefit-item">
-              <i className="bi bi-shield-check"></i>
+            <div className="partner-benefit-item" aria-label="Comprehensive Insurance">
+              <i className="bi bi-shield-check" aria-hidden="true"></i>
               <h3>Comprehensive Insurance</h3>
               <p>Your car is fully insured during the entire rental period</p>
             </div>
-            <div className="benefit-item">
-              <i className="bi bi-graph-up"></i>
+            <div className="partner-benefit-item" aria-label="Efficient Management">
+              <i className="bi bi-graph-up" aria-hidden="true"></i>
               <h3>Efficient Management</h3>
               <p>Professional management system helps track schedules and revenue</p>
             </div>
-            <div className="benefit-item">
-              <i className="bi bi-people"></i>
+            <div className="partner-benefit-item" aria-label="Quality Customers">
+              <i className="bi bi-people" aria-hidden="true"></i>
               <h3>Quality Customers</h3>
               <p>Access a community of trustworthy customers</p>
             </div>
           </div>
-          <div className="process-section">
+          {/* --- How It Works Section --- */}
+          <div className="partner-process-section" style={{marginTop:'2.5rem'}} aria-label="How to Become a Partner">
             <h3>How to Become a Partner</h3>
             <ol>
               <li>Fill in your car and personal information</li>

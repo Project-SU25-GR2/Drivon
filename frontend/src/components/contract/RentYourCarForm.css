@@ -1,68 +1,68 @@
-.rent-your-car-container {
-  max-width: 700px;
-  margin: 2rem auto;
-  padding: 1.5rem;
+.partner-container {
+  margin: 1.2rem 5rem;
+  padding: 1rem 1.2rem;
   background-color: #fff;
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.rent-your-car-container h2 {
+.partner-container h2 {
   text-align: center;
   color: #2c3e50;
-  margin-bottom: 1.5rem;
-  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  font-size: 1.7rem;
   font-weight: 600;
 }
 
-.rent-car-form {
+.partner-form {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.7rem;
 }
 
-.form-group {
+.partner-form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.25rem;
+  margin-bottom: 0.2rem;
 }
 
-.form-group.full-width {
+.partner-form-group.full-width {
   grid-column: 1 / -1;
 }
 
-.form-group label {
+.partner-form-group label {
   font-weight: 500;
   color: #34495e;
   font-size: 0.95rem;
 }
 
-.form-group input,
-.form-group textarea,
-.form-group select {
+.partner-form-group input,
+.partner-form-group textarea,
+.partner-form-group select {
   padding: 0.6rem 0.8rem;
   border: 1.5px solid #e0e0e0;
   border-radius: 6px;
   font-size: 0.95rem;
   transition: all 0.2s ease;
-  background-color: #f8f9fa;
+  background-color: #fff;
 }
 
-.form-group input:focus,
-.form-group textarea:focus,
-.form-group select:focus {
+.partner-form-group input:focus,
+.partner-form-group textarea:focus,
+.partner-form-group select:focus {
   outline: none;
   border-color: #3498db;
   background-color: #fff;
   box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
-.form-group textarea {
+.partner-form-group textarea {
   resize: vertical;
   min-height: 80px;
 }
 
-.select-input {
+.partner-select-input {
   appearance: none;
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat: no-repeat;
@@ -72,36 +72,51 @@
   cursor: pointer;
 }
 
-.select-input option {
+.partner-select-input option {
   padding: 0.5rem;
 }
 
 /* Image Upload Styles */
-.image-upload-section {
+.partner-image-upload-section {
   border: 2px dashed #e0e0e0;
   border-radius: 8px;
   padding: 1rem;
   background-color: #f8f9fa;
   transition: all 0.2s ease;
   display: flex;
+  flex-direction: column;
   flex-wrap: wrap;
   align-items: flex-start;
   gap: 0.5rem;
+  width: 100%;
 }
 
-.image-upload-section:hover {
+.partner-image-upload-section:hover {
   border-color: #3498db;
   background-color: #f0f7ff;
 }
 
-.image-preview-grid {
+.partner-image-preview-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  grid-auto-flow: column;
+  grid-auto-columns: 70px;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
+  overflow-x: auto;
+  max-width: 100%;
+  justify-items: start;
+  min-width: 70px;
+  width: 100%;
+}
+@media (max-width: 600px) {
+  .partner-image-preview-grid {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    overflow-x: unset;
+  }
 }
 
-.image-preview-item {
+.partner-image-preview-item {
   position: relative;
   aspect-ratio: 1;
   width: 70px;
@@ -111,13 +126,13 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.image-preview-item img {
+.partner-image-preview-item img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.remove-image-btn {
+.partner-remove-image-btn {
   position: absolute;
   top: 0.3rem;
   right: 0.3rem;
@@ -137,12 +152,12 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.remove-image-btn:hover {
+.partner-remove-image-btn:hover {
   background-color: #fff;
   transform: scale(1.1);
 }
 
-.upload-button {
+.partner-upload-button {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -154,50 +169,50 @@
   border-radius: 6px;
 }
 
-.upload-button:hover {
+.partner-upload-button:hover {
   border-color: #3498db;
   color: #3498db;
   background-color: #f0f7ff;
 }
 
-.upload-button i {
+.partner-upload-button i {
   font-size: 1.2rem;
   margin-bottom: 0;
   margin-right: 0.2rem;
 }
 
-.upload-button span {
+.partner-upload-button span {
   font-size: 0.75rem;
   margin: 0;
   text-align: center;
   display: inline-block;
 }
 
-.upload-error {
+.partner-upload-error {
   color: #e74c3c;
   font-size: 0.85rem;
   margin-top: 0.4rem;
 }
 
-.upload-info {
+.partner-upload-info {
   color: #7f8c8d;
   font-size: 0.85rem;
 }
 
 /* Submit Button Styles */
-.rent-car-form .SimpleButton {
+.partner-form .SimpleButton {
   grid-column: 1 / -1;
   margin-top: 1rem;
   margin-bottom: 1rem;
 }
 
-.rent-car-form button[type="submit"] {
+.partner-form button[type="submit"] {
   grid-column: 1 / -1;
   margin-top: 1rem;
   margin-bottom: 1rem;
 }
 
-.submit-button {
+.partner-submit-button {
   background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
   color: white;
   padding: 0.8rem;
@@ -211,46 +226,53 @@
   margin-top: 0.5rem;
 }
 
-.submit-button:hover:not(:disabled) {
+.partner-submit-button:hover:not(:disabled) {
   background: linear-gradient(135deg, #2980b9 0%, #2573a7 100%);
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2);
 }
 
-.submit-button:disabled {
+.partner-submit-button:disabled {
   background: #bdc3c7;
   cursor: not-allowed;
 }
 
+@media (max-width: 1024px) {
+  .partner-form {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 @media (max-width: 768px) {
-  .rent-your-car-container {
-    margin: 1rem;
-    padding: 1rem;
+  .partner-container {
+    margin: 0.5rem;
+    padding: 0.7rem 0.5rem;
+    max-width: 99vw;
   }
-
-  .rent-car-form {
+  .partner-form {
     grid-template-columns: 1fr;
+    gap: 0.5rem;
   }
-
-  .image-preview-grid {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  .partner-form-group.full-width {
+    grid-column: 1 / -1;
   }
-
-  /* Submit button responsive styles */
-  .rent-car-form .SimpleButton {
-    margin-top: 1.5rem;
-    margin-bottom: 1rem;
+  .partner-introduction {
+      padding: 10px 4px;
+      margin-top: 18px;
   }
-
-  .rent-car-form button[type="submit"] {
-    margin-top: 1.5rem;
-    margin-bottom: 1rem;
+  .partner-benefits-grid {
+      grid-template-columns: 1fr;
+      gap: 10px;
+  }
+  .partner-process-section {
+      padding: 8px 2px;
+      margin-top: 10px;
   }
 }
 
 .partner-introduction {
-    margin-top: 50px;
-    padding: 40px;
+    margin-top: 30px;
+    padding: 22px 14px;
     background-color: #f8f9fa;
     border-radius: 12px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -259,74 +281,75 @@
 .partner-introduction h2 {
     text-align: center;
     color: #2c3e50;
-    margin-bottom: 30px;
-    font-size: 1.8rem;
+    margin-bottom: 18px;
+    font-size: 1.3rem;
     font-weight: 600;
 }
 
-.intro-content {
-    max-width: 1200px;
+.partner-intro-content {
+    max-width: 1100px;
     margin: 0 auto;
 }
 
-.benefits-grid {
+.partner-benefits-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 30px;
-    margin-bottom: 40px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+    margin-bottom: 22px;
 }
 
-.benefit-item {
+.partner-benefit-item {
     text-align: center;
-    padding: 25px;
+    padding: 15px 8px;
     background-color: white;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     transition: transform 0.3s ease;
 }
 
-.benefit-item:hover {
+.partner-benefit-item:hover {
     transform: translateY(-5px);
 }
 
-.benefit-item i {
+.partner-benefit-item i {
     font-size: 2.5rem;
     color: #3498db;
     margin-bottom: 15px;
 }
 
-.benefit-item h3 {
+.partner-benefit-item h3 {
     color: #2c3e50;
     font-size: 1.2rem;
     margin-bottom: 10px;
 }
 
-.benefit-item p {
+.partner-benefit-item p {
     color: #666;
     font-size: 0.95rem;
     line-height: 1.5;
 }
 
-.process-section {
+.partner-process-section {
     background-color: white;
-    padding: 30px;
+    padding: 16px 10px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-top: 18px;
 }
 
-.process-section h3 {
+.partner-process-section h3 {
     color: #2c3e50;
-    font-size: 1.4rem;
-    margin-bottom: 20px;
+    font-size: 1.1rem;
+    margin-bottom: 10px;
     text-align: center;
 }
 
-.process-section ol {
+.partner-process-section ol {
   list-style: none;
   padding-left: 0;
   margin: 0;
 }
-.process-section li {
+.partner-process-section li {
   position: relative;
   padding-left: 2.2em;
   margin-bottom: 1em;
@@ -334,7 +357,7 @@
   display: flex;
   align-items: center;
 }
-.process-section li:before {
+.partner-process-section li:before {
   content: counter(item);
   counter-increment: item;
   position: absolute;
@@ -353,26 +376,52 @@
   font-size: 1.1em;
   box-shadow: 0 2px 6px rgba(41,128,185,0.08);
 }
-.process-section ol {
+.partner-process-section ol {
   counter-reset: item;
 }
 
 @media (max-width: 768px) {
     .partner-introduction {
-        padding: 20px;
-        margin-top: 30px;
+        padding: 10px 4px;
+        margin-top: 18px;
     }
 
-    .benefits-grid {
+    .partner-benefits-grid {
         grid-template-columns: 1fr;
-        gap: 20px;
+        gap: 10px;
     }
 
-    .benefit-item {
-        padding: 20px;
+    .partner-benefit-item {
+        padding: 15px 8px;
     }
 
-    .process-section {
-        padding: 20px;
+    .partner-process-section {
+        padding: 8px 2px;
+        margin-top: 10px;
     }
+} 
+
+.partner-image-docs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  width: 100%;
+}
+.partner-image-docs-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+.partner-image-docs-card {
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
+  background: #fafbfc;
+  padding: 1.2rem 1rem 1rem 1rem;
+  box-shadow: 0 2px 8px rgba(52,152,219,0.04);
+}
+@media (max-width: 900px) {
+  .partner-image-docs-grid {
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+  }
 } 

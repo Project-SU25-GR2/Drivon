@@ -1,0 +1,193 @@
+.lease-container {
+  margin: 1.2rem 5rem;
+  padding: 1rem 1.2rem;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(52, 152, 219, 0.08);
+}
+.lease-title {
+  text-align: center;
+  color: #2980b9;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+.lease-message {
+  text-align: center;
+  margin-bottom: 1.2rem;
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  font-size: 1.05rem;
+}
+.lease-success {
+  background: #eafaf1;
+  color: #27ae60;
+  border: 1.5px solid #b3e6c7;
+}
+.lease-error {
+  background: #fff6f6;
+  color: #e74c3c;
+  border: 1.5px solid #f5b7b1;
+}
+.lease-section-card {
+  background: #f8f9fa;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(52,152,219,0.04);
+  padding: 1.2rem 1rem 1rem 1rem;
+  margin-bottom: 2rem;
+}
+.lease-section-title {
+  color: #2980b9;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+.lease-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.7rem 1.2rem;
+  margin-bottom: 1.2rem;
+}
+.lease-info-item label {
+  font-weight: 500;
+  color: #34495e;
+  font-size: 0.97rem;
+}
+.lease-info-item span {
+  color: #222;
+  font-size: 0.97rem;
+}
+.lease-image-section {
+  margin-bottom: 1.2rem;
+}
+.lease-image-section h4 {
+  color: #2c3e50;
+  font-size: 1.05rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+.lease-image-grid {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 80px;
+  gap: 0.5rem;
+  overflow-x: auto;
+  max-width: 100%;
+}
+.lease-image-grid img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 7px;
+  border: 1.5px solid #e0e0e0;
+  background: #fff;
+}
+.lease-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.1rem 1.5rem;
+  margin-top: 1.5rem;
+}
+.lease-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.lease-form-group label {
+  font-weight: 500;
+  color: #34495e;
+  font-size: 0.97rem;
+}
+.lease-form-group input[type="text"],
+.lease-form-group input[type="number"],
+.lease-form-group input[type="date"],
+.lease-form-group input[type="email"],
+.lease-form-group input[type="tel"] {
+  padding: 0.6rem 0.8rem;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 0.97rem;
+  background: #fff;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+.lease-form-group input:focus {
+  outline: none;
+  border-color: #2980b9;
+  box-shadow: 0 0 0 2px rgba(52,152,219,0.08);
+}
+.lease-error-input {
+  border-color: #e74c3c !important;
+  background: #fff6f6;
+}
+.lease-field-error {
+  color: #e74c3c;
+  font-size: 0.89rem;
+  margin-top: 0.1rem;
+}
+.lease-readonly-input {
+  background: #f4f6f8;
+  color: #888;
+  border: 1.5px solid #e0e0e0;
+}
+.lease-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: #34495e;
+  font-size: 0.97rem;
+}
+.lease-form-group.lease-full-width {
+  grid-column: 1 / -1;
+}
+.lease-submit-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 0.8rem 0;
+  border: none;
+  margin-top: 0.5rem;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+.lease-submit-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2980b9 0%, #2573a7 100%);
+  box-shadow: 0 4px 12px rgba(52,152,219,0.13);
+  transform: translateY(-1px);
+}
+.lease-submit-btn:disabled {
+  background: #bdc3c7;
+  cursor: not-allowed;
+}
+@media (max-width: 900px) {
+  .lease-container {
+    padding: 1rem 0.5rem;
+  }
+  .lease-info-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .lease-form-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+@media (max-width: 600px) {
+  .lease-container {
+    margin: 0.5rem;
+    padding: 0.5rem 0.2rem;
+  }
+  .lease-info-grid {
+    grid-template-columns: 1fr;
+    gap: 0.7rem;
+  }
+  .lease-section-card {
+    padding: 0.7rem 0.3rem 0.7rem 0.3rem;
+  }
+  .lease-image-grid {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    overflow-x: unset;
+  }
+} 

@@ -3,7 +3,8 @@ import axios from "axios";
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import { useLocation } from "react-router-dom";
-import "../css/ContractForm.css";
+// import "./ContractForm.css";
+import "./CarLeaseContractForm.css";
 import cloudinaryConfig from "../../config/cloudinary";
 import SimpleButton from "../others/SimpleButton";
 import { API_URL } from '../../api/configApi';
@@ -423,66 +424,48 @@ const CarLeaseContractForm = ({ user }) => {
   };
 
   return (
-    <div className="contract-form-container">
-      <h2>Car Lease Agreement</h2>
+    <div className="lease-container">
+      <h2 className="lease-title">Car Lease Agreement</h2>
       {message && (
         <div
-          className={`message ${
-            message.includes("successfully") ? "success" : "error"
-          }`}
+          className={`lease-message ${message.includes("successfully") ? "lease-success" : "lease-error"}`}
         >
           {message}
         </div>
       )}
 
       {contractData?.carData && (
-        <div className="car-info-section">
-          <h3>Vehicle Information</h3>
-          <div className="info-grid">
-            <div className="info-item">
-              <label>Brand:</label>
-              <span>{contractData.carData.brand}</span>
-            </div>
-            <div className="info-item">
-              <label>Model:</label>
-              <span>{contractData.carData.model}</span>
-            </div>
-            <div className="info-item">
-              <label>Year:</label>
-              <span>{contractData.carData.year}</span>
-            </div>
-            <div className="info-item">
-              <label>License Plate:</label>
-              <span>{contractData.carData.licensePlate}</span>
-            </div>
-            <div className="info-item">
-              <label>Description:</label>
-              <span>{contractData.carData.description}</span>
-            </div>
-            <div className="info-item">
-              <label>Type:</label>
-              <span>{contractData.carData.type}</span>
-            </div>
-            <div className="info-item">
-              <label>Location:</label>
-              <span>{contractData.carData.location}</span>
-            </div>
+        <div className="lease-section-card">
+          <h3 className="lease-section-title">Vehicle Information</h3>
+          <div className="lease-info-grid">
+            <div className="lease-info-item"><label>Brand:</label><span>{contractData.carData.brand || 'N/A'}</span></div>
+            <div className="lease-info-item"><label>Model:</label><span>{contractData.carData.model || 'N/A'}</span></div>
+            <div className="lease-info-item"><label>Year:</label><span>{contractData.carData.year || 'N/A'}</span></div>
+            <div className="lease-info-item"><label>License Plate:</label><span>{contractData.carData.licensePlate || 'N/A'}</span></div>
+            <div className="lease-info-item"><label>Owner ID:</label><span>{contractData.carData.ownerId || 'N/A'}</span></div>
+            <div className="lease-info-item"><label>Seats:</label><span>{contractData.carData.seats || 'N/A'}</span></div>
+            <div className="lease-info-item"><label>Type:</label><span>{contractData.carData.type || 'N/A'}</span></div>
+            <div className="lease-info-item"><label>Transmission:</label><span>{contractData.carData.transmission || 'N/A'}</span></div>
+            <div className="lease-info-item"><label>Fuel Type:</label><span>{contractData.carData.fuelType || 'N/A'}</span></div>
+            <div className="lease-info-item"><label>Fuel Consumption:</label><span>{contractData.carData.fuelConsumption ? contractData.carData.fuelConsumption + ' L/100km' : 'N/A'}</span></div>
+            <div className="lease-info-item"><label>Status:</label><span>{contractData.carData.status || 'N/A'}</span></div>
+            <div className="lease-info-item"><label>Location:</label><span>{contractData.carData.location || 'N/A'}</span></div>
+            <div className="lease-info-item lease-full-width"><label>Description:</label><span>{contractData.carData.description || 'N/A'}</span></div>
           </div>
-          {contractData.carData.images &&
-            contractData.carData.images.length > 0 && (
-              <div className="car-images">
-                <h4>Vehicle Images:</h4>
-                <div className="image-grid">
-                  {contractData.carData.images.map((image, index) => (
-                    <img key={index} src={image} alt={`Car ${index + 1}`} />
-                  ))}
-                </div>
+          {contractData.carData.images && contractData.carData.images.length > 0 && (
+            <div className="lease-image-section">
+              <h4>Vehicle Images:</h4>
+              <div className="lease-image-grid">
+                {contractData.carData.images.map((image, index) => (
+                  <img key={index} src={image} alt={`Car ${index + 1}`} />
+                ))}
               </div>
-            )}
+            </div>
+          )}
           {contractData.cavetImages && contractData.cavetImages.length > 0 && (
-            <div className="car-images">
+            <div className="lease-image-section">
               <h4>Vehicle Registration (Cavet) Images:</h4>
-              <div className="image-grid">
+              <div className="lease-image-grid">
                 {contractData.cavetImages.map((image, index) => (
                   <img key={index} src={image} alt={`Cavet ${index + 1}`} />
                 ))}
@@ -490,9 +473,9 @@ const CarLeaseContractForm = ({ user }) => {
             </div>
           )}
           {contractData.otherDocImages && contractData.otherDocImages.length > 0 && (
-            <div className="car-images">
+            <div className="lease-image-section">
               <h4>Other Document Images:</h4>
-              <div className="image-grid">
+              <div className="lease-image-grid">
                 {contractData.otherDocImages.map((image, index) => (
                   <img key={index} src={image} alt={`Other Doc ${index + 1}`} />
                 ))}
@@ -502,118 +485,112 @@ const CarLeaseContractForm = ({ user }) => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
+      <form onSubmit={handleSubmit} className="lease-form-grid">
+        <div className="lease-form-group">
           <label>Deposit:</label>
           <input
             type="number"
             name="deposit"
             value={formData.deposit}
             onChange={handleChange}
-            className={errors.deposit ? "error" : ""}
+            className={errors.deposit ? "lease-error-input" : ""}
             required
           />
           {errors.deposit && (
-            <div className="field-error">{errors.deposit}</div>
+            <div className="lease-field-error">{errors.deposit}</div>
           )}
         </div>
-        <div className="form-group">
+        <div className="lease-form-group">
           <label>Price per Day (VND):</label>
           <input
             type="number"
             name="pricePerDay"
             value={formData.pricePerDay}
             onChange={handleChange}
-            className={errors.pricePerDay ? "error" : ""}
+            className={errors.pricePerDay ? "lease-error-input" : ""}
             required
           />
           {errors.pricePerDay && (
-            <div className="field-error">{errors.pricePerDay}</div>
+            <div className="lease-field-error">{errors.pricePerDay}</div>
           )}
         </div>
-        <div className="form-group">
+        <div className="lease-form-group">
           <label>Contract Number:</label>
           <input
             type="text"
             name="contractNumber"
             value={formData.contractNumber}
             onChange={handleChange}
-            className={errors.contractNumber ? "error" : ""}
+            className={errors.contractNumber ? "lease-error-input" : ""}
             required
           />
           {errors.contractNumber && (
-            <div className="field-error">{errors.contractNumber}</div>
+            <div className="lease-field-error">{errors.contractNumber}</div>
           )}
         </div>
-
-        <div className="form-group">
+        <div className="lease-form-group">
           <label>Start Date:</label>
           <input
             type="date"
             name="startDate"
             value={formData.startDate}
             onChange={handleChange}
-            className={errors.startDate ? "error" : ""}
+            className={errors.startDate ? "lease-error-input" : ""}
             required
           />
           {errors.startDate && (
-            <div className="field-error">{errors.startDate}</div>
+            <div className="lease-field-error">{errors.startDate}</div>
           )}
         </div>
-
-        <div className="form-group">
+        <div className="lease-form-group">
           <label>End Date:</label>
           <input
             type="date"
             name="endDate"
             value={formData.endDate}
             onChange={handleChange}
-            className={errors.endDate ? "error" : ""}
+            className={errors.endDate ? "lease-error-input" : ""}
             required
           />
           {errors.endDate && (
-            <div className="field-error">{errors.endDate}</div>
+            <div className="lease-field-error">{errors.endDate}</div>
           )}
         </div>
-
-        <div className="form-group">
+        <div className="lease-form-group">
           <label>Car ID:</label>
           <input
             type="text"
             name="carId"
             value={formData.carId}
             onChange={handleChange}
-            className={errors.carId ? "error" : ""}
+            className={errors.carId ? "lease-error-input" : ""}
             required
           />
-          {errors.carId && <div className="field-error">{errors.carId}</div>}
+          {errors.carId && <div className="lease-field-error">{errors.carId}</div>}
         </div>
-
-        <div className="form-group">
+        <div className="lease-form-group">
           <label>Owner ID:</label>
           <input
             type="text"
             name="ownerId"
             value={formData.ownerId}
             readOnly
-            className="readonly-input"
+            className="lease-readonly-input"
           />
         </div>
-
-        <div className="form-group">
+        <div className="lease-form-group">
           <label>Full Name:</label>
           <input
             type="text"
             name="name"
             value={formData.name}
             onChange={handleChange}
-            className={errors.name ? "error" : ""}
+            className={errors.name ? "lease-error-input" : ""}
             required
           />
-          {errors.name && <div className="field-error">{errors.name}</div>}
+          {errors.name && <div className="lease-field-error">{errors.name}</div>}
         </div>
-
-        <div className="form-group">
+        <div className="lease-form-group">
           <label>Phone Number:</label>
           <input
             type="tel"
@@ -621,13 +598,12 @@ const CarLeaseContractForm = ({ user }) => {
             value={formData.phone}
             onChange={handleChange}
             pattern="[0-9]{10,11}"
-            className={errors.phone ? "error" : ""}
+            className={errors.phone ? "lease-error-input" : ""}
             required
           />
-          {errors.phone && <div className="field-error">{errors.phone}</div>}
+          {errors.phone && <div className="lease-field-error">{errors.phone}</div>}
         </div>
-
-        <div className="form-group">
+        <div className="lease-form-group">
           <label>ID Number:</label>
           <input
             type="text"
@@ -635,25 +611,23 @@ const CarLeaseContractForm = ({ user }) => {
             value={formData.cccd}
             onChange={handleChange}
             pattern="[0-9]{12}"
-            className={errors.cccd ? "error" : ""}
+            className={errors.cccd ? "lease-error-input" : ""}
             required
           />
-          {errors.cccd && <div className="field-error">{errors.cccd}</div>}
+          {errors.cccd && <div className="lease-field-error">{errors.cccd}</div>}
         </div>
-
-        <div className="form-group">
+        <div className="lease-form-group">
           <label>Email:</label>
           <input
             type="email"
             name="email"
             value={formData.email}
             readOnly
-            className="readonly-input"
+            className="lease-readonly-input"
           />
         </div>
-
-        <div className="form-group">
-          <label>
+        <div className="lease-form-group lease-full-width">
+          <label className="lease-checkbox-label">
             <input
               type="checkbox"
               name="terms"
@@ -665,14 +639,16 @@ const CarLeaseContractForm = ({ user }) => {
             Đồng ý với điều khoản
           </label>
         </div>
-
-        <SimpleButton
-          type="submit"
-          disabled={!formData.terms || isContractCreated}
-          isLoading={isSubmitting}
-        >
-          Create Contract
-        </SimpleButton>
+        <div className="lease-form-group lease-full-width">
+          <SimpleButton
+            type="submit"
+            disabled={!formData.terms || isContractCreated}
+            isLoading={isSubmitting}
+            className="lease-submit-btn"
+          >
+            Create Contract
+          </SimpleButton>
+        </div>
       </form>
     </div>
   );
