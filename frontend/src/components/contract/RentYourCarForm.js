@@ -567,7 +567,7 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
             </div>
             <label className="upload-button" htmlFor="car-other-images">
               <i className="bi bi-plus-lg"></i>
-              <span>Other Images</span>
+              <span>Other Car Images</span>
               <input
                 type="file"
                 id="car-other-images"

@@ -52,7 +52,7 @@ public class CarImageController {
             }
 
             // Delete existing other images first
-            List<CarImage> existingImages = carImageRepository.findByCarId(carId);
+            List<CarImage> existingImages = carImageRepository.findByCarIdAndType(carId, "car_image");
             for (CarImage image : existingImages) {
                 carImageRepository.delete(image);
             }
@@ -64,6 +64,7 @@ public class CarImageController {
                     CarImage carImage = new CarImage();
                     carImage.setCarId(carId);
                     carImage.setImageUrl(imageUrl);
+                    carImage.setType("car_image");
                     carImageRepository.save(carImage);
                 }
             }
@@ -138,7 +139,7 @@ public class CarImageController {
                 return ResponseEntity.badRequest().body(response);
             }
             // Delete existing other document images first
-            List<CarImage> existingOtherDocImages = carImageRepository.findByCarIdAndType(carId, "other");
+            List<CarImage> existingOtherDocImages = carImageRepository.findByCarIdAndType(carId, "other_document");
             for (CarImage image : existingOtherDocImages) {
                 carImageRepository.delete(image);
             }
@@ -149,7 +150,7 @@ public class CarImageController {
                     CarImage carImage = new CarImage();
                     carImage.setCarId(carId);
                     carImage.setImageUrl(imageUrl);
-                    carImage.setType("other");
+                    carImage.setType("other_document");
                     carImageRepository.save(carImage);
                 }
             }
@@ -186,6 +187,40 @@ public class CarImageController {
             
         } catch (Exception e) {
             response.put("error", "Failed to get car images: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    @GetMapping("/cavet/{carId}")
+    public ResponseEntity<?> getCavetImages(@PathVariable String carId) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            List<CarImage> cavetImages = carImageRepository.findByCarIdAndType(carId, "cavet");
+            List<String> cavetImageUrls = new ArrayList<>();
+            for (CarImage image : cavetImages) {
+                cavetImageUrls.add(image.getImageUrl());
+            }
+            response.put("cavetImages", cavetImageUrls);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("error", "Failed to get cavet images: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    @GetMapping("/other/{carId}")
+    public ResponseEntity<?> getOtherDocumentImages(@PathVariable String carId) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            List<CarImage> otherDocImages = carImageRepository.findByCarIdAndType(carId, "other_document");
+            List<String> otherDocImageUrls = new ArrayList<>();
+            for (CarImage image : otherDocImages) {
+                otherDocImageUrls.add(image.getImageUrl());
+            }
+            response.put("otherDocImages", otherDocImageUrls);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("error", "Failed to get other document images: " + e.getMessage());
             return ResponseEntity.internalServerError().body(response);
         }
     }

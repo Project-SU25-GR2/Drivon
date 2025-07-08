@@ -188,8 +188,8 @@ public class AdminController {
                         // Lấy main image từ table cars
                         carInfo.put("mainImage", car.getMainImage());
 
-                        // Lấy other images từ table car_images
-                        List<CarImage> carImages = carImageRepository.findByCarId(carId);
+                        // Lấy other images từ table car_images (chỉ lấy type = 'car_image')
+                        List<CarImage> carImages = carImageRepository.findByCarIdAndType(carId, "car_image");
                         List<String> otherImageUrls = new ArrayList<>();
                         for (CarImage image : carImages) {
                             otherImageUrls.add(image.getImageUrl());

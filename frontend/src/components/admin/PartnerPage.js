@@ -293,22 +293,7 @@ const PartnerPage = () => {
                 </div>
               </div>
               {/* Thêm phần hiển thị ảnh cavet */}
-              {cavetImages.length > 0 && (
-                <div style={{ marginBottom: '24px' }}>
-                  <h3>Ảnh Cà Vẹt Xe (Cavet)</h3>
-                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                    {cavetImages.map((url, idx) => (
-                      <img
-                        key={idx}
-                        src={url}
-                        alt={`Cavet ${idx + 1}`}
-                        style={{ width: '160px', height: '110px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #ccc', cursor: 'pointer' }}
-                        onClick={e => { e.stopPropagation(); setZoomedImage(url); }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* ĐÃ XOÁ PHẦN HIỂN THỊ ẢNH CÀ VẸT XE (Cavet) VÌ ĐÃ CÓ PHẦN Cavet Information BÊN DƯỚI */}
 
               <div className="car-details">
                 <h3>Car Information</h3>

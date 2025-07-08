@@ -1,4 +1,4 @@
-
+c
 
 -- Tạo database và sử dụng
 CREATE DATABASE car_rental_system2;
@@ -66,6 +66,7 @@ CREATE TABLE car_images (
     image_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     car_id VARCHAR(15),
     image_url TEXT,
+    type ENUM('car_image', 'cavet', 'other_document')
     FOREIGN KEY (car_id) REFERENCES cars(license_plate) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
