@@ -78,6 +78,90 @@ public class CarImageController {
         }
     }
 
+    @PostMapping("/cavet")
+    @Transactional
+    public ResponseEntity<?> saveCavetImages(@RequestBody Map<String, Object> request) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            String carId = (String) request.get("carId");
+            Object cavetImageUrlsObj = request.get("cavetImages");
+            List<String> cavetImageUrls = new ArrayList<>();
+            if (cavetImageUrlsObj instanceof List<?>) {
+                for (Object url : (List<?>) cavetImageUrlsObj) {
+                    cavetImageUrls.add(url.toString());
+                }
+            }
+            if (carId == null) {
+                response.put("error", "Car ID is required");
+                return ResponseEntity.badRequest().body(response);
+            }
+            // Delete existing cavet images first
+            List<CarImage> existingCavetImages = carImageRepository.findByCarIdAndType(carId, "cavet");
+            for (CarImage image : existingCavetImages) {
+                carImageRepository.delete(image);
+            }
+            entityManager.flush();
+            // Save new cavet images
+            if (cavetImageUrls != null && !cavetImageUrls.isEmpty()) {
+                for (String imageUrl : cavetImageUrls) {
+                    CarImage carImage = new CarImage();
+                    carImage.setCarId(carId);
+                    carImage.setImageUrl(imageUrl);
+                    carImage.setType("cavet");
+                    carImageRepository.save(carImage);
+                }
+            }
+            response.put("success", true);
+            response.put("message", "Cavet images saved successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("error", "Failed to save cavet images: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    @PostMapping("/other")
+    @Transactional
+    public ResponseEntity<?> saveOtherDocumentImages(@RequestBody Map<String, Object> request) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            String carId = (String) request.get("carId");
+            Object otherDocImageUrlsObj = request.get("otherDocumentImages");
+            List<String> otherDocImageUrls = new ArrayList<>();
+            if (otherDocImageUrlsObj instanceof List<?>) {
+                for (Object url : (List<?>) otherDocImageUrlsObj) {
+                    otherDocImageUrls.add(url.toString());
+                }
+            }
+            if (carId == null) {
+                response.put("error", "Car ID is required");
+                return ResponseEntity.badRequest().body(response);
+            }
+            // Delete existing other document images first
+            List<CarImage> existingOtherDocImages = carImageRepository.findByCarIdAndType(carId, "other");
+            for (CarImage image : existingOtherDocImages) {
+                carImageRepository.delete(image);
+            }
+            entityManager.flush();
+            // Save new other document images
+            if (otherDocImageUrls != null && !otherDocImageUrls.isEmpty()) {
+                for (String imageUrl : otherDocImageUrls) {
+                    CarImage carImage = new CarImage();
+                    carImage.setCarId(carId);
+                    carImage.setImageUrl(imageUrl);
+                    carImage.setType("other");
+                    carImageRepository.save(carImage);
+                }
+            }
+            response.put("success", true);
+            response.put("message", "Other document images saved successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("error", "Failed to save other document images: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
     @GetMapping("/{carId}")
     public ResponseEntity<?> getCarImages(@PathVariable String carId) {
         Map<String, Object> response = new HashMap<>();

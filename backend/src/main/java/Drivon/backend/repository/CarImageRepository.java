@@ -9,5 +9,6 @@ import java.util.List;
 @Repository
 public interface CarImageRepository extends JpaRepository<CarImage, Long> {
     List<CarImage> findByCarId(String carId);
+    List<CarImage> findByCarIdAndType(String carId, String type);
     void deleteByCarId(String carId);
 } 
