@@ -341,7 +341,7 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
 
       // Chuyển hướng đến trang hợp đồng với dữ liệu
       showSuccessToast('Thông tin xe đã được gửi thành công! Đang chuyển đến trang hợp đồng...');
-      navigate('/contracts/lease', { state: { contractData } });
+      navigate('/contracts/lease', { state: { contractData: { ...contractData, cavetImages, otherDocImages } } });
       
     } catch (error) {
       console.error('Error submitting form:', error);

@@ -367,6 +367,29 @@ const CarLeaseContractForm = ({ user }) => {
         }
       }
 
+      // Lưu cavetImages nếu có
+      if (contractData?.cavetImages && contractData.cavetImages.length > 0) {
+        try {
+          await axios.post(`${API_URL}/cars/images/cavet`, {
+            carId: formData.carId,
+            cavetImages: contractData.cavetImages,
+          });
+        } catch (cavetErr) {
+          console.error("Lỗi khi lưu ảnh cavet:", cavetErr);
+        }
+      }
+      // Lưu otherDocImages nếu có
+      if (contractData?.otherDocImages && contractData.otherDocImages.length > 0) {
+        try {
+          await axios.post(`${API_URL}/cars/images/other`, {
+            carId: formData.carId,
+            otherDocumentImages: contractData.otherDocImages,
+          });
+        } catch (otherErr) {
+          console.error("Lỗi khi lưu ảnh giấy tờ khác:", otherErr);
+        }
+      }
+
       if (response.data) {
         setMessage("Contract created successfully!");
         setIsContractCreated(true);
@@ -456,6 +479,26 @@ const CarLeaseContractForm = ({ user }) => {
                 </div>
               </div>
             )}
+          {contractData.cavetImages && contractData.cavetImages.length > 0 && (
+            <div className="car-images">
+              <h4>Vehicle Registration (Cavet) Images:</h4>
+              <div className="image-grid">
+                {contractData.cavetImages.map((image, index) => (
+                  <img key={index} src={image} alt={`Cavet ${index + 1}`} />
+                ))}
+              </div>
+            </div>
+          )}
+          {contractData.otherDocImages && contractData.otherDocImages.length > 0 && (
+            <div className="car-images">
+              <h4>Other Document Images:</h4>
+              <div className="image-grid">
+                {contractData.otherDocImages.map((image, index) => (
+                  <img key={index} src={image} alt={`Other Doc ${index + 1}`} />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
