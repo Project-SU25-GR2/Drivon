@@ -7,7 +7,7 @@ import DashboardOverview from "./DashboardOverview";
 import CarManagementPage from "./CarManagementPage";
 import RentalHistoryPage from "./BookingManager";
 import EarningsPage from "./EarningsPage";
-import ProfilePage from "./ProfilePage";
+import ProfileOwner from "./ProfileOwner";
 import { API_URL } from '../../api/configApi';  
 const ManagerOwnerPage = ({ user }) => {
   const navigate = useNavigate();
@@ -35,7 +35,7 @@ const ManagerOwnerPage = ({ user }) => {
       case "earnings":
         return <EarningsPage />;
       case "profile":
-        return <ProfilePage user={user} />;
+        return <ProfileOwner user={user} />;
       default:
         return <DashboardOverview user={user} />;
     }

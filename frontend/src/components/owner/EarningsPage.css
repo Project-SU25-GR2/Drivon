@@ -27,6 +27,12 @@ body {
     margin: 0;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .date-filter-container {
     position: relative;
     display: flex;
@@ -49,10 +55,12 @@ body {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
     background-repeat: no-repeat;
     background-position: right 0.75rem center;
     background-size: 16px 12px;
+    padding-right: 0px !important;
+    text-indent: 8px;
+    padding-left: 16px;
 }
 
 .earnings-overview {
@@ -190,4 +198,27 @@ body {
 
 tr:last-child td {
     border-bottom: none;
+}
+
+/* Đảm bảo input type=month hoạt động đúng */
+input[type="month"] {
+  cursor: pointer;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+input[type="month"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+}
+
+/* Ẩn mũi tên dropdown */
+input[type="month"]::-webkit-inner-spin-button,
+input[type="month"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="month"]::-moz-dropdown-arrow {
+  display: none;
 }

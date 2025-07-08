@@ -53,8 +53,6 @@ const NotificationBell = () => {
 
     const handleNewNotification = (data) => {
       console.log('Received new notification:', data);
-      
-      // Add new notification to the list
       const newNotification = {
         notificationId: data.notificationId,
         content: data.content,
@@ -63,15 +61,17 @@ const NotificationBell = () => {
         isRead: false,
         createdAt: data.createdAt
       };
-
-      setNotifications(prev => [newNotification, ...prev]);
+      setNotifications(prev => {
+        if (prev.some(n => n.notificationId === newNotification.notificationId)) {
+          return prev;
+        }
+        return [newNotification, ...prev];
+      });
       setUnreadCount(prev => prev + 1);
     };
 
     const handleBroadcastNotification = (data) => {
       console.log('Received broadcast notification:', data);
-      
-      // Add new notification to the list
       const newNotification = {
         notificationId: data.notificationId,
         content: data.content,
@@ -80,8 +80,12 @@ const NotificationBell = () => {
         isRead: false,
         createdAt: data.createdAt
       };
-
-      setNotifications(prev => [newNotification, ...prev]);
+      setNotifications(prev => {
+        if (prev.some(n => n.notificationId === newNotification.notificationId)) {
+          return prev;
+        }
+        return [newNotification, ...prev];
+      });
       setUnreadCount(prev => prev + 1);
     };
 

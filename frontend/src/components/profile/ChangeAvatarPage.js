@@ -34,7 +34,7 @@ const ChangeAvatarPage = () => {
       }
 
       setSelectedFile(file);
-      setPreviewUrl(API_URL.createObjectURL(file));
+      setPreviewUrl(URL.createObjectURL(file));
       setUploadError(null);
       setUploadSuccess(false);
     } else {
