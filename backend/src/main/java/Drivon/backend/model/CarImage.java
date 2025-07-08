@@ -22,6 +22,11 @@ public class CarImage {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @Column(name = "type")
+    private String type; // car_image, cavet
+
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
 } 

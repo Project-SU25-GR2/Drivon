@@ -119,6 +119,10 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
   const [otherImages, setOtherImages] = useState([]);
   const [otherPreviewUrls, setOtherPreviewUrls] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [cavetImages, setCavetImages] = useState([]);
+  const [cavetPreviewUrls, setCavetPreviewUrls] = useState([]);
+  const [otherDocImages, setOtherDocImages] = useState([]);
+  const [otherDocPreviewUrls, setOtherDocPreviewUrls] = useState([]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -192,6 +196,76 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
     }
   };
 
+  const handleCavetImagesChange = async (e) => {
+    const files = Array.from(e.target.files);
+    for (const file of files) {
+      if (file.size > 5 * 1024 * 1024) {
+        showErrorToast('Kích thước file không được vượt quá 5MB');
+        return;
+      }
+      if (!file.type.startsWith('image/')) {
+        showErrorToast('Vui lòng chọn file hình ảnh');
+        return;
+      }
+    }
+    const newPreviewUrls = files.map(file => URL.createObjectURL(file));
+    setCavetPreviewUrls(prev => [...prev, ...newPreviewUrls]);
+    setUploading(true);
+    try {
+      const uploadPromises = files.map(async (file) => {
+        const formDataImg = new FormData();
+        formDataImg.append('file', file);
+        formDataImg.append('upload_preset', cloudinaryConfig.uploadPreset);
+        formDataImg.append('api_key', cloudinaryConfig.apiKey);
+        const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/upload`;
+        const response = await axios.post(cloudinaryUrl, formDataImg);
+        return response.data.secure_url;
+      });
+      const uploadedUrls = await Promise.all(uploadPromises);
+      setCavetImages(prev => [...prev, ...uploadedUrls]);
+      showSuccessToast(`${files.length} ảnh Cavet đã được tải lên thành công`);
+    } catch (error) {
+      showErrorToast('Có lỗi xảy ra khi tải ảnh Cavet lên.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleOtherDocImagesChange = async (e) => {
+    const files = Array.from(e.target.files);
+    for (const file of files) {
+      if (file.size > 5 * 1024 * 1024) {
+        showErrorToast('Kích thước file không được vượt quá 5MB');
+        return;
+      }
+      if (!file.type.startsWith('image/')) {
+        showErrorToast('Vui lòng chọn file hình ảnh');
+        return;
+      }
+    }
+    const newPreviewUrls = files.map(file => URL.createObjectURL(file));
+    setOtherDocPreviewUrls(prev => [...prev, ...newPreviewUrls]);
+    setUploading(true);
+    try {
+      const uploadPromises = files.map(async (file) => {
+        const formDataImg = new FormData();
+        formDataImg.append('file', file);
+        formDataImg.append('upload_preset', cloudinaryConfig.uploadPreset);
+        formDataImg.append('api_key', cloudinaryConfig.apiKey);
+        const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/upload`;
+        const response = await axios.post(cloudinaryUrl, formDataImg);
+        return response.data.secure_url;
+      });
+      const uploadedUrls = await Promise.all(uploadPromises);
+      setOtherDocImages(prev => [...prev, ...uploadedUrls]);
+      showSuccessToast(`${files.length} ảnh giấy tờ khác đã được tải lên thành công`);
+    } catch (error) {
+      showErrorToast('Có lỗi xảy ra khi tải ảnh giấy tờ khác lên.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const removeMainImage = () => {
     setMainImage('');
     setMainPreviewUrl('');
@@ -199,6 +273,14 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
   const removeOtherImage = (index) => {
     setOtherImages(prev => prev.filter((_, i) => i !== index));
     setOtherPreviewUrls(prev => prev.filter((_, i) => i !== index));
+  };
+  const removeCavetImage = (index) => {
+    setCavetImages(prev => prev.filter((_, i) => i !== index));
+    setCavetPreviewUrls(prev => prev.filter((_, i) => i !== index));
+  };
+  const removeOtherDocImage = (index) => {
+    setOtherDocImages(prev => prev.filter((_, i) => i !== index));
+    setOtherDocPreviewUrls(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
@@ -514,6 +596,66 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
                 <div key={index} className="image-preview-item">
                   <img src={url} alt={`Other Preview ${index + 1}`} />
                   <button type="button" className="remove-image-btn" onClick={() => removeOtherImage(index)}>×</button>
+                </div>
+              ))}
+            </div>
+            <small className="upload-info">
+              <i className="bi bi-info-circle me-1"></i>
+              Hỗ trợ các định dạng: JPG, PNG, GIF. Kích thước tối đa: 5MB
+            </small>
+          </div>
+        </div>
+        <div className="form-group">
+          <label>Ảnh Cavet (Giấy tờ xe)</label>
+          <div className="image-upload-section">
+            <label className="upload-button" htmlFor="car-cavet-images">
+              <i className="bi bi-plus-lg"></i>
+              <span>Upload Cavet Images</span>
+              <input
+                type="file"
+                id="car-cavet-images"
+                accept="image/*"
+                multiple
+                onChange={handleCavetImagesChange}
+                disabled={uploading}
+                style={{ display: 'none' }}
+              />
+            </label>
+            <div className="image-preview-grid">
+              {cavetPreviewUrls.map((url, index) => (
+                <div key={index} className="image-preview-item">
+                  <img src={url} alt={`Cavet Preview ${index + 1}`} />
+                  <button type="button" className="remove-image-btn" onClick={() => removeCavetImage(index)}>×</button>
+                </div>
+              ))}
+            </div>
+            <small className="upload-info">
+              <i className="bi bi-info-circle me-1"></i>
+              Hỗ trợ các định dạng: JPG, PNG, GIF. Kích thước tối đa: 5MB
+            </small>
+          </div>
+        </div>
+        <div className="form-group">
+          <label>Giấy tờ khác (Nếu cần)</label>
+          <div className="image-upload-section">
+            <label className="upload-button" htmlFor="car-other-doc-images">
+              <i className="bi bi-plus-lg"></i>
+              <span>Upload Other Documents</span>
+              <input
+                type="file"
+                id="car-other-doc-images"
+                accept="image/*"
+                multiple
+                onChange={handleOtherDocImagesChange}
+                disabled={uploading}
+                style={{ display: 'none' }}
+              />
+            </label>
+            <div className="image-preview-grid">
+              {otherDocPreviewUrls.map((url, index) => (
+                <div key={index} className="image-preview-item">
+                  <img src={url} alt={`Other Doc Preview ${index + 1}`} />
+                  <button type="button" className="remove-image-btn" onClick={() => removeOtherDocImage(index)}>×</button>
                 </div>
               ))}
             </div>

@@ -453,3 +453,26 @@
   margin-bottom: 2px;
   margin-top: 0;
 }
+
+/* Đảm bảo input type=month hoạt động đúng */
+input[type="month"] {
+  cursor: pointer;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+input[type="month"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+}
+
+/* Ẩn mũi tên dropdown */
+input[type="month"]::-webkit-inner-spin-button,
+input[type="month"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="month"]::-moz-dropdown-arrow {
+  display: none;
+}

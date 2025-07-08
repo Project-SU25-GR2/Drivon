@@ -5,12 +5,17 @@ import { usePartnerData } from '../../contexts/PartnerDataContext';
 import { useUserData } from '../../contexts/UserDataContext';
 import { API_URL } from '../../api/configApi';
 import { showErrorToast, showSuccessToast } from '../notification/notification';
+import axios from 'axios';
 const PartnerPage = () => {
   const { partnersData, loading, error, fetchPartnersData, updatePartnerStatus } = usePartnerData();
   const { updateUserRole } = useUserData();
   const [selectedPartner, setSelectedPartner] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedImages, setSelectedImages] = useState({ main: null, others: [] });
+  const [cavetImages, setCavetImages] = useState([]);
+  const [otherDocImages, setOtherDocImages] = useState([]);
+  const [cccdImages, setCccdImages] = useState([]);
+  const [zoomedImage, setZoomedImage] = useState(null);
 
   useEffect(() => {
     // Fetch partners data using context
@@ -50,13 +55,54 @@ const PartnerPage = () => {
     }
   };
 
-  const handleSeeMore = (partner) => {
+  const handleSeeMore = async (partner) => {
     setSelectedPartner(partner);
     if (partner.car) {
       setSelectedImages({
         main: partner.car.mainImage,
         others: partner.car.otherImages || []
       });
+      // Fetch cavet images for this car
+      try {
+        const res = await axios.get(`${API_URL}/cars/images/cavet/${partner.carId}`);
+        if (res.data && Array.isArray(res.data.cavetImages)) {
+          setCavetImages(res.data.cavetImages);
+        } else {
+          setCavetImages([]);
+        }
+      } catch (err) {
+        setCavetImages([]);
+      }
+      // Fetch other document images for this car
+      try {
+        const res = await axios.get(`${API_URL}/cars/images/other/${partner.carId}`);
+        if (res.data && Array.isArray(res.data.otherDocImages)) {
+          setOtherDocImages(res.data.otherDocImages);
+        } else {
+          setOtherDocImages([]);
+        }
+      } catch (err) {
+        setOtherDocImages([]);
+      }
+    } else {
+      setCavetImages([]);
+      setOtherDocImages([]);
+    }
+    // Fetch CCCD images for this partner (user)
+    if (partner.userId) {
+      try {
+        const res = await axios.get(`${API_URL}/user/image`, { params: { userId: partner.userId } });
+        if (Array.isArray(res.data)) {
+          const cccdImgs = res.data.filter(img => img.documentType === 'cccd').map(img => img.imageUrl);
+          setCccdImages(cccdImgs);
+        } else {
+          setCccdImages([]);
+        }
+      } catch (err) {
+        setCccdImages([]);
+      }
+    } else {
+      setCccdImages([]);
     }
     setShowModal(true);
   };
@@ -75,7 +121,13 @@ const PartnerPage = () => {
   const closeModal = () => {
     setShowModal(false);
     setSelectedPartner(null);
+    setCavetImages([]);
+    setOtherDocImages([]);
+    setCccdImages([]);
   };
+
+  // Thêm hàm đóng modal zoom
+  const closeZoom = () => setZoomedImage(null);
 
   if (loading) {
     return <div className="loading"><Loader text="Loading partners..." /></div>;
@@ -213,6 +265,7 @@ const PartnerPage = () => {
                         borderRadius: '8px',
                         cursor: 'pointer'
                       }} 
+                      onClick={e => { e.stopPropagation(); setZoomedImage(selectedImages.main); }}
                     />
                   )}
                 </div>
@@ -224,7 +277,7 @@ const PartnerPage = () => {
                       key={idx} 
                       src={img} 
                       alt={`Other ${idx + 1}`} 
-                      onClick={() => handleImageClick(img, idx)}
+                      onClick={e => { e.stopPropagation(); setZoomedImage(img); }}
                       style={{ 
                         width: '100%',
                         height: '92px',
@@ -239,6 +292,23 @@ const PartnerPage = () => {
                   ))}
                 </div>
               </div>
+              {/* Thêm phần hiển thị ảnh cavet */}
+              {cavetImages.length > 0 && (
+                <div style={{ marginBottom: '24px' }}>
+                  <h3>Ảnh Cà Vẹt Xe (Cavet)</h3>
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                    {cavetImages.map((url, idx) => (
+                      <img
+                        key={idx}
+                        src={url}
+                        alt={`Cavet ${idx + 1}`}
+                        style={{ width: '160px', height: '110px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #ccc', cursor: 'pointer' }}
+                        onClick={e => { e.stopPropagation(); setZoomedImage(url); }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="car-details">
                 <h3>Car Information</h3>
@@ -260,6 +330,44 @@ const PartnerPage = () => {
                 <p><strong>Price per Day:</strong> {selectedPartner.pricePerDay?.toLocaleString('vi-VN')} VND</p>
                 <p><strong>Deposit:</strong> {selectedPartner.deposit?.toLocaleString('vi-VN')} VND</p>
               </div>
+              {/* Cavet Information section */}
+              <div className="cavet-details">
+                <h3>Cavet Information</h3>
+                {cavetImages.length > 0 ? (
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                    {cavetImages.map((url, idx) => (
+                      <img
+                        key={idx}
+                        src={url}
+                        alt={`Cavet ${idx + 1}`}
+                        style={{ width: '160px', height: '110px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #ccc', cursor: 'pointer' }}
+                        onClick={e => { e.stopPropagation(); setZoomedImage(url); }}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ color: '#888' }}>No cavet images available.</p>
+                )}
+              </div>
+              {/* Other Documents section */}
+              <div className="other-doc-details">
+                <h3>Other Documents</h3>
+                {otherDocImages.length > 0 ? (
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                    {otherDocImages.map((url, idx) => (
+                      <img
+                        key={idx}
+                        src={url}
+                        alt={`Other Document ${idx + 1}`}
+                        style={{ width: '160px', height: '110px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #ccc', cursor: 'pointer' }}
+                        onClick={e => { e.stopPropagation(); setZoomedImage(url); }}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ color: '#888' }}>No other document images available.</p>
+                )}
+              </div>
               <div className="partner-details">
                 <h3>Partner Information</h3>
                 <p><strong>Name:</strong> {selectedPartner.name}</p>
@@ -267,8 +375,72 @@ const PartnerPage = () => {
                 <p><strong>Email:</strong> {selectedPartner.email}</p>
                 <p><strong>Status:</strong> {selectedPartner.status}</p>
               </div>
+              {/* CCCD Information section */}
+              <div className="cccd-details">
+                <h3>CCCD Information</h3>
+                {cccdImages.length > 0 ? (
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                    {cccdImages.map((url, idx) => (
+                      <img
+                        key={idx}
+                        src={url}
+                        alt={`CCCD ${idx + 1}`}
+                        style={{ width: '160px', height: '110px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #ccc', cursor: 'pointer' }}
+                        onClick={e => { e.stopPropagation(); setZoomedImage(url); }}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ color: '#888' }}>No CCCD images available.</p>
+                )}
+              </div>
             </div>
           </div>
+        </div>
+      )}
+      {/* Modal phóng to ảnh */}
+      {zoomedImage && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0,0,0,0.8)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          onClick={closeZoom}
+        >
+          <img 
+            src={zoomedImage} 
+            alt="Zoomed" 
+            style={{
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+              borderRadius: '10px',
+              boxShadow: '0 2px 16px rgba(0,0,0,0.5)',
+              background: '#fff',
+            }}
+            onClick={e => e.stopPropagation()}
+          />
+          <button 
+            onClick={closeZoom}
+            style={{
+              position: 'fixed',
+              top: 24,
+              right: 32,
+              fontSize: 32,
+              color: '#fff',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              zIndex: 10000
+            }}
+            aria-label="Đóng ảnh phóng to"
+          >
+            &times;
+          </button>
         </div>
       )}
     </div>
