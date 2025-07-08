@@ -181,7 +181,17 @@ class WebSocketService {
     if (!this.subscribers.has(topic)) {
       this.subscribers.set(topic, new Set());
     }
-    this.subscribers.get(topic).add(callback);
+    // Chỉ thêm callback nếu chưa có
+    const callbacks = this.subscribers.get(topic);
+    let isDuplicate = false;
+    callbacks.forEach(cb => {
+      if (cb === callback) {
+        isDuplicate = true;
+      }
+    });
+    if (!isDuplicate) {
+      callbacks.add(callback);
+    }
   }
 
   unsubscribe(topic, callback) {

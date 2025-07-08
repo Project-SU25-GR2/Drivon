@@ -27,6 +27,10 @@ const TestNotification = () => {
       setMessage('Thông báo đã được gửi thành công!');
       showSuccessToast('Notification sent successfully!');
       setContent('');
+      // Gọi reload notification nếu có
+      if (window.reloadNotifications) {
+        window.reloadNotifications();
+      }
     } catch (error) {
       console.error('Error sending notification:', error);
       setMessage('Có lỗi xảy ra khi gửi thông báo');

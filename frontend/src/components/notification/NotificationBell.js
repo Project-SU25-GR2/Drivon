@@ -100,6 +100,13 @@ const NotificationBell = () => {
     };
   }, []);
 
+  useEffect(() => {
+    window.reloadNotifications = loadNotifications;
+    return () => {
+      window.reloadNotifications = null;
+    };
+  }, [loadNotifications]);
+
   const handleMarkAsRead = async (notificationId) => {
     try {
       await markAsRead(notificationId);
@@ -114,19 +121,6 @@ const NotificationBell = () => {
     } catch (error) {
       console.error('Error marking notification as read:', error);
       showErrorToast('Failed to mark notification as read');
-    }
-  };
-
-  const handleMarkAllAsRead = async () => {
-    try {
-      await markAllAsRead();
-      setNotifications(prev =>
-        prev.map(notif => ({ ...notif, isRead: true }))
-      );
-      setUnreadCount(0);
-    } catch (error) {
-      console.error('Error marking all notifications as read:', error);
-      showErrorToast('Failed to mark all notifications as read');
     }
   };
 
@@ -181,14 +175,7 @@ const NotificationBell = () => {
         <div className="notification-dropdown">
           <div className="notification-header">
             <h3>Thông báo ({notifications.length})</h3>
-            {unreadCount > 0 && (
-              <button 
-                className="mark-all-read-btn"
-                onClick={handleMarkAllAsRead}
-              >
-                Đánh dấu tất cả đã đọc
-              </button>
-            )}
+            {/* Đã bỏ nút đánh dấu tất cả đã đọc */}
           </div>
 
           <div className="notification-list">
