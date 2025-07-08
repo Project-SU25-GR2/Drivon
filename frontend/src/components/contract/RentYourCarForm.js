@@ -372,7 +372,7 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
 
   return (
     <div className="rent-your-car-container">
-      <h2>Become a Partner	</h2>
+      <h2>Become a Partner</h2>
       <form onSubmit={handleSubmit} className="rent-car-form">
         <div className="form-group">
           <label htmlFor="brand">Car Brand</label>
@@ -468,7 +468,7 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
         </div>
 
         <div className="form-group">
-          <label htmlFor="seats">Số chỗ ngồi</label>
+          <label htmlFor="seats">Seats</label>
           <input
             type="number"
             id="seats"
@@ -482,7 +482,7 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
         </div>
 
         <div className="form-group">
-          <label htmlFor="transmission">Hộp số</label>
+          <label htmlFor="transmission">Transmission</label>
           <select
             id="transmission"
             name="transmission"
@@ -491,14 +491,14 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
             required
             className="select-input"
           >
-            <option value="">Chọn loại hộp số</option>
-            <option value="manual">Số sàn</option>
-            <option value="automatic">Số tự động</option>
+            <option value="">Select transmission</option>
+            <option value="manual">Manual</option>
+            <option value="automatic">Automatic</option>
           </select>
         </div>
 
         <div className="form-group">
-          <label htmlFor="fuelType">Nhiên liệu</label>
+          <label htmlFor="fuelType">Fuel Type</label>
           <select
             id="fuelType"
             name="fuelType"
@@ -507,16 +507,16 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
             required
             className="select-input"
           >
-            <option value="">Chọn loại nhiên liệu</option>
-            <option value="gasoline">Xăng</option>
-            <option value="diesel">Dầu</option>
-            <option value="electric">Điện</option>
+            <option value="">Select fuel type</option>
+            <option value="gasoline">Gasoline</option>
+            <option value="diesel">Diesel</option>
+            <option value="electric">Electric</option>
             <option value="hybrid">Hybrid</option>
           </select>
         </div>
 
         <div className="form-group">
-          <label htmlFor="fuelConsumption">Mức tiêu thụ nhiên liệu (lít/100km)</label>
+          <label htmlFor="fuelConsumption">Fuel Consumption (liters/100km)</label>
           <input
             type="number"
             id="fuelConsumption"
@@ -533,7 +533,7 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
           <textarea
             id="description"
             name="description"
-            placeholder='Mô tả xe (màu sơn, tính năng, ...)'
+            placeholder='Describe your car (color, features, ... )'
             value={formData.description}
             onChange={handleChange}
             rows="4"
@@ -578,19 +578,6 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
                 style={{ display: 'none' }}
               />
             </label>
-            <label className="upload-button" htmlFor="car-other-images">
-              <i className="bi bi-plus-lg"></i>
-              <span>Cccd Images</span>
-              <input
-                type="file"
-                id="car-other-images"
-                accept="image/*"
-                multiple
-                onChange={handleOtherImagesChange}
-                disabled={uploading}
-                style={{ display: 'none' }}
-              />
-            </label>
             <div className="image-preview-grid">
               {otherPreviewUrls.map((url, index) => (
                 <div key={index} className="image-preview-item">
@@ -601,16 +588,16 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
             </div>
             <small className="upload-info">
               <i className="bi bi-info-circle me-1"></i>
-              Hỗ trợ các định dạng: JPG, PNG, GIF. Kích thước tối đa: 5MB
+              Supported formats: JPG, PNG, GIF. Max size: 5MB
             </small>
           </div>
         </div>
         <div className="form-group">
-          <label>Ảnh Cavet (Giấy tờ xe)</label>
+          <label>Vehicle Registration (Cavet) Images</label>
           <div className="image-upload-section">
             <label className="upload-button" htmlFor="car-cavet-images">
               <i className="bi bi-plus-lg"></i>
-              <span>Upload Cavet Images</span>
+              <span>Upload Registration</span>
               <input
                 type="file"
                 id="car-cavet-images"
@@ -631,12 +618,12 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
             </div>
             <small className="upload-info">
               <i className="bi bi-info-circle me-1"></i>
-              Hỗ trợ các định dạng: JPG, PNG, GIF. Kích thước tối đa: 5MB
+              Supported formats: JPG, PNG, GIF. Max size: 5MB
             </small>
           </div>
         </div>
         <div className="form-group">
-          <label>Giấy tờ khác (Nếu cần)</label>
+          <label>Other Documents (if needed)</label>
           <div className="image-upload-section">
             <label className="upload-button" htmlFor="car-other-doc-images">
               <i className="bi bi-plus-lg"></i>
@@ -661,7 +648,7 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
             </div>
             <small className="upload-info">
               <i className="bi bi-info-circle me-1"></i>
-              Hỗ trợ các định dạng: JPG, PNG, GIF. Kích thước tối đa: 5MB
+              Supported formats: JPG, PNG, GIF. Max size: 5MB
             </small>
           </div>
         </div>
@@ -673,40 +660,66 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
         >
           {uploading ? 'Uploading...' : 'Submit'}
         </SimpleButton>
+        <div className="car-ownership-note" style={{
+          marginTop: '1rem',
+          fontSize: '0.95rem',
+          color: '#34495e',
+          background: '#f8f9fa',
+          border: '1px solid #e0e0e0',
+          borderRadius: '8px',
+          padding: '0.9rem 1.2rem',
+          gridColumn: '1 / -1',
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '0.7rem'
+        }}>
+          <span style={{fontSize: '1.3rem', color: '#2980b9', marginTop: '0.1rem'}}>
+            <i className="bi bi-exclamation-circle-fill"></i>
+          </span>
+          <span>
+            <strong style={{color: '#2c3e50'}}>Vehicle document note:</strong><br/>
+            <span style={{display: 'block', margin: '0.3rem 0 0.1rem 0.2rem'}}>
+              <span style={{color: '#27ae60', fontWeight: 500}}>&#10003; Owner vehicle:</span> <span style={{color: '#34495e'}}>Upload a photo/scan of the vehicle registration with the same name as the Partner.</span>
+            </span>
+            <span style={{display: 'block', margin: '0.1rem 0 0 0.2rem'}}>
+              <span style={{color: '#e67e22', fontWeight: 500}}>&#9888; Not owner vehicle:</span> <span style={{color: '#34495e'}}>A valid authorization letter or car rental contract is required (with signature and clear information).</span>
+            </span>
+          </span>
+        </div>
       </form>
       
       <div className="partner-introduction">
-        <h2>Lợi ích khi trở thành đối tác của chúng tôi</h2>
+        <h2>Benefits of Becoming Our Partner</h2>
         <div className="intro-content">
           <div className="benefits-grid">
             <div className="benefit-item">
               <i className="bi bi-cash-stack"></i>
-              <h3>Thu nhập ổn định</h3>
-              <p>Kiếm thêm thu nhập từ chiếc xe của bạn khi không sử dụng</p>
+              <h3>Stable Income</h3>
+              <p>Earn extra income from your car when it's not in use</p>
             </div>
             <div className="benefit-item">
               <i className="bi bi-shield-check"></i>
-              <h3>Bảo hiểm toàn diện</h3>
-              <p>Xe của bạn được bảo hiểm đầy đủ trong suốt thời gian cho thuê</p>
+              <h3>Comprehensive Insurance</h3>
+              <p>Your car is fully insured during the entire rental period</p>
             </div>
             <div className="benefit-item">
               <i className="bi bi-graph-up"></i>
-              <h3>Quản lý hiệu quả</h3>
-              <p>Hệ thống quản lý chuyên nghiệp giúp theo dõi lịch trình và doanh thu</p>
+              <h3>Efficient Management</h3>
+              <p>Professional management system helps track schedules and revenue</p>
             </div>
             <div className="benefit-item">
               <i className="bi bi-people"></i>
-              <h3>Khách hàng chất lượng</h3>
-              <p>Tiếp cận với cộng đồng khách hàng đáng tin cậy</p>
+              <h3>Quality Customers</h3>
+              <p>Access a community of trustworthy customers</p>
             </div>
           </div>
           <div className="process-section">
-            <h3>Quy trình trở thành đối tác</h3>
+            <h3>How to Become a Partner</h3>
             <ol>
-              <li>Điền thông tin xe và thông tin cá nhân</li>
-              <li>Chờ xác nhận từ đội ngũ của chúng tôi</li>
-              <li>Ký kết hợp đồng hợp tác</li>
-              <li>Bắt đầu cho thuê xe và kiếm thu nhập</li>
+              <li>Fill in your car and personal information</li>
+              <li>Wait for confirmation from our team</li>
+              <li>Sign the partnership contract</li>
+              <li>Start renting out your car and earning income</li>
             </ol>
           </div>
         </div>
