@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/user/image")
@@ -64,4 +66,30 @@ public class UserImageController {
             return ResponseEntity.status(500).body("Xoá giấy tờ thất bại");
         }
     }
+
+    // Kiểm tra xem user đã upload CCCD chưa
+    @GetMapping("/check-cccd/{userId}")
+    public ResponseEntity<?> checkUserCCCD(@PathVariable Long userId) {
+        try {
+            Optional<User> userOpt = userRepository.findById(userId);
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("User not found");
+            }
+            
+            List<UserImage> userImages = userImageService.getUserImages(userOpt.get());
+            boolean hasCCCD = userImages.stream()
+                .anyMatch(image -> "cccd".equals(image.getDocumentType().name()));
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("hasCCCD", hasCCCD);
+            response.put("message", hasCCCD ? "User has uploaded CCCD" : "User has not uploaded CCCD");
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Error checking CCCD: " + e.getMessage());
+            return ResponseEntity.status(500).body(error);
+        }
+    }
 }
+ 

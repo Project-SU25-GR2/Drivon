@@ -450,3 +450,12 @@ ADD CONSTRAINT fk_car
 FOREIGN KEY (car_id) REFERENCES cars(license_plate) ON DELETE CASCADE ON UPDATE CASCADE;
 
 
+CREATE TABLE user_image (
+    image_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    image_url TEXT NOT NULL,
+    document_type ENUM('cccd', 'license', 'passport', 'other') NOT NULL,
+    description TEXT,
+    uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);

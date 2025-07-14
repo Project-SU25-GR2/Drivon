@@ -30,6 +30,10 @@ public class UserImage {
     @Column(name = "uploaded_at")
     private LocalDateTime uploadedAt = LocalDateTime.now();
 
+    public DocumentType getDocumentType() {
+        return documentType;
+    }
+
     public enum DocumentType {
         cccd, license, passport, other
     }

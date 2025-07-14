@@ -8,7 +8,79 @@ import { API_URL } from '../../api/configApi';
 import { showErrorToast, showSuccessToast } from '../notification/notification';
   const RentYourCarForm = () => {
     const navigate = useNavigate();
-    
+
+    // Gom tất cả các hook lên đầu hàm
+    const [showCCCDModal, setShowCCCDModal] = useState(false);
+    const [formData, setFormData] = useState({
+      brand: '',
+      model: '',
+      year: '',
+      licensePlate: '',
+      location: '',
+      description: '',
+      type: '',
+      seats: '',
+      transmission: '',
+      fuelType: '',
+      fuelConsumption: '',
+      images: [],
+    });
+    const [mainImage, setMainImage] = useState('');
+    const [mainPreviewUrl, setMainPreviewUrl] = useState('');
+    const [otherImages, setOtherImages] = useState([]);
+    const [otherPreviewUrls, setOtherPreviewUrls] = useState([]);
+    const [uploading, setUploading] = useState(false);
+    const [cavetImages, setCavetImages] = useState([]);
+    const [cavetPreviewUrls, setCavetPreviewUrls] = useState([]);
+    const [otherDocImages, setOtherDocImages] = useState([]);
+    const [otherDocPreviewUrls, setOtherDocPreviewUrls] = useState([]);
+
+    useEffect(() => {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        axios.get(`${API_URL}/user/image/check-cccd/${user.userId}`)
+          .then(res => {
+            if (!res.data.hasCCCD) {
+              setShowCCCDModal(true);
+            }
+          })
+          .catch(() => setShowCCCDModal(true));
+      } else {
+        setShowCCCDModal(true);
+      }
+    }, []);
+
+    // Sau khi đã khai báo xong hook, mới kiểm tra và return modal
+    if (showCCCDModal) {
+      return (
+        <div style={{
+          position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
+          background: "rgba(0,0,0,0.4)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center"
+        }}>
+          <div style={{
+            background: "#fff", borderRadius: 8, padding: 32, minWidth: 320, boxShadow: "0 2px 16px rgba(0,0,0,0.15)", textAlign: "center"
+          }}>
+            <h2>Identity Verification Required</h2>
+            <p>You need to upload your Citizen ID (CCCD) image before registering as a partner.</p>
+            <div style={{ marginTop: 24, display: "flex", justifyContent: "center", gap: 16 }}>
+              <button
+                style={{ padding: "8px 20px", background: "#2980b9", color: "#fff", border: "none", borderRadius: 4, fontWeight: 600, cursor: "pointer" }}
+                onClick={() => navigate('/profile')}
+              >
+                Upload CCCD
+              </button>
+              <button
+                style={{ padding: "8px 20px", background: "#eee", color: "#333", border: "none", borderRadius: 4, fontWeight: 600, cursor: "pointer" }}
+                onClick={() => navigate('/')}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
 
   const carBrands = [
     "Toyota",
@@ -98,31 +170,6 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
     "Vĩnh Phúc",
     "Yên Bái"
   ];
-
-  const [formData, setFormData] = useState({
-    brand: '',
-    model: '',
-    year: '',
-    licensePlate: '',
-    location: '',
-    description: '',
-    type: '',
-    seats: '',
-    transmission: '',
-    fuelType: '',
-    fuelConsumption: '',
-    images: [],
-  });
-
-  const [mainImage, setMainImage] = useState('');
-  const [mainPreviewUrl, setMainPreviewUrl] = useState('');
-  const [otherImages, setOtherImages] = useState([]);
-  const [otherPreviewUrls, setOtherPreviewUrls] = useState([]);
-  const [uploading, setUploading] = useState(false);
-  const [cavetImages, setCavetImages] = useState([]);
-  const [cavetPreviewUrls, setCavetPreviewUrls] = useState([]);
-  const [otherDocImages, setOtherDocImages] = useState([]);
-  const [otherDocPreviewUrls, setOtherDocPreviewUrls] = useState([]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
