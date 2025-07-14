@@ -8,7 +8,7 @@ import { API_URL } from '../../api/configApi';
 import { showErrorToast, showSuccessToast } from '../notification/notification';
   const RentYourCarForm = () => {
     const navigate = useNavigate();
-
+    
     // Gom tất cả các hook lên đầu hàm
     const [showCCCDModal, setShowCCCDModal] = useState(false);
     const [formData, setFormData] = useState({
@@ -65,13 +65,13 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
             <p>You need to upload your Citizen ID (CCCD) image before registering as a partner.</p>
             <div style={{ marginTop: 24, display: "flex", justifyContent: "center", gap: 16 }}>
               <button
-                style={{ padding: "8px 20px", background: "#2980b9", color: "#fff", border: "none", borderRadius: 4, fontWeight: 600, cursor: "pointer" }}
+                className="cccd-modal-btn primary"
                 onClick={() => navigate('/profile')}
               >
                 Upload CCCD
               </button>
               <button
-                style={{ padding: "8px 20px", background: "#eee", color: "#333", border: "none", borderRadius: 4, fontWeight: 600, cursor: "pointer" }}
+                className="cccd-modal-btn"
                 onClick={() => navigate('/')}
               >
                 Cancel

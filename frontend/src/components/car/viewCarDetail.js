@@ -10,7 +10,7 @@ import RentalForm from './RentalForm';
 import { GiGearStickPattern } from "react-icons/gi";
 import './viewCarDetail.css';
 import { TbAutomaticGearboxFilled } from "react-icons/tb";
-import { FaGasPump, FaCalendarAlt, FaUserFriends, FaCogs, FaRoad, FaMapMarkerAlt, FaInfoCircle } from "react-icons/fa";
+import { FaGasPump, FaCalendarAlt, FaUserFriends, FaCogs, FaRoad, FaMapMarkerAlt, FaInfoCircle, FaExclamationCircle } from "react-icons/fa";
 import { BsEvStationFill } from "react-icons/bs";
 import { BsFillFuelPumpDieselFill } from "react-icons/bs";
 import Loader from '../others/loader';
@@ -339,10 +339,24 @@ const ViewCarDetail = () => {
 
   useEffect(() => { setCurrentIndex(0); }, [carFilter, allCars, car]);
 
-  const handleRentClick = () => {
+  // Thêm state cho modal license warning
+  const [showLicenseModal, setShowLicenseModal] = useState(false);
+
+  const handleRentClick = async () => {
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user) {
-      message.warning('Vui lòng đăng nhập để thuê xe');
+      message.warning('Please log in to rent a car');
+      return;
+    }
+    // Kiểm tra license
+    try {
+      const res = await axios.get(`${API_URL}/user/image/check-license/${user.userId}`);
+      if (!res.data.hasLicense) {
+        setShowLicenseModal(true);
+        return;
+      }
+    } catch (e) {
+      setShowLicenseModal(true);
       return;
     }
     setShowRentalForm(true);
@@ -801,6 +815,39 @@ const ViewCarDetail = () => {
             style={{ flex: 1, margin: '0 15px' }}
           />
           <Button onClick={handleZoomIn} disabled={zoomLevel >= 3} size="small">+</Button>
+        </div>
+      </Modal>
+
+      <Modal
+        open={showLicenseModal}
+        onCancel={() => setShowLicenseModal(false)}
+        footer={null}
+        centered
+        destroyOnClose
+        closable={false}
+        className="license-warning-modal"
+        maskStyle={{ background: 'rgba(0,0,0,0.4)' }}
+      >
+        <div style={{ position: 'relative', textAlign: 'center', padding: 24, minWidth: 320 }}>
+          {/* Nút X đóng modal */}
+          <button
+            className="license-modal-close-btn"
+            onClick={() => setShowLicenseModal(false)}
+            style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#888' }}
+            aria-label="Close"
+          >
+            ×
+          </button>
+          <FaExclamationCircle size={64} color="#e74c3c" style={{ marginBottom: 16 }} />
+          <div style={{ fontWeight: 400, fontSize: 18, marginBottom: 12, color: '#222' }}>
+            You need to verify your <span style={{ fontWeight: 700 }}>driver's license</span> before you can rent a car.
+          </div>
+          <button
+            className="license-modal-upload-btn"
+            onClick={() => { setShowLicenseModal(false); navigate('/profile'); }}
+          >
+            Upload License
+          </button>
         </div>
       </Modal>
     </div>

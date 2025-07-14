@@ -425,3 +425,32 @@
     gap: 1.2rem;
   }
 } 
+
+.cccd-modal-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  background: #eee;
+  color: #333;
+  margin: 0 4px;
+}
+
+.cccd-modal-btn.primary {
+  background: #2980b9;
+  color: #fff;
+}
+
+.cccd-modal-btn.primary:hover {
+  background: #1761a0;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(41,128,185,0.15);
+}
+
+.cccd-modal-btn:hover {
+  background: #d5d5d5;
+  color: #111;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+} 

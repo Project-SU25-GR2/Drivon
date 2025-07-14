@@ -91,5 +91,27 @@ public class UserImageController {
             return ResponseEntity.status(500).body(error);
         }
     }
+
+    // Kiểm tra xem user đã upload giấy phép lái xe chưa
+    @GetMapping("/check-license/{userId}")
+    public ResponseEntity<?> checkUserLicense(@PathVariable Long userId) {
+        try {
+            Optional<User> userOpt = userRepository.findById(userId);
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("User not found");
+            }
+            List<UserImage> userImages = userImageService.getUserImages(userOpt.get());
+            boolean hasLicense = userImages.stream()
+                .anyMatch(image -> image.getDocumentType() != null && "license".equals(image.getDocumentType().name()));
+            Map<String, Object> response = new HashMap<>();
+            response.put("hasLicense", hasLicense);
+            response.put("message", hasLicense ? "User has uploaded license" : "User has not uploaded license");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Error checking license: " + e.getMessage());
+            return ResponseEntity.status(500).body(error);
+        }
+    }
 }
  
