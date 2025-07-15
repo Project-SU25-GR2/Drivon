@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @RestController
 @RequestMapping("/api/notifications")
@@ -201,5 +203,13 @@ public class NotificationController {
         } else {
             return ResponseEntity.badRequest().body("Notification not found");
         }
+    }
+
+    @GetMapping("/user/{userId}")
+    public List<Notification> getUserNotifications(@PathVariable Long userId) {
+        // Trả về chỉ thông báo USER_SPECIFIC của user này
+        return notificationService.getNotificationsForUser(userId).stream()
+            .filter(n -> n.getTargetType() == Notification.TargetType.USER_SPECIFIC && n.getTargetUserId() != null && n.getTargetUserId().equals(userId))
+            .toList();
     }
 } 

@@ -16,6 +16,8 @@ import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import Drivon.backend.service.NotificationService;
+import Drivon.backend.entity.Notification;
 
 @Service
 public class ContractService {
@@ -25,6 +27,9 @@ public class ContractService {
 
     @Autowired
     private CarRepository carRepository;
+
+    @Autowired
+    private NotificationService notificationService;
 
     /* Comment out verification code storage
     // Store verification codes with expiration time
@@ -63,6 +68,12 @@ public class ContractService {
 
         Contract savedContract = contractRepository.save(contract);
         generateContractFile(savedContract);
+        // Gửi notification cho user khi gửi đơn become a partner
+        try {
+            Long userId = Long.valueOf(request.getCustomerId());
+            String content = "Your partner application has been submitted successfully. Contract ID: " + savedContract.getId();
+            notificationService.createNotificationForSpecificUser(content, Notification.NotificationType.SYSTEM, userId);
+        } catch (Exception e) { /* ignore */ }
         return savedContract;
     }
 
@@ -117,6 +128,12 @@ public class ContractService {
         contract.setPdfUrl(request.getPdfUrl());
 
         Contract savedContract = contractRepository.save(contract);
+        // Gửi notification cho user khi gửi đơn become a partner (lease)
+        try {
+            Long userId = Long.valueOf(request.getCustomerId());
+            String content = "Your car lease application has been submitted successfully. Contract ID: " + savedContract.getId();
+            notificationService.createNotificationForSpecificUser(content, Notification.NotificationType.SYSTEM, userId);
+        } catch (Exception e) { /* ignore */ }
         return savedContract;
     }
 

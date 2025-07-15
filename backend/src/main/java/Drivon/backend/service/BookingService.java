@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.List;
+import Drivon.backend.service.NotificationService;
+import Drivon.backend.entity.Notification;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +24,7 @@ public class BookingService {
         private final UserRepository userRepository;
         private final CarRepository carRepository;
         private final PaymentService paymentService;
+        private final NotificationService notificationService;
 
         public Booking createBooking(BookingRequest bookingRequest) {
                 User renter = userRepository.findById(bookingRequest.getRenterId())
@@ -47,6 +50,9 @@ public class BookingService {
                 try {
                         Booking savedBooking = bookingRepository.saveAndFlush(booking);
                         log.info("Saved and flushed booking successfully with ID: {}", savedBooking.getId());
+                        // Gửi notification cho user khi đặt xe thành công
+                        String content = "Your car booking was successful. Booking ID: " + savedBooking.getId();
+                        notificationService.createNotificationForSpecificUser(content, Notification.NotificationType.SYSTEM, renter.getUserId());
                         return savedBooking;
                 } catch (Exception e) {
                         log.error("Error saving booking to database", e);

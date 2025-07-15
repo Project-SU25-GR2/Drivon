@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import org.springframework.http.HttpStatus;
 import java.util.Optional;
+import Drivon.backend.service.NotificationService;
+import Drivon.backend.entity.Notification;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -40,6 +42,9 @@ public class AdminController {
 
     @Autowired
     private CarImageRepository carImageRepository; // Inject CarImageRepository
+
+    @Autowired
+    private NotificationService notificationService;
 
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
@@ -225,6 +230,15 @@ public class AdminController {
             statusField.setAccessible(true);
             statusField.set(contract, status);
             contractService.save(contract);
+            // Gửi notification cho user khi admin duyệt đơn become a partner
+            try {
+                String email = contract.getEmail();
+                Optional<User> user = userRepository.findByEmail(email);
+                if (user.isPresent()) {
+                    String content = "Your partner application has been reviewed. Status: " + status;
+                    notificationService.createNotificationForSpecificUser(content, Notification.NotificationType.SYSTEM, user.get().getUserId());
+                }
+            } catch (Exception e) { /* ignore */ }
             return ResponseEntity.ok("Status updated");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
