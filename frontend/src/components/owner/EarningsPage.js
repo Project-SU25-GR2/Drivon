@@ -23,6 +23,15 @@ const formatCurrency = (amount) => {
     return amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
 };
 
+// Format currency without rounding for exact display
+const formatCurrencyExact = (amount) => {
+    if (amount === null || amount === undefined || isNaN(amount)) {
+        return '0 ₫';
+    }
+    // Keep exact decimal places to avoid rounding issues
+    return Math.floor(amount).toLocaleString('vi-VN') + ' ₫';
+};
+
 const formatPaymentMethod = (paymentMethod) => {
     if (!paymentMethod) return 'N/A';
     
@@ -397,16 +406,17 @@ const EarningsPage = () => {
     };
 
     const handleWithdraw = async () => {
-        // Kiểm tra có tiền để rút không
-        if (earnings.totalProfit <= 0) {
-            showErrorToast("Không có tiền để rút! Số dư hiện tại: " + formatCurrency(earnings.totalProfit));
+        // Kiểm tra có tiền để rút không (dùng balance thay vì totalProfit)
+        if (earnings.balance <= 0) {
+            showErrorToast("Không có tiền để rút! Tổng tiền thu qua hệ thống: " + formatCurrency(earnings.balance));
             return;
         }
 
         // Kiểm tra số tiền rút có vượt quá không
         const withdrawAmountFloat = parseFloat(withdrawAmount);
-        if (withdrawAmountFloat > earnings.totalProfit) {
-            showErrorToast("Số tiền rút vượt quá số dư khả dụng!");
+        const availableAmount = Math.floor(earnings.balance); // Sử dụng balance thay vì totalProfit
+        if (withdrawAmountFloat > availableAmount) {
+            showErrorToast(`Số tiền rút vượt quá tổng tiền thu qua hệ thống! Tối đa: ${availableAmount} ₫`);
             return;
         }
 
@@ -441,19 +451,16 @@ const EarningsPage = () => {
         try {
             const user = JSON.parse(localStorage.getItem("user"));
             
-            // Tạo payment request giống RentalForm
-            const paymentRequest = {
-                orderCode: Date.now(),
+            // Sử dụng endpoint riêng cho debt payment
+            const debtPaymentRequest = {
+                ownerId: user.userId,
                 amount: earnings.totalDebt,
                 description: `Tra no he thong`,  // Giới hạn 25 ký tự, không dấu
                 returnUrl: `${window.location.origin}/manager-owner?tab=earnings&debt_payment=success`,
-                cancelUrl: `${window.location.origin}/manager-owner?tab=earnings&debt_payment=cancel`,
-                userId: user.userId,
-                carId: 'DEBT_PAYMENT', // Special identifier for debt payment
-                additionalRequirements: 'Debt payment to system'
+                cancelUrl: `${window.location.origin}/manager-owner?tab=earnings&debt_payment=cancel`
             };
 
-            const paymentResponse = await axios.post(`${API_URL}/payments/create`, paymentRequest);
+            const paymentResponse = await axios.post(`${API_URL}/debt-payment/create`, debtPaymentRequest);
             
             if (paymentResponse.data.data && paymentResponse.data.data.checkoutUrl) {
                 window.location.href = paymentResponse.data.data.checkoutUrl;
@@ -591,7 +598,7 @@ const EarningsPage = () => {
                     <div className="card-content">
                         <h3 style={{color: '#000'}}> Tiền trên hệ thống</h3>
                         <p className="amount" style={{color: '#27ae60', fontWeight: 'bold'}}>{formatCurrency(earnings.totalProfit)}</p>
-                        <p style={{color: '#000'}}className="comparison">Lợi nhuận banking thực nhận sau khi trừ phí</p>
+                        <p style={{color: '#000'}}className="comparison">Lợi nhuận banking sau khi trừ phí 2% mỗi giao dịch</p>
                     </div>
                     <i style={{color: '#000'}}className="fas fa-piggy-bank card-icon"></i>
                 </div>                
@@ -599,7 +606,7 @@ const EarningsPage = () => {
                     <div className="card-content">
                         <h3 style={{color: '#000'}}> Tiền nợ hệ thống</h3>
                         <p className="amount" style={{color: '#e74c3c', fontWeight: 'bold'}}>{formatCurrency(earnings.totalDebt)}</p>
-                        <p style={{color: '#000'}}className="comparison">Nợ hệ thống sau khi trừ phí cash</p>
+                        <p style={{color: '#000'}}className="comparison">Nợ hệ thống sau 2% mỗi giao dịch cash</p>
                     </div>
                     <i style={{color: '#000'}} className="fas fa-exclamation-triangle card-icon"></i>
                 </div>
@@ -607,7 +614,7 @@ const EarningsPage = () => {
                     <div className="card-content">
                         <h3 style={{color: '#000'}}> Tổng tiền thu qua hệ thống </h3>
                         <p className="amount" style={{color: '#27ae60', fontWeight: 'bold'}}>{formatCurrency(earnings.balance)}</p>
-                        <p style={{color: '#000'}}className="comparison">Tổng tiền thu qua hệ thống sau khi trừ phí</p>
+                        <p style={{color: '#000'}}className="comparison">Tổng tiền thu qua hệ thống sau khi trừ nợ</p>
                     </div>
                     <i style={{color: '#000'}} className="fas fa-piggy-bank card-icon"></i>
                 </div>
@@ -615,7 +622,7 @@ const EarningsPage = () => {
             
             {/* Action buttons section */}
             <div style={{marginBottom: 10, display: 'flex', gap: '10px', alignItems: 'center'}}>
-                {earnings.totalProfit > 0 ? (
+                {earnings.balance > 0 ? (
                     <button 
                         className="withdraw-btn" 
                         onClick={() => setShowWithdrawModal(true)} 
@@ -643,7 +650,7 @@ const EarningsPage = () => {
                     </button>
                 )}
                 
-                {earnings.totalProfit <= 0 && earnings.totalDebt > 0 && (
+                {earnings.balance <= 0 && earnings.totalDebt > 0 && (
                     <div style={{color: '#e74c3c', fontWeight: 500, fontSize: '14px'}}>
                         ⚠️ Bạn cần thanh toán nợ trước khi có thể rút tiền
                     </div>
@@ -700,14 +707,14 @@ const EarningsPage = () => {
           <input
             type="number"
             min="1000"
-            max={earnings.totalProfit}
-            placeholder={`Số tiền muốn rút (Tối đa: ${formatCurrency(earnings.totalProfit)})`}
+            max={Math.floor(earnings.balance)}
+            placeholder={`Số tiền muốn rút (Tối đa: ${formatCurrencyExact(earnings.balance)})`}
             value={withdrawAmount}
             onChange={e => setWithdrawAmount(e.target.value)}
             style={{width: '100%', marginBottom: 12, padding: 8, borderRadius: 4, border: '1px solid #ccc'}}
           />
           <div style={{fontSize: '12px', color: '#666', marginBottom: 12}}>
-            Số dư khả dụng: {formatCurrency(earnings.totalProfit)}
+            Tổng tiền thu qua hệ thống: {formatCurrencyExact(earnings.balance)} (chính xác: {earnings.balance} ₫)
           </div>
           <textarea
             placeholder="Ghi chú (nếu có)"

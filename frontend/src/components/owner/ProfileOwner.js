@@ -52,7 +52,7 @@ const ProfileOwner = ({ user }) => {
   useEffect(() => {
     const fetchBankInfo = async () => {
       try {
-        const res = await axios.get(`${API_URL}/owner-bank/${user.userId}`);
+        const res = await axios.get(`${API_URL}/owner-wallet/${user.userId}/bank`);
         if (res.data) {
           setBankInfo({
             bankAccount: res.data.accountNumber,
@@ -124,10 +124,10 @@ const ProfileOwner = ({ user }) => {
         accountNumber: editInfo.bankAccount,
         bankName: editInfo.bankName,
       };
-      await axios.post(`${API_URL}/owner-bank/update`, payload);
+      await axios.post(`${API_URL}/owner-wallet/update-bank`, payload);
       setIsEditing(false);
       // Fetch the latest bank info after update
-      const res = await axios.get(`${API_URL}/owner-bank/${user.userId}`);
+      const res = await axios.get(`${API_URL}/owner-wallet/${user.userId}/bank`);
       if (res.data) {
         setBankInfo({
           bankAccount: res.data.accountNumber,
@@ -326,8 +326,10 @@ const ProfileOwner = ({ user }) => {
                     <td>
                       {w.sign ? (
                         <span style={{color: 'green', fontWeight: 600}}>Đã xác nhận</span>
-                      ) : (
+                      ) : w.status === 'completed' ? (
                         <input type="checkbox" onChange={() => handleSign(w.requestId)} />
+                      ) : (
+                        <span style={{color: '#999'}}>Chưa hoàn thành</span>
                       )}
                     </td>
                   </tr>

@@ -222,7 +222,7 @@ package "Drivon" {
         [EmailVerificationTokenRepository.java]
         [MessageRepository.java]
         [NotificationRepository.java]
-        [OwnerBankRepository.java]
+        
         [PasswordResetTokenRepository.java]
         [PaymentRepository.java]
         [PromotionRepository.java]
