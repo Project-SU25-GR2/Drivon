@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Result, Button, Card, Descriptions, Spin, message } from 'antd';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -11,31 +11,39 @@ const RentalSuccess = () => {
   const navigate = useNavigate();
   const [confirming, setConfirming] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+  const [rentalData, setRentalData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Lấy dữ liệu đơn hàng từ state hoặc query params
-  let rentalData = null;
-  if (location.state && location.state.rentalData) {
-    rentalData = location.state.rentalData;
-  } else {
-    // Nếu không có state, lấy từ query params (nếu cần)
-    const searchParams = new URLSearchParams(location.search);
-    rentalData = {
-      orderCode: searchParams.get('orderCode'),
-      carLicensePlate: searchParams.get('carLicensePlate'),
-      rentalStartDate: searchParams.get('rentalStartDate'),
-      rentalEndDate: searchParams.get('rentalEndDate'),
-      amount: searchParams.get('amount'),
-      promotionCode: searchParams.get('promotionCode'),
-      discountPercent: searchParams.get('discountPercent'),
-      additionalRequirements: searchParams.get('additionalRequirements'),
-      userId: searchParams.get('userId'),
-      paymentMethod: searchParams.get('paymentMethod'),
-      bookingId: searchParams.get('bookingId'),
-    };
-  }
+  useEffect(() => {
+    let data = null;
+    if (location.state && location.state.rentalData) {
+      data = location.state.rentalData;
+      setRentalData(data);
+      setLoading(false);
+    } else {
+      // Nếu không có state, lấy từ query params
+      const searchParams = new URLSearchParams(location.search);
+      const orderCode = searchParams.get('orderCode');
+      if (orderCode) {
+        // Fetch chi tiết payment từ backend
+        axios.get(`${API_URL}/payments/order/${orderCode}`)
+          .then(res => {
+            setRentalData(res.data);
+          })
+          .catch(() => {
+            setRentalData(null);
+          })
+          .finally(() => setLoading(false));
+      } else {
+        setRentalData(null);
+        setLoading(false);
+      }
+    }
+  }, [location]);
 
   // Hàm xác nhận đơn hàng
   const handleConfirmOrder = async () => {
+    if (!rentalData) return;
     setConfirming(true);
     try {
       const payload = {
@@ -67,6 +75,14 @@ const RentalSuccess = () => {
       setConfirming(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+        <Spin size="large" tip="Đang tải thông tin đơn hàng..."></Spin>
+      </div>
+    );
+  }
 
   if (!rentalData || !rentalData.orderCode) {
     return (
