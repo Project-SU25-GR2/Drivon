@@ -229,6 +229,14 @@
   box-shadow: 0 5px 15px rgba(25, 118, 210, 0.3);
 }
 
+.password-label {
+  color: #222 !important; /* Đen dễ nhìn */
+  font-weight: 700;
+  font-size: 1.08rem;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.10);
+  letter-spacing: 0.5px;
+}
+
 /* Responsive Adjustments */
 @media (max-width: 991.98px) {
   .intro-section {
