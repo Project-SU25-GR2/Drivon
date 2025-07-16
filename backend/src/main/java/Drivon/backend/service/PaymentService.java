@@ -475,6 +475,16 @@ public class PaymentService {
         }
     }
 
+    public boolean cancelPaymentByOrderCode(String orderCode) {
+        Payment payment = paymentRepository.findByOrderCode(orderCode);
+        if (payment != null && !"CANCELLED".equals(payment.getStatus())) {
+            payment.setStatus("CANCELLED");
+            paymentRepository.save(payment);
+            return true;
+        }
+        return false;
+    }
+
     // Xóa các bản ghi PENDING quá hạn (ví dụ: quá 24h)
     public int deleteExpiredPendingPayments() {
         LocalDateTime expiredTime = LocalDateTime.now().minusHours(24);

@@ -81,6 +81,7 @@ const MyRentals = () => {
         })
       );
 
+      // KHÔNG lọc bỏ đơn CANCELLED, hiển thị tất cả
       setRentals(paymentsWithBookingStatus);
     } catch (error) {
       console.error("Error fetching rentals:", error);
@@ -116,6 +117,8 @@ const MyRentals = () => {
         return "warning";
       case "REFUNDED":
         return "error";
+      case "CANCELLED":
+        return "default"; // hoặc "error" nếu muốn nổi bật
       default:
         return "default";
     }

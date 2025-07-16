@@ -67,6 +67,20 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
+    const isCancelled = searchParams.get('status') === 'CANCELLED' && searchParams.get('orderCode');
+    if (isCancelled) {
+      axios.post(`${API_URL}/payments/cancel`, { orderCode: searchParams.get('orderCode') })
+        .then(() => {
+          message.info('Đơn hàng đã được huỷ.');
+        })
+        .catch(() => {
+          message.error('Không thể huỷ đơn hàng.');
+        })
+        .finally(() => {
+          navigate(location.pathname, { replace: true });
+        });
+      return;
+    }
     if (searchParams.get('cancel') === 'true') {
       message.info('Thanh toán đã bị hủy');
       navigate(location.pathname, { replace: true });

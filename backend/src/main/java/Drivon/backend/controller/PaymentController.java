@@ -129,6 +129,21 @@ public class PaymentController {
         }
     }
 
+    @PostMapping("/cancel")
+    public ResponseEntity<?> cancelPayment(@RequestBody Map<String, Object> data) {
+        try {
+            String orderCode = String.valueOf(data.get("orderCode"));
+            boolean result = paymentService.cancelPaymentByOrderCode(orderCode);
+            if (result) {
+                return ResponseEntity.ok(Map.of("message", "Payment cancelled successfully"));
+            } else {
+                return ResponseEntity.badRequest().body(Map.of("error", "Payment not found or already cancelled"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @GetMapping("/user/{userId}")
     public ResponseEntity<?> getUserRentals(@PathVariable String userId) {
         try {
