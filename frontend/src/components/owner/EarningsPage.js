@@ -92,6 +92,8 @@ const EarningsPage = () => {
     const [withdrawNote, setWithdrawNote] = useState('');
     const [withdrawLoading, setWithdrawLoading] = useState(false);
     const [showDebtPaymentModal, setShowDebtPaymentModal] = useState(false);
+    const [showConfirmDebtModal, setShowConfirmDebtModal] = useState(false);
+    const [pendingOrderCode, setPendingOrderCode] = useState(null);
 
     // Check for debt payment result
     useEffect(() => {
@@ -450,18 +452,19 @@ const EarningsPage = () => {
     const processDebtPayment = async () => {
         try {
             const user = JSON.parse(localStorage.getItem("user"));
-            
-            // Sử dụng endpoint riêng cho debt payment
+            // Gửi request tạo link thanh toán nợ, backend trả về orderCode
             const debtPaymentRequest = {
                 ownerId: user.userId,
                 amount: earnings.totalDebt,
-                description: `Tra no he thong`,  // Giới hạn 25 ký tự, không dấu
-                returnUrl: `${window.location.origin}/manager-owner?tab=earnings&debt_payment=success`,
-                cancelUrl: `${window.location.origin}/manager-owner?tab=earnings&debt_payment=cancel`
+                description: `Tra no he thong`,
+                // returnUrl/cancelUrl sẽ được set sau khi có orderCode
             };
-
+            // Gọi backend để lấy orderCode trước
+            const tempOrderCode = Date.now().toString();
+            debtPaymentRequest.orderCode = tempOrderCode;
+            debtPaymentRequest.returnUrl = `${window.location.origin}/owner?tab=earnings&debt_payment=success&orderCode=${tempOrderCode}`;
+            debtPaymentRequest.cancelUrl = `${window.location.origin}/owner?tab=earnings&debt_payment=cancel&orderCode=${tempOrderCode}`;
             const paymentResponse = await axios.post(`${API_URL}/debt-payment/create`, debtPaymentRequest);
-            
             if (paymentResponse.data.data && paymentResponse.data.data.checkoutUrl) {
                 window.location.href = paymentResponse.data.data.checkoutUrl;
             } else {
@@ -472,6 +475,35 @@ const EarningsPage = () => {
             showErrorToast('Có lỗi xảy ra khi thanh toán nợ!');
         }
     };
+
+    const handleConfirmDebt = async () => {
+        if (!pendingOrderCode) return;
+        try {
+            await axios.post(`${API_URL}/debt-payment/confirm`, { orderCode: pendingOrderCode });
+            showSuccessToast('Đã xác nhận thanh toán nợ!');
+            setShowConfirmDebtModal(false);
+            setPendingOrderCode(null);
+            // Xóa param khỏi URL và reload earnings
+            window.history.replaceState(null, null, window.location.pathname);
+            window.location.reload();
+        } catch {
+            showErrorToast('Xác nhận thất bại!');
+        }
+    };
+
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const debtPaymentResult = urlParams.get('debt_payment');
+        const orderCode = urlParams.get('orderCode');
+        if (debtPaymentResult === 'success' && orderCode) {
+            setShowConfirmDebtModal(true);
+            setPendingOrderCode(orderCode);
+        } else if (debtPaymentResult === 'cancel') {
+            showErrorToast('Thanh toán nợ đã bị hủy.');
+            const newUrl = window.location.pathname;
+            window.history.replaceState(null, null, newUrl);
+        }
+    }, []);
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div style={{ color: 'red' }}>{error}</div>;
@@ -754,6 +786,26 @@ const EarningsPage = () => {
           >
             Hủy
           </button>
+        </div>
+      </div>
+    )}
+
+    {showConfirmDebtModal && (
+      <div className="modal-backdrop" style={{position: 'fixed', top:0, left:0, right:0, bottom:0, background: 'rgba(0,0,0,0.3)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+        <div className="modal-content" style={{background: '#fff', borderRadius: 10, padding: 36, minWidth: 350, boxShadow: '0 2px 24px rgba(0,0,0,0.18)'}}>
+          <h2 style={{color: '#e74c3c', marginBottom: 16, textAlign: 'center'}}>Xác nhận thanh toán nợ</h2>
+          <div style={{background: '#fff3cd', color: '#856404', border: '1px solid #ffeeba', borderRadius: 6, padding: 12, marginBottom: 18, fontSize: 15, textAlign: 'center'}}>
+            <b>Thanh toán nợ thành công qua PayOS!</b><br/>
+            Số tiền nợ sẽ chỉ được trừ khỏi tài khoản khi bạn bấm <b>Xác nhận</b>.<br/>
+            <span style={{color: '#e74c3c', fontWeight: 600}}>Số tiền nợ: {formatCurrency(earnings.totalDebt)}</span>
+          </div>
+          <p style={{marginBottom: 20, color: '#333', textAlign: 'center'}}>Vui lòng kiểm tra lại số tiền và bấm <b>Xác nhận thanh toán nợ</b> để hoàn tất trừ nợ trên hệ thống.</p>
+          <div style={{display: 'flex', justifyContent: 'center', gap: 12}}>
+            <button onClick={handleConfirmDebt} style={{background: '#27ae60', color: '#fff', border: 'none', borderRadius: 5, padding: '10px 28px', fontWeight: 600, fontSize: 16, boxShadow: '0 2px 8px rgba(39,174,96,0.08)', cursor: 'pointer'}}>
+              Xác nhận thanh toán nợ
+            </button>
+            <button onClick={() => setShowConfirmDebtModal(false)} style={{background: '#eee', color: '#333', border: 'none', borderRadius: 5, padding: '10px 22px', fontWeight: 500, fontSize: 15, cursor: 'pointer'}}>Đóng</button>
+          </div>
         </div>
       </div>
     )}
