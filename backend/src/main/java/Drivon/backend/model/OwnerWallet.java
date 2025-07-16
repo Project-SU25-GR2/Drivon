@@ -20,6 +20,12 @@ public class OwnerWallet {
     @Column(nullable = false)
     private Double balance = 0.0;
 
+    @Column(name = "account_number", length = 50)
+    private String accountNumber;
+
+    @Column(name = "bank_name", length = 100)
+    private String bankName;
+
     @Column
     private LocalDateTime updatedAt = LocalDateTime.now();
 } 

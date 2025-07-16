@@ -49,12 +49,21 @@ public class OwnerWithdrawController {
             map.put("requestedAt", req.getRequestedAt());
             map.put("processedAt", req.getProcessedAt());
             map.put("note", req.getNote());
-            map.put("sign", req.getSign()); // Thêm dòng này
+            map.put("sign", req.getSign());
             // Lấy thông tin user
             User user = userRepo.findById(req.getOwnerId()).orElse(null);
             if (user != null) {
                 map.put("ownerFullName", user.getFullName());
                 map.put("ownerEmail", user.getEmail());
+            }
+            // Lấy thông tin ngân hàng từ OwnerWallet
+            OwnerWallet wallet = ownerWalletRepository.findByOwnerId(req.getOwnerId()).orElse(null);
+            if (wallet != null) {
+                map.put("accountNumber", wallet.getAccountNumber() != null ? wallet.getAccountNumber() : "");
+                map.put("bankName", wallet.getBankName() != null ? wallet.getBankName() : "");
+            } else {
+                map.put("accountNumber", "");
+                map.put("bankName", "");
             }
             result.add(map);
         }

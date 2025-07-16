@@ -37,7 +37,13 @@ const WithdrawPage = () => {
             try {
                 const res = await axios.get(`${API_URL}/owner-withdraw`);
                 const data = res.data || [];
-                setWithdraws(data);
+                // Sắp xếp theo ngày yêu cầu mới nhất trên cùng
+                const sortedData = data.sort((a, b) => {
+                    const dateA = new Date(a.requestedAt);
+                    const dateB = new Date(b.requestedAt);
+                    return dateB - dateA; // Descending order (newest first)
+                });
+                setWithdraws(sortedData);
 
                 // Tính thống kê
                 const total = data.length;
@@ -133,13 +139,15 @@ const WithdrawPage = () => {
         try {
             const currentDate = new Date().toLocaleDateString('vi-VN');
             
-            // Chuẩn bị dữ liệu bảng với đủ 7 cột
+            // Chuẩn bị dữ liệu bảng với đủ 9 cột
             const tableBody = [
                 // Header row
                 [
                     { text: 'Ngày yêu cầu', style: 'tableHeader' },
                     { text: 'Chủ xe', style: 'tableHeader' },
                     { text: 'Email', style: 'tableHeader' },
+                    { text: 'Số TK', style: 'tableHeader' },
+                    { text: 'Ngân hàng', style: 'tableHeader' },
                     { text: 'Số tiền', style: 'tableHeader' },
                     { text: 'Trạng thái', style: 'tableHeader' },
                     { text: 'Ghi chú', style: 'tableHeader' },
@@ -147,12 +155,14 @@ const WithdrawPage = () => {
                 ]
             ];
 
-            // Data rows - đảm bảo mỗi row có đúng 7 cột
+            // Data rows - đảm bảo mỗi row có đúng 9 cột
             filteredWithdraws.forEach(w => {
                 tableBody.push([
                     { text: w.requestedAt ? new Date(w.requestedAt).toLocaleString('vi-VN') : 'N/A', alignment: 'left', margin: [4,4,4,4] },
                     { text: w.ownerFullName || w.ownerId || 'N/A', alignment: 'left', margin: [4,4,4,4] },
                     { text: w.ownerEmail || 'N/A', alignment: 'left', margin: [4,4,4,4] },
+                    { text: w.accountNumber || 'Chưa cập nhật', alignment: 'left', margin: [4,4,4,4] },
+                    { text: w.bankName || 'Chưa cập nhật', alignment: 'left', margin: [4,4,4,4] },
                     { text: w.amount ? (w.amount.toLocaleString('vi-VN') + ' ₫') : '0 ₫', alignment: 'left', margin: [4,4,4,4] },
                     { text: STATUS_OPTIONS.find(opt => opt.value === w.status)?.label || w.status || 'N/A', alignment: 'left', margin: [4,4,4,4] },
                     { text: w.note || 'N/A', alignment: 'left', margin: [4,4,4,4] },
@@ -163,8 +173,8 @@ const WithdrawPage = () => {
             // Nếu không có dữ liệu
             if (filteredWithdraws.length === 0) {
                 tableBody.push([
-                    { text: 'Không có dữ liệu', colSpan: 7, alignment: 'center', margin: [4,8,4,8] },
-                    {}, {}, {}, {}, {}, {}
+                    { text: 'Không có dữ liệu', colSpan: 9, alignment: 'center', margin: [4,8,4,8] },
+                    {}, {}, {}, {}, {}, {}, {}, {}
                 ]);
             }
 
@@ -184,7 +194,7 @@ const WithdrawPage = () => {
                     {
                         table: {
                             headerRows: 1,
-                            widths: ['12%', '15%', '20%', '12%', '12%', '15%', '14%'], // Đảm bảo tổng = 100%
+                            widths: ['10%', '12%', '16%', '12%', '12%', '10%', '10%', '10%', '8%'], // Đảm bảo tổng = 100%
                             body: tableBody
                         },
                         layout: {
@@ -298,6 +308,8 @@ const WithdrawPage = () => {
                             <th style={{ padding: 12 }}>Ngày yêu cầu</th>
                             <th>Chủ xe</th>
                             <th>Email</th>
+                            <th>Số tài khoản</th>
+                            <th>Tên ngân hàng</th>
                             <th>Số tiền</th>
                             <th>Trạng thái</th>
                             <th>Ghi chú</th>
@@ -306,12 +318,14 @@ const WithdrawPage = () => {
                     </thead>
                     <tbody>
                         {filteredWithdraws.length === 0 ? (
-                            <tr><td colSpan="7" style={{ textAlign: 'center', padding: 24 }}>Không có yêu cầu rút tiền nào.</td></tr>
+                            <tr><td colSpan="9" style={{ textAlign: 'center', padding: 24 }}>Không có yêu cầu rút tiền nào.</td></tr>
                         ) : filteredWithdraws.map(w => (
                             <tr key={w.requestId} style={{ borderBottom: '1px solid #f0f0f0' }}>
                                 <td style={{ padding: 10 }}>{w.requestedAt ? new Date(w.requestedAt).toLocaleTimeString('vi-VN') + ' ' + new Date(w.requestedAt).toLocaleDateString('vi-VN') : ''}</td>
                                 <td>{w.ownerFullName || w.ownerId}</td>
                                 <td>{w.ownerEmail || ''}</td>
+                                <td style={{ color: '#2e7d32', fontWeight: 500 }}>{w.accountNumber || 'Chưa cập nhật'}</td>
+                                <td style={{ color: '#1565c0', fontWeight: 500 }}>{w.bankName || 'Chưa cập nhật'}</td>
                                 <td style={{ color: '#1976d2', fontWeight: 600 }}>{formatCurrency(w.amount)}</td>
                                 <td>
                                     <select

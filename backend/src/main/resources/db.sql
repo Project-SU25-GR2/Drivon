@@ -1,4 +1,4 @@
-c
+
 
 -- Tạo database và sử dụng
 CREATE DATABASE car_rental_system2;
@@ -20,6 +20,10 @@ CREATE TABLE users (
     google_id VARCHAR(100) UNIQUE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+ALTER TABLE users
+MODIFY COLUMN role ENUM('renter', 'owner', 'admin','verify_owner', 'verify_user') DEFAULT 'renter';
+
+show create table users;
 CREATE TABLE user_image (
     image_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     user_id BIGINT NOT NULL,
@@ -66,9 +70,10 @@ CREATE TABLE car_images (
     image_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     car_id VARCHAR(15),
     image_url TEXT,
-    type ENUM('car_image', 'cavet', 'other_document')
     FOREIGN KEY (car_id) REFERENCES cars(license_plate) ON DELETE CASCADE ON UPDATE CASCADE
 );
+ALTER TABLE car_images
+ADD COLUMN type ENUM('car_image', 'car_card') DEFAULT 'car_image';
 
 -- 5. Bảng contract_partners
 CREATE TABLE contract_partners (
@@ -151,14 +156,13 @@ CREATE TABLE complaints (
 
 -- 10. Bảng notifications
 CREATE TABLE notifications (
-    notification_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    notification_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT,
     content TEXT,
-    type ENUM('SYSTEM', 'PROMO'),
-    target_type ENUM('ALL_USERS', 'OWNER_ONLY', 'USER_SPECIFIC'),
-    target_user_id BIGINT,
+    type ENUM('system', 'message', 'promo'),
     is_read BOOLEAN DEFAULT FALSE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (target_user_id) REFERENCES users(user_id) ON DELETE SET NULL ON UPDATE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- 11. Bảng support_requests
@@ -273,7 +277,49 @@ CREATE TABLE user_conversations (
     FOREIGN KEY (conversation_id) REFERENCES conversations(conversation_id) ON DELETE CASCADE,
     FOREIGN KEY (last_seen_message_id) REFERENCES messages(message_id) ON DELETE SET NULL
 );
-
+CREATE TABLE owner_wallet (
+    owner_id BIGINT PRIMARY KEY,
+    total_profit DECIMAL(15,2) DEFAULT 0, -- Tổng tiền lãi
+    total_debt DECIMAL(15,2) DEFAULT 0,   -- Tổng tiền nợ
+    balance DECIMAL(15,2) AS (total_profit - total_debt) STORED, -- Tổng tiền thực tế có thể rút
+    account_number VARCHAR(50),           -- Số tài khoản ngân hàng
+    bank_name VARCHAR(100),              -- Tên ngân hàng
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (owner_id) REFERENCES users(user_id)
+);
+CREATE TABLE owner_withdraw_requests (
+    request_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    owner_id BIGINT NOT NULL,
+    amount DECIMAL(15,2) NOT NULL,
+    status ENUM('pending', 'approved', 'rejected', 'completed') DEFAULT 'pending',
+    requested_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    processed_at DATETIME NULL,
+    note TEXT,
+    FOREIGN KEY (owner_id) REFERENCES users(user_id)
+);
+CREATE TABLE system_revenue (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    transaction_type VARCHAR(50) NOT NULL COMMENT 'REVENUE_IN, REVENUE_OUT, DEBT_CREATED, DEBT_COLLECTED',
+    payment_method VARCHAR(50) COMMENT 'BANK, CASH',
+    amount DECIMAL(15,2) NOT NULL COMMENT 'Số tiền giao dịch',
+    owner_id BIGINT COMMENT 'ID của owner',
+    booking_id INT COMMENT 'ID của booking',
+    payment_id VARCHAR(255) COMMENT 'ID của payment',
+    description VARCHAR(500) COMMENT 'Mô tả giao dịch',
+    transaction_date DATETIME NOT NULL COMMENT 'Ngày thực hiện giao dịch',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Ngày tạo record',
+    status VARCHAR(50) NOT NULL DEFAULT 'CONFIRMED' COMMENT 'CONFIRMED, PENDING, CANCELLED',
+    
+    INDEX idx_transaction_type (transaction_type),
+    INDEX idx_owner_id (owner_id),
+    INDEX idx_booking_id (booking_id),
+    INDEX idx_payment_id (payment_id),
+    INDEX idx_transaction_date (transaction_date),
+    INDEX idx_status (status)
+);
+drop table system_revenue;
+alter table owner_withdraw_requests
+add column sign BOOLEAN DEFAULT FALSE;
 -- VIEW: income_report
 CREATE VIEW income_report AS
 SELECT 
@@ -390,7 +436,9 @@ select*from car_images;
 select*from users;
 select*from messages;
 drop table messages;
-
+select*from system_revenue;
+delete from bookings
+where id = 2;
 select*from rental_contracts;
 -- SET SQL_SAFE_UPDATES = 0;
 -- DELETE FROM cars;
@@ -405,16 +453,21 @@ where status = 'rented';
 update users
 set role = 'admin'
 where user_id = 18;
+update owner_withdraw_requests
+set sign = 0
+where sign = 1;
+
 update payments
 set status = 'PAID'
 where status = 'PENDING';
-
 DELETE FROM cars
-WHERE license_plate = '29A00001';
+WHERE license_plate = '29A00003';
 delete from contract_partners
 where contract_number='HD202506146865';
-DELETE FROM payments
-WHERE status= 'PAID';
+DELETE FROM owner_withdraw_requests
+WHERE owner_id= 1;
+DELETE FROM owner_wallet;
+
 SHOW TABLES;
 INSERT INTO reviews (
     booking_id, reviewer_id, reviewee_id,
@@ -423,14 +476,19 @@ INSERT INTO reviews (
     1, 5, 2, 5,
     'dịch vụ và xe tốt !', '2025-06-20'
 );
+select*from owner_wallet;
+select*From owner_withdraw_requests;
+select*from system_revenue;
 select*from conversations;
 select*from cars;
+select*from car_images;
 select*from payments;
 select*from promotions;
 select*from rental_contracts;
 select*from reviews;
 select*From bookings;
--- drop table booking;
+
+select*from complaints;
 select*from payments;
 drop table bookings;
 drop table complaints;
@@ -448,33 +506,4 @@ ALTER TABLE contract_partners DROP FOREIGN KEY contract_partners_ibfk_1;
 ALTER TABLE contract_partners
 ADD CONSTRAINT fk_car
 FOREIGN KEY (car_id) REFERENCES cars(license_plate) ON DELETE CASCADE ON UPDATE CASCADE;
-
-
-CREATE TABLE user_image (
-    image_id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    user_id BIGINT NOT NULL,
-    image_url TEXT NOT NULL,
-    document_type ENUM('cccd', 'license', 'passport', 'other') NOT NULL,
-    description TEXT,
-    uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-);
-CREATE TABLE owner_wallet (
-    owner_id BIGINT PRIMARY KEY,
-    total_profit DECIMAL(15,2) DEFAULT 0, -- Tổng tiền lãi
-    total_debt DECIMAL(15,2) DEFAULT 0,   -- Tổng tiền nợ
-    balance DECIMAL(15,2) AS (total_profit - total_debt) STORED, -- Tổng tiền thực tế có thể rút
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (owner_id) REFERENCES users(user_id)
-);
-CREATE TABLE owner_withdraw_requests (
-    request_id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    owner_id BIGINT NOT NULL,
-    amount DECIMAL(15,2) NOT NULL,
-    status ENUM('pending', 'approved', 'rejected', 'completed') DEFAULT 'pending',
-    requested_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    processed_at DATETIME NULL,
-    note TEXT,
-    sign BOOLEAN DEFAULT FALSE,
-    FOREIGN KEY (owner_id) REFERENCES users(user_id)
-);
+TRUNCATE TABLE bookings;

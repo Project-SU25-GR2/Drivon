@@ -4,11 +4,17 @@ import Drivon.backend.model.Payment;
 import Drivon.backend.model.OwnerWallet;
 import Drivon.backend.repository.PaymentRepository;
 import Drivon.backend.repository.OwnerWalletRepository;
+import Drivon.backend.config.PayOSConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.HashMap;
+import vn.payos.PayOS;
+import vn.payos.type.CheckoutResponseData;
+import vn.payos.type.PaymentData;
 
 @Service
 public class DebtPaymentService {
@@ -23,6 +29,22 @@ public class DebtPaymentService {
     
     @Autowired
     private EarningsService earningsService;
+    
+    @Autowired
+    private PayOSConfig payOSConfig;
+    
+    private PayOS payOS;
+    
+    @Autowired
+    public void init() {
+        try {
+            payOS = new PayOS(payOSConfig.getClientId(), payOSConfig.getApiKey(), payOSConfig.getChecksumKey());
+            logger.info("PayOS initialized successfully for debt payment");
+        } catch (Exception e) {
+            logger.error("Error initializing PayOS for debt payment", e);
+            throw e;
+        }
+    }
     
     /**
      * Process debt payment when owner pays their cash debt via banking
@@ -44,7 +66,7 @@ public class DebtPaymentService {
             
             // Check if payment is successful
             if (!"PAID".equals(payment.getStatus()) && !"SUCCESS".equals(payment.getStatus())) {
-                logger.info("Payment {} is not successful yet, status: {}", orderCode, payment.getStatus());
+                logger.warn("Payment {} is not successful yet, status: {}. Cannot process debt payment.", orderCode, payment.getStatus());
                 return;
             }
             
@@ -87,5 +109,105 @@ public class DebtPaymentService {
      */
     public boolean isDebtPayment(Payment payment) {
         return payment != null && "DEBT_PAYMENT".equals(payment.getCarId());
+    }
+    
+    /**
+     * Create debt payment request using PayOS
+     */
+    public Map<String, Object> createDebtPaymentRequest(Long ownerId, Double amount, String description, String returnUrl, String cancelUrl) {
+        try {
+            logger.info("Creating debt payment request for owner {} amount {}", ownerId, amount);
+            
+            // Validate input
+            if (ownerId == null || amount == null || amount <= 0) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Invalid owner ID or amount");
+                return new HashMap<>(error);
+            }
+            
+            // Generate unique order code for debt payment
+            Long orderCode = System.currentTimeMillis();
+            
+            // Create payment data using PayOS SDK
+            PaymentData paymentData = PaymentData.builder()
+                    .orderCode(orderCode)
+                    .amount(amount.intValue())
+                    .description(description)
+                    .returnUrl(returnUrl)
+                    .cancelUrl(cancelUrl)
+                    .build();
+
+            logger.info("Created PaymentData object for debt payment: {}", paymentData);
+
+            // Create payment link using PayOS SDK
+            CheckoutResponseData response = payOS.createPaymentLink(paymentData);
+
+            if (response == null) {
+                logger.error("PayOS API returned null response for debt payment");
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "No response from PayOS API");
+                return new HashMap<>(error);
+            }
+
+            logger.info("Received response from PayOS for debt payment: {}", response);
+
+            // Create a simple payment record for debt payment tracking
+            Payment payment = new Payment();
+            payment.setPaymentId("DEBT_" + System.currentTimeMillis());
+            payment.setOrderCode(orderCode.toString());
+            payment.setAmount(amount);
+            payment.setStatus("PAID"); // Set to PAID like normal payments
+            payment.setPaymentMethod("bank");
+            payment.setPaymentDate(LocalDateTime.now());
+            payment.setUserId(ownerId);
+            payment.setCarId("DEBT_PAYMENT"); // Special identifier
+            payment.setAdditionalRequirements("Debt payment to system");
+            
+            paymentRepository.save(payment);
+            logger.info("Saved debt payment record: {}", payment);
+
+            // Process debt payment immediately after creating payment record
+            logger.info("Processing debt payment immediately for orderCode: {}", orderCode);
+            processDebtPayment(orderCode.toString());
+
+            // Create response
+            Map<String, Object> formattedResponse = new HashMap<>();
+            formattedResponse.put("data", response);
+            formattedResponse.put("orderCode", orderCode);
+            formattedResponse.put("ownerId", ownerId);
+
+            return formattedResponse;
+        } catch (Exception e) {
+            logger.error("Error creating debt payment request: {}", e.getMessage(), e);
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            return new HashMap<>(errorResponse);
+        }
+    }
+    
+    /**
+     * Handle debt payment webhook
+     */
+    public void handleDebtPaymentWebhook(Map<String, Object> webhookData) {
+        try {
+            logger.info("Received debt payment webhook data: {}", webhookData);
+
+            String orderCode = (String) webhookData.get("orderCode");
+            String status = (String) webhookData.get("status");
+            
+            if (orderCode == null || status == null) {
+                logger.error("Debt payment webhook missing required data: orderCode={}, status={}", orderCode, status);
+                throw new IllegalArgumentException("Missing required webhook data");
+            }
+
+            // If status is SUCCESS, process the debt payment
+            if ("SUCCESS".equalsIgnoreCase(status)) {
+                logger.info("Processing successful debt payment for orderCode: {}", orderCode);
+                processDebtPayment(orderCode);
+            }
+        } catch (Exception e) {
+            logger.error("Error processing debt payment webhook", e);
+            throw new RuntimeException("Error processing debt payment webhook: " + e.getMessage());
+        }
     }
 } 

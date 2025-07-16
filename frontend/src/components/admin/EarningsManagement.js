@@ -230,11 +230,11 @@ const EarningsManagement = () => {
     const getStatusBadge = (status) => {
         switch(status) {
             case 'ACTIVE':
-                return <span className="status-badge status-active">Hoạt động</span>;
+                return <span className="status-badge status-active">Không nợ</span>;
             case 'DEBT':
                 return <span className="status-badge status-debt">Có nợ</span>;
             default:
-                return <span className="status-badge status-inactive">Không hoạt động</span>;
+                return <span className="status-badge status-inactive">Đã thanh toán</span>;
         }
     };
 
