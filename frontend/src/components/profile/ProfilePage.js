@@ -54,7 +54,7 @@ const ProfilePage = ({ user, onUpdateUser }) => {
       const res = await axios.get(`${API_URL}/user/image`, { params: { userId: user.userId } });
       setUserImages(res.data);
     } catch (err) {
-      showErrorToast('Không thể tải danh sách giấy tờ');
+      showErrorToast('Cannot load document list');
     }
   };
 
@@ -76,12 +76,12 @@ const ProfilePage = ({ user, onUpdateUser }) => {
   const validateForm = () => {
     const errors = {};
     if (!editedUser.fullName?.trim()) {
-      errors.fullName = 'Họ và tên không được để trống';
+      errors.fullName = 'Full name is required';
     }
     if (!editedUser.phone?.trim()) {
-      errors.phone = 'Số điện thoại không được để trống';
+      errors.phone = 'Phone number is required';
     } else if (!/^[0-9]{10}$/.test(editedUser.phone.trim())) {
-      errors.phone = 'Số điện thoại không hợp lệ (phải có 10 chữ số)';
+      errors.phone = 'Invalid phone number (must be 10 digits)';
     }
     return errors;
   };
@@ -101,13 +101,13 @@ const ProfilePage = ({ user, onUpdateUser }) => {
       
       if (response.data) {
         onUpdateUser(response.data);
-        setSuccessMessage('Cập nhật thông tin thành công!');
+        setSuccessMessage('Profile updated successfully!');
         showSuccessToast('Profile updated successfully!');
         setIsEditing(false);
       }
     } catch (err) {
       console.error('Error updating profile:', err);
-      const errorMessage = err.response?.data?.error || 'Có lỗi xảy ra khi cập nhật thông tin.';
+      const errorMessage = err.response?.data?.error || 'An error occurred while updating profile.';
       setError(errorMessage);
       showErrorToast(errorMessage);
     }
@@ -128,13 +128,13 @@ const ProfilePage = ({ user, onUpdateUser }) => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        setDocUploadError('Kích thước file không được vượt quá 5MB');
+        setDocUploadError('File size must not exceed 5MB');
         setDocFile(null);
         setDocPreview(null);
         return;
       }
       if (!file.type.startsWith('image/')) {
-        setDocUploadError('Vui lòng chọn file hình ảnh');
+        setDocUploadError('Please select an image file');
         setDocFile(null);
         setDocPreview(null);
         return;
@@ -188,7 +188,7 @@ const ProfilePage = ({ user, onUpdateUser }) => {
     const files = Array.from(e.target.files);
     const validFiles = files.filter(file => file.size <= 5 * 1024 * 1024 && file.type.startsWith('image/'));
     if (validFiles.length !== files.length) {
-      setDocUploadError('Chỉ chọn ảnh, mỗi file tối đa 5MB!');
+      setDocUploadError('Only images allowed, each file max 5MB!');
       return;
     }
     setPendingDocFiles(prev => [...prev, ...validFiles]);
@@ -201,7 +201,7 @@ const ProfilePage = ({ user, onUpdateUser }) => {
     setDocUploadError(null);
     try {
       if (pendingDocFiles.length === 0) {
-        setDocUploadError('Vui lòng chọn ít nhất 1 ảnh giấy tờ');
+        setDocUploadError('Please select at least 1 document image');
         setDocUploading(false);
         return;
       }
@@ -225,27 +225,27 @@ const ProfilePage = ({ user, onUpdateUser }) => {
           description: pendingDocDesc
         });
       }
-      showSuccessToast('Tải lên giấy tờ thành công!');
+      showSuccessToast('Document uploaded successfully!');
       setPendingDocFiles([]);
       setPendingDocPreviews([]);
       setDocDesc('');
       fetchUserImages();
       setDocEditMode(false);
     } catch (err) {
-      setDocUploadError('Tải lên giấy tờ thất bại!');
-      showErrorToast('Tải lên giấy tờ thất bại!');
+      setDocUploadError('Document upload failed!');
+      showErrorToast('Document upload failed!');
     }
     setDocUploading(false);
   };
 
   const handleDeleteUserImage = async (imageId) => {
-    if (!window.confirm('Bạn có chắc muốn xoá giấy tờ này?')) return;
+    if (!window.confirm('Are you sure you want to delete this document?')) return;
     try {
       await axios.delete(`${API_URL}/user/image/${imageId}`);
-      showSuccessToast('Đã xoá giấy tờ!');
+      showSuccessToast('Document deleted!');
       fetchUserImages();
     } catch (err) {
-      showErrorToast('Xoá giấy tờ thất bại!');
+      showErrorToast('Failed to delete document!');
     }
   };
 
@@ -264,7 +264,7 @@ const ProfilePage = ({ user, onUpdateUser }) => {
     return (
       <div className="profile-loading">
         <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Đang tải...</span>
+          <span className="visually-hidden">Loading...</span>
         </div>
       </div>
     );
@@ -300,7 +300,7 @@ const ProfilePage = ({ user, onUpdateUser }) => {
               <i className="bi bi-camera-fill"></i>
             </Link>
           </div>
-          <h2 className="profile-name">{user.fullName || 'Chưa cập nhật'}</h2>
+          <h2 className="profile-name">{user.fullName || 'Not updated yet'}</h2>
           <p className="profile-email">{user.email}</p>
         </div>
       </div>
@@ -310,12 +310,12 @@ const ProfilePage = ({ user, onUpdateUser }) => {
           <div className="section-header">
             <h3>
               <i className="bi bi-person-lines-fill me-2"></i>
-              Thông tin cá nhân
+              Personal Information
             </h3>
             {!isEditing && (
               <button onClick={handleEditToggle} className="btn btn-outline-primary btn-sm">
                 <i className="bi bi-pencil-square me-2"></i>
-                Chỉnh sửa
+                Edit
               </button>
             )}
           </div>
@@ -324,8 +324,8 @@ const ProfilePage = ({ user, onUpdateUser }) => {
             <div>
             <div className="info-grid">
               <div className="info-item">
-                <label>Họ và tên</label>
-                <p>{user.fullName || 'Chưa cập nhật'}</p>
+                <label>Full Name</label>
+                <p>{user.fullName || 'Not updated yet'}</p>
               </div>
               <div className="info-item">
                 <label>Email</label>
@@ -334,19 +334,19 @@ const ProfilePage = ({ user, onUpdateUser }) => {
               </div>
               <div className="info-grid">
               <div className="info-item">
-                <label>Số điện thoại</label>
-                <p>{user.phone || 'Chưa cập nhật'}</p>
+                <label>Phone Number</label>
+                <p>{user.phone || 'Not updated yet'}</p>
               </div>
               <div className="info-item">
-                <label>Địa chỉ</label>
-                <p>{user.address || 'Chưa cập nhật'}</p>
+                <label>Address</label>
+                <p>{user.address || 'Not updated yet'}</p>
                 </div>
               </div>
             </div>
           ) : (
             <form className="edit-form" onSubmit={(e) => e.preventDefault()}>
               <div className="form-group">
-                <label htmlFor="fullName">Họ và tên</label>
+                <label htmlFor="fullName">Full Name</label>
                 <input
                   type="text"
                   className={`form-control ${error?.fullName ? 'is-invalid' : ''}`}
@@ -354,7 +354,7 @@ const ProfilePage = ({ user, onUpdateUser }) => {
                   name="fullName"
                   value={editedUser.fullName || ''}
                   onChange={handleInputChange}
-                  placeholder="Nhập họ và tên"
+                  placeholder="Enter full name"
                 />
                 {error?.fullName && <div className="invalid-feedback">{error.fullName}</div>}
               </div>
@@ -367,16 +367,16 @@ const ProfilePage = ({ user, onUpdateUser }) => {
                   id="email"
                   value={user.email}
                   disabled
-                  title="Email không thể thay đổi"
+                  title="Email cannot be changed"
                 />
                 <small className="form-text text-muted">
                   <i className="bi bi-info-circle me-1"></i>
-                  Email không thể thay đổi
+                  Email cannot be changed
                 </small>
               </div>
 
               <div className="form-group">
-                <label htmlFor="phone">Số điện thoại</label>
+                <label htmlFor="phone">Phone Number</label>
                 <input
                   type="tel"
                   className={`form-control ${error?.phone ? 'is-invalid' : ''}`}
@@ -384,13 +384,13 @@ const ProfilePage = ({ user, onUpdateUser }) => {
                   name="phone"
                   value={editedUser.phone || ''}
                   onChange={handleInputChange}
-                  placeholder="Nhập số điện thoại"
+                  placeholder="Enter phone number"
                 />
                 {error?.phone && <div className="invalid-feedback">{error.phone}</div>}
               </div>
 
               <div className="form-group">
-                <label htmlFor="address">Địa chỉ</label>
+                <label htmlFor="address">Address</label>
                 <textarea
                   className="form-control"
                   id="address"
@@ -398,18 +398,18 @@ const ProfilePage = ({ user, onUpdateUser }) => {
                   rows="3"
                   value={editedUser.address || ''}
                   onChange={handleInputChange}
-                  placeholder="Nhập địa chỉ"
+                  placeholder="Enter address"
                 ></textarea>
               </div>
 
               <div className="form-actions">
                 <button type="button" className="btn btn-primary" onClick={handleSave}>
                   <i className="bi bi-check-lg me-2"></i>
-                  Lưu thay đổi
+                  Save changes
                 </button>
                 <button type="button" className="btn btn-light" onClick={handleCancel}>
                   <i className="bi bi-x-lg me-2"></i>
-                  Hủy
+                  Cancel
                 </button>
               </div>
             </form>
@@ -420,23 +420,23 @@ const ProfilePage = ({ user, onUpdateUser }) => {
           <div className="section-header">
             <h3>
               <i className="bi bi-shield-lock-fill me-2"></i>
-              Bảo mật
+              Security
             </h3>
           </div>
           <div className="security-actions">
             <Link to="/change-password" className="security-action-item">
               <i className="bi bi-key-fill"></i>
               <div>
-                <h4>{hasPassword ? 'Đổi mật khẩu' : 'Tạo mật khẩu'}</h4>
-                <p>{hasPassword ? 'Thay đổi mật khẩu đăng nhập của bạn' : 'Tạo mật khẩu để bảo vệ tài khoản'}</p>
+                <h4>{hasPassword ? 'Change password' : 'Create password'}</h4>
+                <p>{hasPassword ? 'Change your login password' : 'Create a password to protect your account'}</p>
               </div>
               <i className="bi bi-chevron-right"></i>
             </Link>
             <Link to="/change-avatar" className="security-action-item">
               <i className="bi bi-person-circle"></i>
               <div>
-                <h4>Đổi ảnh đại diện</h4>
-                <p>Cập nhật ảnh đại diện của bạn</p>
+                <h4>Change avatar</h4>
+                <p>Update your avatar</p>
               </div>
               <i className="bi bi-chevron-right"></i>
             </Link>
@@ -447,17 +447,17 @@ const ProfilePage = ({ user, onUpdateUser }) => {
           <div className="section-header">
             <h3>
               <i className="bi bi-card-image me-2"></i>
-              Giấy tờ tuỳ thân
+              Identity Documents
             </h3>
             <button onClick={handleDocEditToggle} className="btn btn-outline-primary btn-sm">
               <i className="bi bi-pencil-square me-2"></i>
-              {docEditMode ? 'Đóng' : 'Chỉnh sửa'}
+              {docEditMode ? 'Close' : 'Edit'}
             </button>
           </div>
           <form className="doc-upload-form" onSubmit={handleDocSave}>
             <div className="row g-2 align-items-end">
               <div className="col-md-6">
-                <label>Hình ảnh</label>
+                <label>Image</label>
                 <div
                   className="doc-dropzone"
                   onDrop={docEditMode ? handleDrop : undefined}
@@ -467,7 +467,7 @@ const ProfilePage = ({ user, onUpdateUser }) => {
                 >
                   <div className="doc-dropzone-placeholder">
                     <FiUpload size={48} color="#4fc3f7" />
-                    <p>Kéo thả ảnh vào đây hoặc click để chọn</p>
+                    <p>Drag and drop images here or click to select</p>
                   </div>
                   <input
                     type="file"
@@ -488,7 +488,7 @@ const ProfilePage = ({ user, onUpdateUser }) => {
                           type="button"
                           className="btn btn-sm btn-danger"
                           style={{ position: 'absolute', top: 4, right: 4, padding: '2px 6px', borderRadius: '50%', zIndex: 2 }}
-                          title="Xoá ảnh này"
+                          title="Delete this image"
                           onClick={() => {
                             setPendingDocFiles(files => files.filter((_, i) => i !== idx));
                             setPendingDocPreviews(previews => previews.filter((_, i) => i !== idx));
@@ -500,31 +500,31 @@ const ProfilePage = ({ user, onUpdateUser }) => {
                     ))}
                   </div>
                 )}
-                {docUploading && <div className="text-info mt-2">Đang tải lên...</div>}
+                {docUploading && <div className="text-info mt-2">Uploading...</div>}
               </div>
               <div className="col-md-6">
-                <label>Loại giấy tờ</label>
+                <label>Document Type</label>
                 <select className="form-select mb-2" value={pendingDocType} onChange={e => setPendingDocType(e.target.value)} disabled={!docEditMode}>
-                  <option value="cccd">CCCD</option>
-                  <option value="license">Bằng lái</option>
-                  <option value="passport">Hộ chiếu</option>
-                  <option value="other">Khác</option>
+                  <option value="cccd">Citizen ID</option>
+                  <option value="license">Driver's License</option>
+                  <option value="passport">Passport</option>
+                  <option value="other">Other</option>
                 </select>
-                <label>Mô tả</label>
-                <input type="text" className="form-control" value={pendingDocDesc} onChange={e => setPendingDocDesc(e.target.value)} placeholder="Mô tả giấy tờ" disabled={!docEditMode} />
+                <label>Description</label>
+                <input type="text" className="form-control" value={pendingDocDesc} onChange={e => setPendingDocDesc(e.target.value)} placeholder="Document description" disabled={!docEditMode} />
               </div>
             </div>
             {docEditMode && (
               <div className="form-actions mt-3">
-                <button type="submit" className="btn btn-primary me-2" disabled={docUploading}>Lưu thay đổi</button>
-                <button type="button" className="btn btn-light" onClick={handleDocCancel} disabled={docUploading}>Huỷ</button>
+                <button type="submit" className="btn btn-primary me-2" disabled={docUploading}>Save changes</button>
+                <button type="button" className="btn btn-light" onClick={handleDocCancel} disabled={docUploading}>Cancel</button>
               </div>
             )}
             {docUploadError && <div className="text-danger mt-2">{docUploadError}</div>}
           </form>
           <div className="doc-list mt-3">
             {userImages.length === 0 ? (
-              <div className="text-muted">Chưa có giấy tờ nào.</div>
+              <div className="text-muted">No documents yet.</div>
             ) : (
               <div className="row g-3 justify-content-center">
                 {Object.entries(groupedImages).map(([docType, images]) => (
@@ -540,7 +540,7 @@ const ProfilePage = ({ user, onUpdateUser }) => {
                                 <button
                                   className="btn btn-sm btn-danger"
                                   style={{ position: 'absolute', top: 8, right: 8, padding: '4px 10px', borderRadius: '50%', zIndex: 2 }}
-                                  title="Xoá giấy tờ"
+                                  title="Delete document"
                                   onClick={() => handleDeleteUserImage(img.imageId)}
                                 >
                                   <FiTrash2 size={20} />
@@ -548,7 +548,7 @@ const ProfilePage = ({ user, onUpdateUser }) => {
                               )}
                               <div className="mt-3 text-center" style={{minWidth:180}}>
                                 {img.description && <div className="text-muted small">{img.description}</div>}
-                                <small className="text-muted">Tải lên: {img.uploadedAt ? new Date(img.uploadedAt).toLocaleString() : ''}</small>
+                                <small className="text-muted">Uploaded: {img.uploadedAt ? new Date(img.uploadedAt).toLocaleString() : ''}</small>
                               </div>
                             </div>
                           ))}

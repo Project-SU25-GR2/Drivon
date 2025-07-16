@@ -18,7 +18,7 @@ const ChangeAvatarPage = () => {
     const file = event.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        setUploadError('Kích thước file không được vượt quá 5MB');
+        setUploadError('File size must not exceed 5MB');
         showErrorToast('File size must not exceed 5MB');
         setSelectedFile(null);
         setPreviewUrl(null);
@@ -26,7 +26,7 @@ const ChangeAvatarPage = () => {
       }
 
       if (!file.type.startsWith('image/')) {
-        setUploadError('Vui lòng chọn file hình ảnh');
+        setUploadError('Please select an image file');
         showErrorToast('Please select an image file');
         setSelectedFile(null);
         setPreviewUrl(null);
@@ -45,7 +45,7 @@ const ChangeAvatarPage = () => {
 
   const handleUpload = async () => {
     if (!selectedFile) {
-      setUploadError('Vui lòng chọn ảnh để tải lên.');
+      setUploadError('Please select an image to upload');
       showErrorToast('Please select an image to upload');
       return;
     }
@@ -86,7 +86,7 @@ const ChangeAvatarPage = () => {
       }, 1500);
     } catch (error) {
       console.error('Error uploading avatar:', error);
-      const errorMessage = error.response?.data?.error || 'Có lỗi xảy ra khi tải ảnh lên.';
+      const errorMessage = error.response?.data?.error || 'An error occurred while uploading the image.';
       setUploadError(errorMessage);
       showErrorToast(errorMessage);
     } finally {
@@ -100,9 +100,9 @@ const ChangeAvatarPage = () => {
         <div className="avatar-card-header">
           <h2>
             <i className="bi bi-person-circle me-2"></i>
-            Đổi ảnh đại diện
+            Change Avatar
           </h2>
-          <p className="text-muted">Chọn ảnh đại diện mới cho tài khoản của bạn</p>
+          <p className="text-muted">Choose a new avatar for your account</p>
         </div>
 
         <div className="avatar-card-body">
@@ -113,7 +113,7 @@ const ChangeAvatarPage = () => {
               ) : (
                 <div className="upload-placeholder">
                   <i className="bi bi-cloud-arrow-up"></i>
-                  <p>Kéo thả ảnh vào đây hoặc click để chọn</p>
+                  <p>Drag and drop an image here or click to select</p>
                 </div>
               )}
             </div>
@@ -121,7 +121,7 @@ const ChangeAvatarPage = () => {
             <div className="upload-controls">
               <label className="upload-button" htmlFor="avatar-upload">
                 <i className="bi bi-image me-2"></i>
-                Chọn ảnh
+                Choose Image
                 <input
                   type="file"
                   id="avatar-upload"
@@ -135,7 +135,7 @@ const ChangeAvatarPage = () => {
               <div className="upload-info">
                 <small className="text-muted">
                   <i className="bi bi-info-circle me-1"></i>
-                  Hỗ trợ các định dạng: JPG, PNG, GIF. Kích thước tối đa: 5MB
+                  Supported formats: JPG, PNG, GIF. Max size: 5MB
                 </small>
               </div>
             </div>
@@ -152,7 +152,7 @@ const ChangeAvatarPage = () => {
           {uploadSuccess && (
             <div className="alert alert-success alert-dismissible fade show mt-3" role="alert">
               <i className="bi bi-check-circle-fill me-2"></i>
-              Cập nhật ảnh đại diện thành công!
+              Avatar updated successfully!
               <button type="button" className="btn-close" onClick={() => setUploadSuccess(false)}></button>
             </div>
           )}
@@ -166,12 +166,12 @@ const ChangeAvatarPage = () => {
               {uploading ? (
                 <>
                   <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                  Đang tải lên...
+                  Uploading...
                 </>
               ) : (
                 <>
                   <i className="bi bi-cloud-upload me-2"></i>
-                  Lưu ảnh đại diện
+                  Save Avatar
                 </>
               )}
             </button>
@@ -181,7 +181,7 @@ const ChangeAvatarPage = () => {
               disabled={uploading}
             >
               <i className="bi bi-arrow-left me-2"></i>
-              Quay lại
+              Back
             </button>
           </div>
         </div>

@@ -14,7 +14,7 @@ const ChangePasswordPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Kiểm tra xem người dùng đã có mật khẩu hay chưa
+    // Check if the user already has a password
     const checkPasswordStatus = async () => {
       try {
         const user = JSON.parse(localStorage.getItem("user"));
@@ -29,7 +29,7 @@ const ChangePasswordPage = () => {
         setHasPassword(response.data.hasPassword);
       } catch (err) {
         console.error("Error checking password status:", err);
-        setError("Không thể kiểm tra trạng thái mật khẩu");
+        setError("Unable to check password status");
       }
     };
 
@@ -38,19 +38,19 @@ const ChangePasswordPage = () => {
 
   const validatePassword = (password) => {
     if (password.length < 8) {
-      return "Mật khẩu phải có ít nhất 8 ký tự";
+      return "Password must be at least 8 characters";
     }
     if (!/[A-Z]/.test(password)) {
-      return "Mật khẩu phải chứa ít nhất 1 chữ hoa";
+      return "Password must contain at least 1 uppercase letter";
     }
     if (!/[a-z]/.test(password)) {
-      return "Mật khẩu phải chứa ít nhất 1 chữ thường";
+      return "Password must contain at least 1 lowercase letter";
     }
     if (!/[0-9]/.test(password)) {
-      return "Mật khẩu phải chứa ít nhất 1 số";
+      return "Password must contain at least 1 number";
     }
     if (!/[!@#$%^&*]/.test(password)) {
-      return "Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt (!@#$%^&*)";
+      return "Password must contain at least 1 special character (!@#$%^&*)";
     }
     return null;
   };
@@ -61,7 +61,7 @@ const ChangePasswordPage = () => {
     setSuccess(false);
     setLoading(true);
 
-    // Validate mật khẩu mới
+    // Validate new password
     const passwordError = validatePassword(newPassword);
     if (passwordError) {
       setError(passwordError);
@@ -69,9 +69,9 @@ const ChangePasswordPage = () => {
       return;
     }
 
-    // Kiểm tra mật khẩu xác nhận
+    // Check confirm password
     if (newPassword !== confirmPassword) {
-      setError("Mật khẩu xác nhận không khớp");
+      setError("Confirm password does not match");
       setLoading(false);
       return;
     }
@@ -83,8 +83,8 @@ const ChangePasswordPage = () => {
       }
 
       const endpoint = hasPassword
-        ? "/api/profile/change-password"
-        : "/api/profile/create-password";
+        ? "/profile/change-password"
+        : "/profile/create-password";
       const payload = hasPassword
         ? { email: user.email, currentPassword, newPassword }
         : { email: user.email, newPassword };
@@ -100,7 +100,7 @@ const ChangePasswordPage = () => {
         setConfirmPassword("");
         setCurrentPassword("");
 
-        // Redirect sau 2 giây
+        // Redirect after 2 seconds
         setTimeout(() => {
           navigate("/profile");
         }, 2000);
@@ -108,7 +108,7 @@ const ChangePasswordPage = () => {
     } catch (err) {
       console.error("Error changing password:", err);
       setError(
-        err.response?.data?.error || "Có lỗi xảy ra khi thay đổi mật khẩu"
+        err.response?.data?.error || "An error occurred while changing the password"
       );
     } finally {
       setLoading(false);
@@ -121,7 +121,7 @@ const ChangePasswordPage = () => {
         <div className="card-header bg-primary text-white">
           <h2 className="h5 mb-0">
             <i className="bi bi-key me-2"></i>
-            {hasPassword ? "Đổi mật khẩu" : "Tạo mật khẩu mới"}
+            {hasPassword ? "Change Password" : "Create New Password"}
           </h2>
         </div>
         <div className="card-body">
@@ -146,8 +146,8 @@ const ChangePasswordPage = () => {
                 role="alert"
               >
                 {hasPassword
-                  ? "Đổi mật khẩu thành công!"
-                  : "Tạo mật khẩu thành công!"}
+                  ? "Password changed successfully!"
+                  : "Password created successfully!"}
                 <button
                   type="button"
                   className="btn-close"
@@ -158,8 +158,8 @@ const ChangePasswordPage = () => {
 
             {hasPassword && (
               <div className="mb-3">
-                <label htmlFor="currentPassword" className="form-label">
-                  Mật khẩu hiện tại
+                <label htmlFor="currentPassword" className="form-label password-label">
+                  Current Password
                 </label>
                 <input
                   type="password"
@@ -173,8 +173,8 @@ const ChangePasswordPage = () => {
             )}
 
             <div className="mb-3">
-              <label htmlFor="newPassword" className="form-label">
-                Mật khẩu mới
+              <label htmlFor="newPassword" className="form-label password-label">
+                New Password
               </label>
               <input
                 type="password"
@@ -185,14 +185,13 @@ const ChangePasswordPage = () => {
                 required
               />
               <div className="form-text">
-                Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường,
-                số và ký tự đặc biệt
+                Password must be at least 8 characters, including uppercase, lowercase, number, and special character
               </div>
             </div>
 
             <div className="mb-4">
-              <label htmlFor="confirmPassword" className="form-label">
-                Xác nhận mật khẩu mới
+              <label htmlFor="confirmPassword" className="form-label password-label">
+                Confirm New Password
               </label>
               <input
                 type="password"
@@ -217,12 +216,12 @@ const ChangePasswordPage = () => {
                       role="status"
                       aria-hidden="true"
                     ></span>
-                    Đang xử lý...
+                    Processing...
                   </>
                 ) : (
                   <>
                     <i className="bi bi-check-circle me-2"></i>
-                    {hasPassword ? "Đổi mật khẩu" : "Tạo mật khẩu"}
+                    {hasPassword ? "Change Password" : "Create Password"}
                   </>
                 )}
               </button>
@@ -233,7 +232,7 @@ const ChangePasswordPage = () => {
                 disabled={loading}
               >
                 <i className="bi bi-x-circle me-2"></i>
-                Hủy
+                Cancel
               </button>
             </div>
           </form>
