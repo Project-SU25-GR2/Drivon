@@ -14,5 +14,10 @@ public class EarningsReportDto {
     private double monthlyEarnings;
     private double pendingPayouts;
     private double lastMonthEarnings;
+    private double totalCash;
+    private double totalBanking;
+    private double totalProfit; // Tổng lãi từ owner_wallet
+    private double totalDebt;   // Tổng nợ từ owner_wallet
+    private double balance;     // Số dư thực tế (lãi - nợ)
     private List<TransactionDto> transactions;
 } 

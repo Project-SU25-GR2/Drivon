@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/earnings")
@@ -35,5 +36,11 @@ public class EarningsController {
 
         EarningsReportDto report = earningsService.getEarningsReport(ownerId, yearMonth);
         return ResponseEntity.ok(report);
+    }
+
+    @GetMapping("/admin/system-statistics")
+    public ResponseEntity<Map<String, Object>> getSystemStatistics() {
+        Map<String, Object> statistics = earningsService.getSystemStatistics();
+        return ResponseEntity.ok(statistics);
     }
 } 

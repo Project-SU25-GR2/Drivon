@@ -23,6 +23,8 @@ import org.springframework.http.HttpStatus;
 import java.util.Optional;
 import Drivon.backend.service.NotificationService;
 import Drivon.backend.entity.Notification;
+import Drivon.backend.repository.OwnerWalletRepository;
+import Drivon.backend.model.OwnerWallet;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -45,6 +47,9 @@ public class AdminController {
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private OwnerWalletRepository ownerWalletRepository;
 
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
@@ -244,6 +249,26 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error updating status: " + e.getMessage());
         }
+    }
+
+    @GetMapping("/owner-wallets")
+    public ResponseEntity<List<Map<String, Object>>> getAllOwnerWallets() {
+        List<OwnerWallet> wallets = ownerWalletRepository.findAll();
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (OwnerWallet wallet : wallets) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("ownerId", wallet.getOwnerId());
+            map.put("totalProfit", wallet.getTotalProfit());
+            map.put("totalDebt", wallet.getTotalDebt());
+            map.put("balance", wallet.getBalance());
+            // Lấy thông tin user
+            userRepository.findById(wallet.getOwnerId()).ifPresent(user -> {
+                map.put("fullName", user.getFullName());
+                map.put("email", user.getEmail());
+            });
+            result.add(map);
+        }
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/check-role/{userId}")

@@ -1,0 +1,289 @@
+@startuml Drivon Package Diagram
+
+!define RECTANGLE class
+
+package "Drivon" {
+  package "Frontend" {
+    package "src" {
+      package "api" {
+        [config.js]
+        [configApi.js]
+        [notification.js]
+      }
+      
+      package "components" {
+        package "admin" {
+          [AdminPage.js]
+          [PartnerPage.js]
+          [PromotionPage.js]
+          [UserManagementPage.js]
+          [DashboardOverview.js]
+        }
+        
+        package "auth" {
+          [AuthPage.js]
+          [Login.js]
+          [Signup.js]
+          [ChangePasswordPage.js]
+          [ForgotPasswordPage.js]
+          [ResetPasswordPage.js]
+        }
+        
+        package "car" {
+          [MyRentals.js]
+          [RentalForm.js]
+          [RentalSuccess.js]
+          [viewCarDetail.js]
+        }
+        
+        package "chat" {
+          [Messages.js]
+        }
+        
+        package "contract" {
+          [CarLeaseContractForm.js]
+          [ContractForm.js]
+          [ContractViewer.js]
+          [RentYourCarForm.js]
+        }
+        
+        package "home" {
+          [HomeContent.js]
+          [MainLayout.js]
+        }
+        
+        package "notification" {
+          [AdminNotificationManager.js]
+          [NotificationBell.js]
+          [NotificationList.js]
+          [TestNotification.js]
+        }
+        
+        package "owner" {
+          [AddCarForm.js]
+          [BookingManager.js]
+          [CarManagementPage.js]
+          [EditCarForm.js]
+          [ManagerOwnerPage.js]
+          [ProfileOwner.js]
+          [EarningsPage.js]
+        }
+        
+        package "payment" {
+          [PaymentForm.js]
+          [QR_Bank.js]
+        }
+        
+        package "profile" {
+          [ChangeAvatarPage.js]
+          [ProfilePage.js]
+        }
+        
+        package "rent" {
+          [RentCar.js]
+        }
+        
+        package "others" {
+          [404.js]
+          [ContactPage.js]
+          [DebugAuth.js]
+          [loader.js]
+          [notFoundCar.js]
+          [SimpleButton.js]
+          [TestConnection.js]
+        }
+      }
+      
+      package "config" {
+        [cloudinary.js]
+      }
+      
+      package "contexts" {
+        [CarDataContext.js]
+        [CarManagementContext.js]
+        [PartnerDataContext.js]
+        [RentalHistoryContext.js]
+        [UserDataContext.js]
+      }
+      
+      package "hooks" {
+        [useCarDataRefresh.js]
+        [useCarManagementRefresh.js]
+        [usePartnerDataRefresh.js]
+        [useRentalHistoryRefresh.js]
+        [useUserDataRefresh.js]
+      }
+      
+      package "services" {
+        [WebSocketService.js]
+      }
+    }
+    
+    package "public" {
+      [index.html]
+      [favicon.ico]
+      package "images" {
+        [bg1.jpg]
+        [bg2.jpg]
+        [daumoc.png]
+      }
+    }
+  }
+  
+  package "Backend" {
+    package "src/main/java/Drivon/backend" {
+      package "config" {
+        [PayOSConfig.java]
+        [SecurityConfig.java]
+        [WebSocketConfig.java]
+      }
+      
+      package "controller" {
+        [AdminController.java]
+        [AuthController.java]
+        [BookingController.java]
+        [CarController.java]
+        [CarImageController.java]
+        [ChatWebSocketController.java]
+        [ContractController.java]
+        [EarningsController.java]
+        [MessController.java]
+        [NotificationController.java]
+        [NotificationWebSocketController.java]
+        [OwnerBankController.java]
+        [PaymentController.java]
+        [ProfileController.java]
+        [PromotionController.java]
+        [ReviewController.java]
+        [TestController.java]
+        [UserImageController.java]
+        [WebSocketController.java]
+      }
+      
+      package "dto" {
+        [AuthResponse.java]
+        [BookingRequest.java]
+        [CarData.java]
+        [CashPaymentRequest.java]
+        [ChangePasswordRequest.java]
+        [ContractRequest.java]
+        [EarningsReportDto.java]
+        [ForgotPasswordRequest.java]
+        [GoogleAuthRequest.java]
+        [LoginRequest.java]
+        [LoginResponse.java]
+        [ResetPasswordRequest.java]
+        [ReviewDto.java]
+        [ReviewResponseDto.java]
+        [SignupRequest.java]
+        [TransactionDto.java]
+        [UserImageUploadRequest.java]
+      }
+      
+      package "entity" {
+        [Conversation.java]
+        [Message.java]
+        [Notification.java]
+        [UserConversation.java]
+        [UserConversationId.java]
+      }
+      
+      package "exception" {
+        [ErrorObject.java]
+        [GlobalExceptionHandler.java]
+      }
+      
+      package "model" {
+        [Booking.java]
+        [Car.java]
+        [CarImage.java]
+        [Contract.java]
+        [EmailVerificationToken.java]
+        [OwnerBank.java]
+        [PasswordResetToken.java]
+        [Payment.java]
+        [PaymentMethod.java]
+        [PaymentRequest.java]
+        [PaymentStatus.java]
+        [Promotion.java]
+        [Review.java]
+        [User.java]
+        [UserImage.java]
+        [UserRole.java]
+        [UserStatus.java]
+      }
+      
+      package "repository" {
+        [BookingRepository.java]
+        [CarImageRepository.java]
+        [CarRepository.java]
+        [ContractRepository.java]
+        [ConversationRepository.java]
+        [EmailVerificationTokenRepository.java]
+        [MessageRepository.java]
+        [NotificationRepository.java]
+        [OwnerBankRepository.java]
+        [PasswordResetTokenRepository.java]
+        [PaymentRepository.java]
+        [PromotionRepository.java]
+        [ReviewRepository.java]
+        [UserConversationRepository.java]
+        [UserImageRepository.java]
+        [UserRepository.java]
+      }
+      
+      package "service" {
+        [BookingService.java]
+        [CarService.java]
+        [ContractService.java]
+        [EarningsService.java]
+        [EmailService.java]
+        [JwtTokenProvider.java]
+        [MessageService.java]
+        [NotificationService.java]
+        [PaymentService.java]
+        [ReviewService.java]
+        [UserImageService.java]
+        [UserService.java]
+        [WebSocketService.java]
+      }
+      
+      [BackendApplication.java]
+    }
+    
+    package "src/main/resources" {
+      [db.sql]
+    }
+    
+    package "src/test/java/Drivon/backend" {
+      [BackendApplicationTests.java]
+    }
+    
+    package "contracts" {
+      [32.txt]
+    }
+    
+    [pom.xml]
+    [README.md]
+    [mvnw]
+    [mvnw.cmd]
+  }
+  
+  package "Root" {
+    [package.json]
+    [package-lock.json]
+    [README.md]
+    [run.bat]
+    [start.bat]
+    [nginx_config.txt]
+    [.gitignore]
+  }
+}
+
+' Relationships
+Frontend --> Backend : HTTP/WebSocket
+Backend --> "Database" : JDBC
+Frontend --> "Static Assets" : Serves
+Backend --> "External APIs" : PayOS, Email
+
+@enduml 

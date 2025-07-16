@@ -1,0 +1,353 @@
+.earnings-management {
+    padding: 24px;
+    background: #f8f9fa;
+    min-height: 100vh;
+}
+
+.earnings-header {
+    margin-bottom: 32px;
+}
+
+.earnings-header h1 {
+    font-size: 32px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0 0 8px 0;
+}
+
+.earnings-header p {
+    font-size: 16px;
+    color: #6c757d;
+    margin: 0;
+}
+
+/* Statistics Cards */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+}
+
+.stat-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+}
+
+.stat-icon.green {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+}
+
+.stat-icon.red {
+    background: linear-gradient(135deg, #e74c3c, #ec7063);
+}
+
+.stat-icon.blue {
+    background: linear-gradient(135deg, #3498db, #5dade2);
+}
+
+.stat-icon.purple {
+    background: linear-gradient(135deg, #9b59b6, #bb8fce);
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-content h3 {
+    font-size: 14px;
+    color: #6c757d;
+    margin: 0 0 8px 0;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+}
+
+.stat-change {
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.stat-change.positive {
+    color: #27ae60;
+}
+
+.stat-change.negative {
+    color: #e74c3c;
+}
+
+/* Table Section */
+.table-section {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.table-header {
+    padding: 24px;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.table-header h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.table-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-box input {
+    width: 300px;
+    padding: 12px 16px 12px 44px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-box input:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.search-box input::placeholder {
+    color: #adb5bd;
+}
+
+.search-icon {
+    position: absolute;
+    left: 16px;
+    color: #6c757d;
+    font-size: 16px;
+}
+
+.export-btn {
+    padding: 12px 20px;
+    background: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.export-btn:hover {
+    background: #229954;
+}
+
+/* Table */
+.table-container {
+    overflow-x: auto;
+}
+
+.earnings-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.earnings-table th {
+    background: #f8f9fa;
+    padding: 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+    border-bottom: 1px solid #dee2e6;
+    white-space: nowrap;
+}
+
+.earnings-table td {
+    padding: 16px;
+    border-bottom: 1px solid #f1f3f4;
+    font-size: 14px;
+    color: #495057;
+}
+
+.earnings-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.name-cell {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.amount-positive {
+    color: #27ae60;
+    font-weight: 600;
+}
+
+.amount-negative {
+    color: #e74c3c;
+    font-weight: 600;
+}
+
+.amount-neutral {
+    color: #34495e;
+    font-weight: 600;
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+    display: inline-block;
+    min-width: 80px;
+}
+
+.status-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-debt {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-inactive {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+/* Loading and Error States */
+.loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+    font-size: 16px;
+}
+
+.error {
+    text-align: center;
+    padding: 60px 20px;
+    color: #e74c3c;
+    font-size: 16px;
+    background: #f8d7da;
+    border-radius: 8px;
+    margin: 24px;
+}
+
+.no-data {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .earnings-management {
+        padding: 16px;
+    }
+    
+    .earnings-header h1 {
+        font-size: 24px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .stat-card {
+        padding: 20px;
+    }
+    
+    .table-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .table-controls {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .search-box input {
+        width: 100%;
+    }
+    
+    .export-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .earnings-table {
+        font-size: 12px;
+    }
+    
+    .earnings-table th,
+    .earnings-table td {
+        padding: 12px 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stat-value {
+        font-size: 20px;
+    }
+    
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+    }
+} 

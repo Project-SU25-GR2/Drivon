@@ -17,4 +17,5 @@ public class TransactionDto {
     private String status;
     private String carName;
     private String renterName;
+    private String paymentMethod;
 } 

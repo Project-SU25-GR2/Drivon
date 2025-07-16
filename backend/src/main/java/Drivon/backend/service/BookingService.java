@@ -14,6 +14,11 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import Drivon.backend.service.NotificationService;
 import Drivon.backend.entity.Notification;
+import Drivon.backend.repository.OwnerWalletRepository;
+import Drivon.backend.repository.PaymentRepository;
+import Drivon.backend.model.OwnerWallet;
+import Drivon.backend.model.Payment;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +30,9 @@ public class BookingService {
         private final CarRepository carRepository;
         private final PaymentService paymentService;
         private final NotificationService notificationService;
+        private final OwnerWalletRepository ownerWalletRepository;
+        private final PaymentRepository paymentRepository;
+        private final EarningsService earningsService;
 
         public Booking createBooking(BookingRequest bookingRequest) {
                 User renter = userRepository.findById(bookingRequest.getRenterId())
@@ -84,10 +92,52 @@ public class BookingService {
                                 carRepository.save(car);
                         }
                         
-                        // Nếu trạng thái là 'completed', cập nhật payment status thành 'PAID'
+                        // Nếu trạng thái là 'completed', cập nhật payment status thành 'PAID' và cập nhật owner_wallet
                         if (newStatus == Booking.BookingStatus.completed) {
                                 paymentService.updatePaymentStatusByBookingId(bookingId, "PAID");
                                 log.info("Updated payment status to 'PAID' for bookingId: {}", bookingId);
+                                // --- Cập nhật ví owner ---
+                                Payment payment = paymentRepository.findByBookingId(bookingId);
+                                if (payment != null && car != null && car.getOwnerId() != null) {
+                                    Long ownerId = car.getOwnerId().longValue();
+                                    double bill = booking.getTotalPrice();
+                                    String paymentMethod = payment.getPaymentMethod();
+                                    OwnerWallet wallet = ownerWalletRepository.findByOwnerId(ownerId).orElse(null);
+                                    if (wallet == null) {
+                                        wallet = new OwnerWallet();
+                                        wallet.setOwnerId(ownerId);
+                                        wallet.setTotalProfit(0.0);
+                                        wallet.setTotalDebt(0.0);
+                                        wallet.setBalance(0.0);
+                                    }
+                                    if ("bank".equalsIgnoreCase(paymentMethod)) {
+                                        double profit = bill * 0.98;
+                                        wallet.setTotalProfit(wallet.getTotalProfit() + profit);
+                                    } else if ("cash".equalsIgnoreCase(paymentMethod)) {
+                                        double debt = bill * 0.02;
+                                        wallet.setTotalDebt(wallet.getTotalDebt() + debt);
+                                    }
+                                    wallet.setBalance(wallet.getTotalProfit() - wallet.getTotalDebt());
+                                    wallet.setUpdatedAt(LocalDateTime.now());
+                                    ownerWalletRepository.save(wallet);
+                                    
+                                    // Record system revenue transaction
+                                    earningsService.recordSystemRevenue(payment, ownerId);
+                                    
+                                    // Check if this is a debt payment (special identifier)
+                                    if ("DEBT_PAYMENT".equals(payment.getCarId())) {
+                                        // This is a debt payment, record debt collection
+                                        earningsService.recordDebtCollection(ownerId, payment.getAmount(), 
+                                            "Debt payment via banking - " + payment.getPaymentId());
+                                        
+                                        // Clear the debt from owner wallet
+                                        if ("bank".equalsIgnoreCase(paymentMethod)) {
+                                            wallet.setTotalDebt(Math.max(0, wallet.getTotalDebt() - payment.getAmount()));
+                                            wallet.setBalance(wallet.getTotalProfit() - wallet.getTotalDebt());
+                                            ownerWalletRepository.save(wallet);
+                                        }
+                                    }
+                                }
                         }
 
                 } catch (IllegalArgumentException e) {

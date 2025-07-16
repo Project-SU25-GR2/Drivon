@@ -65,9 +65,21 @@ body {
 
 .earnings-overview {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 1.5rem;
     margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+    .earnings-overview {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .earnings-overview {
+        grid-template-columns: 1fr;
+    }
 }
 
 .earnings-card {
@@ -112,6 +124,16 @@ body {
 .earnings-card.this-month { background: #198754; }
 .earnings-card.pending-payouts { background: #fd7e14; }
 .earnings-card.last-month { background: #6f42c1; }
+.earnings-card.total-cash { background: #28a745; }
+.earnings-card.total-banking { background: #17a2b8; }
+.earnings-card.total-profit {
+    background: linear-gradient(135deg, #e8f8f5 0%, #d4efdf 100%);
+    border-left: 5px solid #27ae60;
+}
+.earnings-card.total-debt {
+    background: linear-gradient(135deg, #fdeaea 0%, #fadbd8 100%);
+    border-left: 5px solid #e74c3c;
+}
 
 .transactions-section {
     background-color: #fff;
@@ -194,6 +216,40 @@ body {
 .status-paid {
     color: #0f5132;
     background-color: #d1e7dd;
+}
+
+.payment-method-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25em 0.6em;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 1rem;
+    color: #fff;
+}
+
+.payment-method-badge i {
+    margin-right: 0.35rem;
+}
+
+.payment-cash {
+    background-color: #28a745;
+}
+
+.payment-bank, .payment-bank_transfer {
+    background-color: #17a2b8;
+}
+
+.payment-credit_card, .payment-debit_card {
+    background-color: #6f42c1;
+}
+
+.payment-e_wallet {
+    background-color: #fd7e14;
+}
+
+.payment-null, .payment-undefined {
+    background-color: #6c757d;
 }
 
 tr:last-child td {

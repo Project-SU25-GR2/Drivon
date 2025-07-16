@@ -8,8 +8,8 @@ import DashboardOverview from './DashboardOverview';
 import PagesPage from './PagesPage';
 import ChatPage from './ChatPage';
 import MapsPage from './MapsPage';
-import FormsPage from './FormsPage';
-import ChartsPage from './ChartsPage';
+import EarningsManagement from './EarningsManagement';
+import WithdrawPage from './WithdrawPage';
 import TablesPage from './TablesPage';
 import PartnerPage from './PartnerPage';
 import PromotionPage from './PromotionPage';
@@ -227,10 +227,10 @@ const AdminPage = ({ user }) => {
         return <ChatPage />;
       case 'maps':
         return <MapsPage />;
-      case 'forms':
-        return <FormsPage />;
-      case 'charts':
-        return <ChartsPage />;
+      case 'earnings-management':
+        return <EarningsManagement />;
+      case 'with draw':
+        return <WithdrawPage />;
       case 'tables':
         return <TablesPage />;
       case 'partner':
@@ -348,29 +348,29 @@ const AdminPage = ({ user }) => {
           <li>
             <a 
               href="#" 
-              className={activeComponent === 'charts' ? 'active' : ''}
+              className={activeComponent === 'with draw' ? 'active' : ''}
               onClick={(e) => {
                 e.preventDefault();
-                setActiveComponent('charts');
+                setActiveComponent('with draw');
               }}
-              data-title="Charts"
+              data-title="Withdraw"
             >
               <i className="fas fa-chart-bar"></i>
-              <span>Charts</span>
+              <span>Withdraw</span>
             </a>
           </li>
           <li>
             <a 
               href="#" 
-              className={activeComponent === 'forms' ? 'active' : ''}
+              className={activeComponent === 'earnings-management' ? 'active' : ''}
               onClick={(e) => {
                 e.preventDefault();
-                setActiveComponent('forms');
+                setActiveComponent('earnings-management');
               }}
-              data-title="Forms"
+              data-title="Earnings Management"
             >
               <i className="fas fa-file-alt"></i>
-              <span>Forms</span>
+              <span>Earnings Management</span>
             </a>
           </li>
           <li>

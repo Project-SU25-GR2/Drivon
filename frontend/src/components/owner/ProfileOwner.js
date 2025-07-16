@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./ProfileOwner.css";
 import { API_URL } from "../../api/configApi";
 import axios from "axios";
+import { showSuccessToast, showErrorToast } from '../notification/notification';
 
 const BANK_LIST = [
   "Vietcombank",
@@ -43,6 +44,9 @@ const ProfileOwner = ({ user }) => {
     rating: null,
   });
   const [loadingStats, setLoadingStats] = useState(true);
+
+  // Withdraw history
+  const [withdrawHistory, setWithdrawHistory] = useState([]);
 
   // Fetch bank info
   useEffect(() => {
@@ -88,6 +92,19 @@ const ProfileOwner = ({ user }) => {
     if (user?.userId) fetchStats();
   }, [user]);
 
+  // Fetch withdraw history
+  useEffect(() => {
+    const fetchWithdraws = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/owner-withdraw/${user.userId}`);
+        setWithdrawHistory(res.data || []);
+      } catch {
+        setWithdrawHistory([]);
+      }
+    };
+    if (user?.userId) fetchWithdraws();
+  }, [user]);
+
   // Handle edit
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -119,6 +136,18 @@ const ProfileOwner = ({ user }) => {
       }
     } catch (error) {
       alert("Failed to update bank info!");
+    }
+  };
+
+  // Thêm vào đầu file:
+  const handleSign = async (requestId) => {
+    if (!window.confirm('Bạn đã chắc chắn nhận được tiền chưa? Hành động này sẽ không thể hoàn tác!')) return;
+    try {
+      await axios.patch(`${API_URL}/owner-withdraw/${requestId}/sign`, { sign: true });
+      setWithdrawHistory(his => his.map(w => w.requestId === requestId ? { ...w, sign: true } : w));
+      showSuccessToast('Đã xác nhận nhận tiền!');
+    } catch {
+      showErrorToast('Xác nhận thất bại!');
     }
   };
 
@@ -272,6 +301,39 @@ const ProfileOwner = ({ user }) => {
               <span style={{ fontSize: 18, marginRight: 6 }}>⚠️</span>
               Please ensure your banking information is accurate for payment processing.
             </div>
+          </div>
+          <div className="profile-section-card">
+            <div className="profile-section-title">Lịch sử rút tiền</div>
+            <table className="withdraw-history-table" style={{width: '100%', borderCollapse: 'collapse', marginTop: 12}}>
+              <thead>
+                <tr>
+                  <th>Ngày yêu cầu</th>
+                  <th>Số tiền</th>
+                  <th>Trạng thái</th>
+                  <th>Ghi chú</th>
+                  <th>Đã nhận tiền</th>
+                </tr>
+              </thead>
+              <tbody>
+                {withdrawHistory.length === 0 ? (
+                  <tr><td colSpan="5">Chưa có yêu cầu rút tiền nào.</td></tr>
+                ) : withdrawHistory.map(w => (
+                  <tr key={w.requestId}>
+                    <td>{w.requestedAt ? new Date(w.requestedAt).toLocaleString('vi-VN') : ''}</td>
+                    <td>{w.amount?.toLocaleString('vi-VN')} ₫</td>
+                    <td>{w.status}</td>
+                    <td>{w.note || ''}</td>
+                    <td>
+                      {w.sign ? (
+                        <span style={{color: 'green', fontWeight: 600}}>Đã xác nhận</span>
+                      ) : (
+                        <input type="checkbox" onChange={() => handleSign(w.requestId)} />
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

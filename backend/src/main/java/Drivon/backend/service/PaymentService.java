@@ -37,6 +37,9 @@ public class PaymentService {
     @Autowired
     private CarService carService;
 
+    @Autowired
+    private DebtPaymentService debtPaymentService;
+
     private PayOS payOS;
 
     @Autowired
@@ -243,12 +246,18 @@ public class PaymentService {
                     savePayment(payment);
                     logger.info("Saved PAID PayOS payment: {}", payment);
 
-                    // Cập nhật trạng thái xe thành 'rented'
-                    Car car = carService.getCarById(payment.getCarId());
-                    if (car != null) {
-                        car.setStatus("rented");
-                        carService.updateCar(car);
-                        logger.info("Updated car status to 'rented' for carId: {}", car.getLicensePlate());
+                    // Check if this is a debt payment
+                    if (debtPaymentService.isDebtPayment(payment)) {
+                        logger.info("Processing debt payment for payment: {}", payment.getPaymentId());
+                        debtPaymentService.processDebtPayment(payment.getOrderCode());
+                    } else {
+                        // Cập nhật trạng thái xe thành 'rented' (for normal rentals)
+                        Car car = carService.getCarById(payment.getCarId());
+                        if (car != null) {
+                            car.setStatus("rented");
+                            carService.updateCar(car);
+                            logger.info("Updated car status to 'rented' for carId: {}", car.getLicensePlate());
+                        }
                     }
                 }
             } catch (Exception ex) {
@@ -298,13 +307,19 @@ public class PaymentService {
                         savePayment(payment);
                         logger.info("Updated PayOS payment status to SUCCESS: {}", payment);
 
-                        // Cập nhật trạng thái xe thành 'rented' nếu chưa
-                        Car car = carService.getCarById(payment.getCarId());
-                        if (car != null && (car.getStatus() == null || !car.getStatus().equals("rented"))) {
-                            car.setStatus("rented");
-                            carService.updateCar(car);
-                            logger.info("Updated car status to 'rented' for carId: {} (webhook)",
-                                    car.getLicensePlate());
+                        // Check if this is a debt payment
+                        if (debtPaymentService.isDebtPayment(payment)) {
+                            logger.info("Processing debt payment for orderCode: {}", orderCode);
+                            debtPaymentService.processDebtPayment(orderCode);
+                        } else {
+                            // Cập nhật trạng thái xe thành 'rented' nếu chưa (for normal rentals)
+                            Car car = carService.getCarById(payment.getCarId());
+                            if (car != null && (car.getStatus() == null || !car.getStatus().equals("rented"))) {
+                                car.setStatus("rented");
+                                carService.updateCar(car);
+                                logger.info("Updated car status to 'rented' for carId: {} (webhook)",
+                                        car.getLicensePlate());
+                            }
                         }
                     } else {
                         logger.error("No PAID payment found for orderCode {}. Webhook ignored.", orderCode);

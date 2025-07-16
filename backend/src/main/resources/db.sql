@@ -459,3 +459,22 @@ CREATE TABLE user_image (
     uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
+CREATE TABLE owner_wallet (
+    owner_id BIGINT PRIMARY KEY,
+    total_profit DECIMAL(15,2) DEFAULT 0, -- Tổng tiền lãi
+    total_debt DECIMAL(15,2) DEFAULT 0,   -- Tổng tiền nợ
+    balance DECIMAL(15,2) AS (total_profit - total_debt) STORED, -- Tổng tiền thực tế có thể rút
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (owner_id) REFERENCES users(user_id)
+);
+CREATE TABLE owner_withdraw_requests (
+    request_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    owner_id BIGINT NOT NULL,
+    amount DECIMAL(15,2) NOT NULL,
+    status ENUM('pending', 'approved', 'rejected', 'completed') DEFAULT 'pending',
+    requested_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    processed_at DATETIME NULL,
+    note TEXT,
+    sign BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (owner_id) REFERENCES users(user_id)
+);
