@@ -99,15 +99,19 @@ const EarningsPage = () => {
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
         const debtPaymentResult = urlParams.get('debt_payment');
+        const orderCode = urlParams.get('orderCode');
         
-        if (debtPaymentResult === 'success') {
+        if (debtPaymentResult === 'success' && orderCode) {
+            // Show confirmation modal for manual confirmation
+            setShowConfirmDebtModal(true);
+            setPendingOrderCode(orderCode);
+        } else if (debtPaymentResult === 'success') {
+            // Fallback for success without orderCode
             showSuccessToast('Thanh toán nợ thành công! Số nợ đã được cập nhật.');
-            // Remove the parameter from URL
             const newUrl = window.location.pathname;
             window.history.replaceState(null, null, newUrl);
         } else if (debtPaymentResult === 'cancel') {
             showErrorToast('Thanh toán nợ đã bị hủy.');
-            // Remove the parameter from URL
             const newUrl = window.location.pathname;
             window.history.replaceState(null, null, newUrl);
         }
@@ -483,27 +487,14 @@ const EarningsPage = () => {
             showSuccessToast('Đã xác nhận thanh toán nợ!');
             setShowConfirmDebtModal(false);
             setPendingOrderCode(null);
-            // Xóa param khỏi URL và reload earnings
-            window.history.replaceState(null, null, window.location.pathname);
-            window.location.reload();
+            // Reload và chuyển đến tab earnings để cập nhật dữ liệu mới
+            window.location.href = `${window.location.origin}/owner?tab=earnings`;
         } catch {
             showErrorToast('Xác nhận thất bại!');
         }
     };
 
-    useEffect(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const debtPaymentResult = urlParams.get('debt_payment');
-        const orderCode = urlParams.get('orderCode');
-        if (debtPaymentResult === 'success' && orderCode) {
-            setShowConfirmDebtModal(true);
-            setPendingOrderCode(orderCode);
-        } else if (debtPaymentResult === 'cancel') {
-            showErrorToast('Thanh toán nợ đã bị hủy.');
-            const newUrl = window.location.pathname;
-            window.history.replaceState(null, null, newUrl);
-        }
-    }, []);
+
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div style={{ color: 'red' }}>{error}</div>;
