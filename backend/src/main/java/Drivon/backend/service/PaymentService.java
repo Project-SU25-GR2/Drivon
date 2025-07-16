@@ -7,6 +7,7 @@ import Drivon.backend.dto.CashPaymentRequest;
 import Drivon.backend.repository.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.*;
 import vn.payos.PayOS;
 import vn.payos.type.CheckoutResponseData;
 import vn.payos.type.PaymentData;
@@ -20,8 +21,11 @@ import Drivon.backend.model.PaymentMethod;
 import Drivon.backend.model.PaymentStatus;
 import java.util.List;
 import Drivon.backend.model.Car;
+import org.springframework.http.ResponseEntity;
 
 @Service
+@RestController
+@RequestMapping("/api/payments")
 public class PaymentService {
     private static final Logger logger = LoggerFactory.getLogger(PaymentService.class);
 
@@ -197,7 +201,7 @@ public class PaymentService {
 
             logger.info("Received response from PayOS: {}", response);
 
-            // Lưu luôn bản ghi Payment trạng thái PENDING
+            // Lưu bản ghi PENDING vào DB
             try {
                 Payment payment = paymentRepository.findByOrderCode(String.valueOf(request.getOrderCode()));
                 if (payment == null) {
@@ -205,7 +209,7 @@ public class PaymentService {
                     payment.setPaymentId("PAYOS_" + System.currentTimeMillis());
                     payment.setOrderCode(String.valueOf(request.getOrderCode()));
                     payment.setAmount(Double.valueOf(request.getAmount()));
-                    payment.setStatus("PAID");
+                    payment.setStatus("PENDING");
                     payment.setPaymentMethod("bank");
                     payment.setPaymentDate(LocalDateTime.now());
                     payment.setUserId(Long.valueOf(request.getUserId()));
@@ -244,24 +248,10 @@ public class PaymentService {
                     }
                     payment.setBookingId(request.getBookingId());
                     savePayment(payment);
-                    logger.info("Saved PAID PayOS payment: {}", payment);
-
-                    // Check if this is a debt payment
-                    if (debtPaymentService.isDebtPayment(payment)) {
-                        logger.info("Processing debt payment for payment: {}", payment.getPaymentId());
-                        debtPaymentService.processDebtPayment(payment.getOrderCode());
-                    } else {
-                        // Cập nhật trạng thái xe thành 'rented' (for normal rentals)
-                        Car car = carService.getCarById(payment.getCarId());
-                        if (car != null) {
-                            car.setStatus("rented");
-                            carService.updateCar(car);
-                            logger.info("Updated car status to 'rented' for carId: {}", car.getLicensePlate());
-                        }
-                    }
+                    logger.info("Saved PENDING PayOS payment: {}", payment);
                 }
             } catch (Exception ex) {
-                logger.error("Error saving PAID payment to DB: {}", ex.getMessage(), ex);
+                logger.error("Error saving PENDING payment to DB: {}", ex.getMessage(), ex);
             }
 
             // Create response with payment info
@@ -297,37 +287,54 @@ public class PaymentService {
                 throw new IllegalArgumentException("Missing required webhook data");
             }
 
-            // Nếu status là SUCCESS thì update trạng thái giao dịch
+            // Chỉ khi status là SUCCESS mới lưu payment vào DB
             if ("SUCCESS".equalsIgnoreCase(status)) {
                 try {
+                    // Kiểm tra đã có payment chưa, nếu chưa thì mới lưu
                     Payment payment = paymentRepository.findByOrderCode(orderCode);
-                    if (payment != null) {
+                    if (payment == null) {
+                        payment = new Payment();
+                        payment.setPaymentId("PAYOS_" + System.currentTimeMillis());
+                        payment.setOrderCode(orderCode);
+                        payment.setAmount(amount);
                         payment.setStatus("SUCCESS");
-                        logger.info("Updating PayOS payment status to SUCCESS: {}", payment);
+                        payment.setPaymentMethod("bank");
+                        payment.setPaymentDate(LocalDateTime.now());
+                        payment.setUserId(Long.valueOf(userId));
+                        payment.setCarId(carId);
+                        // Có thể bổ sung thêm các trường khác nếu webhook trả về
                         savePayment(payment);
-                        logger.info("Updated PayOS payment status to SUCCESS: {}", payment);
-
-                        // Check if this is a debt payment
-                        if (debtPaymentService.isDebtPayment(payment)) {
-                            logger.info("Processing debt payment for orderCode: {}", orderCode);
-                            debtPaymentService.processDebtPayment(orderCode);
-                        } else {
-                            // Cập nhật trạng thái xe thành 'rented' nếu chưa (for normal rentals)
-                            Car car = carService.getCarById(payment.getCarId());
-                            if (car != null && (car.getStatus() == null || !car.getStatus().equals("rented"))) {
-                                car.setStatus("rented");
-                                carService.updateCar(car);
-                                logger.info("Updated car status to 'rented' for carId: {} (webhook)",
-                                        car.getLicensePlate());
-                            }
-                        }
+                        logger.info("Saved SUCCESS PayOS payment: {}", payment);
                     } else {
-                        logger.error("No PAID payment found for orderCode {}. Webhook ignored.", orderCode);
+                        // Nếu đã có payment thì chỉ update status nếu cần
+                        if (!"SUCCESS".equalsIgnoreCase(payment.getStatus())) {
+                            payment.setStatus("SUCCESS");
+                            savePayment(payment);
+                            logger.info("Updated PayOS payment status to SUCCESS: {}", payment);
+                        }
+                    }
+
+                    // Check if this is a debt payment
+                    if (debtPaymentService.isDebtPayment(payment)) {
+                        logger.info("Processing debt payment for orderCode: {}", orderCode);
+                        debtPaymentService.processDebtPayment(orderCode);
+                    } else {
+                        // Cập nhật trạng thái xe thành 'rented' nếu chưa (for normal rentals)
+                        Car car = carService.getCarById(payment.getCarId());
+                        if (car != null && (car.getStatus() == null || !car.getStatus().equals("rented"))) {
+                            car.setStatus("rented");
+                            carService.updateCar(car);
+                            logger.info("Updated car status to 'rented' for carId: {} (webhook)",
+                                    car.getLicensePlate());
+                        }
                     }
                 } catch (Exception ex) {
-                    logger.error("Error updating payment to SUCCESS. Webhook data: {}. Error: {}", webhookData,
+                    logger.error("Error saving payment to DB on webhook: {}. Error: {}", webhookData,
                             ex.getMessage(), ex);
                 }
+            } else if ("CANCELLED".equalsIgnoreCase(status)) {
+                // Nếu bị hủy thì không lưu gì cả, chỉ log lại
+                logger.info("Payment orderCode {} was cancelled by user.", orderCode);
             }
 
             // Send payment status update via WebSocket
@@ -368,7 +375,7 @@ public class PaymentService {
     public Payment getPaymentByBookingId(int bookingId) {
         return paymentRepository.findByBookingId(bookingId);
     }
-    
+
     public void updatePaymentStatusByBookingId(int bookingId, String newStatus) {
         Payment payment = paymentRepository.findByBookingId(bookingId);
         if (payment != null) {
@@ -377,5 +384,107 @@ public class PaymentService {
         } else {
             logger.warn("No payment found for bookingId: {} to update status.", bookingId);
         }
+    }
+
+    // API xác nhận đơn hàng từ frontend (lưu payment vào DB)
+    @PostMapping("/confirm")
+    public ResponseEntity<?> confirmPaymentFromFrontend(@RequestBody Map<String, Object> paymentData) {
+        try {
+            String orderCode = String.valueOf(paymentData.get("orderCode"));
+            Double amount = paymentData.get("amount") instanceof Number
+                    ? ((Number) paymentData.get("amount")).doubleValue()
+                    : null;
+            String userId = String.valueOf(paymentData.get("userId"));
+            String carId = paymentData.get("carId") != null ? paymentData.get("carId").toString() : null;
+            String paymentMethod = paymentData.get("paymentMethod") != null
+                    ? paymentData.get("paymentMethod").toString()
+                    : "bank";
+            String additionalRequirements = paymentData.get("additionalRequirements") != null
+                    ? paymentData.get("additionalRequirements").toString()
+                    : null;
+            String rentalStartDate = paymentData.get("rentalStartDate") != null
+                    ? paymentData.get("rentalStartDate").toString()
+                    : null;
+            String rentalEndDate = paymentData.get("rentalEndDate") != null
+                    ? paymentData.get("rentalEndDate").toString()
+                    : null;
+            String promotionCode = paymentData.get("promotionCode") != null
+                    ? paymentData.get("promotionCode").toString()
+                    : null;
+            Integer discountPercent = paymentData.get("discountPercent") != null
+                    ? Integer.valueOf(paymentData.get("discountPercent").toString())
+                    : null;
+            Integer bookingId = paymentData.get("bookingId") != null
+                    ? Integer.valueOf(paymentData.get("bookingId").toString())
+                    : null;
+
+            // Kiểm tra đã có payment chưa, nếu chưa thì mới lưu
+            Payment payment = paymentRepository.findByOrderCode(orderCode);
+            if (payment == null) {
+                payment = new Payment();
+                payment.setPaymentId("PAYOS_" + System.currentTimeMillis());
+                payment.setOrderCode(orderCode);
+                payment.setAmount(amount);
+                payment.setStatus("SUCCESS");
+                payment.setPaymentMethod(paymentMethod);
+                payment.setPaymentDate(LocalDateTime.now());
+                payment.setUserId(Long.valueOf(userId));
+                payment.setCarId(carId);
+                payment.setAdditionalRequirements(additionalRequirements);
+                if (rentalStartDate != null) {
+                    try {
+                        payment.setRentalStartDate(LocalDateTime.parse(rentalStartDate));
+                    } catch (Exception e) {
+                        try {
+                            payment.setRentalStartDate(java.time.Instant.parse(rentalStartDate)
+                                    .atZone(java.time.ZoneId.systemDefault()).toLocalDateTime());
+                        } catch (Exception e2) {
+                            logger.warn("Cannot parse rentalStartDate (ISO): {}", rentalStartDate);
+                        }
+                    }
+                }
+                if (rentalEndDate != null) {
+                    try {
+                        payment.setRentalEndDate(LocalDateTime.parse(rentalEndDate));
+                    } catch (Exception e) {
+                        try {
+                            payment.setRentalEndDate(java.time.Instant.parse(rentalEndDate)
+                                    .atZone(java.time.ZoneId.systemDefault()).toLocalDateTime());
+                        } catch (Exception e2) {
+                            logger.warn("Cannot parse rentalEndDate (ISO): {}", rentalEndDate);
+                        }
+                    }
+                }
+                payment.setPromotionCode(promotionCode);
+                payment.setDiscountPercent(discountPercent);
+                payment.setBookingId(bookingId);
+                savePayment(payment);
+                logger.info("Saved SUCCESS payment from frontend confirm: {}", payment);
+            } else {
+                // Nếu đã có payment thì chỉ update status nếu cần
+                if (!"SUCCESS".equalsIgnoreCase(payment.getStatus())) {
+                    payment.setStatus("SUCCESS");
+                    savePayment(payment);
+                    logger.info("Updated payment status to SUCCESS from frontend confirm: {}", payment);
+                }
+            }
+            return ResponseEntity.ok(Map.of("success", true, "paymentId", payment.getPaymentId()));
+        } catch (Exception e) {
+            logger.error("Error confirming payment from frontend: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // Xóa các bản ghi PENDING quá hạn (ví dụ: quá 24h)
+    public int deleteExpiredPendingPayments() {
+        LocalDateTime expiredTime = LocalDateTime.now().minusHours(24);
+        List<Payment> expiredPayments = paymentRepository.findByStatusAndPaymentDateBefore("PENDING", expiredTime);
+        int count = 0;
+        for (Payment p : expiredPayments) {
+            paymentRepository.delete(p);
+            count++;
+        }
+        logger.info("Deleted {} expired PENDING payments", count);
+        return count;
     }
 }

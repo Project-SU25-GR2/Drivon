@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Result, Button, Card, Descriptions, Spin } from 'antd';
+import React, { useState } from 'react';
+import { Result, Button, Card, Descriptions, Spin, message } from 'antd';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { API_URL } from '../../api/configApi';
@@ -9,62 +9,69 @@ const RETRY_DELAY = 1000; // 1 giây
 const RentalSuccess = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [rentalData, setRentalData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [backendData, setBackendData] = useState(null);
+  const [confirming, setConfirming] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
 
-  useEffect(() => {
-    let retryCount = 0;
-    let timeoutId;
-    let cancelled = false;
-
-    const fetchPayment = async (orderCode) => {
-      try {
-        const res = await axios.get(`${API_URL}/payments/order/${orderCode}`);
-        if (res.data) {
-          setBackendData(res.data);
-          setLoading(false);
-        } else {
-          throw new Error('No data');
-        }
-      } catch (err) {
-        if (axios.isAxiosError(err) && err.response && err.response.status === 404 && retryCount < MAX_RETRIES) {
-          retryCount++;
-          timeoutId = setTimeout(() => fetchPayment(orderCode), RETRY_DELAY);
-        } else {
-          console.error('Error fetching payment by orderCode:', err);
-          setLoading(false);
-          navigate('/', { replace: true });
-        }
-      }
+  // Lấy dữ liệu đơn hàng từ state hoặc query params
+  let rentalData = null;
+  if (location.state && location.state.rentalData) {
+    rentalData = location.state.rentalData;
+  } else {
+    // Nếu không có state, lấy từ query params (nếu cần)
+    const searchParams = new URLSearchParams(location.search);
+    rentalData = {
+      orderCode: searchParams.get('orderCode'),
+      carLicensePlate: searchParams.get('carLicensePlate'),
+      rentalStartDate: searchParams.get('rentalStartDate'),
+      rentalEndDate: searchParams.get('rentalEndDate'),
+      amount: searchParams.get('amount'),
+      promotionCode: searchParams.get('promotionCode'),
+      discountPercent: searchParams.get('discountPercent'),
+      additionalRequirements: searchParams.get('additionalRequirements'),
+      userId: searchParams.get('userId'),
+      paymentMethod: searchParams.get('paymentMethod'),
+      bookingId: searchParams.get('bookingId'),
     };
+  }
 
-    if (location.state && location.state.rentalData) {
-      setRentalData(location.state.rentalData);
-      setLoading(false);
-    } else {
-      const searchParams = new URLSearchParams(location.search);
-      const orderCode = searchParams.get('orderCode');
-      if (orderCode) {
-        setLoading(true);
-        fetchPayment(orderCode);
+  // Hàm xác nhận đơn hàng
+  const handleConfirmOrder = async () => {
+    setConfirming(true);
+    try {
+      const payload = {
+        orderCode: rentalData.orderCode,
+        amount: rentalData.amount,
+        userId: rentalData.userId,
+        carId: rentalData.carLicensePlate || rentalData.carId,
+        paymentMethod: rentalData.paymentMethod || 'bank',
+        additionalRequirements: rentalData.additionalRequirements,
+        rentalStartDate: rentalData.rentalStartDate,
+        rentalEndDate: rentalData.rentalEndDate,
+        promotionCode: rentalData.promotionCode,
+        discountPercent: rentalData.discountPercent,
+        bookingId: rentalData.bookingId,
+      };
+      const res = await axios.post(`${API_URL}/payments/confirm`, payload);
+      if (res.data && res.data.success) {
+        setConfirmed(true);
+        message.success('Xác nhận đơn hàng thành công!');
+        setTimeout(() => {
+          navigate('/my-rentals');
+        }, 1000);
       } else {
-        navigate('/', { replace: true });
+        message.error('Không thể xác nhận đơn hàng.');
       }
+    } catch (err) {
+      message.error('Lỗi xác nhận đơn hàng: ' + (err.response?.data?.error || err.message));
+    } finally {
+      setConfirming(false);
     }
-    return () => {
-      cancelled = true;
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [location, navigate]);
+  };
 
-  // Kết hợp dữ liệu từ rentalData (state) và backendData (API)
-  const combinedData = rentalData || backendData;
-
-  if (loading || !combinedData) {
+  if (!rentalData || !rentalData.orderCode) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <Spin size="large" tip="Đang tải thông tin đặt xe..."></Spin>
+        <Spin size="large" tip="Không tìm thấy thông tin đơn hàng..."></Spin>
       </div>
     );
   }
@@ -74,24 +81,29 @@ const RentalSuccess = () => {
       <Result
         status="success"
         title="Đặt xe thành công!"
-        subTitle={combinedData.paymentMethod === 'cash' ? "Cảm ơn bạn đã đặt xe. Vui lòng thanh toán tiền mặt khi nhận xe." : "Cảm ơn bạn đã đặt xe. Giao dịch chuyển khoản đã thành công."}
+        subTitle={rentalData.paymentMethod === 'cash' ? "Cảm ơn bạn đã đặt xe. Vui lòng thanh toán tiền mặt khi nhận xe." : "Cảm ơn bạn đã đặt xe. Giao dịch chuyển khoản đã thành công."}
         extra={[
-          <Button type="primary" key="console" onClick={() => navigate('/')}>Về trang chủ</Button>,
+          !confirmed && (
+            <Button type="primary" key="confirm" loading={confirming} onClick={handleConfirmOrder}>
+              Xác nhận đơn hàng
+            </Button>
+          ),
+          <Button key="console" onClick={() => navigate('/')}>Về trang chủ</Button>,
           <Button key="buy" onClick={() => navigate('/my-rentals')}>Xem đơn đặt xe của tôi</Button>,
-        ]}
+        ].filter(Boolean)}
       />
-      <Card title="Chi tiết đơn đặt xe" style={{ marginTop: '24px' }}>
+      <Card style={{ marginTop: 24 }}>
         <Descriptions bordered column={1}>
-          <Descriptions.Item label="Mã đơn">{combinedData.orderCode || combinedData.paymentId || 'Không xác định'}</Descriptions.Item>
-          <Descriptions.Item label="Xe">{combinedData.carLicensePlate || combinedData.carId || 'Không xác định'}</Descriptions.Item>
-          <Descriptions.Item label="Ngày bắt đầu">{combinedData.rentalStartDate ? new Date(combinedData.rentalStartDate).toLocaleDateString() : 'Không xác định'}</Descriptions.Item>
-          <Descriptions.Item label="Ngày kết thúc">{combinedData.rentalEndDate ? new Date(combinedData.rentalEndDate).toLocaleDateString() : 'Không xác định'}</Descriptions.Item>
-          <Descriptions.Item label="Tổng tiền">{combinedData.amount ? combinedData.amount.toLocaleString() + ' VNĐ' : 'Không xác định'}</Descriptions.Item>
-          {combinedData.promotionCode && (
-            <Descriptions.Item label="Mã giảm giá">{combinedData.promotionCode} {combinedData.discountPercent ? `(Giảm ${combinedData.discountPercent}%)` : ''}</Descriptions.Item>
+          <Descriptions.Item label="Mã đơn">{rentalData.orderCode || rentalData.paymentId || 'Không xác định'}</Descriptions.Item>
+          <Descriptions.Item label="Xe">{rentalData.carLicensePlate || rentalData.carId || 'Không xác định'}</Descriptions.Item>
+          <Descriptions.Item label="Ngày bắt đầu">{rentalData.rentalStartDate ? new Date(rentalData.rentalStartDate).toLocaleDateString() : 'Không xác định'}</Descriptions.Item>
+          <Descriptions.Item label="Ngày kết thúc">{rentalData.rentalEndDate ? new Date(rentalData.rentalEndDate).toLocaleDateString() : 'Không xác định'}</Descriptions.Item>
+          <Descriptions.Item label="Tổng tiền">{rentalData.amount ? Number(rentalData.amount).toLocaleString() + ' VNĐ' : 'Không xác định'}</Descriptions.Item>
+          {rentalData.promotionCode && (
+            <Descriptions.Item label="Mã giảm giá">{rentalData.promotionCode} {rentalData.discountPercent ? `(Giảm ${rentalData.discountPercent}%)` : ''}</Descriptions.Item>
           )}
-          <Descriptions.Item label="Yêu cầu thêm">{combinedData.additionalRequirements || 'Không có'}</Descriptions.Item>
-          <Descriptions.Item label="Phương thức thanh toán">{combinedData.paymentMethod === 'cash' ? 'Tiền mặt' : 'Chuyển khoản'}</Descriptions.Item>
+          <Descriptions.Item label="Yêu cầu thêm">{rentalData.additionalRequirements || 'Không có'}</Descriptions.Item>
+          <Descriptions.Item label="Phương thức thanh toán">{rentalData.paymentMethod === 'cash' ? 'Tiền mặt' : 'Chuyển khoản'}</Descriptions.Item>
         </Descriptions>
       </Card>
     </div>
