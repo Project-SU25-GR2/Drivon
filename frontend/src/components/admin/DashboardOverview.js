@@ -85,6 +85,31 @@ export default function DashboardOverview() {
   const [loadingFleetStatus, setLoadingFleetStatus] = useState(true);
   const [errorFleetStatus, setErrorFleetStatus] = useState(null);
 
+  // State cho Task Management
+  const [tasks, setTasks] = useState([
+    { label: 'Inspect Vehicle #BMW-2023', p: 'high', done: false },
+    { label: 'Process Insurance Claim', p: 'high', done: false },
+    { label: 'Schedule Maintenance for Fleet', p: 'medium', done: true },
+    { label: 'Update Pricing for Weekend', p: 'low', done: false },
+    { label: 'Review Customer Feedback', p: 'medium', done: true },
+    { label: 'Prepare Monthly Report', p: 'high', done: false },
+  ]);
+  const [newTask, setNewTask] = useState('');
+
+  const handleAddTask = () => {
+    if (newTask.trim() === '') return;
+    setTasks([...tasks, { label: newTask, p: 'medium', done: false }]);
+    setNewTask('');
+  };
+
+  const handleToggleTask = idx => {
+    setTasks(tasks => tasks.map((t, i) => i === idx ? { ...t, done: !t.done } : t));
+  };
+
+  const handleDeleteTask = idx => {
+    setTasks(tasks => tasks.filter((_, i) => i !== idx));
+  };
+
   useEffect(() => {
     // Fetch tổng số booking từ API
     const fetchTotalBookings = async () => {
@@ -416,21 +441,31 @@ export default function DashboardOverview() {
           {/* Task Management */}
           <div style={{ ...cardStyle, flex: 1, minWidth: 260 }}>
             <div style={sectionTitle}><i className="fas fa-tasks"></i> Task Management</div>
+            {/* Form thêm task mới */}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+              <input
+                type="text"
+                value={newTask}
+                onChange={e => setNewTask(e.target.value)}
+                placeholder="Add new task..."
+                style={{ flex: 1, padding: 6, borderRadius: 6, border: '1px solid #ddd', fontSize: 14 }}
+                onKeyDown={e => { if (e.key === 'Enter') handleAddTask(); }}
+              />
+              <button onClick={handleAddTask} style={{ background: '#4f8cff', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 12px', fontWeight: 600, cursor: 'pointer' }}>Add</button>
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {[
-                {label:'Inspect Vehicle #BMW-2023',p:'high',done:false},
-                {label:'Process Insurance Claim',p:'high',done:false},
-                {label:'Schedule Maintenance for Fleet',p:'medium',done:true},
-                {label:'Update Pricing for Weekend',p:'low',done:false},
-                {label:'Review Customer Feedback',p:'medium',done:true},
-                {label:'Prepare Monthly Report',p:'high',done:false},
-              ].map((item, idx) => (
-                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 10, opacity: item.done ? 0.6 : 1, textDecoration: item.done ? 'line-through' : 'none' }}>
-                  <input type="checkbox" checked={item.done} readOnly style={{ accentColor: '#4f8cff', width: 18, height: 18 }} />
-                  <span style={{ flex: 1, fontSize: 15 }}>{item.label}</span>
-                  <span style={{ padding: '2px 10px', borderRadius: 6, fontWeight: 600, fontSize: 13, background: item.p==='high'?'#fee2e2':item.p==='medium'?'#fef9c3':'#d1fae5', color: item.p==='high'?'#ef4444':item.p==='medium'?'#eab308':'#22c55e' }}>{item.p.charAt(0).toUpperCase()+item.p.slice(1)}</span>
-                </div>
-              ))}
+              {tasks.length === 0 ? (
+                <div style={{ color: '#888', fontStyle: 'italic' }}>No tasks</div>
+              ) : (
+                tasks.map((item, idx) => (
+                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 10, opacity: item.done ? 0.6 : 1, textDecoration: item.done ? 'line-through' : 'none' }}>
+                    <input type="checkbox" checked={item.done} onChange={() => handleToggleTask(idx)} style={{ accentColor: '#4f8cff', width: 18, height: 18 }} />
+                    <span style={{ flex: 1, fontSize: 15 }}>{item.label}</span>
+                    <span style={{ padding: '2px 10px', borderRadius: 6, fontWeight: 600, fontSize: 13, background: item.p==='high'?'#fee2e2':item.p==='medium'?'#fef9c3':'#d1fae5', color: item.p==='high'?'#ef4444':item.p==='medium'?'#eab308':'#22c55e' }}>{item.p.charAt(0).toUpperCase()+item.p.slice(1)}</span>
+                    <button onClick={() => handleDeleteTask(idx)} style={{ background: 'none', border: 'none', color: '#ef4444', fontWeight: 700, fontSize: 16, cursor: 'pointer', marginLeft: 4 }} title="Delete">×</button>
+                  </div>
+                ))
+              )}
             </div>
           </div>
           {/* Fleet Status */}
