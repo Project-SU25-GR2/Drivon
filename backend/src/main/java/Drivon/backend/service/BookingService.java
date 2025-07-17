@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
-public class BookingService {
+public class BookingService{
 
         private static final Logger log = LoggerFactory.getLogger(BookingService.class);
         private final BookingRepository bookingRepository;
@@ -60,7 +60,8 @@ public class BookingService {
                         log.info("Saved and flushed booking successfully with ID: {}", savedBooking.getId());
                         // Gửi notification cho user khi đặt xe thành công
                         String content = "Your car booking was successful. Booking ID: " + savedBooking.getId();
-                        notificationService.createNotificationForSpecificUser(content, Notification.NotificationType.SYSTEM, renter.getUserId());
+                        notificationService.createNotificationForSpecificUser(content,
+                                        Notification.NotificationType.SYSTEM, renter.getUserId());
                         return savedBooking;
                 } catch (Exception e) {
                         log.error("Error saving booking to database", e);
@@ -78,65 +79,71 @@ public class BookingService {
                 try {
                         Booking.BookingStatus newStatus = Booking.BookingStatus.valueOf(status.toLowerCase());
                         booking.setStatus(newStatus);
-                        
+
                         // Cập nhật trạng thái xe dựa trên trạng thái booking
                         Car car = booking.getCar();
                         if (car != null) {
-                                if (newStatus == Booking.BookingStatus.ongoing || newStatus == Booking.BookingStatus.approved) {
+                                if (newStatus == Booking.BookingStatus.ongoing
+                                                || newStatus == Booking.BookingStatus.approved) {
                                         car.setStatus("rented");
                                         log.info("Updated car status to 'rented' for carId: {}", car.getLicensePlate());
-                                } else if (newStatus == Booking.BookingStatus.completed || newStatus == Booking.BookingStatus.cancelled) {
+                                } else if (newStatus == Booking.BookingStatus.completed
+                                                || newStatus == Booking.BookingStatus.cancelled) {
                                         car.setStatus("available");
-                                        log.info("Updated car status to 'available' for carId: {}", car.getLicensePlate());
+                                        log.info("Updated car status to 'available' for carId: {}",
+                                                        car.getLicensePlate());
                                 }
                                 carRepository.save(car);
                         }
-                        
-                        // Nếu trạng thái là 'completed', cập nhật payment status thành 'PAID' và cập nhật owner_wallet
+
+                        // Nếu trạng thái là 'completed', cập nhật payment status thành 'PAID' và cập
+                        // nhật owner_wallet
                         if (newStatus == Booking.BookingStatus.completed) {
                                 paymentService.updatePaymentStatusByBookingId(bookingId, "PAID");
                                 log.info("Updated payment status to 'PAID' for bookingId: {}", bookingId);
                                 // --- Cập nhật ví owner ---
                                 Payment payment = paymentRepository.findByBookingId(bookingId);
                                 if (payment != null && car != null && car.getOwnerId() != null) {
-                                    Long ownerId = car.getOwnerId().longValue();
-                                    double bill = booking.getTotalPrice();
-                                    String paymentMethod = payment.getPaymentMethod();
-                                    OwnerWallet wallet = ownerWalletRepository.findByOwnerId(ownerId).orElse(null);
-                                    if (wallet == null) {
-                                        wallet = new OwnerWallet();
-                                        wallet.setOwnerId(ownerId);
-                                        wallet.setTotalProfit(0.0);
-                                        wallet.setTotalDebt(0.0);
-                                        wallet.setBalance(0.0);
-                                    }
-                                    if ("bank".equalsIgnoreCase(paymentMethod)) {
-                                        double profit = bill * 0.98;
-                                        wallet.setTotalProfit(wallet.getTotalProfit() + profit);
-                                    } else if ("cash".equalsIgnoreCase(paymentMethod)) {
-                                        double debt = bill * 0.02;
-                                        wallet.setTotalDebt(wallet.getTotalDebt() + debt);
-                                    }
-                                    wallet.setBalance(wallet.getTotalProfit() - wallet.getTotalDebt());
-                                    wallet.setUpdatedAt(LocalDateTime.now());
-                                    ownerWalletRepository.save(wallet);
-                                    
-                                    // Record system revenue transaction
-                                    earningsService.recordSystemRevenue(payment, ownerId);
-                                    
-                                    // Check if this is a debt payment (special identifier)
-                                    if ("DEBT_PAYMENT".equals(payment.getCarId())) {
-                                        // This is a debt payment, record debt collection
-                                        earningsService.recordDebtCollection(ownerId, payment.getAmount(), 
-                                            "Debt payment via banking - " + payment.getPaymentId());
-                                        
-                                        // Clear the debt from owner wallet
-                                        if ("bank".equalsIgnoreCase(paymentMethod)) {
-                                            wallet.setTotalDebt(Math.max(0, wallet.getTotalDebt() - payment.getAmount()));
-                                            wallet.setBalance(wallet.getTotalProfit() - wallet.getTotalDebt());
-                                            ownerWalletRepository.save(wallet);
+                                        Long ownerId = car.getOwnerId().longValue();
+                                        double bill = booking.getTotalPrice();
+                                        String paymentMethod = payment.getPaymentMethod();
+                                        OwnerWallet wallet = ownerWalletRepository.findByOwnerId(ownerId).orElse(null);
+                                        if (wallet == null) {
+                                                wallet = new OwnerWallet();
+                                                wallet.setOwnerId(ownerId);
+                                                wallet.setTotalProfit(0.0);
+                                                wallet.setTotalDebt(0.0);
+                                                wallet.setBalance(0.0);
                                         }
-                                    }
+                                        if ("bank".equalsIgnoreCase(paymentMethod)) {
+                                                double profit = bill * 0.98;
+                                                wallet.setTotalProfit(wallet.getTotalProfit() + profit);
+                                        } else if ("cash".equalsIgnoreCase(paymentMethod)) {
+                                                double debt = bill * 0.02;
+                                                wallet.setTotalDebt(wallet.getTotalDebt() + debt);
+                                        }
+                                        wallet.setBalance(wallet.getTotalProfit() - wallet.getTotalDebt());
+                                        wallet.setUpdatedAt(LocalDateTime.now());
+                                        ownerWalletRepository.save(wallet);
+
+                                        // Record system revenue transaction
+                                        earningsService.recordSystemRevenue(payment, ownerId);
+
+                                        // Check if this is a debt payment (special identifier)
+                                        if ("DEBT_PAYMENT".equals(payment.getCarId())) {
+                                                // This is a debt payment, record debt collection
+                                                earningsService.recordDebtCollection(ownerId, payment.getAmount(),
+                                                                "Debt payment via banking - " + payment.getPaymentId());
+
+                                                // Clear the debt from owner wallet
+                                                if ("bank".equalsIgnoreCase(paymentMethod)) {
+                                                        wallet.setTotalDebt(Math.max(0,
+                                                                        wallet.getTotalDebt() - payment.getAmount()));
+                                                        wallet.setBalance(wallet.getTotalProfit()
+                                                                        - wallet.getTotalDebt());
+                                                        ownerWalletRepository.save(wallet);
+                                                }
+                                        }
                                 }
                         }
 
@@ -160,5 +167,8 @@ public class BookingService {
                 } catch (Exception e) {
                         throw new RuntimeException("Error deleting booking: " + e.getMessage());
                 }
+        }
+        public List<Booking> getAllBookings() {
+                return bookingRepository.findAll();
         }
 }
