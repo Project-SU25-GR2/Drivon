@@ -60,6 +60,21 @@ export default function DashboardOverview() {
   const [loadingBookings, setLoadingBookings] = useState(true);
   const [errorBookings, setErrorBookings] = useState(null);
 
+  // State cho Active Rentals
+  const [activeRentals, setActiveRentals] = useState(null);
+  const [loadingActiveRentals, setLoadingActiveRentals] = useState(true);
+  const [errorActiveRentals, setErrorActiveRentals] = useState(null);
+
+  // State cho Fleet Utilization
+  const [fleetUtilization, setFleetUtilization] = useState(null);
+  const [loadingFleetUtilization, setLoadingFleetUtilization] = useState(true);
+  const [errorFleetUtilization, setErrorFleetUtilization] = useState(null);
+
+  // State cho Revenue
+  const [revenue, setRevenue] = useState(null);
+  const [loadingRevenue, setLoadingRevenue] = useState(true);
+  const [errorRevenue, setErrorRevenue] = useState(null);
+
   useEffect(() => {
     // Fetch tổng số booking từ API
     const fetchTotalBookings = async () => {
@@ -85,6 +100,93 @@ export default function DashboardOverview() {
     };
     fetchTotalBookings();
   }, []);
+
+  useEffect(() => {
+    // Fetch tổng số booking và active rentals từ API
+    const fetchActiveRentals = async () => {
+      setLoadingActiveRentals(true);
+      setErrorActiveRentals(null);
+      try {
+        const res = await axios.get(`${API_URL}/bookings`);
+        let count = 0;
+        if (Array.isArray(res.data)) {
+          // Đếm số booking có status là 'ongoing' hoặc 'approved'
+          count = res.data.filter(b => {
+            const status = (b.status || '').toLowerCase();
+            return status === 'ongoing' || status === 'approved';
+          }).length;
+        } else if (Array.isArray(res.data.bookings)) {
+          count = res.data.bookings.filter(b => {
+            const status = (b.status || '').toLowerCase();
+            return status === 'ongoing' || status === 'approved';
+          }).length;
+        }
+        setActiveRentals(count);
+      } catch (err) {
+        setErrorActiveRentals('Không thể tải số lượng active rentals');
+        setActiveRentals(0);
+      } finally {
+        setLoadingActiveRentals(false);
+      }
+    };
+    fetchActiveRentals();
+  }, []);
+
+  useEffect(() => {
+    // Fetch danh sách xe để tính Fleet Utilization
+    const fetchFleetUtilization = async () => {
+      setLoadingFleetUtilization(true);
+      setErrorFleetUtilization(null);
+      try {
+        const res = await axios.get(`${API_URL}/cars`);
+        let percent = 0;
+        if (Array.isArray(res.data)) {
+          const total = res.data.length;
+          const rented = res.data.filter(car => (car.status || '').toLowerCase() === 'rented').length;
+          percent = total > 0 ? Math.round((rented / total) * 100) : 0;
+        } else if (Array.isArray(res.data.cars)) {
+          const total = res.data.cars.length;
+          const rented = res.data.cars.filter(car => (car.status || '').toLowerCase() === 'rented').length;
+          percent = total > 0 ? Math.round((rented / total) * 100) : 0;
+        }
+        setFleetUtilization(percent);
+      } catch (err) {
+        setErrorFleetUtilization('Không thể tải dữ liệu xe');
+        setFleetUtilization(0);
+      } finally {
+        setLoadingFleetUtilization(false);
+      }
+    };
+    fetchFleetUtilization();
+  }, []);
+
+  useEffect(() => {
+    // Fetch doanh thu hệ thống
+    const fetchRevenue = async () => {
+      setLoadingRevenue(true);
+      setErrorRevenue(null);
+      try {
+        const res = await axios.get(`${API_URL}/earnings/admin/system-statistics`);
+        if (res.data && typeof res.data.totalSystemRevenue !== 'undefined') {
+          setRevenue(res.data.totalSystemRevenue);
+        } else {
+          setRevenue(0);
+        }
+      } catch (err) {
+        setErrorRevenue('Không thể tải doanh thu');
+        setRevenue(0);
+      } finally {
+        setLoadingRevenue(false);
+      }
+    };
+    fetchRevenue();
+  }, []);
+
+  // Hàm format tiền VND
+  const formatCurrency = (amount) => {
+    if (amount === null || amount === undefined || isNaN(amount)) return '0 ₫';
+    return amount.toLocaleString('vi-VN') + ' ₫';
+  };
 
   return (
     <div style={{ background: '#f6f8fb', minHeight: '100vh', padding: '32px 0', height: '100vh', overflow: 'auto' }}>
@@ -114,9 +216,12 @@ export default function DashboardOverview() {
               <span style={{ ...metricIcon, color: '#22c55e', background: '#e7fbe9' }}><i className="fas fa-users"></i></span>
               <span style={labelStyle}>Active Rentals</span>
             </div>
-            <div style={valueStyle}>1,234</div>
+            <div style={valueStyle}>
+              {loadingActiveRentals ? '...' : (errorActiveRentals ? 'Error' : activeRentals)}
+            </div>
             <div style={{ display: 'flex', alignItems: 'center', marginTop: 4 }}>
-              <span style={trendStyle(true)}>+8%</span>
+              {/* Trend có thể fetch sau, tạm để trống */}
+              <span style={trendStyle(true)}></span>
             </div>
           </div>
           <div style={metricCard}>
@@ -124,9 +229,12 @@ export default function DashboardOverview() {
               <span style={{ ...metricIcon, color: '#f59e42', background: '#fff7e6' }}><i className="fas fa-chart-line"></i></span>
               <span style={labelStyle}>Fleet Utilization</span>
             </div>
-            <div style={valueStyle}>87%</div>
+            <div style={valueStyle}>
+              {loadingFleetUtilization ? '...' : (errorFleetUtilization ? 'Error' : `${fleetUtilization}%`)}
+            </div>
             <div style={{ display: 'flex', alignItems: 'center', marginTop: 4 }}>
-              <span style={trendStyle(false)}>-3%</span>
+              {/* Trend có thể fetch sau, tạm để trống */}
+              <span style={trendStyle(false)}></span>
             </div>
           </div>
           <div style={metricCard}>
@@ -134,9 +242,12 @@ export default function DashboardOverview() {
               <span style={{ ...metricIcon, color: '#a855f7', background: '#f3e8ff' }}><i className="fas fa-dollar-sign"></i></span>
               <span style={labelStyle}>Revenue</span>
             </div>
-            <div style={valueStyle}>$45,678</div>
+            <div style={valueStyle}>
+              {loadingRevenue ? '...' : (errorRevenue ? 'Error' : formatCurrency(revenue))}
+            </div>
             <div style={{ display: 'flex', alignItems: 'center', marginTop: 4 }}>
-              <span style={trendStyle(true)}>+15%</span>
+              {/* Trend có thể fetch sau, tạm để trống */}
+              <span style={trendStyle(true)}></span>
             </div>
           </div>
         </div>
