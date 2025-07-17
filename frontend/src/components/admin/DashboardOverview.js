@@ -80,6 +80,11 @@ export default function DashboardOverview() {
   const [loadingBookingLocations, setLoadingBookingLocations] = useState(true);
   const [errorBookingLocations, setErrorBookingLocations] = useState(null);
 
+  // State cho Fleet Status
+  const [fleetStatus, setFleetStatus] = useState([]);
+  const [loadingFleetStatus, setLoadingFleetStatus] = useState(true);
+  const [errorFleetStatus, setErrorFleetStatus] = useState(null);
+
   useEffect(() => {
     // Fetch tổng số booking từ API
     const fetchTotalBookings = async () => {
@@ -230,11 +235,63 @@ export default function DashboardOverview() {
     fetchBookingLocations();
   }, []);
 
+  useEffect(() => {
+    // Fetch danh sách xe cho Fleet Status
+    const fetchFleetStatus = async () => {
+      setLoadingFleetStatus(true);
+      setErrorFleetStatus(null);
+      try {
+        const res = await axios.get(`${API_URL}/cars`);
+        let cars = [];
+        if (Array.isArray(res.data)) {
+          cars = res.data;
+        } else if (Array.isArray(res.data.cars)) {
+          cars = res.data.cars;
+        }
+        // Lấy 5 xe đầu tiên, lấy giá từ contract nếu có, nếu không thì kiểm tra pricePerDay, nếu không có thì N/A
+        const topCars = cars.slice(0, 5).map(car => {
+          let price = 'N/A';
+          if (car.contract && typeof car.contract.pricePerDay !== 'undefined' && car.contract.pricePerDay !== null) {
+            price = formatCurrency(car.contract.pricePerDay) + '/day';
+          } else if (typeof car.pricePerDay !== 'undefined' && car.pricePerDay !== null && !isNaN(car.pricePerDay)) {
+            price = formatCurrency(car.pricePerDay) + '/day';
+          }
+          return {
+            name: `${car.brand || ''} ${car.model || ''} ${car.year || ''}`.trim(),
+            date: car.updatedAt ? new Date(car.updatedAt).toLocaleDateString() : '',
+            status: car.status || 'Unknown',
+            price,
+          };
+        });
+        setFleetStatus(topCars);
+      } catch (err) {
+        setErrorFleetStatus('Không thể tải dữ liệu xe');
+        setFleetStatus([]);
+      } finally {
+        setLoadingFleetStatus(false);
+      }
+    };
+    fetchFleetStatus();
+  }, []);
+
   // Hàm format tiền VND
   const formatCurrency = (amount) => {
     if (amount === null || amount === undefined || isNaN(amount)) return '0 ₫';
     return amount.toLocaleString('vi-VN') + ' ₫';
   };
+
+  // Thêm logo Google Maps dạng SVG (inline, không cần import file ngoài)
+  const googleMapsLogo = (
+    <svg width="28" height="28" viewBox="0 0 48 48" style={{ verticalAlign: 'middle', marginLeft: 8 }}>
+      <g>
+        <circle cx="24" cy="24" r="24" fill="#fff"/>
+        <path d="M24 8a8 8 0 0 1 8 8c0 5.25-8 16-8 16s-8-10.75-8-16a8 8 0 0 1 8-8z" fill="#34A853"/>
+        <circle cx="24" cy="16" r="5" fill="#4285F4"/>
+        <path d="M24 8a8 8 0 0 1 8 8c0 2.5-1.5 6.5-4 11.5V24h-8v3.5C17.5 22.5 16 18.5 16 16a8 8 0 0 1 8-8z" fill="#EA4335"/>
+        <path d="M24 8a8 8 0 0 1 8 8c0 2.5-1.5 6.5-4 11.5V24h-8v3.5C17.5 22.5 16 18.5 16 16a8 8 0 0 1 8-8z" fill="#FBBC05" fillOpacity=".5"/>
+      </g>
+    </svg>
+  );
 
   return (
     <div style={{ background: '#f6f8fb', minHeight: '100vh', padding: '32px 0', height: '100vh', overflow: 'auto' }}>
@@ -301,10 +358,15 @@ export default function DashboardOverview() {
         </div>
         {/* Booking Locations */}
         <div style={{ ...cardStyle, marginBottom: 32 }}>
-          <div style={sectionTitle}><i className="fas fa-map-marker-alt"></i> Booking Locations</div>
+          <div style={sectionTitle}>
+            <i className="fas fa-map-marker-alt"></i> Booking Locations
+          </div>
           <div style={{ display: 'flex', gap: 32, alignItems: 'stretch' }}>
             <div style={{ flex: 1, background: '#e8f0fe', borderRadius: 16, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 180 }}>
-              <i className="fas fa-globe-americas" style={{ fontSize: 48, color: '#4f8cff', marginBottom: 12 }}></i>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <i className="fas fa-globe-americas" style={{ fontSize: 48, color: '#4f8cff' }}></i>
+                {googleMapsLogo}
+              </div>
               <div style={{ fontWeight: 700, fontSize: 18, color: '#222', marginBottom: 4 }}>Interactive Map</div>
               <div style={{ color: '#6b7280', fontSize: 15 }}>Booking distribution across cities</div>
             </div>
@@ -319,7 +381,26 @@ export default function DashboardOverview() {
                 bookingLocations.map((item, idx) => (
                   <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <div style={{ minWidth: 48, fontWeight: 700, color: '#222', fontSize: 16 }}>{item.count}</div>
-                    <div style={{ flex: 1, color: '#6b7280', fontSize: 15 }}>{item.location}</div>
+                    {/* Gắn link Google Maps vào tên thành phố, css lại */}
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.location)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        flex: 1,
+                        color: '#1565c0',
+                        fontWeight: 600,
+                        fontSize: 16,
+                        textDecoration: 'none',
+                        cursor: 'pointer',
+                        transition: 'color 0.2s',
+                        position: 'relative',
+                      }}
+                      onMouseOver={e => e.currentTarget.style.textDecoration = 'underline'}
+                      onMouseOut={e => e.currentTarget.style.textDecoration = 'none'}
+                    >
+                      {item.location}
+                    </a>
                     <div style={{ flex: 2, background: '#f0f1f6', borderRadius: 6, height: 8, marginRight: 8 }}>
                       <div style={progressBar(item.percent, '#4f8cff')}></div>
                     </div>
@@ -355,28 +436,42 @@ export default function DashboardOverview() {
           {/* Fleet Status */}
           <div style={{ ...cardStyle, flex: 1.2, minWidth: 320 }}>
             <div style={sectionTitle}><i className="fas fa-car"></i> Fleet Status</div>
-            <div style={{ fontWeight: 700, fontSize: 22, color: '#22c55e', marginBottom: 18 }}>$12,450 Today</div>
+            {/* Có thể hiển thị tổng số xe hoặc tổng số xe đang hoạt động ở đây nếu muốn */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 18 }}>
-              {[
-                {name:'BMW X5 2023',date:'Dec 15',status:'Available',price:'$89/day',c:'#22c55e',bg:'#d1fae5'},
-                {name:'Mercedes C-Class',date:'Dec 14',status:'Rented',price:'$75/day',c:'#4f8cff',bg:'#dbeafe'},
-                {name:'Audi A4 2022',date:'Dec 13',status:'Maintenance',price:'$65/day',c:'#f59e42',bg:'#fef9c3'},
-                {name:'Tesla Model 3',date:'Dec 12',status:'Available',price:'$95/day',c:'#22c55e',bg:'#d1fae5'},
-                {name:'Toyota Camry',date:'Dec 11',status:'Rented',price:'$45/day',c:'#4f8cff',bg:'#dbeafe'},
-              ].map((item, idx) => (
-                <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f6f8fb', borderRadius: 8, padding: '10px 14px' }}>
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: 15 }}>{item.name}</div>
-                    <div style={{ fontSize: 13, color: '#6b7280' }}>{item.date}</div>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <span style={{ display: 'inline-block', background: item.bg, color: item.c, fontWeight: 700, borderRadius: 6, padding: '2px 10px', fontSize: 13, marginBottom: 2 }}>{item.status}</span>
-                    <div style={{ fontWeight: 600, color: '#222', fontSize: 14 }}>{item.price}</div>
-                  </div>
-                </div>
-              ))}
+              {loadingFleetStatus ? (
+                <div>Loading...</div>
+              ) : errorFleetStatus ? (
+                <div style={{ color: 'red' }}>{errorFleetStatus}</div>
+              ) : fleetStatus.length === 0 ? (
+                <div>No data</div>
+              ) : (
+                fleetStatus.map((item, idx) => {
+                  // Màu sắc theo trạng thái
+                  let c = '#22c55e', bg = '#d1fae5';
+                  if ((item.status || '').toLowerCase() === 'rented') { c = '#4f8cff'; bg = '#dbeafe'; }
+                  else if ((item.status || '').toLowerCase() === 'maintenance') { c = '#f59e42'; bg = '#fef9c3'; }
+                  else if ((item.status || '').toLowerCase() === 'available') { c = '#22c55e'; bg = '#d1fae5'; }
+                  else { c = '#6b7280'; bg = '#f3f4f6'; }
+                  return (
+                    <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f6f8fb', borderRadius: 8, padding: '10px 14px' }}>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: 15 }}>{item.name}</div>
+                        <div style={{ fontSize: 13, color: '#6b7280' }}>{item.date}</div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <span style={{ display: 'inline-block', background: bg, color: c, fontWeight: 700, borderRadius: 6, padding: '2px 10px', fontSize: 13, marginBottom: 2 }}>{item.status}</span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
-            <button style={{ width: '100%', background: '#4f8cff', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 0', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>View All Vehicles</button>
+            <button
+              style={{ width: '100%', background: '#4f8cff', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 0', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}
+              onClick={() => window.location.href = 'http://localhost:3000/rent-car'}
+            >
+              View All Vehicles
+            </button>
           </div>
           {/* Weather & Quick Actions */}
           <div style={{ ...cardStyle, flex: 1, minWidth: 260, background: 'linear-gradient(135deg,#e0e7ff 0%,#f0f1f6 100%)' }}>
