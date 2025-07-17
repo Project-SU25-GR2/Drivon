@@ -45,7 +45,7 @@ const EarningsManagement = () => {
                     monthlyPercentageChange: statsData.monthlyPercentageChange || 0
                 });
             } catch (err) {
-                setError('Không thể tải dữ liệu!');
+                setError('Unable to load data!');
                 console.error('Error fetching data:', err);
             } finally {
                 setLoading(false);
@@ -75,19 +75,19 @@ const EarningsManagement = () => {
             const tableBody = [
                 // Header row
                 [
-                    { text: 'Họ tên', style: 'tableHeader' },
+                    { text: 'Full Name', style: 'tableHeader' },
                     { text: 'Email', style: 'tableHeader' },
-                    { text: 'Tiền trên hệ thống', style: 'tableHeader' },
-                    { text: 'Tiền nợ hệ thống', style: 'tableHeader' },
-                    { text: 'Tổng tiền nhận từ hệ thống', style: 'tableHeader' },
-                    { text: 'Trạng thái', style: 'tableHeader' }
+                    { text: 'Money in System', style: 'tableHeader' },
+                    { text: 'System Debt', style: 'tableHeader' },
+                    { text: 'Total Received from System', style: 'tableHeader' },
+                    { text: 'Status', style: 'tableHeader' }
                 ]
             ];
 
             // Data rows
             filteredWallets.forEach(wallet => {
-                const status = wallet.totalDebt > 0 ? 'Có nợ' : 
-                              wallet.totalProfit > 0 ? 'Hoạt động' : 'Không hoạt động';
+                const status = wallet.totalDebt > 0 ? 'Has Debt' : 
+                              wallet.totalProfit > 0 ? 'Active' : 'Inactive';
                 
                 tableBody.push([
                     { text: wallet.fullName || wallet.ownerId || 'N/A', alignment: 'left', margin: [4,4,4,4] },
@@ -102,7 +102,7 @@ const EarningsManagement = () => {
             // Nếu không có dữ liệu
             if (filteredWallets.length === 0) {
                 tableBody.push([
-                    { text: 'Không có dữ liệu', colSpan: 6, alignment: 'center', margin: [4,8,4,8] },
+                    { text: 'No data available', colSpan: 6, alignment: 'center', margin: [4,8,4,8] },
                     {}, {}, {}, {}, {}
                 ]);
             }
@@ -110,19 +110,19 @@ const EarningsManagement = () => {
             const docDefinition = {
                 content: [
                     { 
-                        text: 'BÁO CÁO QUẢN LÝ LỢI NHUẬN', 
+                        text: 'EARNINGS MANAGEMENT REPORT', 
                         style: 'header', 
                         alignment: 'center', 
                         margin: [0, 0, 0, 20] 
                     },
                     { 
-                        text: `Ngày xuất: ${currentDate}`, 
+                        text: `Export date: ${currentDate}`, 
                         alignment: 'right', 
                         margin: [0, 0, 0, 20] 
                     },
                     // Statistics summary
                     {
-                        text: 'TỔNG QUAN HỆ THỐNG',
+                        text: 'SYSTEM OVERVIEW',
                         style: 'sectionHeader',
                         margin: [0, 0, 0, 15]
                     },
@@ -131,14 +131,14 @@ const EarningsManagement = () => {
                             {
                                 width: '50%',
                                 text: [
-                                    { text: 'Tổng tiền trong hệ thống: ', bold: true },
+                                    { text: 'Total money in system: ', bold: true },
                                     { text: formatCurrency(totalSystemMoney) }
                                 ]
                             },
                             {
                                 width: '50%',
                                 text: [
-                                    { text: 'Tổng tiền web nhận được: ', bold: true },
+                                    { text: 'Total website revenue: ', bold: true },
                                     { text: formatCurrency(statistics.totalSystemRevenue) }
                                 ]
                             }
@@ -150,14 +150,14 @@ const EarningsManagement = () => {
                             {
                                 width: '50%',
                                 text: [
-                                    { text: 'Tổng tiền nợ: ', bold: true },
+                                    { text: 'Total debt: ', bold: true },
                                     { text: formatCurrency(statistics.totalSystemDebt) }
                                 ]
                             },
                             {
                                 width: '50%',
                                 text: [
-                                    { text: 'Số tài xế hoạt động: ', bold: true },
+                                    { text: 'Active drivers: ', bold: true },
                                     { text: statistics.activeDrivers.toString() }
                                 ]
                             }
@@ -165,7 +165,7 @@ const EarningsManagement = () => {
                         margin: [0, 0, 0, 20]
                     },
                     {
-                        text: 'CHI TIẾT VÍ CHỦ XE',
+                        text: 'CAR OWNER WALLET DETAILS',
                         style: 'sectionHeader',
                         margin: [0, 0, 0, 15]
                     },
@@ -220,21 +220,21 @@ const EarningsManagement = () => {
             pdfDoc.download(fileName);
             pdfDoc.open();
             
-            showSuccessToast('Đã xuất PDF thành công!');
+            showSuccessToast('PDF exported successfully!');
         } catch (error) {
             console.error('PDF export error:', error);
-            showErrorToast('Xuất PDF thất bại!');
+            showErrorToast('PDF export failed!');
         }
     };
 
     const getStatusBadge = (status) => {
         switch(status) {
             case 'ACTIVE':
-                return <span className="status-badge status-active">Không nợ</span>;
+                return <span className="status-badge status-active">No Debt</span>;
             case 'DEBT':
-                return <span className="status-badge status-debt">Có nợ</span>;
+                return <span className="status-badge status-debt">Has Debt</span>;
             default:
-                return <span className="status-badge status-inactive">Đã thanh toán</span>;
+                return <span className="status-badge status-inactive">Paid</span>;
         }
     };
 
@@ -248,7 +248,7 @@ const EarningsManagement = () => {
         const isPositive = change >= 0;
         const sign = isPositive ? '+' : '';
         return {
-            text: `${sign}${change.toFixed(1)}% so với tháng trước`,
+            text: `${sign}${change.toFixed(1)}% compared to last month`,
             className: isPositive ? 'positive' : 'negative'
         };
     };
@@ -257,8 +257,8 @@ const EarningsManagement = () => {
         <div className="earnings-management">
             <div className="earnings-header">
                 <div>
-                    <h1>Quản lý lợi nhuận</h1>
-                    <p>Theo dõi và quản lý thu nhập, nợ và chi trả cho tài xế</p>
+                    <h1>Earnings Management</h1>
+                    <p>Monitor and manage income, debt and payments for drivers</p>
                 </div>
             </div>
 
@@ -269,7 +269,7 @@ const EarningsManagement = () => {
                         <span>$</span>
                     </div>
                     <div className="stat-content">
-                        <h3>Tổng tiền trong hệ thống</h3>
+                        <h3>Total Money in System</h3>
                         <p className="stat-value">{formatCurrency(totalSystemMoney)}</p>
                         <span className={`stat-change ${formatPercentageChange(statistics.monthlyPercentageChange).className}`}>
                             {formatPercentageChange(statistics.monthlyPercentageChange).text}
@@ -282,9 +282,9 @@ const EarningsManagement = () => {
                         <span>📉</span>
                     </div>
                     <div className="stat-content">
-                        <h3>Tổng tiền nợ</h3>
+                        <h3>Total Debt</h3>
                         <p className="stat-value">{formatCurrency(statistics.totalSystemDebt)}</p>
-                        <span className="stat-change negative">Nợ tích lũy từ giao dịch cash</span>
+                        <span className="stat-change negative">Accumulated debt from cash transactions</span>
                     </div>
                 </div>
 
@@ -293,9 +293,9 @@ const EarningsManagement = () => {
                         <span>📈</span>
                     </div>
                     <div className="stat-content">
-                        <h3>Tổng tiền web nhận được</h3>
+                        <h3>Total Website Revenue</h3>
                         <p className="stat-value">{formatCurrency(statistics.totalSystemRevenue)}</p>
-                        <span className="stat-change positive">Phí 2% từ tất cả giao dịch</span>
+                        <span className="stat-change positive">2% fee from all transactions</span>
                     </div>
                 </div>
             </div>
@@ -303,25 +303,25 @@ const EarningsManagement = () => {
             {/* Table Section */}
             <div className="table-section">
                 <div className="table-header">
-                    <h3>Quản lý lợi nhuận</h3>
+                    <h3>Earnings Management</h3>
                     <div className="table-controls">
                         <div className="search-box">
                             <input
                                 type="text"
-                                placeholder="Tìm kiếm theo tên hoặc email..."
+                                placeholder="Search by name or email..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                             <span className="search-icon"></span>
                         </div>
                         <button className="export-btn" onClick={exportToPDF}>
-                            <i className="fas fa-file-pdf"></i> Xuất PDF
+                            <i className="fas fa-file-pdf"></i> Export PDF
                         </button>
                     </div>
                 </div>
 
                 {loading ? (
-                    <div className="loading">Đang tải...</div>
+                    <div className="loading">Loading...</div>
                 ) : error ? (
                     <div className="error">{error}</div>
                 ) : (
@@ -329,19 +329,19 @@ const EarningsManagement = () => {
                         <table className="earnings-table">
                             <thead>
                                 <tr>
-                                    <th>Họ tên</th>
+                                    <th>Full Name</th>
                                     <th>Email</th>
-                                    <th>Tiền trên hệ thống</th>
-                                    <th>Tiền nợ hệ thống</th>
-                                    <th>Tổng tiền nhận từ hệ thống</th>
-                                    <th>Trạng thái</th>
+                                    <th>Money in System</th>
+                                    <th>System Debt</th>
+                                    <th>Total Received from System</th>
+                                    <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filteredWallets.length === 0 ? (
                                     <tr>
                                         <td colSpan="6" className="no-data">
-                                            {searchTerm ? 'Không tìm thấy kết quả phù hợp' : 'Không có dữ liệu ví owner.'}
+                                            {searchTerm ? 'No matching results found' : 'No owner wallet data available.'}
                                         </td>
                                     </tr>
                                 ) : (

@@ -32,7 +32,7 @@ const PromotionPage = () => {
             const res = await axios.get(`${API_URL}/promotions`);
             setPromotions(res.data);
         } catch (err) {
-            setError('Không thể tải danh sách mã giảm giá');
+            setError('Unable to load promotion list');
         } finally {
             setLoading(false);
         }
@@ -41,7 +41,7 @@ const PromotionPage = () => {
     const handleAddPromotion = async (e) => {
         e.preventDefault();
         if (!newCode || !newDiscount || !newValidUntil) {
-            showErrorToast('Vui lòng nhập đầy đủ thông tin');
+            showErrorToast('Please enter all information');
             return;
         }
         try {
@@ -60,7 +60,7 @@ const PromotionPage = () => {
     };
 
     const handleDeletePromotion = async (promo_id) => {
-        if (!window.confirm('Bạn có chắc muốn xóa mã này?')) return;
+        if (!window.confirm('Are you sure you want to delete this code?')) return;
         try {
             await axios.delete(`${API_URL}/promotions/${promo_id}`);
             showSuccessToast('Promotion deleted successfully!');

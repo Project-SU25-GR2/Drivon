@@ -13,7 +13,7 @@ const TestNotification = () => {
     e.preventDefault();
     
     if (!content.trim()) {
-      setMessage('Vui lòng nhập nội dung');
+      setMessage('Please enter content');
       showErrorToast('Please enter notification content');
       return;
     }
@@ -24,16 +24,16 @@ const TestNotification = () => {
 
       await createNotification(content, type, targetType);
 
-      setMessage('Thông báo đã được gửi thành công!');
+      setMessage('Notification sent successfully!');
       showSuccessToast('Notification sent successfully!');
       setContent('');
-      // Gọi reload notification nếu có
+      // Call reload notification if available
       if (window.reloadNotifications) {
         window.reloadNotifications();
       }
     } catch (error) {
       console.error('Error sending notification:', error);
-      setMessage('Có lỗi xảy ra khi gửi thông báo');
+      setMessage('An error occurred while sending notification');
       showErrorToast('Failed to send notification');
     } finally {
       setLoading(false);
@@ -42,15 +42,15 @@ const TestNotification = () => {
 
   return (
     <div style={{ padding: '20px', maxWidth: '500px', margin: '0 auto' }}>
-      <h2>Test Gửi Thông Báo</h2>
+      <h2>Test Send Notification</h2>
       
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         <div>
-          <label>Nội dung:</label>
+          <label>Content:</label>
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Nhập nội dung thông báo..."
+            placeholder="Enter notification content..."
             rows="4"
             style={{ width: '100%', padding: '10px' }}
             required
@@ -59,26 +59,26 @@ const TestNotification = () => {
 
         <div style={{ display: 'flex', gap: '10px' }}>
           <div style={{ flex: 1 }}>
-            <label>Loại:</label>
+            <label>Type:</label>
             <select
               value={type}
               onChange={(e) => setType(e.target.value)}
               style={{ width: '100%', padding: '8px' }}
             >
-              <option value="SYSTEM">Hệ thống</option>
-              <option value="PROMO">Khuyến mãi</option>
+              <option value="SYSTEM">System</option>
+              <option value="PROMO">Promotion</option>
             </select>
           </div>
 
           <div style={{ flex: 1 }}>
-            <label>Đối tượng:</label>
+            <label>Target:</label>
             <select
               value={targetType}
               onChange={(e) => setTargetType(e.target.value)}
               style={{ width: '100%', padding: '8px' }}
             >
-              <option value="ALL_USERS">Tất cả người dùng</option>
-              <option value="OWNER_ONLY">Chỉ chủ xe</option>
+              <option value="ALL_USERS">All users</option>
+              <option value="OWNER_ONLY">Car owners only</option>
             </select>
           </div>
         </div>
@@ -87,8 +87,8 @@ const TestNotification = () => {
           <div style={{ 
             padding: '10px', 
             borderRadius: '4px',
-            backgroundColor: message.includes('thành công') ? '#d4edda' : '#f8d7da',
-            color: message.includes('thành công') ? '#155724' : '#721c24'
+            backgroundColor: message.includes('successfully') ? '#d4edda' : '#f8d7da',
+            color: message.includes('successfully') ? '#155724' : '#721c24'
           }}>
             {message}
           </div>
@@ -107,7 +107,7 @@ const TestNotification = () => {
             opacity: loading ? 0.6 : 1
           }}
         >
-          {loading ? 'Đang gửi...' : 'Gửi thông báo'}
+          {loading ? 'Sending...' : 'Send Notification'}
         </button>
       </form>
     </div>

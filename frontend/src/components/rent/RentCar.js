@@ -21,7 +21,7 @@ const RentCar = () => {
     maxPrice: '',
   });
 
-  // Thêm state cho price range slider
+  // Add state for price range slider
   const [priceRange, setPriceRange] = useState([0, 5000000]);
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -44,7 +44,7 @@ const RentCar = () => {
         maxPrice: newMaxPrice.toString(),
       }));
       
-      // Cập nhật price range slider
+      // Update price range slider
       setPriceRange([newMinPrice, newMaxPrice]);
       
       if(locationParam) setSearch(locationParam);
@@ -59,7 +59,7 @@ const RentCar = () => {
     setCurrentPage(1);
   };
 
-  // Thêm hàm xử lý thay đổi price range slider
+  // Add function to handle price range slider change
   const handleSliderChange = (value) => {
     setPriceRange(value);
     setFilters({
@@ -70,7 +70,7 @@ const RentCar = () => {
     setCurrentPage(1);
   };
 
-  // Thêm hàm chuyển đổi fuelType sang tiếng Việt
+  // Add function to convert fuelType to Vietnamese
   function getFuelTypeVi(fuelType) {
     switch (fuelType) {
       case 'gasoline': return 'xăng';
@@ -121,14 +121,14 @@ const RentCar = () => {
       <div className="filter-bar">
         <input
           type="text"
-          placeholder="Tìm xe theo tên, địa điểm..."
+          placeholder="Search cars by name, location..."
           value={search}
           onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
           className="search-input"
         />
         <div className="price-filter-container">
           <div className="price-range-display">
-            <span>Giá: {priceRange[0].toLocaleString('vi-VN')} - {priceRange[1].toLocaleString('vi-VN')} VNĐ</span>
+            <span>Price: {priceRange[0].toLocaleString('en-US')} - {priceRange[1].toLocaleString('en-US')} VND</span>
           </div>
           <div className="slider-popover">
             <Slider
@@ -145,7 +145,7 @@ const RentCar = () => {
           </div>
         </div>
         <select name="brand" value={filters.brand} onChange={handleChange} className="filter-select">
-          <option value="">Hãng xe</option>
+          <option value="">Car Brand</option>
           <option value="Toyota">Toyota</option>
           <option value="Honda">Honda</option>
           <option value="Mazda">Mazda</option>
@@ -155,17 +155,17 @@ const RentCar = () => {
           <option value="VinFast">VinFast</option>
         </select>
         <select name="seat" value={filters.seat} onChange={handleChange} className="filter-select">
-          <option value="">Số chỗ</option>
+          <option value="">Seats</option>
           <option value="2">2</option>
           <option value="4">4</option>
           <option value="5">5</option>
           <option value="7">7</option>
         </select>
         <select name="fuel" value={filters.fuel} onChange={handleChange} className="filter-select">
-          <option value="">Nhiên liệu</option>
-          <option value="gasoline">Xăng</option>
-          <option value="diesel">Dầu</option>
-          <option value="electric">Điện</option>
+          <option value="">Fuel Type</option>
+          <option value="gasoline">Gasoline</option>
+          <option value="diesel">Diesel</option>
+          <option value="electric">Electric</option>
           <option value="hybrid">Hybrid</option>
         </select>
       </div>
@@ -176,7 +176,7 @@ const RentCar = () => {
         <button className="btn-fast-search" onClick={() => { setFilters({ ...filters, type: 'sedan' }); setCurrentPage(1); }}>Sedan</button>
         <button className="btn-fast-search" onClick={() => { setFilters({ ...filters, type: 'mpv' }); setCurrentPage(1); }}>MPV</button>
         <button className="btn-fast-search" onClick={() => { setFilters({ ...filters, type: 'pickup' }); setCurrentPage(1); }}>Pickup</button>
-        <button className="btn-fast-search" onClick={() => { setFilters({ ...filters, type: '' }); setCurrentPage(1); }}>Tất cả</button>
+        <button className="btn-fast-search" onClick={() => { setFilters({ ...filters, type: '' }); setCurrentPage(1); }}>All</button>
       </div>
 
       <div className="car-list">
@@ -202,30 +202,30 @@ const RentCar = () => {
                   <div className="car-info">
                     <h3 className="car-name">{car.brand} {car.model} {car.year}</h3>
                     <div className="car-specs-grid">
-                        <p className="spec-item"><FaCog /> {car.transmission === 'automatic' ? 'Số tự động' : 'Số sàn'}</p>
+                        <p className="spec-item"><FaCog /> {car.transmission === 'automatic' ? 'Automatic' : 'Manual'}</p>
                         <p className="spec-item"><FaGasPump /> {
-                          car.fuelType === 'gasoline' ? 'Xăng' :
-                          car.fuelType === 'diesel' ? 'Dầu diesel' :
-                          car.fuelType === 'electric' ? 'Điện' :
+                          car.fuelType === 'gasoline' ? 'Gasoline' :
+                          car.fuelType === 'diesel' ? 'Diesel' :
+                          car.fuelType === 'electric' ? 'Electric' :
                           car.fuelType === 'hybrid' ? 'Hybrid' :
                           car.fuelType
                         }</p>
                         <p className="spec-item"><FaRoad /> {car.fuelConsumption}l/100km</p>
-                        <p className="spec-item"><FaWrench /> Sản xuất {car.year}</p>
+                        <p className="spec-item"><FaWrench /> Built {car.year}</p>
                         <p className="spec-item"><FaMapMarkerAlt /> {car.location}</p>
-                        <p className="spec-item"><FaChair /> {car.seats} chỗ</p>
+                        <p className="spec-item"><FaChair /> {car.seats} seats</p>
                     </div>
-                    {/* Sử dụng dữ liệu từ context thay vì gọi API riêng */}
+                    {/* Use data from context instead of separate API call */}
                     <div className="rating-trips">
-                        <span className="rating-stars"><FaStar /> {car.reviewStats?.averageRating?.toFixed(1) || 'Mới'}</span>
-                        <span className="total-trips"><FaCarSide /> {car.reviewStats?.totalReviews || 0} chuyến</span>
+                        <span className="rating-stars"><FaStar /> {car.reviewStats?.averageRating?.toFixed(1) || 'New'}</span>
+                        <span className="total-trips"><FaCarSide /> {car.reviewStats?.totalReviews || 0} trips</span>
                     </div>
                         
                     <div className="car-price">
                         <span className="current-price">
                           {car.contract?.pricePerDay 
-                            ? car.contract.pricePerDay.toLocaleString('vi-VN') + ' VNĐ/ngày'
-                            : 'Liên hệ'}
+                            ? car.contract.pricePerDay.toLocaleString('en-US') + ' VND/day'
+                            : 'Contact'}
                         </span>
                     </div>
                   </div>

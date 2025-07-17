@@ -119,16 +119,16 @@ const CarLeaseContractForm = ({ user }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const generatePDF = (contractData) => {
+      const generatePDF = (contractData) => {
     const docDefinition = {
       content: [
         {
-          text: "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM",
+          text: "SOCIALIST REPUBLIC OF VIETNAM",
           style: "header",
           alignment: "center",
         },
         {
-          text: "Độc lập – Tự do – Hạnh phúc",
+          text: "Independence – Freedom – Happiness",
           style: "subheader",
           alignment: "center",
         },
@@ -138,85 +138,85 @@ const CarLeaseContractForm = ({ user }) => {
           margin: [0, 0, 0, 10],
         },
         {
-          text: "HỢP ĐỒNG ĐĂNG KÍ CHO THUÊ XE",
+          text: "CAR LEASE REGISTRATION CONTRACT",
           style: "title",
           alignment: "center",
           margin: [0, 10, 0, 0],
         },
         {
-          text: `Ngày: ${new Date().toLocaleDateString("vi-VN")}`,
+          text: `Date: ${new Date().toLocaleDateString("en-US")}`,
           alignment: "center",
         },
         {
-          text: `Số HĐ: ${contractData.contractNumber}`,
+          text: `Contract No: ${contractData.contractNumber}`,
           alignment: "center",
           margin: [0, 0, 0, 20],
         },
 
-        { text: "BÊN A", style: "section" },
-        { text: `Tên: ${contractData.name}` },
-        { text: `Số điện thoại: ${contractData.phone}` },
-        { text: `CCCD: ${contractData.cccd}` },
-        { text: `Mail: ${contractData.email}`, margin: [0, 0, 0, 10] },
+        { text: "PARTY A", style: "section" },
+        { text: `Name: ${contractData.name}` },
+        { text: `Phone: ${contractData.phone}` },
+        { text: `ID: ${contractData.cccd}` },
+        { text: `Email: ${contractData.email}`, margin: [0, 0, 0, 10] },
 
-        { text: "BÊN B", style: "section" },
-        { text: "Tên: Cty TNHH Group2" },
-        { text: "Số điện thoại: 0394672210" },
-        { text: "Mail: Binhvuong221004@gmail.com", margin: [0, 0, 0, 20] },
+        { text: "PARTY B", style: "section" },
+        { text: "Name: Group2 Co., Ltd" },
+        { text: "Phone: 0394672210" },
+        { text: "Email: Binhvuong221004@gmail.com", margin: [0, 0, 0, 20] },
 
-        { text: "THÔNG TIN XE", style: "section" },
-        { text: `Hãng xe: ${contractData.carData?.brand || "N/A"}` },
+        { text: "VEHICLE INFORMATION", style: "section" },
+        { text: `Brand: ${contractData.carData?.brand || "N/A"}` },
         { text: `Model: ${contractData.carData?.model || "N/A"}` },
-        { text: `Năm sản xuất: ${contractData.carData?.year || "N/A"}` },
-        { text: `Biển số xe: ${contractData.carData?.licensePlate || "N/A"}` },
-        { text: `Miêu tả: ${contractData.carData?.description || "N/A"}` },
+        { text: `Year: ${contractData.carData?.year || "N/A"}` },
+        { text: `License Plate: ${contractData.carData?.licensePlate || "N/A"}` },
+        { text: `Description: ${contractData.carData?.description || "N/A"}` },
         {
-          text: `Địa điểm: ${contractData.carData?.location || "N/A"}`,
+          text: `Location: ${contractData.carData?.location || "N/A"}`,
           margin: [0, 0, 0, 20],
         },
 
-        { text: "THÔNG TIN BÊN THUÊ CẦN CUNG CẤP", style: "section" },
-        { text: `Yêu cầu: CCCD/CMND/Hộ chiếu, Giấy phép lái xe` },
+        { text: "REQUIRED DOCUMENTS FROM LESSEE", style: "section" },
+        { text: `Requirements: ID/Passport, Driver's License` },
         {
-          text: `Giá thuê/ngày: ${contractData.pricePerDay.toLocaleString(
-            "vi-VN"
-          )} VNĐ`,
+          text: `Daily Rate: ${contractData.pricePerDay.toLocaleString(
+            "en-US"
+          )} VND`,
         },
         {
-          text: `Tiền cọc: ${contractData.deposit.toLocaleString("vi-VN")} VNĐ`,
+          text: `Deposit: ${contractData.deposit.toLocaleString("en-US")} VND`,
           margin: [0, 0, 0, 20],
         },
 
-        { text: "THÔNG TIN HỢP ĐỒNG", style: "section" },
-        { text: `Ngày bắt đầu: ${contractData.startDate}` },
+        { text: "CONTRACT INFORMATION", style: "section" },
+        { text: `Start Date: ${contractData.startDate}` },
         {
-          text: `Ngày kết thúc: ${contractData.endDate}`,
+          text: `End Date: ${contractData.endDate}`,
           margin: [0, 0, 0, 20],
         },
 
-        { text: "ĐIỀU KHOẢN", style: "section" },
+        { text: "TERMS AND CONDITIONS", style: "section" },
         {
-          text: "Bên A đã đọc và đồng ý với các điều khoản của hợp đồng này.",
+          text: "Party A has read and agreed to the terms and conditions of this contract.",
           margin: [0, 0, 0, 20],
         },
-        { text: "☒ Đã đồng ý với điều khoản", margin: [0, 0, 0, 20] },
+        { text: "☒ Agreed to terms and conditions", margin: [0, 0, 0, 20] },
 
         {
           columns: [
             {
               width: "*",
               text: [
-                { text: "BÊN A:\n", style: "section" },
-                { text: `Tên: ${contractData.name}\n` },
-                { text: 'Đã ký online "verify code"', italics: true },
+                { text: "PARTY A:\n", style: "section" },
+                { text: `Name: ${contractData.name}\n` },
+                { text: 'Signed online "verify code"', italics: true },
               ],
             },
             {
               width: "*",
               text: [
-                { text: "BÊN B:\n", style: "section" },
-                { text: "Tên: Group2\n" },
-                { text: "Đã ký!" },
+                { text: "PARTY B:\n", style: "section" },
+                { text: "Name: Group2\n" },
+                { text: "Signed!" },
               ],
             },
           ],
@@ -379,7 +379,7 @@ const CarLeaseContractForm = ({ user }) => {
           console.error("Lỗi khi lưu ảnh cavet:", cavetErr);
         }
       }
-      // Lưu otherDocImages nếu có
+      // Save otherDocImages if available
       if (contractData?.otherDocImages && contractData.otherDocImages.length > 0) {
         try {
           await axios.post(`${API_URL}/cars/images/other`, {
@@ -387,7 +387,7 @@ const CarLeaseContractForm = ({ user }) => {
             otherDocumentImages: contractData.otherDocImages,
           });
         } catch (otherErr) {
-          console.error("Lỗi khi lưu ảnh giấy tờ khác:", otherErr);
+          console.error("Error saving other document images:", otherErr);
         }
       }
 
@@ -627,7 +627,7 @@ const CarLeaseContractForm = ({ user }) => {
           />
         </div>
         <div className="lease-form-group lease-full-width">
-          <label className="lease-checkbox-label">
+                      <label className="lease-checkbox-label">
             <input
               type="checkbox"
               name="terms"
@@ -636,7 +636,7 @@ const CarLeaseContractForm = ({ user }) => {
               required
               disabled={isContractCreated}
             />
-            Đồng ý với điều khoản
+            I agree to the terms and conditions
           </label>
         </div>
         <div className="lease-form-group lease-full-width">

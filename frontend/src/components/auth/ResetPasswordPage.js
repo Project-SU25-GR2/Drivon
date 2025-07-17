@@ -20,7 +20,7 @@ const ResetPasswordPage = () => {
     setError("");
 
     if (newPassword !== confirmPassword) {
-      setError("Mật khẩu không khớp");
+      setError("Passwords do not match");
       setIsLoading(false);
       return;
     }
@@ -33,10 +33,10 @@ const ResetPasswordPage = () => {
           newPassword,
         }
       );
-      setMessage("Mật khẩu đã được đặt lại thành công");
+      setMessage("Password has been reset successfully");
       setTimeout(() => navigate("/login"), 2000);
     } catch (err) {
-      setError(err.response?.data?.message || "Không thể đặt lại mật khẩu");
+      setError(err.response?.data?.message || "Unable to reset password");
     } finally {
       setIsLoading(false);
     }
@@ -45,19 +45,19 @@ const ResetPasswordPage = () => {
   if (!token) {
     return (
       <div style={{ maxWidth: "400px", margin: "0 auto", padding: "20px" }}>
-        <div style={{ color: "red" }}>Link không hợp lệ</div>
+        <div style={{ color: "red" }}>Invalid link</div>
       </div>
     );
   }
 
   return (
     <div style={{ maxWidth: "400px", margin: "0 auto", padding: "20px" }}>
-      <h2>Đặt lại mật khẩu</h2>
+      <h2>Reset Password</h2>
       <form onSubmit={handleSubmit} className="auth-form">
         <div>
           <input
             type="password"
-            placeholder="Mật khẩu mới"
+            placeholder="New password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             className="auth-input"
@@ -68,7 +68,7 @@ const ResetPasswordPage = () => {
         <div>
           <input
             type="password"
-            placeholder="Xác nhận mật khẩu"
+            placeholder="Confirm password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             className="auth-input"
@@ -106,7 +106,7 @@ const ResetPasswordPage = () => {
         )}
 
         <SimpleButton type="submit" isLoading={isLoading}>
-          Đặt lại mật khẩu
+          Reset Password
         </SimpleButton>
       </form>
     </div>

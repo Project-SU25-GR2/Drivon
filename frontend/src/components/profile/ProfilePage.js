@@ -215,7 +215,7 @@ const ProfilePage = ({ user, onUpdateUser }) => {
         setDocUploading(false);
         return;
       }
-      // Upload tất cả ảnh lên Cloudinary
+      // Upload all images to Cloudinary
       const uploadPromises = pendingDocFiles.map(async (file) => {
         const formData = new FormData();
         formData.append('file', file);
@@ -226,7 +226,7 @@ const ProfilePage = ({ user, onUpdateUser }) => {
         return cloudinaryResponse.data.secure_url;
       });
       const imageUrls = await Promise.all(uploadPromises);
-      // Gửi từng ảnh lên backend
+      // Send each image to backend
       for (const imageUrl of imageUrls) {
         await axios.post(`${API_URL}/user/image`, {
           userId: user.userId,
@@ -260,17 +260,17 @@ const ProfilePage = ({ user, onUpdateUser }) => {
   };
 
   const handleSign = async (requestId) => {
-    if (!window.confirm('Bạn đã chắc chắn nhận được tiền chưa? Hành động này sẽ không thể hoàn tác!')) return;
+    if (!window.confirm('Are you sure you have received the money? This action cannot be undone!')) return;
     try {
       await axios.patch(`${API_URL}/owner-withdraw/${requestId}/sign`, { sign: true });
       setWithdrawRequests(his => his.map(w => w.requestId === requestId ? { ...w, sign: true } : w));
-      showSuccessToast('Đã xác nhận nhận tiền!');
+      showSuccessToast('Confirmed money receipt!');
     } catch {
-      showErrorToast('Xác nhận thất bại!');
+      showErrorToast('Confirmation failed!');
     }
   };
 
-  // Group userImages theo documentType
+  // Group userImages by documentType
   const groupedImages = userImages.reduce((acc, img) => {
     if (!acc[img.documentType]) acc[img.documentType] = [];
     acc[img.documentType].push(img);
@@ -594,21 +594,21 @@ const ProfilePage = ({ user, onUpdateUser }) => {
             dataSource={withdrawRequests}
             rowKey="requestId"
             columns={[
-              { title: "Số tiền", dataIndex: "amount" },
-              { title: "Trạng thái", dataIndex: "status" },
-              { title: "Ghi chú", dataIndex: "note" },
-              { title: "Ngày yêu cầu", dataIndex: "requestedAt" },
+              { title: "Amount", dataIndex: "amount" },
+              { title: "Status", dataIndex: "status" },
+              { title: "Note", dataIndex: "note" },
+              { title: "Request Date", dataIndex: "requestedAt" },
               {
-                title: "Đã nhận tiền",
+                title: "Money Received",
                 dataIndex: "sign",
                 render: (sign, record) => {
                   if (sign) {
-                    return <span style={{ color: 'green', fontWeight: 600 }}>Đã xác nhận</span>;
+                    return <span style={{ color: 'green', fontWeight: 600 }}>Confirmed</span>;
                   }
                   if (record.status === 'completed') {
                     return <input type="checkbox" onChange={() => handleSign(record.requestId)} />;
                   }
-                  return <span style={{ color: '#999' }}>Chưa hoàn thành</span>;
+                  return <span style={{ color: '#999' }}>Not completed</span>;
                 }
               }
             ]}

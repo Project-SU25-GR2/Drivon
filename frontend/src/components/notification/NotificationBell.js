@@ -10,7 +10,7 @@ const NotificationBell = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Tách riêng các function để tránh re-render
+  // Separate functions to avoid re-render
   const loadNotifications = useCallback(async () => {
     try {
       setLoading(true);
@@ -40,7 +40,7 @@ const NotificationBell = () => {
     }
   }, []);
 
-  // Load data khi component mount
+  // Load data when component mounts
   useEffect(() => {
     console.log('NotificationBell mounted, loading data...');
     loadNotifications();
@@ -126,7 +126,7 @@ const NotificationBell = () => {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleString('vi-VN');
+    return date.toLocaleString('en-US');
   };
 
   const getNotificationIcon = (type) => {
@@ -174,15 +174,15 @@ const NotificationBell = () => {
       {isOpen && (
         <div className="notification-dropdown">
           <div className="notification-header">
-            <h3>Thông báo ({notifications.length})</h3>
-            {/* Đã bỏ nút đánh dấu tất cả đã đọc */}
+            <h3>Notifications ({notifications.length})</h3>
+            {/* Removed mark all as read button */}
           </div>
 
           <div className="notification-list">
             {loading ? (
-              <div className="loading">Đang tải...</div>
+              <div className="loading">Loading...</div>
             ) : notifications.length === 0 ? (
-              <div className="no-notifications">Không có thông báo nào</div>
+              <div className="no-notifications">No notifications</div>
             ) : (
               notifications.map((notification) => (
                 <div

@@ -50,7 +50,7 @@ const RentalStats = ({ stats }) => (
       </div>
       <div>
         <div className="statValue" style={{ color: "#f1c40f" }}>
-          {stats.totalRevenue?.toLocaleString("vi-VN")} đ
+          {stats.totalRevenue?.toLocaleString("en-US")} ₫
         </div>
         <div className="statLabel">Total Revenue</div>
       </div>
@@ -227,7 +227,7 @@ const RentalHistoryPage = () => {
   const exportToPDF = () => {
     try {
       const user = JSON.parse(localStorage.getItem("user"));
-      const currentDate = new Date().toLocaleDateString('vi-VN');
+      const currentDate = new Date().toLocaleDateString('en-US');
       
       // Prepare table data
       const tableBody = [
@@ -248,12 +248,12 @@ const RentalHistoryPage = () => {
         tableBody.push([
           `${rental.car?.brand} ${rental.car?.model}\n${rental.car?.licensePlate}`,
           rental.renter?.fullName || rental.renter?.email || rental.renter?.id,
-          rental.startTime ? new Date(rental.startTime).toLocaleDateString('vi-VN') : '',
-          rental.endTime ? new Date(rental.endTime).toLocaleDateString('vi-VN') : '',
+          rental.startTime ? new Date(rental.startTime).toLocaleDateString('en-US') : '',
+          rental.endTime ? new Date(rental.endTime).toLocaleDateString('en-US') : '',
           rental.pickupLocation || '',
           rental.dropoffLocation || '',
           rental.status || '',
-          `${rental.totalPrice?.toLocaleString("vi-VN")} đ` || '0 đ'
+                      `${rental.totalPrice?.toLocaleString("en-US")} ₫` || '0 ₫'
         ]);
       });
 
@@ -292,7 +292,7 @@ const RentalHistoryPage = () => {
                 style: 'statText'
               },
               {
-                text: `Total Revenue: ${stats.totalRevenue?.toLocaleString("vi-VN")} đ`,
+                text: `Total Revenue: ${stats.totalRevenue?.toLocaleString("en-US")} ₫`,
                 style: 'statText'
               }
             ],
@@ -434,7 +434,7 @@ const RentalHistoryPage = () => {
                         fontSize: 20,
                         color: "#6c63ff"
                       }}
-                      title="Nhắn tin với người thuê"
+                      title="Message with renter"
                       onClick={(e) => {
                         e.stopPropagation();
                         console.log('Renter info:', rental.renter);
@@ -455,8 +455,8 @@ const RentalHistoryPage = () => {
                       rental.renter?.email ||
                       rental.renter?.id}
                   </td>
-                  <td>{rental.startTime ? new Date(rental.startTime).toLocaleDateString('vi-VN') : ''}</td>
-                  <td>{rental.endTime ? new Date(rental.endTime).toLocaleDateString('vi-VN') : ''}</td>
+                  <td>{rental.startTime ? new Date(rental.startTime).toLocaleDateString('en-US') : ''}</td>
+                  <td>{rental.endTime ? new Date(rental.endTime).toLocaleDateString('en-US') : ''}</td>
                   <td>
                     <span className="locationTag">{rental.pickupLocation}</span>
                   </td>

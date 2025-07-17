@@ -20,7 +20,7 @@ const formatCurrency = (amount) => {
     if (amount === null || amount === undefined || isNaN(amount)) {
         return '0 ₫';
     }
-    return amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+    return amount.toLocaleString('en-US', { style: 'currency', currency: 'VND' });
 };
 
 // Format currency without rounding for exact display
@@ -194,7 +194,7 @@ const EarningsPage = () => {
 
     const exportToPDF = () => {
         try {
-            const currentDate = new Date().toLocaleDateString('vi-VN');
+            const currentDate = new Date().toLocaleDateString('en-US');
             const selectedMonthYear = getMonthYear(selectedMonth);
             
             // Prepare transactions table data
@@ -213,7 +213,7 @@ const EarningsPage = () => {
             if (filteredTransactions && filteredTransactions.length > 0) {
                 filteredTransactions.forEach((transaction) => {
                     tableBody.push([
-                        transaction.date ? new Date(transaction.date).toLocaleDateString('vi-VN') : 'N/A',
+                        transaction.date ? new Date(transaction.date).toLocaleDateString('en-US') : 'N/A',
                         transaction.carName || 'N/A',
                         transaction.renterName || 'N/A',
                         formatCurrency(transaction.amount || 0),
@@ -726,29 +726,29 @@ const EarningsPage = () => {
             {showWithdrawModal && (
       <div className="modal-backdrop" style={{position: 'fixed', top:0, left:0, right:0, bottom:0, background: 'rgba(0,0,0,0.2)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
         <div className="modal-content" style={{background: '#fff', borderRadius: 8, padding: 32, minWidth: 320, boxShadow: '0 2px 16px rgba(0,0,0,0.15)'}}>
-          <h3>Yêu cầu rút tiền</h3>
+          <h3>Withdrawal Request</h3>
           <input
             type="number"
             min="1000"
             max={Math.floor(earnings.balance)}
-            placeholder={`Số tiền muốn rút (Tối đa: ${formatCurrencyExact(earnings.balance)})`}
+            placeholder={`Amount to withdraw (Max: ${formatCurrencyExact(earnings.balance)})`}
             value={withdrawAmount}
             onChange={e => setWithdrawAmount(e.target.value)}
             style={{width: '100%', marginBottom: 12, padding: 8, borderRadius: 4, border: '1px solid #ccc'}}
           />
           <div style={{fontSize: '12px', color: '#666', marginBottom: 12}}>
-            Tổng tiền thu qua hệ thống: {formatCurrencyExact(earnings.balance)} (chính xác: {earnings.balance} ₫)
+            Total earnings through system: {formatCurrencyExact(earnings.balance)} (exact: {earnings.balance} ₫)
           </div>
           <textarea
-            placeholder="Ghi chú (nếu có)"
+            placeholder="Note (optional)"
             value={withdrawNote}
             onChange={e => setWithdrawNote(e.target.value)}
             style={{width: '100%', marginBottom: 12, padding: 8, borderRadius: 4, border: '1px solid #ccc'}}
           />
           <button onClick={handleWithdraw} disabled={withdrawLoading || !withdrawAmount} style={{background: '#27ae60', color: '#fff', border: 'none', borderRadius: 5, padding: '8px 18px', fontWeight: 500, marginRight: 8}}>
-            {withdrawLoading ? "Đang gửi..." : "Xác nhận rút tiền"}
+            {withdrawLoading ? "Sending..." : "Confirm Withdrawal"}
           </button>
-          <button onClick={() => setShowWithdrawModal(false)} style={{background: '#eee', color: '#333', border: 'none', borderRadius: 5, padding: '8px 18px', fontWeight: 500}}>Hủy</button>
+          <button onClick={() => setShowWithdrawModal(false)} style={{background: '#eee', color: '#333', border: 'none', borderRadius: 5, padding: '8px 18px', fontWeight: 500}}>Cancel</button>
         </div>
       </div>
     )}

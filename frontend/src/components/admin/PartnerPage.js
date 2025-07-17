@@ -26,29 +26,29 @@ const PartnerPage = () => {
     try {
       await updatePartnerStatus(id, newStatus);
       
-      // Lấy thông tin partner để có userId
+      // Get partner info to have userId
       const partner = partnersData.find(p => p.id === id);
       if (partner && partner.userId) {
         try {
           if (newStatus === 'ACTIVE_LEASE') {
-            // Nếu status được đổi thành ACTIVE_LEASE, cập nhật role user thành owner
+            // If status is changed to ACTIVE_LEASE, update user role to owner
             await updateUserRole(partner.userId, 'owner');
-            console.log(`Đã cập nhật role của user ${partner.userId} thành owner`);
-            showSuccessToast(`Đã cập nhật role của user ${partner.userId} thành owner`);
+            console.log(`Updated user ${partner.userId} role to owner`);
+            showSuccessToast(`Updated user ${partner.userId} role to owner`);
           } else if (newStatus === 'EXPIRED_LEASE' || newStatus === 'CANCELLED_LEASE') {
-            // Nếu status được đổi thành EXPIRED_LEASE hoặc CANCELLED_LEASE, đổi role về renter
+            // If status is changed to EXPIRED_LEASE or CANCELLED_LEASE, change role back to renter
             await updateUserRole(partner.userId, 'renter');
-            console.log(`Đã cập nhật role của user ${partner.userId} về renter (do ${newStatus})`);
-            showSuccessToast(`Đã cập nhật role của user ${partner.userId} về renter`);
+            console.log(`Updated user ${partner.userId} role back to renter (due to ${newStatus})`);
+            showSuccessToast(`Updated user ${partner.userId} role back to renter`);
           }
         } catch (roleError) {
-          console.error('Lỗi khi cập nhật role user:', roleError);
-          showErrorToast('Lỗi khi cập nhật role user: ' + (roleError.response?.data?.message || roleError.message));
-          // Không throw error để không ảnh hưởng đến việc cập nhật status partner
+          console.error('Error updating user role:', roleError);
+          showErrorToast('Error updating user role: ' + (roleError.response?.data?.message || roleError.message));
+          // Don't throw error to not affect partner status update
         }
       }
       
-      showSuccessToast(`Đã cập nhật trạng thái partner thành ${newStatus}`);
+      showSuccessToast(`Partner status updated to ${newStatus}`);
     } catch (err) {
       console.error('Error updating partner status:', err);
       showErrorToast('Failed to update status: ' + (err.response?.data?.message || err.message));
@@ -302,11 +302,11 @@ const PartnerPage = () => {
                 <p><strong>Year:</strong> {selectedPartner.car?.year}</p>
                 <p><strong>License Plate:</strong> {selectedPartner.carId}</p>
                 <p><strong>Seats:</strong> {selectedPartner.car?.seats}</p>
-                <p><strong>Transmission:</strong> {selectedPartner.car?.transmission === 'manual' ? 'Số sàn' : selectedPartner.car?.transmission === 'automatic' ? 'Số tự động' : selectedPartner.car?.transmission}</p>
+                <p><strong>Transmission:</strong> {selectedPartner.car?.transmission === 'manual' ? 'Manual' : selectedPartner.car?.transmission === 'automatic' ? 'Automatic' : selectedPartner.car?.transmission}</p>
                 <p><strong>Fuel Type:</strong> {
-                  selectedPartner.car?.fuelType === 'gasoline' ? 'Xăng' :
-                  selectedPartner.car?.fuelType === 'diesel' ? 'Dầu' :
-                  selectedPartner.car?.fuelType === 'electric' ? 'Điện' :
+                  selectedPartner.car?.fuelType === 'gasoline' ? 'Gasoline' :
+                  selectedPartner.car?.fuelType === 'diesel' ? 'Diesel' :
+                  selectedPartner.car?.fuelType === 'electric' ? 'Electric' :
                   selectedPartner.car?.fuelType === 'hybrid' ? 'Hybrid' : selectedPartner.car?.fuelType
                 }</p>
                 <p><strong>Fuel Consumption:</strong> {selectedPartner.car?.fuelConsumption} {selectedPartner.car?.fuelType === 'electric' ? 'kWh/100km' : 'L/100km'}</p>
@@ -422,7 +422,7 @@ const PartnerPage = () => {
               cursor: 'pointer',
               zIndex: 10000
             }}
-            aria-label="Đóng ảnh phóng to"
+            aria-label="Close zoomed image"
           >
             &times;
           </button>

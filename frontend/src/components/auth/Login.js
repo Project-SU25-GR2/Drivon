@@ -28,7 +28,7 @@ const Login = ({ onLoginSuccess }) => {
 
       if (response.data) {
         const userDataWithToken = { ...response.data.user, token: response.data.token };
-        showSuccessToast('Đăng nhập thành công!');
+        showSuccessToast('Login successful!');
         onLoginSuccess(userDataWithToken);
       }
     } catch (err) {
@@ -55,7 +55,7 @@ const Login = ({ onLoginSuccess }) => {
 
       if (response.data) {
         const userDataWithToken = { ...response.data.user, token: response.data.token };
-        showSuccessToast('Đăng nhập Google thành công!');
+        showSuccessToast('Google login successful!');
         onLoginSuccess(userDataWithToken);
       }
     } catch (err) {

@@ -55,37 +55,37 @@ const valueStyle = { fontWeight: 700, fontSize: 28, color: '#222' };
 const trendStyle = (positive) => ({ color: positive ? '#22c55e' : '#ef4444', fontWeight: 600, fontSize: 15, marginLeft: 6 });
 
 export default function DashboardOverview() {
-  // State cho tổng số booking
+  // State for total bookings
   const [totalBookings, setTotalBookings] = useState(null);
   const [loadingBookings, setLoadingBookings] = useState(true);
   const [errorBookings, setErrorBookings] = useState(null);
 
-  // State cho Active Rentals
+  // State for Active Rentals
   const [activeRentals, setActiveRentals] = useState(null);
   const [loadingActiveRentals, setLoadingActiveRentals] = useState(true);
   const [errorActiveRentals, setErrorActiveRentals] = useState(null);
 
-  // State cho Fleet Utilization
+  // State for Fleet Utilization
   const [fleetUtilization, setFleetUtilization] = useState(null);
   const [loadingFleetUtilization, setLoadingFleetUtilization] = useState(true);
   const [errorFleetUtilization, setErrorFleetUtilization] = useState(null);
 
-  // State cho Revenue
+  // State for Revenue
   const [revenue, setRevenue] = useState(null);
   const [loadingRevenue, setLoadingRevenue] = useState(true);
   const [errorRevenue, setErrorRevenue] = useState(null);
 
-  // State cho Booking Locations
+  // State for Booking Locations
   const [bookingLocations, setBookingLocations] = useState([]);
   const [loadingBookingLocations, setLoadingBookingLocations] = useState(true);
   const [errorBookingLocations, setErrorBookingLocations] = useState(null);
 
-  // State cho Fleet Status
+  // State for Fleet Status
   const [fleetStatus, setFleetStatus] = useState([]);
   const [loadingFleetStatus, setLoadingFleetStatus] = useState(true);
   const [errorFleetStatus, setErrorFleetStatus] = useState(null);
 
-  // State cho Task Management
+  // State for Task Management
   const [tasks, setTasks] = useState([
     { label: 'Inspect Vehicle #BMW-2023', p: 'high', done: false },
     { label: 'Process Insurance Claim', p: 'high', done: false },
@@ -111,14 +111,14 @@ export default function DashboardOverview() {
   };
 
   useEffect(() => {
-    // Fetch tổng số booking từ API
+    // Fetch total bookings from API
     const fetchTotalBookings = async () => {
       setLoadingBookings(true);
       setErrorBookings(null);
       try {
-        // Gọi API lấy danh sách booking
+        // Call API to get booking list
         const res = await axios.get(`${API_URL}/bookings`);
-        // Nếu trả về mảng booking
+        // If returns booking array
         if (Array.isArray(res.data)) {
           setTotalBookings(res.data.length);
         } else if (Array.isArray(res.data.bookings)) {
@@ -127,7 +127,7 @@ export default function DashboardOverview() {
           setTotalBookings(0);
         }
       } catch (err) {
-        setErrorBookings('Không thể tải tổng số booking');
+        setErrorBookings('Unable to load total bookings');
         setTotalBookings(0);
       } finally {
         setLoadingBookings(false);
@@ -137,7 +137,7 @@ export default function DashboardOverview() {
   }, []);
 
   useEffect(() => {
-    // Fetch tổng số booking và active rentals từ API
+    // Fetch total bookings and active rentals from API
     const fetchActiveRentals = async () => {
       setLoadingActiveRentals(true);
       setErrorActiveRentals(null);
@@ -145,7 +145,7 @@ export default function DashboardOverview() {
         const res = await axios.get(`${API_URL}/bookings`);
         let count = 0;
         if (Array.isArray(res.data)) {
-          // Đếm số booking có status là 'ongoing' hoặc 'approved'
+          // Count bookings with status 'ongoing' or 'approved'
           count = res.data.filter(b => {
             const status = (b.status || '').toLowerCase();
             return status === 'ongoing' || status === 'approved';
@@ -158,7 +158,7 @@ export default function DashboardOverview() {
         }
         setActiveRentals(count);
       } catch (err) {
-        setErrorActiveRentals('Không thể tải số lượng active rentals');
+        setErrorActiveRentals('Unable to load active rentals count');
         setActiveRentals(0);
       } finally {
         setLoadingActiveRentals(false);
@@ -168,7 +168,7 @@ export default function DashboardOverview() {
   }, []);
 
   useEffect(() => {
-    // Fetch danh sách xe để tính Fleet Utilization
+    // Fetch car list to calculate Fleet Utilization
     const fetchFleetUtilization = async () => {
       setLoadingFleetUtilization(true);
       setErrorFleetUtilization(null);
@@ -186,7 +186,7 @@ export default function DashboardOverview() {
         }
         setFleetUtilization(percent);
       } catch (err) {
-        setErrorFleetUtilization('Không thể tải dữ liệu xe');
+        setErrorFleetUtilization('Unable to load car data');
         setFleetUtilization(0);
       } finally {
         setLoadingFleetUtilization(false);
@@ -196,7 +196,7 @@ export default function DashboardOverview() {
   }, []);
 
   useEffect(() => {
-    // Fetch doanh thu hệ thống
+    // Fetch system revenue
     const fetchRevenue = async () => {
       setLoadingRevenue(true);
       setErrorRevenue(null);
@@ -208,7 +208,7 @@ export default function DashboardOverview() {
           setRevenue(0);
         }
       } catch (err) {
-        setErrorRevenue('Không thể tải doanh thu');
+        setErrorRevenue('Unable to load revenue');
         setRevenue(0);
       } finally {
         setLoadingRevenue(false);
@@ -218,7 +218,7 @@ export default function DashboardOverview() {
   }, []);
 
   useEffect(() => {
-    // Fetch danh sách booking để tính phân bố theo thành phố
+    // Fetch booking list to calculate distribution by city
     const fetchBookingLocations = async () => {
       setLoadingBookingLocations(true);
       setErrorBookingLocations(null);
@@ -230,20 +230,20 @@ export default function DashboardOverview() {
         } else if (Array.isArray(res.data.bookings)) {
           bookings = res.data.bookings;
         }
-        // Đếm số booking theo pickupLocation (hoặc location)
+        // Count bookings by pickupLocation (or location)
         const locationCount = {};
         bookings.forEach(b => {
-          // Ưu tiên pickupLocation, fallback sang location
-          const loc = (b.pickupLocation || b.location || 'Khác').trim();
+          // Prioritize pickupLocation, fallback to location
+          const loc = (b.pickupLocation || b.location || 'Other').trim();
           if (!loc) return;
           locationCount[loc] = (locationCount[loc] || 0) + 1;
         });
-        // Sắp xếp theo số lượng giảm dần
+        // Sort by count descending
         const sorted = Object.entries(locationCount)
           .sort((a, b) => b[1] - a[1])
-          .slice(0, 4); // Lấy top 4
+          .slice(0, 4); // Take top 4
         const total = bookings.length;
-        // Tính phần trăm
+        // Calculate percentage
         const result = sorted.map(([loc, count]) => ({
           location: loc,
           count,
@@ -251,7 +251,7 @@ export default function DashboardOverview() {
         }));
         setBookingLocations(result);
       } catch (err) {
-        setErrorBookingLocations('Không thể tải dữ liệu booking location');
+        setErrorBookingLocations('Unable to load booking location data');
         setBookingLocations([]);
       } finally {
         setLoadingBookingLocations(false);
@@ -261,7 +261,7 @@ export default function DashboardOverview() {
   }, []);
 
   useEffect(() => {
-    // Fetch danh sách xe cho Fleet Status
+    // Fetch car list for Fleet Status
     const fetchFleetStatus = async () => {
       setLoadingFleetStatus(true);
       setErrorFleetStatus(null);
@@ -273,7 +273,7 @@ export default function DashboardOverview() {
         } else if (Array.isArray(res.data.cars)) {
           cars = res.data.cars;
         }
-        // Lấy 5 xe đầu tiên, lấy giá từ contract nếu có, nếu không thì kiểm tra pricePerDay, nếu không có thì N/A
+        // Take first 5 cars, get price from contract if available, otherwise check pricePerDay, if none then N/A
         const topCars = cars.slice(0, 5).map(car => {
           let price = 'N/A';
           if (car.contract && typeof car.contract.pricePerDay !== 'undefined' && car.contract.pricePerDay !== null) {
@@ -290,7 +290,7 @@ export default function DashboardOverview() {
         });
         setFleetStatus(topCars);
       } catch (err) {
-        setErrorFleetStatus('Không thể tải dữ liệu xe');
+        setErrorFleetStatus('Unable to load car data');
         setFleetStatus([]);
       } finally {
         setLoadingFleetStatus(false);
@@ -299,7 +299,7 @@ export default function DashboardOverview() {
     fetchFleetStatus();
   }, []);
 
-  // Hàm format tiền VND
+  // Currency format function VND
   const formatCurrency = (amount) => {
     if (amount === null || amount === undefined || isNaN(amount)) return '0 ₫';
     return amount.toLocaleString('vi-VN') + ' ₫';

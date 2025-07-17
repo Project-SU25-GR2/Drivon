@@ -1,8 +1,8 @@
 import React from 'react';
 
 const NotFoundCar = ({ 
-  title = "Không tìm thấy xe", 
-  message = "Xin lỗi, chúng tôi không thể tìm thấy chiếc xe bạn đang tìm kiếm.",
+  title = "No cars found", 
+  message = "Sorry, we couldn't find the car you're looking for.",
   onRetry,
   onGoBack,
   className = "" 
@@ -105,7 +105,7 @@ const NotFoundCar = ({
           }
         `}</style>
         
-        {/* Icon xe hỏng thật */}
+        {/* Broken car icon */}
         <div className="relative mb-8">
           <svg 
             className="car-broken mx-auto" 
@@ -114,7 +114,7 @@ const NotFoundCar = ({
             xmlns="http://www.w3.org/2000/svg"
           >
             <g transform="translate(10 10)">
-              {/* Thân xe bị móp méo */}
+              {/* Dented car body */}
               <path 
                 d="M15 35 Q20 30 35 32 L45 30 Q50 28 60 30 L75 32 Q85 35 90 38 L95 42 Q98 45 95 48 L90 50 Q85 52 75 50 L60 48 Q50 50 45 48 L35 50 Q25 52 20 48 L15 45 Q12 42 15 35 Z" 
                 fill="#d1d5db" 
@@ -123,7 +123,7 @@ const NotFoundCar = ({
                 opacity="0.9"
               />
               
-              {/* Cửa sổ vỡ */}
+              {/* Broken window */}
               <path 
                 d="M25 35 L35 32 L45 30 L55 32 L65 35 L55 38 L45 36 L35 38 Z" 
                 fill="#e5e7eb" 
@@ -132,11 +132,11 @@ const NotFoundCar = ({
                 opacity="0.3"
               />
               
-              {/* Vết nứt trên kính */}
+              {/* Cracks on glass */}
               <path d="M30 33 L40 35 M35 32 L45 37 M42 30 L38 40" stroke="#ef4444" strokeWidth="2" opacity="0.8"/>
               <path d="M50 33 L60 36 M55 31 L52 39" stroke="#ef4444" strokeWidth="2" opacity="0.8"/>
               
-              {/* Bánh xe xẹp và bị rách */}
+              {/* Flat and torn wheels */}
               <ellipse 
                 cx="30" 
                 cy="52" 
@@ -195,18 +195,18 @@ const NotFoundCar = ({
                 <path d="M57 32 Q58 30 59 32 Q58 33 57 32" fill="#ef4444" opacity="0.9"/>
               </g>
               
-              {/* Ốc vít và mảnh vỡ rơi */}
+              {/* Fallen screws and debris */}
               <circle cx="45" cy="55" r="1" fill="#6b7280" opacity="0.7"/>
               <circle cx="52" cy="57" r="0.8" fill="#6b7280" opacity="0.6"/>
               <rect x="48" y="56" width="2" height="1" fill="#9ca3af" opacity="0.5" transform="rotate(45 49 56)"/>
               
-              {/* Vệt dầu */}
+              {/* Oil stains */}
               <ellipse cx="40" cy="58" rx="8" ry="2" fill="#374151" opacity="0.3"/>
               <ellipse cx="65" cy="58" rx="6" ry="1.5" fill="#374151" opacity="0.2"/>
             </g>
           </svg>
           
-          {/* Dấu hỏi nổi */}
+          {/* Floating question mark */}
           <div className="question-mark absolute -top-2 -right-2">
             <svg width="40" height="40" className="text-orange-500">
               <circle cx="20" cy="20" r="18" fill="currentColor" opacity="0.1"/>
@@ -221,7 +221,7 @@ const NotFoundCar = ({
             </svg>
           </div>
           
-          {/* Đường tìm kiếm */}
+          {/* Search line */}
           <svg className="absolute -bottom-4 left-1/2 transform -translate-x-1/2" width="100" height="20">
             <path 
               className="search-line" 
@@ -253,7 +253,7 @@ const NotFoundCar = ({
                 <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
                 </svg>
-                Thử lại
+                Try Again
               </button>
             )}
             
@@ -265,7 +265,7 @@ const NotFoundCar = ({
                 <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
                 </svg>
-                Quay lại
+                Go Back
               </button>
             )}
           </div>
@@ -273,7 +273,7 @@ const NotFoundCar = ({
           {/* Additional info */}
           <div className="mt-8 p-4 bg-blue-50 rounded-lg">
             <p className="text-sm text-blue-700">
-              💡 <strong>Gợi ý:</strong> Hãy thử tìm kiếm với từ khóa khác hoặc kiểm tra lại thông tin xe.
+              💡 <strong>Suggestion:</strong> Try searching with different keywords or check the car information again.
             </p>
           </div>
         </div>
