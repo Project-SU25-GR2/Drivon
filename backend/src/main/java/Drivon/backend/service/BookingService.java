@@ -232,4 +232,15 @@ public class BookingService {
     public List<Booking> getAllBookings() {
         return bookingRepository.findAll();
     }
+    public boolean deleteBooking(Integer id) {
+        try {
+                if (bookingRepository.existsById(id)) {
+                        bookingRepository.deleteById(id);
+                        return true;
+                }
+                return false;
+        } catch (Exception e) {
+                throw new RuntimeException("Error deleting booking: " + e.getMessage());
+        }
+    }
 }
