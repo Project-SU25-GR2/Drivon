@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { API_URL } from '../../api/configApi';
 
 const cardStyle = {
   background: '#fff',
@@ -53,6 +55,37 @@ const valueStyle = { fontWeight: 700, fontSize: 28, color: '#222' };
 const trendStyle = (positive) => ({ color: positive ? '#22c55e' : '#ef4444', fontWeight: 600, fontSize: 15, marginLeft: 6 });
 
 export default function DashboardOverview() {
+  // State cho tổng số booking
+  const [totalBookings, setTotalBookings] = useState(null);
+  const [loadingBookings, setLoadingBookings] = useState(true);
+  const [errorBookings, setErrorBookings] = useState(null);
+
+  useEffect(() => {
+    // Fetch tổng số booking từ API
+    const fetchTotalBookings = async () => {
+      setLoadingBookings(true);
+      setErrorBookings(null);
+      try {
+        // Gọi API lấy danh sách booking
+        const res = await axios.get(`${API_URL}/bookings`);
+        // Nếu trả về mảng booking
+        if (Array.isArray(res.data)) {
+          setTotalBookings(res.data.length);
+        } else if (Array.isArray(res.data.bookings)) {
+          setTotalBookings(res.data.bookings.length);
+        } else {
+          setTotalBookings(0);
+        }
+      } catch (err) {
+        setErrorBookings('Không thể tải tổng số booking');
+        setTotalBookings(0);
+      } finally {
+        setLoadingBookings(false);
+      }
+    };
+    fetchTotalBookings();
+  }, []);
+
   return (
     <div style={{ background: '#f6f8fb', minHeight: '100vh', padding: '32px 0', height: '100vh', overflow: 'auto' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
@@ -68,9 +101,12 @@ export default function DashboardOverview() {
               <span style={metricIcon}><i className="fas fa-car"></i></span>
               <span style={labelStyle}>Total Bookings</span>
             </div>
-            <div style={valueStyle}>2,847</div>
+            <div style={valueStyle}>
+              {loadingBookings ? '...' : (errorBookings ? 'Error' : totalBookings)}
+            </div>
             <div style={{ display: 'flex', alignItems: 'center', marginTop: 4 }}>
-              <span style={trendStyle(true)}>+12%</span>
+              {/* Trend có thể fetch sau, tạm để trống */}
+              <span style={trendStyle(true)}></span>
             </div>
           </div>
           <div style={metricCard}>
