@@ -75,6 +75,11 @@ export default function DashboardOverview() {
   const [loadingRevenue, setLoadingRevenue] = useState(true);
   const [errorRevenue, setErrorRevenue] = useState(null);
 
+  // State cho Booking Locations
+  const [bookingLocations, setBookingLocations] = useState([]);
+  const [loadingBookingLocations, setLoadingBookingLocations] = useState(true);
+  const [errorBookingLocations, setErrorBookingLocations] = useState(null);
+
   useEffect(() => {
     // Fetch tổng số booking từ API
     const fetchTotalBookings = async () => {
@@ -182,6 +187,49 @@ export default function DashboardOverview() {
     fetchRevenue();
   }, []);
 
+  useEffect(() => {
+    // Fetch danh sách booking để tính phân bố theo thành phố
+    const fetchBookingLocations = async () => {
+      setLoadingBookingLocations(true);
+      setErrorBookingLocations(null);
+      try {
+        const res = await axios.get(`${API_URL}/bookings`);
+        let bookings = [];
+        if (Array.isArray(res.data)) {
+          bookings = res.data;
+        } else if (Array.isArray(res.data.bookings)) {
+          bookings = res.data.bookings;
+        }
+        // Đếm số booking theo pickupLocation (hoặc location)
+        const locationCount = {};
+        bookings.forEach(b => {
+          // Ưu tiên pickupLocation, fallback sang location
+          const loc = (b.pickupLocation || b.location || 'Khác').trim();
+          if (!loc) return;
+          locationCount[loc] = (locationCount[loc] || 0) + 1;
+        });
+        // Sắp xếp theo số lượng giảm dần
+        const sorted = Object.entries(locationCount)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 4); // Lấy top 4
+        const total = bookings.length;
+        // Tính phần trăm
+        const result = sorted.map(([loc, count]) => ({
+          location: loc,
+          count,
+          percent: total > 0 ? Math.round((count / total) * 100) : 0
+        }));
+        setBookingLocations(result);
+      } catch (err) {
+        setErrorBookingLocations('Không thể tải dữ liệu booking location');
+        setBookingLocations([]);
+      } finally {
+        setLoadingBookingLocations(false);
+      }
+    };
+    fetchBookingLocations();
+  }, []);
+
   // Hàm format tiền VND
   const formatCurrency = (amount) => {
     if (amount === null || amount === undefined || isNaN(amount)) return '0 ₫';
@@ -261,33 +309,25 @@ export default function DashboardOverview() {
               <div style={{ color: '#6b7280', fontSize: 15 }}>Booking distribution across cities</div>
             </div>
             <div style={{ flex: 1.2, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 18 }}>
-              {[{v:'2.5K',l:'Bookings from New York',p:85,c:'#4f8cff'},{v:'1.8K',l:'Bookings from Los Angeles',p:70,c:'#22c55e'},{v:'1.2K',l:'Bookings from Chicago',p:55,c:'#f59e42'},{v:'950',l:'Bookings from Miami',p:40,c:'#a855f7'}].map((item, idx) => (
-                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ minWidth: 48, fontWeight: 700, color: '#222', fontSize: 16 }}>{item.v}</div>
-                  <div style={{ flex: 1, color: '#6b7280', fontSize: 15 }}>{item.l}</div>
-                  <div style={{ flex: 2, background: '#f0f1f6', borderRadius: 6, height: 8, marginRight: 8 }}>
-                    <div style={progressBar(item.p, item.c)}></div>
+              {loadingBookingLocations ? (
+                <div>Loading...</div>
+              ) : errorBookingLocations ? (
+                <div style={{ color: 'red' }}>{errorBookingLocations}</div>
+              ) : bookingLocations.length === 0 ? (
+                <div>No data</div>
+              ) : (
+                bookingLocations.map((item, idx) => (
+                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ minWidth: 48, fontWeight: 700, color: '#222', fontSize: 16 }}>{item.count}</div>
+                    <div style={{ flex: 1, color: '#6b7280', fontSize: 15 }}>{item.location}</div>
+                    <div style={{ flex: 2, background: '#f0f1f6', borderRadius: 6, height: 8, marginRight: 8 }}>
+                      <div style={progressBar(item.percent, '#4f8cff')}></div>
+                    </div>
+                    <div style={{ minWidth: 36, textAlign: 'right', fontWeight: 600, color: '#222' }}>{item.percent}%</div>
                   </div>
-                  <div style={{ minWidth: 36, textAlign: 'right', fontWeight: 600, color: '#222' }}>{item.p}%</div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
-          </div>
-        </div>
-        {/* Business Metrics */}
-        <div style={{ ...cardStyle, marginBottom: 32 }}>
-          <div style={sectionTitle}>Business Metrics</div>
-          <div style={{ display: 'flex', gap: 48, justifyContent: 'center', alignItems: 'center' }}>
-            {[{v:75,l:'New Customers',c:'#4f8cff'},{v:60,l:'Repeat Bookings',c:'#22c55e'},{v:45,l:'Fleet Available',c:'#f59e42'}].map((item, idx) => (
-              <div key={idx} style={{ textAlign: 'center' }}>
-                <svg style={circleChart(item.c)} viewBox="0 0 36 36">
-                  <circle cx="18" cy="18" r="16" fill="none" stroke="#f0f1f6" strokeWidth="4" />
-                  <circle cx="18" cy="18" r="16" fill="none" stroke={item.c} strokeWidth="4" strokeDasharray={`${item.v},100`} strokeLinecap="round" />
-                  <text x="18" y="22" textAnchor="middle" fontSize="20" fontWeight="bold" fill="#222">{item.v}%</text>
-                </svg>
-                <div style={{ marginTop: 8, color: '#6b7280', fontWeight: 600 }}>{item.l}</div>
-              </div>
-            ))}
           </div>
         </div>
         {/* Bottom Widgets */}
