@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import Drivon.backend.service.NotificationService;
 import Drivon.backend.entity.Notification;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 @Service
 public class ContractService {
@@ -30,6 +31,9 @@ public class ContractService {
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     /* Comment out verification code storage
     // Store verification codes with expiration time
@@ -73,6 +77,17 @@ public class ContractService {
             Long userId = Long.valueOf(request.getCustomerId());
             String content = "Your partner application has been submitted successfully. Contract ID: " + savedContract.getId();
             notificationService.createNotificationForSpecificUser(content, Notification.NotificationType.SYSTEM, userId);
+            // Gửi real-time notification cho user
+            messagingTemplate.convertAndSendToUser(
+                String.valueOf(userId),
+                "/notifications/new",
+                java.util.Map.of(
+                    "content", content,
+                    "type", Notification.NotificationType.SYSTEM.toString(),
+                    "targetType", Notification.TargetType.USER_SPECIFIC.toString(),
+                    "createdAt", java.time.LocalDateTime.now().toString()
+                )
+            );
         } catch (Exception e) { /* ignore */ }
         return savedContract;
     }
@@ -133,6 +148,17 @@ public class ContractService {
             Long userId = Long.valueOf(request.getCustomerId());
             String content = "Your car lease application has been submitted successfully. Contract ID: " + savedContract.getId();
             notificationService.createNotificationForSpecificUser(content, Notification.NotificationType.SYSTEM, userId);
+            // Gửi real-time notification cho user
+            messagingTemplate.convertAndSendToUser(
+                String.valueOf(userId),
+                "/notifications/new",
+                java.util.Map.of(
+                    "content", content,
+                    "type", Notification.NotificationType.SYSTEM.toString(),
+                    "targetType", Notification.TargetType.USER_SPECIFIC.toString(),
+                    "createdAt", java.time.LocalDateTime.now().toString()
+                )
+            );
         } catch (Exception e) { /* ignore */ }
         return savedContract;
     }

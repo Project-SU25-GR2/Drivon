@@ -6,6 +6,8 @@ import Drivon.backend.repository.UserRepository;
 import Drivon.backend.model.User;
 import Drivon.backend.repository.OwnerWalletRepository;
 import Drivon.backend.model.OwnerWallet;
+import Drivon.backend.service.NotificationService;
+import Drivon.backend.entity.Notification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.Date;
@@ -13,6 +15,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 @RestController
 @RequestMapping("/api/owner-withdraw")
@@ -23,12 +26,34 @@ public class OwnerWithdrawController {
     private UserRepository userRepo;
     @Autowired
     private OwnerWalletRepository ownerWalletRepository;
+    @Autowired
+    private NotificationService notificationService;
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     @PostMapping
     public OwnerWithdrawRequest createWithdrawRequest(@RequestBody OwnerWithdrawRequest req) {
         req.setStatus("pending");
         req.setRequestedAt(new Date());
-        return withdrawRepo.save(req);
+        OwnerWithdrawRequest saved = withdrawRepo.save(req);
+        // Gửi notification cho owner khi tạo lệnh rút tiền
+        User owner = userRepo.findById(req.getOwnerId()).orElse(null);
+        if (owner != null) {
+            String content = String.format("Your withdrawal request has been created. Amount: %.2f. Status: %s.", req.getAmount(), req.getStatus());
+            notificationService.createNotificationForSpecificUser(content, Notification.NotificationType.SYSTEM, owner.getUserId());
+            // Gửi real-time notification cho owner
+            messagingTemplate.convertAndSendToUser(
+                String.valueOf(owner.getUserId()),
+                "/notifications/new",
+                java.util.Map.of(
+                    "content", content,
+                    "type", Notification.NotificationType.SYSTEM.toString(),
+                    "targetType", Notification.TargetType.USER_SPECIFIC.toString(),
+                    "createdAt", java.time.LocalDateTime.now().toString()
+                )
+            );
+        }
+        return saved;
     }
 
     @GetMapping("/{ownerId}")
@@ -120,7 +145,26 @@ public class OwnerWithdrawController {
                 }
             }
         }
-        return withdrawRepo.save(req);
+        OwnerWithdrawRequest saved = withdrawRepo.save(req);
+        // Gửi notification cho owner khi trạng thái lệnh rút tiền thay đổi
+        User owner = userRepo.findById(req.getOwnerId()).orElse(null);
+        if (owner != null) {
+            String content = String.format("Your withdrawal request (ID: %d) status has been updated to: %s.", req.getRequestId(), req.getStatus());
+            Notification ownerNotification = notificationService.createNotificationForSpecificUser(content, Notification.NotificationType.SYSTEM, owner.getUserId());
+            // Gửi real-time notification cho owner
+            messagingTemplate.convertAndSendToUser(
+                String.valueOf(owner.getUserId()),
+                "/notifications/new",
+                java.util.Map.of(
+                    "notificationId", ownerNotification.getNotificationId(),
+                    "content", ownerNotification.getContent(),
+                    "type", ownerNotification.getType().toString(),
+                    "targetType", ownerNotification.getTargetType().toString(),
+                    "createdAt", ownerNotification.getCreatedAt().toString()
+                )
+            );
+        }
+        return saved;
     }
 
     @PatchMapping("/{requestId}/sign")
