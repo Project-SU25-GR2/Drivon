@@ -15,11 +15,13 @@ import {
   Rate,
   Input,
   Result,
+  Tooltip,
 } from "antd";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../../styles/MyRentals.css";
-import { FrownOutlined, MehOutlined, SmileOutlined, CarOutlined, EnvironmentOutlined, CalendarOutlined, CreditCardOutlined } from "@ant-design/icons";
+import { FrownOutlined, MehOutlined, SmileOutlined, CarOutlined, EnvironmentOutlined, CalendarOutlined, CreditCardOutlined, DeleteOutlined } from "@ant-design/icons";
+import { CgArrowsExchange } from "react-icons/cg";
 import { API_URL } from '../../api/configApi';
 const { Title, Text } = Typography;
 
@@ -38,6 +40,17 @@ const MyRentals = () => {
   const [reviewedRentals, setReviewedRentals] = useState([]);
   const [isReviewSubmitted, setIsReviewSubmitted] = useState(false);
   const [carsInfo, setCarsInfo] = useState({});
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [rentalToDelete, setRentalToDelete] = useState(null);
+  const [isSwitchModalVisible, setIsSwitchModalVisible] = useState(false);
+  const [rentalToSwitch, setRentalToSwitch] = useState(null);
+  const [isSwitchToBankModalVisible, setIsSwitchToBankModalVisible] = useState(false);
+  const [rentalToSwitchToBank, setRentalToSwitchToBank] = useState(null);
+  // State cho modal hủy đặt xe
+  const [isCancelModalVisible, setIsCancelModalVisible] = useState(false);
+  const [rentalToCancel, setRentalToCancel] = useState(null);
+  const [refundBankAccount, setRefundBankAccount] = useState("");
+  const [refundBankName, setRefundBankName] = useState("");
 
   const tooltips = ["Rất tệ", "Tệ", "Bình thường", "Tốt", "Rất tốt"];
 
@@ -57,7 +70,7 @@ const MyRentals = () => {
       return;
     }
     setUser(userData);
-    fetchRentals(userData.userId);
+    fetchRentalsWithCleanup(userData.userId);
   }, [navigate]);
 
   const fetchRentals = async (userId) => {
@@ -81,14 +94,30 @@ const MyRentals = () => {
         })
       );
 
-      // KHÔNG lọc bỏ đơn CANCELLED, hiển thị tất cả
-      setRentals(paymentsWithBookingStatus);
+      // Lọc bỏ đơn CANCELLED và đơn không có thời gian thuê/trả
+      const filteredRentals = paymentsWithBookingStatus.filter(rental => {
+        // Ẩn đơn không có thời gian thuê hoặc thời gian trả
+        const hasRentalDates = rental.rentalStartDate && rental.rentalEndDate;
+        // Debug log để kiểm tra dữ liệu
+        if (!hasRentalDates) {
+          console.log('Filtered out rental due to missing dates:', rental);
+        }
+        return hasRentalDates;
+      });
+      
+      setRentals(filteredRentals);
     } catch (error) {
       console.error("Error fetching rentals:", error);
       message.error("Không thể tải lịch sử đặt xe");
     } finally {
       setLoading(false);
     }
+  };
+
+  // Cleanup function gọi sau fetchRentals để dọn dẹp dữ liệu cũ
+  const fetchRentalsWithCleanup = async (userId) => {
+    await fetchRentals(userId);
+    await cleanupInvalidPayments();
   };
 
   // Fetch car info for all rentals
@@ -206,10 +235,273 @@ const MyRentals = () => {
     }
   };
 
+  const handlePayment = (rental) => {
+    const bankPaymentRequest = {
+      orderCode: Date.now(),
+      amount: rental.amount,
+      description: `Thanh toan: ${rental.orderCode.toString().slice(-8)}`, // Rút ngắn và bỏ dấu
+      returnUrl: `${window.location.origin}/payment-success`,
+      cancelUrl: `${window.location.origin}/my-rentals?cancel=true`,
+      userId: user.userId,
+      carId: rental.carId,
+      bookingId: rental.bookingId,
+    };
+
+    axios.post(`${API_URL}/payments/create`, bankPaymentRequest)
+      .then(response => {
+        if (response.data.data && response.data.data.checkoutUrl) {
+          window.location.href = response.data.data.checkoutUrl;
+        } else {
+          message.error('Không thể chuyển hướng đến trang thanh toán. Vui lòng thử lại.');
+        }
+      })
+      .catch(() => {
+        message.error('Có lỗi xảy ra khi tạo link thanh toán.');
+      });
+  };
+
+  const handleDeleteRental = (rental) => {
+    setRentalToDelete(rental);
+    setIsDeleteModalVisible(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!rentalToDelete) return;
+    
+    try {
+      console.log('User confirmed deletion, proceeding...');
+      const paymentId = rentalToDelete.paymentId || rentalToDelete.id || rentalToDelete.payment_id;
+      console.log('Payment ID:', paymentId);
+      console.log('Booking ID:', rentalToDelete.bookingId);
+      
+      if (!paymentId && !rentalToDelete.bookingId) {
+        message.error('Không tìm thấy ID để xóa.');
+        return;
+      }
+
+      // Try booking endpoint first since we just added it
+      if (rentalToDelete.bookingId) {
+        console.log('Trying to delete booking:', rentalToDelete.bookingId);
+        const response = await axios.delete(`${API_URL}/bookings/${rentalToDelete.bookingId}`);
+        console.log('Delete booking response:', response);
+        message.success('Đã xóa đơn đặt xe thành công!');
+        fetchRentalsWithCleanup(user.userId);
+        handleCloseDeleteModal();
+        return;
+      }
+
+      // Try payment endpoint as fallback
+      if (paymentId) {
+        console.log('Trying to delete payment:', paymentId);
+        const response = await axios.delete(`${API_URL}/payments/${paymentId}`);
+        console.log('Delete payment response:', response);
+        message.success('Đã xóa đơn thanh toán thành công!');
+        fetchRentalsWithCleanup(user.userId);
+        handleCloseDeleteModal();
+        return;
+      }
+
+    } catch (error) {
+      console.error('Delete error:', error);
+      console.error('Error details:', error.response?.data);
+      message.error(`Không thể xóa: ${error.response?.data?.message || error.message}`);
+    }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setIsDeleteModalVisible(false);
+    setRentalToDelete(null);
+  };
+
+  const handleSwitchToBank = (rental) => {
+    setRentalToSwitchToBank(rental);
+    setIsSwitchToBankModalVisible(true);
+  };
+
+  const handleConfirmSwitchToBank = async () => {
+    if (!rentalToSwitchToBank) return;
+    
+    try {
+      console.log('User confirmed switch to bank');
+      console.log('Updating payment method for payment:', rentalToSwitchToBank.paymentId);
+      
+      // Cập nhật payment cũ từ cash sang bank
+      const updateRequest = {
+        paymentMethod: 'bank',
+        status: 'PENDING', // Bank cần thanh toán sau
+        paymentId: `PAYOS_${Date.now()}` // Tạo paymentId mới cho bank
+      };
+
+      console.log('Update payment request:', updateRequest);
+
+      const response = await axios.put(`${API_URL}/payments/update/${rentalToSwitchToBank.paymentId}`, updateRequest);
+      console.log('Update payment response:', response.data);
+      
+      if (response.data || response.status === 200) {
+        message.success('Đã chuyển sang thanh toán ngân hàng thành công! Bạn có thể thanh toán sau.');
+        fetchRentalsWithCleanup(user.userId);
+        handleCloseSwitchToBankModal();
+      } else {
+        console.error('No response data received');
+        message.error('Không thể chuyển phương thức thanh toán.');
+      }
+    } catch (error) {
+      console.error('Error switching to bank:', error);
+      console.error('Error details:', error.response?.data);
+      message.error(`Có lỗi xảy ra: ${error.response?.data?.message || error.message}`);
+    }
+  };
+
+  const handleCloseSwitchToBankModal = () => {
+    setIsSwitchToBankModalVisible(false);
+    setRentalToSwitchToBank(null);
+  };
+
+  const cleanupInvalidPayments = async () => {
+    try {
+      console.log('Starting cleanup of invalid payments...');
+      const response = await axios.get(`${API_URL}/payments/user/${user.userId}`);
+      const payments = response.data;
+      
+      // Tìm các payments không có ngày thuê/trả
+      const invalidPayments = payments.filter(payment => {
+        const hasInvalidDates = !payment.rentalStartDate || !payment.rentalEndDate;
+        if (hasInvalidDates) {
+          console.log('Found invalid payment:', payment.paymentId || payment.orderCode, payment);
+        }
+        return hasInvalidDates;
+      });
+
+      // Xóa từng payment invalid
+      for (const payment of invalidPayments) {
+        try {
+          const paymentId = payment.paymentId || payment.id;
+          if (paymentId) {
+            console.log('Deleting invalid payment:', paymentId);
+            await axios.delete(`${API_URL}/payments/${paymentId}`);
+          } else if (payment.orderCode) {
+            console.log('Cancelling invalid payment by orderCode:', payment.orderCode);
+            await axios.post(`${API_URL}/payments/cancel`, {
+              orderCode: payment.orderCode
+            });
+          }
+        } catch (deleteError) {
+          console.warn('Could not delete invalid payment:', payment, deleteError);
+        }
+      }
+
+      if (invalidPayments.length > 0) {
+        console.log(`Cleaned up ${invalidPayments.length} invalid payments`);
+      }
+    } catch (error) {
+      console.warn('Error during cleanup:', error);
+    }
+  };
+
+  const handleSwitchToCash = (rental) => {
+    setRentalToSwitch(rental);
+    setIsSwitchModalVisible(true);
+  };
+
+  const handleConfirmSwitch = async () => {
+    if (!rentalToSwitch) return;
+    
+    try {
+      console.log('User confirmed switch to cash');
+      console.log('Updating payment method for payment:', rentalToSwitch.paymentId);
+      
+      // Cập nhật payment cũ từ bank sang cash
+      const updateRequest = {
+        paymentMethod: 'cash',
+        status: 'SUCCESS', // Cash được coi như đã thanh toán
+        paymentId: `CASH_${Date.now()}` // Tạo paymentId mới cho cash
+      };
+
+      console.log('Update payment request:', updateRequest);
+
+      const response = await axios.put(`${API_URL}/payments/update/${rentalToSwitch.paymentId}`, updateRequest);
+      console.log('Update payment response:', response.data);
+      
+      if (response.data || response.status === 200) {
+        message.success('Đã chuyển sang thanh toán tiền mặt thành công!');
+        fetchRentalsWithCleanup(user.userId);
+        handleCloseSwitchModal();
+      } else {
+        console.error('No response data received');
+        message.error('Không thể chuyển phương thức thanh toán.');
+      }
+    } catch (error) {
+      console.error('Error switching to cash:', error);
+      console.error('Error details:', error.response?.data);
+      message.error(`Có lỗi xảy ra: ${error.response?.data?.message || error.message}`);
+    }
+  };
+
+  const handleCloseSwitchModal = () => {
+    setIsSwitchModalVisible(false);
+    setRentalToSwitch(null);
+  };
+
+  const handleCancelBooking = (rental) => {
+    setRentalToCancel(rental);
+    setIsCancelModalVisible(true);
+  };
+
+  const handleConfirmCancelBooking = async () => {
+    if (!rentalToCancel || !rentalToCancel.bookingId) {
+      message.error('Không tìm thấy booking để hủy.');
+      return;
+    }
+    try {
+      let refundCreated = false;
+      // Nếu là bank và status payment là PAID thì tạo request hoàn tiền
+      if (rentalToCancel.paymentMethod?.toLowerCase() === "bank" && rentalToCancel.status?.toUpperCase() === "PAID") {
+        if (!refundBankAccount || !refundBankName) {
+          message.error("Vui lòng nhập đầy đủ số tài khoản và tên ngân hàng để nhận hoàn tiền.");
+          return;
+        }
+        let refundAmount = rentalToCancel.amount;
+        if (["ongoing"].includes(rentalToCancel.bookingStatus?.toLowerCase())) {
+          refundAmount = Math.round(refundAmount * 0.95);
+        }
+        await axios.post(`${API_URL}/owner-withdraw`, {
+          ownerId: rentalToCancel.userId,
+          amount: refundAmount,
+          status: "pending",
+          note: `STK: ${refundBankAccount}, Ngân hàng: ${refundBankName}`,
+        });
+        refundCreated = true;
+      }
+      // Hủy booking như cũ
+      await axios.put(`${API_URL}/bookings/status/${rentalToCancel.bookingId}`, { status: 'cancelled' });
+      if (refundCreated) {
+        message.success('Đã tạo yêu cầu hoàn tiền và hủy đơn thành công!');
+      } else {
+        message.success('Đã hủy đơn đặt xe thành công!');
+      }
+      fetchRentalsWithCleanup(user.userId);
+      setIsCancelModalVisible(false);
+      setRentalToCancel(null);
+      setRefundBankAccount("");
+      setRefundBankName("");
+    } catch (error) {
+      message.error('Không thể hủy đơn đặt xe hoặc tạo yêu cầu hoàn tiền.');
+    }
+  };
+  const handleCloseCancelModal = () => {
+    setIsCancelModalVisible(false);
+    setRentalToCancel(null);
+    setRefundBankAccount("");
+    setRefundBankName("");
+  };
+
   const renderRentalCard = (rental) => {
-    // A user can rate a car if the rental is paid.
-    const canRate = rental.status?.toUpperCase() === "PAID";
+    // A user can rate a car if the booking is completed.
     const bookingStatus = rental.bookingStatus || rental.booking_status || rental.booking_status_text;
+    const canRate = bookingStatus?.toLowerCase() === "completed";
+    const isPending = rental.status?.toUpperCase() === "PENDING";
+    const isCash = rental.paymentMethod?.toLowerCase() === "cash";
+    const isBank = rental.paymentMethod?.toLowerCase() === "bank";
     const car = carsInfo[rental.carId];
     return (
       <Col xs={24} sm={24} md={12} lg={8} xl={8} key={rental.paymentId}>
@@ -268,14 +560,74 @@ const MyRentals = () => {
             <div className="rental-card-date">
               Đặt lúc: {formatDate(rental.paymentDate).replace('lúc ', '')}
             </div>
-            <div className="rental-card-actions">
-              <Button className="detail-btn" type="primary" onClick={() => handleViewDetails(rental)}>
-                Xem chi tiết
-              </Button>
-              {canRate && (
-                <Button className="rate-btn" onClick={() => handleRateCar(rental)}>
-                  Đánh giá xe
+            <div className="rental-card-actions" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <Tooltip title="Chi tiết">
+                <Button className="detail-btn" type="primary" onClick={() => handleViewDetails(rental)}>
+                  <i className="bi bi-info-circle"></i>
                 </Button>
+              </Tooltip>
+              
+              {/* Buttons for PENDING payments */}
+              {isPending && (
+                <>
+                  <Tooltip title="Thanh toán">
+                    <Button 
+                      className="payment-btn" 
+                      type="primary" 
+                      style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+                      onClick={() => handlePayment(rental)}
+                    >
+                      <i className="bi bi-credit-card"></i>
+                    </Button>
+                  </Tooltip>
+                  
+                  {/* Button for bank payments with PENDING status to switch to cash */}
+                  {isBank && (
+                    <Tooltip title="Chuyển sang thanh toán tiền mặt">
+                      <Button 
+                        className="switch-payment-btn"
+                        style={{ backgroundColor: '#fa8c16', borderColor: '#fa8c16', color: 'white', border: 'none', boxShadow: 'none' }}
+                        icon={<CgArrowsExchange />}
+                        onClick={() => handleSwitchToCash(rental)}
+                      />
+                    </Tooltip>
+                  )}
+                </>
+              )}
+              
+              {/* Button for cash payments with pending booking to switch to bank */}
+              {isCash && bookingStatus?.toLowerCase() === "pending" && (
+                <Tooltip title="Chuyển sang thanh toán ngân hàng">
+                  <Button 
+                    className="switch-payment-btn"
+                    style={{ backgroundColor: '#fa8c16', borderColor: '#fa8c16', color: 'white', border: 'none', boxShadow: 'none' }}
+                    icon={<CgArrowsExchange />}
+                    onClick={() => handleSwitchToBank(rental)}
+                  />
+                </Tooltip>
+              )}
+              
+              {/* Nút hủy đặt xe luôn hiển thị nếu bookingStatus là ongoing hoặc pending */}
+              {(bookingStatus?.toLowerCase() === 'ongoing' || bookingStatus?.toLowerCase() === 'pending') && (
+                <Tooltip title="Hủy đặt xe">
+                  <Button 
+                    className="cancel-booking-btn" 
+                    danger
+                    style={{ backgroundColor: '#ff4d4f', borderColor: '#ff4d4f', color: 'white', border: 'none', boxShadow: 'none' }}
+                    onClick={() => handleCancelBooking(rental)}
+                  >
+                    <i className="bi bi-x-octagon"></i>
+                  </Button>
+                </Tooltip>
+              )}
+              
+              {/* Rating button for completed bookings */}
+              {canRate && (
+                <Tooltip title="Đánh giá xe">
+                  <Button className="rate-btn" onClick={() => handleRateCar(rental)}>
+                    <i className="bi bi-star"></i>
+                  </Button>
+                </Tooltip>
               )}
             </div>
           </div>
@@ -421,6 +773,174 @@ const MyRentals = () => {
             />
           </>
         )}
+      </Modal>
+
+      <Modal
+        title="Xác nhận xóa đơn đặt xe"
+        open={isDeleteModalVisible}
+        onCancel={handleCloseDeleteModal}
+        footer={[
+          <Button key="cancel" onClick={handleCloseDeleteModal}>
+            Hủy
+          </Button>,
+          <Button key="delete" type="primary" danger onClick={handleConfirmDelete}>
+            Xóa
+          </Button>,
+        ]}
+        width={500}
+      >
+        <div style={{ textAlign: 'center', padding: '20px 0' }}>
+          <div style={{ fontSize: '16px', marginBottom: '16px' }}>
+            Bạn có chắc chắn muốn xóa đơn đặt xe này không?
+          </div>
+          {rentalToDelete && (
+            <div style={{ background: '#f5f5f5', padding: '12px', borderRadius: '6px', marginBottom: '16px' }}>
+              <Text strong>Mã đơn: #{rentalToDelete.orderCode}</Text>
+              <br />
+              <Text>Biển số xe: {rentalToDelete.carId}</Text>
+              <br />
+              <Text>Số tiền: {rentalToDelete.amount?.toLocaleString("vi-VN")} VNĐ</Text>
+            </div>
+          )}
+          <div style={{ color: '#ff4d4f', fontSize: '14px' }}>
+            ⚠️ Hành động này không thể hoàn tác
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        title="Chuyển sang thanh toán tiền mặt"
+        open={isSwitchModalVisible}
+        onCancel={handleCloseSwitchModal}
+        footer={[
+          <Button key="cancel" onClick={handleCloseSwitchModal}>
+            Hủy
+          </Button>,
+          <Button key="switch" type="primary" style={{ backgroundColor: '#fa8c16', borderColor: '#fa8c16' }} onClick={handleConfirmSwitch}>
+            Chuyển đổi
+          </Button>,
+        ]}
+        width={500}
+      >
+        <div style={{ textAlign: 'center', padding: '20px 0' }}>
+          <div style={{ fontSize: '16px', marginBottom: '16px' }}>
+            Bạn có muốn chuyển sang thanh toán bằng tiền mặt khi nhận xe?
+          </div>
+          {rentalToSwitch && (
+            <div style={{ background: '#f5f5f5', padding: '12px', borderRadius: '6px', marginBottom: '16px' }}>
+              <Text strong>Mã đơn: #{rentalToSwitch.orderCode}</Text>
+              <br />
+              <Text>Biển số xe: {rentalToSwitch.carId}</Text>
+              <br />
+              <Text>Số tiền: {rentalToSwitch.amount?.toLocaleString("vi-VN")} VNĐ</Text>
+              <br />
+              <Text>Từ: <strong>Chuyển khoản</strong> → <strong>Tiền mặt</strong></Text>
+            </div>
+          )}
+          <div style={{ color: '#fa8c16', fontSize: '14px' }}>
+            💡 Bạn sẽ thanh toán tiền mặt khi nhận xe
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        title="Chuyển sang thanh toán ngân hàng"
+        open={isSwitchToBankModalVisible}
+        onCancel={handleCloseSwitchToBankModal}
+        footer={[
+          <Button key="cancel" onClick={handleCloseSwitchToBankModal}>
+            Hủy
+          </Button>,
+          <Button key="switch" type="primary" style={{ backgroundColor: '#1890ff', borderColor: '#1890ff' }} onClick={handleConfirmSwitchToBank}>
+            Chuyển đổi
+          </Button>,
+        ]}
+        width={500}
+      >
+        <div style={{ textAlign: 'center', padding: '20px 0' }}>
+          <div style={{ fontSize: '16px', marginBottom: '16px' }}>
+            Bạn có muốn chuyển sang thanh toán bằng chuyển khoản ngân hàng?
+          </div>
+          {rentalToSwitchToBank && (
+            <div style={{ background: '#f5f5f5', padding: '12px', borderRadius: '6px', marginBottom: '16px' }}>
+              <Text strong>Mã đơn: #{rentalToSwitchToBank.orderCode}</Text>
+              <br />
+              <Text>Biển số xe: {rentalToSwitchToBank.carId}</Text>
+              <br />
+              <Text>Số tiền: {rentalToSwitchToBank.amount?.toLocaleString("vi-VN")} VNĐ</Text>
+              <br />
+              <Text>Từ: <strong>Tiền mặt</strong> → <strong>Chuyển khoản</strong></Text>
+            </div>
+          )}
+          <div style={{ color: '#1890ff', fontSize: '14px' }}>
+            🏦 Bạn cần thanh toán sớm để được đặt xe
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        title="Xác nhận hủy đặt xe"
+        open={isCancelModalVisible}
+        onCancel={handleCloseCancelModal}
+        footer={[
+          <Button key="cancel" onClick={handleCloseCancelModal}>
+            Hủy
+          </Button>,
+          <Button key="delete" type="primary" danger onClick={handleConfirmCancelBooking}>
+            Xác nhận hủy
+          </Button>,
+        ]}
+        width={500}
+      >
+        <div style={{ textAlign: 'center', padding: '20px 0' }}>
+          {/* Hiển thị phần trăm hoàn tiền nếu là bank */}
+          {rentalToCancel && rentalToCancel.paymentMethod?.toLowerCase() === "bank" && (
+            <>
+              <div style={{ color: '#1890ff', fontWeight: 500, marginBottom: 8 }}>
+                {rentalToCancel.status?.toUpperCase() === "PAID" ? (
+                  rentalToCancel.bookingStatus?.toLowerCase() === "pending"
+                    ? "Bạn sẽ được hoàn 100% số tiền đã thanh toán."
+                    : rentalToCancel.bookingStatus?.toLowerCase() === "ongoing"
+                      ? "Bạn sẽ được hoàn 95% số tiền đã thanh toán."
+                      : null
+                ) : (
+                  "Bạn chưa thanh toán, sẽ không hoàn tiền."
+                )}
+              </div>
+              {/* Input nhập số tài khoản và tên ngân hàng nếu là bank + PAID */}
+              {rentalToCancel.status?.toUpperCase() === "PAID" && (
+                <div style={{ marginBottom: 12 }}>
+                  <Input
+                    placeholder="Số tài khoản ngân hàng nhận hoàn"
+                    value={refundBankAccount}
+                    onChange={e => setRefundBankAccount(e.target.value)}
+                    style={{ marginBottom: 8 }}
+                  />
+                  <Input
+                    placeholder="Tên ngân hàng nhận hoàn"
+                    value={refundBankName}
+                    onChange={e => setRefundBankName(e.target.value)}
+                  />
+                </div>
+              )}
+            </>
+          )}
+          <div style={{ fontSize: '16px', marginBottom: '16px' }}>
+            Bạn có chắc chắn muốn hủy đơn đặt xe này không? Hành động này không thể hoàn tác.
+          </div>
+          {rentalToCancel && (
+            <div style={{ background: '#f5f5f5', padding: '12px', borderRadius: '6px', marginBottom: '16px' }}>
+              <Text strong>Mã đơn: #{rentalToCancel.orderCode}</Text>
+              <br />
+              <Text>Biển số xe: {rentalToCancel.carId}</Text>
+              <br />
+              <Text>Số tiền: {rentalToCancel.amount?.toLocaleString("vi-VN")} VNĐ</Text>
+            </div>
+          )}
+          <div style={{ color: '#ff4d4f', fontSize: '14px' }}>
+            ⚠️ Hành động này không thể hoàn tác
+          </div>
+        </div>
       </Modal>
     </div>
   );

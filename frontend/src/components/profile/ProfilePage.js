@@ -6,6 +6,7 @@ import { API_URL } from '../../api/configApi';
 import { showErrorToast, showSuccessToast } from '../notification/notification';
 import cloudinaryConfig from '../../config/cloudinary';
 import { FiUpload, FiTrash2 } from 'react-icons/fi';
+import { Table } from "antd";
 
 const ProfilePage = ({ user, onUpdateUser }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -28,6 +29,7 @@ const ProfilePage = ({ user, onUpdateUser }) => {
   const [pendingDocDesc, setPendingDocDesc] = useState('');
   const docUrlInput = useRef();
   const fileInputRef = useRef();
+  const [withdrawRequests, setWithdrawRequests] = useState([]);
 
   useEffect(() => {
     setEditedUser({ ...user });
@@ -38,6 +40,14 @@ const ProfilePage = ({ user, onUpdateUser }) => {
     setLoading(false);
     setError(null);
   }, [user]);
+
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem("user"));
+    if (!userData) return;
+    axios.get(`${API_URL}/owner-withdraw/${userData.userId}`)
+      .then(res => setWithdrawRequests(res.data))
+      .catch(() => setWithdrawRequests([]));
+  }, []);
 
   const checkPasswordStatus = async () => {
     try {
@@ -246,6 +256,17 @@ const ProfilePage = ({ user, onUpdateUser }) => {
       fetchUserImages();
     } catch (err) {
       showErrorToast('Failed to delete document!');
+    }
+  };
+
+  const handleSign = async (requestId) => {
+    if (!window.confirm('Bạn đã chắc chắn nhận được tiền chưa? Hành động này sẽ không thể hoàn tác!')) return;
+    try {
+      await axios.patch(`${API_URL}/owner-withdraw/${requestId}/sign`, { sign: true });
+      setWithdrawRequests(his => his.map(w => w.requestId === requestId ? { ...w, sign: true } : w));
+      showSuccessToast('Đã xác nhận nhận tiền!');
+    } catch {
+      showErrorToast('Xác nhận thất bại!');
     }
   };
 
@@ -560,6 +581,39 @@ const ProfilePage = ({ user, onUpdateUser }) => {
               </div>
             )}
           </div>
+        </div>
+
+        <div className="profile-section">
+          <div className="section-header">
+            <h3>
+              <i className="bi bi-cash-coin me-2"></i>
+              Withdrawal Requests
+            </h3>
+          </div>
+          <Table
+            dataSource={withdrawRequests}
+            rowKey="requestId"
+            columns={[
+              { title: "Số tiền", dataIndex: "amount" },
+              { title: "Trạng thái", dataIndex: "status" },
+              { title: "Ghi chú", dataIndex: "note" },
+              { title: "Ngày yêu cầu", dataIndex: "requestedAt" },
+              {
+                title: "Đã nhận tiền",
+                dataIndex: "sign",
+                render: (sign, record) => {
+                  if (sign) {
+                    return <span style={{ color: 'green', fontWeight: 600 }}>Đã xác nhận</span>;
+                  }
+                  if (record.status === 'completed') {
+                    return <input type="checkbox" onChange={() => handleSign(record.requestId)} />;
+                  }
+                  return <span style={{ color: '#999' }}>Chưa hoàn thành</span>;
+                }
+              }
+            ]}
+            style={{ marginTop: 32 }}
+          />
         </div>
       </div>
     </div>

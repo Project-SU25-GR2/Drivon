@@ -112,8 +112,8 @@ const RentalSuccess = () => {
         <Descriptions bordered column={1}>
           <Descriptions.Item label="Mã đơn">{rentalData.orderCode || rentalData.paymentId || 'Không xác định'}</Descriptions.Item>
           <Descriptions.Item label="Xe">{rentalData.carLicensePlate || rentalData.carId || 'Không xác định'}</Descriptions.Item>
-          <Descriptions.Item label="Ngày bắt đầu">{rentalData.rentalStartDate ? new Date(rentalData.rentalStartDate).toLocaleDateString() : 'Không xác định'}</Descriptions.Item>
-          <Descriptions.Item label="Ngày kết thúc">{rentalData.rentalEndDate ? new Date(rentalData.rentalEndDate).toLocaleDateString() : 'Không xác định'}</Descriptions.Item>
+          <Descriptions.Item label="Ngày bắt đầu">{rentalData.rentalStartDate ? new Date(rentalData.rentalStartDate).toLocaleDateString('vi-VN') : 'Không xác định'}</Descriptions.Item>
+          <Descriptions.Item label="Ngày kết thúc">{rentalData.rentalEndDate ? new Date(rentalData.rentalEndDate).toLocaleDateString('vi-VN') : 'Không xác định'}</Descriptions.Item>
           <Descriptions.Item label="Tổng tiền">{rentalData.amount ? Number(rentalData.amount).toLocaleString() + ' VNĐ' : 'Không xác định'}</Descriptions.Item>
           {rentalData.promotionCode && (
             <Descriptions.Item label="Mã giảm giá">{rentalData.promotionCode} {rentalData.discountPercent ? `(Giảm ${rentalData.discountPercent}%)` : ''}</Descriptions.Item>

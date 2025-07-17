@@ -497,4 +497,31 @@ public class PaymentService {
         logger.info("Deleted {} expired PENDING payments", count);
         return count;
     }
+
+    // Update payment method, status, and paymentId
+    public Payment updatePayment(String paymentId, String paymentMethod, String status, String newPaymentId) {
+        try {
+            logger.info("Updating payment {} with method: {}, status: {}, newPaymentId: {}", 
+                paymentId, paymentMethod, status, newPaymentId);
+            
+            Payment payment = paymentRepository.findByPaymentId(paymentId);
+            if (payment == null) {
+                logger.warn("Payment not found with paymentId: {}", paymentId);
+                return null;
+            }
+            
+            payment.setPaymentMethod(paymentMethod);
+            payment.setStatus(status);
+            if (newPaymentId != null && !newPaymentId.isEmpty()) {
+                payment.setPaymentId(newPaymentId);
+            }
+            
+            Payment savedPayment = paymentRepository.save(payment);
+            logger.info("Successfully updated payment: {}", savedPayment);
+            return savedPayment;
+        } catch (Exception e) {
+            logger.error("Error updating payment: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to update payment: " + e.getMessage());
+        }
+    }
 }

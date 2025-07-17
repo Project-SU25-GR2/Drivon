@@ -149,4 +149,16 @@ public class BookingService {
         public Booking getBookingById(Integer id) {
                 return bookingRepository.findById(id).orElse(null);
         }
+
+        public boolean deleteBooking(Integer id) {
+                try {
+                        if (bookingRepository.existsById(id)) {
+                                bookingRepository.deleteById(id);
+                                return true;
+                        }
+                        return false;
+                } catch (Exception e) {
+                        throw new RuntimeException("Error deleting booking: " + e.getMessage());
+                }
+        }
 }

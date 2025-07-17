@@ -126,11 +126,18 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
       return;
     }
 
+    // Fix timezone issue by setting time to noon local time before converting to ISO
+    const startDate = new Date(dateRange[0].startDate);
+    startDate.setHours(12, 0, 0, 0); // Set to noon to avoid timezone issues
+    
+    const endDate = new Date(dateRange[0].endDate);
+    endDate.setHours(12, 0, 0, 0); // Set to noon to avoid timezone issues
+
     const bookingData = {
       renterId: user.userId,
       carId: car.licensePlate,
-      startTime: dateRange[0].startDate.toISOString(),
-      endTime: dateRange[0].endDate.toISOString(),
+      startTime: startDate.toISOString(),
+      endTime: endDate.toISOString(),
       pickupLocation: values.pickupLocation,
       dropoffLocation: values.dropoffLocation,
       totalPrice: amount,
@@ -148,8 +155,8 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
           carId: car.licensePlate,
           bookingId: newBooking.id,
           additionalRequirements: values.requirements,
-          rentalStartDate: dateRange[0].startDate.toISOString(),
-          rentalEndDate: dateRange[0].endDate.toISOString(),
+          rentalStartDate: startDate.toISOString(),
+          rentalEndDate: endDate.toISOString(),
           promotionCode: selectedCoupon ? selectedCoupon.code : null,
           discountPercent: selectedCoupon ? selectedCoupon.discount_percent : null
         };
@@ -159,8 +166,8 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
         const rentalData = {
           orderCode: cashPaymentData.orderCode,
           carLicensePlate: car.licensePlate,
-          rentalStartDate: dateRange[0].startDate.toISOString(),
-          rentalEndDate: dateRange[0].endDate.toISOString(),
+          rentalStartDate: startDate.toISOString(),
+          rentalEndDate: endDate.toISOString(),
           amount: amount,
           promotionCode: selectedCoupon ? selectedCoupon.code : null,
           discountPercent: selectedCoupon ? selectedCoupon.discount_percent : 0,
@@ -181,8 +188,8 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
           carId: car.licensePlate,
           bookingId: newBooking.id,
           additionalRequirements: values.requirements,
-          rentalStartDate: dateRange[0].startDate.toISOString(),
-          rentalEndDate: dateRange[0].endDate.toISOString(),
+          rentalStartDate: startDate.toISOString(),
+          rentalEndDate: endDate.toISOString(),
           promotionCode: selectedCoupon ? selectedCoupon.code : null,
           discountPercent: selectedCoupon ? selectedCoupon.discount_percent : 0,
         };

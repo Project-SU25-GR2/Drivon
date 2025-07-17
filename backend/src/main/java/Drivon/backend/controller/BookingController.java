@@ -45,4 +45,18 @@ public class BookingController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteBooking(@PathVariable Integer id) {
+        try {
+            boolean deleted = bookingService.deleteBooking(id);
+            if (deleted) {
+                return ResponseEntity.ok("Booking deleted successfully");
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
 }
