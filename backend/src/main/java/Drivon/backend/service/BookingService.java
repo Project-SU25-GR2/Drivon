@@ -25,206 +25,211 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 @RequiredArgsConstructor
 public class BookingService {
 
-        private static final Logger log = LoggerFactory.getLogger(BookingService.class);
-        private final BookingRepository bookingRepository;
-        private final UserRepository userRepository;
-        private final CarRepository carRepository;
-        private final PaymentService paymentService;
-        private final NotificationService notificationService;
-        private final OwnerWalletRepository ownerWalletRepository;
-        private final PaymentRepository paymentRepository;
-        private final EarningsService earningsService;
-        private final SimpMessagingTemplate messagingTemplate;
+    private static final Logger log = LoggerFactory.getLogger(BookingService.class);
+    private final BookingRepository bookingRepository;
+    private final UserRepository userRepository;
+    private final CarRepository carRepository;
+    private final PaymentService paymentService;
+    private final NotificationService notificationService;
+    private final OwnerWalletRepository ownerWalletRepository;
+    private final PaymentRepository paymentRepository;
+    private final EarningsService earningsService;
+    private final SimpMessagingTemplate messagingTemplate;
 
-        public Booking createBooking(BookingRequest bookingRequest) {
-                User renter = userRepository.findById(bookingRequest.getRenterId())
-                                .orElseThrow(() -> new RuntimeException(
-                                                "User not found with id: " + bookingRequest.getRenterId()));
-                Car car = carRepository.findById(bookingRequest.getCarId())
-                                .orElseThrow(() -> new RuntimeException(
-                                                "Car not found with id: " + bookingRequest.getCarId()));
+    public Booking createBooking(BookingRequest bookingRequest) {
+        User renter = userRepository.findById(bookingRequest.getRenterId())
+                .orElseThrow(() -> new RuntimeException(
+                        "User not found with id: " + bookingRequest.getRenterId()));
+        Car car = carRepository.findById(bookingRequest.getCarId())
+                .orElseThrow(() -> new RuntimeException(
+                        "Car not found with id: " + bookingRequest.getCarId()));
 
-                Booking booking = Booking.builder()
-                                .renter(renter)
-                                .car(car)
-                                .startTime(bookingRequest.getStartTime())
-                                .endTime(bookingRequest.getEndTime())
-                                .pickupLocation(bookingRequest.getPickupLocation())
-                                .dropoffLocation(bookingRequest.getDropoffLocation())
-                                .totalPrice(bookingRequest.getTotalPrice())
-                                .status(Booking.BookingStatus.pending)
-                                .build();
+        Booking booking = Booking.builder()
+                .renter(renter)
+                .car(car)
+                .startTime(bookingRequest.getStartTime())
+                .endTime(bookingRequest.getEndTime())
+                .pickupLocation(bookingRequest.getPickupLocation())
+                .dropoffLocation(bookingRequest.getDropoffLocation())
+                .totalPrice(bookingRequest.getTotalPrice())
+                .status(Booking.BookingStatus.pending)
+                .build();
 
-                log.info("Attempting to save booking: {}", booking);
+        log.info("Attempting to save booking: {}", booking);
 
-                try {
-                        Booking savedBooking = bookingRepository.saveAndFlush(booking);
-                        log.info("Saved and flushed booking successfully with ID: {}", savedBooking.getId());
-                        // Gửi notification cho user khi đặt xe thành công
-                        String content = "Your car booking was successful. Booking ID: " + savedBooking.getId();
-                        notificationService.createNotificationForSpecificUser(content, Notification.NotificationType.SYSTEM, renter.getUserId());
-                        // Gửi real-time notification cho renter
-                        messagingTemplate.convertAndSendToUser(
-                            String.valueOf(renter.getUserId()),
+        try {
+            Booking savedBooking = bookingRepository.saveAndFlush(booking);
+            log.info("Saved and flushed booking successfully with ID: {}", savedBooking.getId());
+            // Gửi notification cho user khi đặt xe thành công
+            String content = "Your car booking was successful. Booking ID: " + savedBooking.getId();
+            notificationService.createNotificationForSpecificUser(content, Notification.NotificationType.SYSTEM,
+                    renter.getUserId());
+            // Gửi real-time notification cho renter
+            messagingTemplate.convertAndSendToUser(
+                    String.valueOf(renter.getUserId()),
+                    "/notifications/new",
+                    java.util.Map.of(
+                            "content", content,
+                            "type", Notification.NotificationType.SYSTEM.toString(),
+                            "targetType", Notification.TargetType.USER_SPECIFIC.toString(),
+                            "createdAt", java.time.LocalDateTime.now().toString()));
+            // Gửi notification cho owner khi có booking mới
+            if (car.getOwnerId() != null) {
+                User owner = userRepository.findById(car.getOwnerId().longValue()).orElse(null);
+                if (owner != null) {
+                    StringBuilder ownerContent = new StringBuilder();
+                    ownerContent.append("You have a new car booking!\n");
+                    ownerContent.append("Booking ID: ").append(savedBooking.getId()).append("\n");
+                    ownerContent.append("Renter: ").append(renter.getFullName() != null ? renter.getFullName() : "N/A")
+                            .append("\n");
+                    ownerContent.append("Email: ").append(renter.getEmail() != null ? renter.getEmail() : "N/A")
+                            .append("\n");
+                    ownerContent.append("Phone: ").append(renter.getPhone() != null ? renter.getPhone() : "N/A");
+                    notificationService.createNotificationForSpecificUser(ownerContent.toString(),
+                            Notification.NotificationType.SYSTEM, owner.getUserId());
+                    // Gửi real-time notification cho owner
+                    messagingTemplate.convertAndSendToUser(
+                            String.valueOf(owner.getUserId()),
                             "/notifications/new",
                             java.util.Map.of(
-                                "content", content,
-                                "type", Notification.NotificationType.SYSTEM.toString(),
-                                "targetType", Notification.TargetType.USER_SPECIFIC.toString(),
-                                "createdAt", java.time.LocalDateTime.now().toString()
-                            )
-                        );
-                        // Gửi notification cho owner khi có booking mới
-                        if (car.getOwnerId() != null) {
-                            User owner = userRepository.findById(car.getOwnerId().longValue()).orElse(null);
-                            if (owner != null) {
-                                StringBuilder ownerContent = new StringBuilder();
-                                ownerContent.append("You have a new car booking!\n");
-                                ownerContent.append("Booking ID: ").append(savedBooking.getId()).append("\n");
-                                ownerContent.append("Renter: ").append(renter.getFullName() != null ? renter.getFullName() : "N/A").append("\n");
-                                ownerContent.append("Email: ").append(renter.getEmail() != null ? renter.getEmail() : "N/A").append("\n");
-                                ownerContent.append("Phone: ").append(renter.getPhone() != null ? renter.getPhone() : "N/A");
-                                notificationService.createNotificationForSpecificUser(ownerContent.toString(), Notification.NotificationType.SYSTEM, owner.getUserId());
-                                // Gửi real-time notification cho owner
-                                messagingTemplate.convertAndSendToUser(
-                                    String.valueOf(owner.getUserId()),
-                                    "/notifications/new",
-                                    java.util.Map.of(
-                                        "content", ownerContent.toString(),
-                                        "type", Notification.NotificationType.SYSTEM.toString(),
-                                        "targetType", Notification.TargetType.USER_SPECIFIC.toString(),
-                                        "createdAt", java.time.LocalDateTime.now().toString()
-                                    )
-                                );
-                            }
-                        }
-                        return savedBooking;
-                } catch (Exception e) {
-                        log.error("Error saving booking to database", e);
-                        throw new RuntimeException("Could not save booking: " + e.getMessage(), e);
+                                    "content", ownerContent.toString(),
+                                    "type", Notification.NotificationType.SYSTEM.toString(),
+                                    "targetType", Notification.TargetType.USER_SPECIFIC.toString(),
+                                    "createdAt", java.time.LocalDateTime.now().toString()));
                 }
+            }
+            return savedBooking;
+        } catch (Exception e) {
+            log.error("Error saving booking to database", e);
+            throw new RuntimeException("Could not save booking: " + e.getMessage(), e);
         }
+    }
 
-        public List<Booking> getBookingsByOwnerId(Integer ownerId) {
-                return bookingRepository.findByCarOwnerId(ownerId);
-        }
+    public List<Booking> getBookingsByOwnerId(Integer ownerId) {
+        return bookingRepository.findByCarOwnerId(ownerId);
+    }
 
-        public Booking updateBookingStatus(Integer bookingId, String status) {
-                Booking booking = bookingRepository.findById(bookingId)
-                                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + bookingId));
-                Booking.BookingStatus newStatus;
-                try {
-                        newStatus = Booking.BookingStatus.valueOf(status.toLowerCase());
-                        booking.setStatus(newStatus);
-                        
-                        // Cập nhật trạng thái xe dựa trên trạng thái booking
-                        Car car = booking.getCar();
-                        if (car != null) {
-                                if (newStatus == Booking.BookingStatus.ongoing || newStatus == Booking.BookingStatus.approved) {
-                                        car.setStatus("rented");
-                                        log.info("Updated car status to 'rented' for carId: {}", car.getLicensePlate());
-                                } else if (newStatus == Booking.BookingStatus.completed || newStatus == Booking.BookingStatus.cancelled) {
-                                        car.setStatus("available");
-                                        log.info("Updated car status to 'available' for carId: {}", car.getLicensePlate());
-                                }
-                                carRepository.save(car);
-                        }
-                        
-                        // Nếu trạng thái là 'completed', cập nhật payment status thành 'PAID' và cập nhật owner_wallet
-                        if (newStatus == Booking.BookingStatus.completed) {
-                                paymentService.updatePaymentStatusByBookingId(bookingId, "PAID");
-                                log.info("Updated payment status to 'PAID' for bookingId: {}", bookingId);
-                                // --- Cập nhật ví owner ---
-                                Payment payment = paymentRepository.findByBookingId(bookingId);
-                                if (payment != null && car != null && car.getOwnerId() != null) {
-                                    Long ownerId = car.getOwnerId().longValue();
-                                    double bill = booking.getTotalPrice();
-                                    String paymentMethod = payment.getPaymentMethod();
-                                    OwnerWallet wallet = ownerWalletRepository.findByOwnerId(ownerId).orElse(null);
-                                    if (wallet == null) {
-                                        wallet = new OwnerWallet();
-                                        wallet.setOwnerId(ownerId);
-                                        wallet.setTotalProfit(0.0);
-                                        wallet.setTotalDebt(0.0);
-                                        wallet.setBalance(0.0);
-                                    }
-                                    if ("bank".equalsIgnoreCase(paymentMethod)) {
-                                        double profit = bill * 0.98;
-                                        wallet.setTotalProfit(wallet.getTotalProfit() + profit);
-                                    } else if ("cash".equalsIgnoreCase(paymentMethod)) {
-                                        double debt = bill * 0.02;
-                                        wallet.setTotalDebt(wallet.getTotalDebt() + debt);
-                                    }
-                                    wallet.setBalance(wallet.getTotalProfit() - wallet.getTotalDebt());
-                                    wallet.setUpdatedAt(LocalDateTime.now());
-                                    ownerWalletRepository.save(wallet);
-                                    
-                                    // Record system revenue transaction
-                                    earningsService.recordSystemRevenue(payment, ownerId);
-                                    
-                                    // Check if this is a debt payment (special identifier)
-                                    if ("DEBT_PAYMENT".equals(payment.getCarId())) {
-                                        // This is a debt payment, record debt collection
-                                        earningsService.recordDebtCollection(ownerId, payment.getAmount(), 
-                                            "Debt payment via banking - " + payment.getPaymentId());
-                                        
-                                        // Clear the debt from owner wallet
-                                        if ("bank".equalsIgnoreCase(paymentMethod)) {
-                                            wallet.setTotalDebt(Math.max(0, wallet.getTotalDebt() - payment.getAmount()));
-                                            wallet.setBalance(wallet.getTotalProfit() - wallet.getTotalDebt());
-                                            ownerWalletRepository.save(wallet);
-                                        }
-                                    }
-                                }
-                        }
+    public Booking updateBookingStatus(Integer bookingId, String status) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + bookingId));
+        Booking.BookingStatus newStatus;
+        try {
+            newStatus = Booking.BookingStatus.valueOf(status.toLowerCase());
+            booking.setStatus(newStatus);
 
-                } catch (IllegalArgumentException e) {
-                        throw new RuntimeException("Invalid status: " + status);
+            // Cập nhật trạng thái xe dựa trên trạng thái booking
+            Car car = booking.getCar();
+            if (car != null) {
+                if (newStatus == Booking.BookingStatus.ongoing || newStatus == Booking.BookingStatus.approved) {
+                    car.setStatus("rented");
+                    log.info("Updated car status to 'rented' for carId: {}", car.getLicensePlate());
+                } else if (newStatus == Booking.BookingStatus.completed
+                        || newStatus == Booking.BookingStatus.cancelled) {
+                    car.setStatus("available");
+                    log.info("Updated car status to 'available' for carId: {}", car.getLicensePlate());
                 }
-                // Sau khi cập nhật trạng thái booking, gửi notification cho user
-                User renter = booking.getRenter();
-                if (renter != null) {
-                    String statusText = booking.getStatus().name().toUpperCase();
-                    String userContent = String.format("Your booking (ID: %d) has been %s.", booking.getId(), statusText);
-                    Notification savedNotification = notificationService.createNotificationForSpecificUser(userContent, Notification.NotificationType.SYSTEM, renter.getUserId());
-                    // Gửi real-time notification cho renter
-                    messagingTemplate.convertAndSendToUser(
-                        String.valueOf(renter.getUserId()),
-                        "/notifications/new",
-                        java.util.Map.of(
+                carRepository.save(car);
+            }
+
+            // Nếu trạng thái là 'completed', cập nhật payment status thành 'PAID' và cập
+            // nhật owner_wallet
+            if (newStatus == Booking.BookingStatus.completed) {
+                paymentService.updatePaymentStatusByBookingId(bookingId, "PAID");
+                log.info("Updated payment status to 'PAID' for bookingId: {}", bookingId);
+                // --- Cập nhật ví owner ---
+                Payment payment = paymentRepository.findByBookingId(bookingId);
+                if (payment != null && car != null && car.getOwnerId() != null) {
+                    Long ownerId = car.getOwnerId().longValue();
+                    double bill = booking.getTotalPrice();
+                    String paymentMethod = payment.getPaymentMethod();
+                    OwnerWallet wallet = ownerWalletRepository.findByOwnerId(ownerId).orElse(null);
+                    if (wallet == null) {
+                        wallet = new OwnerWallet();
+                        wallet.setOwnerId(ownerId);
+                        wallet.setTotalProfit(0.0);
+                        wallet.setTotalDebt(0.0);
+                        wallet.setBalance(0.0);
+                    }
+                    if ("bank".equalsIgnoreCase(paymentMethod)) {
+                        double profit = bill * 0.98;
+                        wallet.setTotalProfit(wallet.getTotalProfit() + profit);
+                    } else if ("cash".equalsIgnoreCase(paymentMethod)) {
+                        double debt = bill * 0.02;
+                        wallet.setTotalDebt(wallet.getTotalDebt() + debt);
+                    }
+                    wallet.setBalance(wallet.getTotalProfit() - wallet.getTotalDebt());
+                    wallet.setUpdatedAt(LocalDateTime.now());
+                    ownerWalletRepository.save(wallet);
+
+                    // Record system revenue transaction
+                    earningsService.recordSystemRevenue(payment, ownerId);
+
+                    // Check if this is a debt payment (special identifier)
+                    if ("DEBT_PAYMENT".equals(payment.getCarId())) {
+                        // This is a debt payment, record debt collection
+                        earningsService.recordDebtCollection(ownerId, payment.getAmount(),
+                                "Debt payment via banking - " + payment.getPaymentId());
+
+                        // Clear the debt from owner wallet
+                        if ("bank".equalsIgnoreCase(paymentMethod)) {
+                            wallet.setTotalDebt(Math.max(0, wallet.getTotalDebt() - payment.getAmount()));
+                            wallet.setBalance(wallet.getTotalProfit() - wallet.getTotalDebt());
+                            ownerWalletRepository.save(wallet);
+                        }
+                    }
+                }
+            }
+
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid status: " + status);
+        }
+        // Sau khi cập nhật trạng thái booking, gửi notification cho user
+        User renter = booking.getRenter();
+        if (renter != null) {
+            String statusText = booking.getStatus().name().toUpperCase();
+            String userContent = String.format("Your booking (ID: %d) has been %s.", booking.getId(), statusText);
+            Notification savedNotification = notificationService.createNotificationForSpecificUser(userContent,
+                    Notification.NotificationType.SYSTEM, renter.getUserId());
+            // Gửi real-time notification cho renter
+            messagingTemplate.convertAndSendToUser(
+                    String.valueOf(renter.getUserId()),
+                    "/notifications/new",
+                    java.util.Map.of(
                             "notificationId", savedNotification.getNotificationId(),
                             "content", savedNotification.getContent(),
                             "type", savedNotification.getType().toString(),
                             "targetType", savedNotification.getTargetType().toString(),
-                            "createdAt", savedNotification.getCreatedAt().toString()
-                        )
-                    );
-                }
-                // Gửi notification cho owner (nếu có)
-                Car car = booking.getCar();
-                if (car != null && car.getOwnerId() != null) {
-                    User owner = userRepository.findById(car.getOwnerId().longValue()).orElse(null);
-                    if (owner != null) {
-                        String ownerContent = String.format("Booking (ID: %d) status has been updated to: %s.", booking.getId(), booking.getStatus().name().toUpperCase());
-                        Notification ownerNotification = notificationService.createNotificationForSpecificUser(ownerContent, Notification.NotificationType.SYSTEM, owner.getUserId());
-                        // Gửi real-time notification cho owner
-                        messagingTemplate.convertAndSendToUser(
-                            String.valueOf(owner.getUserId()),
-                            "/notifications/new",
-                            java.util.Map.of(
+                            "createdAt", savedNotification.getCreatedAt().toString()));
+        }
+        // Gửi notification cho owner (nếu có)
+        Car car = booking.getCar();
+        if (car != null && car.getOwnerId() != null) {
+            User owner = userRepository.findById(car.getOwnerId().longValue()).orElse(null);
+            if (owner != null) {
+                String ownerContent = String.format("Booking (ID: %d) status has been updated to: %s.", booking.getId(),
+                        booking.getStatus().name().toUpperCase());
+                Notification ownerNotification = notificationService.createNotificationForSpecificUser(ownerContent,
+                        Notification.NotificationType.SYSTEM, owner.getUserId());
+                // Gửi real-time notification cho owner
+                messagingTemplate.convertAndSendToUser(
+                        String.valueOf(owner.getUserId()),
+                        "/notifications/new",
+                        java.util.Map.of(
                                 "notificationId", ownerNotification.getNotificationId(),
                                 "content", ownerNotification.getContent(),
                                 "type", ownerNotification.getType().toString(),
                                 "targetType", ownerNotification.getTargetType().toString(),
-                                "createdAt", ownerNotification.getCreatedAt().toString()
-                            )
-                        );
-                    }
-                }
-                return bookingRepository.save(booking);
+                                "createdAt", ownerNotification.getCreatedAt().toString()));
+            }
         }
+        return bookingRepository.save(booking);
+    }
 
-        public Booking getBookingById(Integer id) {
-                return bookingRepository.findById(id).orElse(null);
-        }
+    public Booking getBookingById(Integer id) {
+        return bookingRepository.findById(id).orElse(null);
+    }
+
+    public List<Booking> getAllBookings() {
+        return bookingRepository.findAll();
+    }
 }

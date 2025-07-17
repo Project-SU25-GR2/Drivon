@@ -1,5 +1,6 @@
 package Drivon.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,10 +25,12 @@ public class Booking {
 
     @ManyToOne
     @JoinColumn(name = "renter_id", nullable = false)
+    @JsonBackReference(value = "booking-renter")
     private User renter;
 
     @ManyToOne
     @JoinColumn(name = "car_id", nullable = false)
+    @JsonBackReference(value = "booking-car")
     private Car car;
 
     @Column(name = "start_time", nullable = false)

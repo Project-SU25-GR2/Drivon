@@ -1,9 +1,11 @@
 package Drivon.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.Data;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Entity
@@ -40,6 +42,10 @@ public class User {
     
     @Temporal(TemporalType.TIMESTAMP)
     private Date resetPasswordTokenExpiry;
+
+    @OneToMany(mappedBy = "renter")
+    @JsonManagedReference(value = "booking-renter")
+    private List<Booking> bookings;
 
     // Getters and Setters
     public Long getUserId() {
