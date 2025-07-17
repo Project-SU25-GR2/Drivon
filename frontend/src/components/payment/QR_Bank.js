@@ -19,10 +19,10 @@ const QR_Bank = ({ visible, onClose, qrCode, orderCode, userId }) => {
                     client.subscribe(`/topic/payment/${userId}`, (message) => {
                         const data = JSON.parse(message.body);
                         if (data.status === 'SUCCESS') {
-                            message.success('Thanh toán thành công!');
+                            message.success('Payment successful!');
                             onClose(true); // Pass true to indicate success
                         } else if (data.status === 'FAILED') {
-                            message.error('Thanh toán thất bại!');
+                            message.error('Payment failed!');
                             onClose(false);
                         }
                     });
@@ -45,7 +45,7 @@ const QR_Bank = ({ visible, onClose, qrCode, orderCode, userId }) => {
 
     return (
         <Modal
-            title="Thanh toán qua QR Code"
+            title="QR Code Payment"
             open={visible}
             onCancel={() => onClose(false)}
             footer={null}
@@ -58,9 +58,9 @@ const QR_Bank = ({ visible, onClose, qrCode, orderCode, userId }) => {
                 ) : (
                     <>
                         <img src={qrCode} alt="QR Code" className="qr-code" />
-                        <p className="payment-id">Mã đơn hàng: {orderCode}</p>
+                        <p className="payment-id">Order Code: {orderCode}</p>
                         <p className="instruction">
-                            Vui lòng quét mã QR bằng ứng dụng ngân hàng của bạn để thanh toán
+                            Please scan the QR code with your banking app to make payment
                         </p>
                     </>
                 )}

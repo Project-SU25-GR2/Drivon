@@ -6,6 +6,7 @@ import { API_URL } from '../../api/configApi';
 import { showErrorToast, showSuccessToast } from '../notification/notification';
 import cloudinaryConfig from '../../config/cloudinary';
 import { FiUpload, FiTrash2 } from 'react-icons/fi';
+import { Table } from "antd";
 
 const ProfilePage = ({ user, onUpdateUser }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -28,6 +29,7 @@ const ProfilePage = ({ user, onUpdateUser }) => {
   const [pendingDocDesc, setPendingDocDesc] = useState('');
   const docUrlInput = useRef();
   const fileInputRef = useRef();
+  const [withdrawRequests, setWithdrawRequests] = useState([]);
 
   useEffect(() => {
     setEditedUser({ ...user });
@@ -38,6 +40,14 @@ const ProfilePage = ({ user, onUpdateUser }) => {
     setLoading(false);
     setError(null);
   }, [user]);
+
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem("user"));
+    if (!userData) return;
+    axios.get(`${API_URL}/owner-withdraw/${userData.userId}`)
+      .then(res => setWithdrawRequests(res.data))
+      .catch(() => setWithdrawRequests([]));
+  }, []);
 
   const checkPasswordStatus = async () => {
     try {
@@ -205,7 +215,7 @@ const ProfilePage = ({ user, onUpdateUser }) => {
         setDocUploading(false);
         return;
       }
-      // Upload tất cả ảnh lên Cloudinary
+      // Upload all images to Cloudinary
       const uploadPromises = pendingDocFiles.map(async (file) => {
         const formData = new FormData();
         formData.append('file', file);
@@ -216,7 +226,7 @@ const ProfilePage = ({ user, onUpdateUser }) => {
         return cloudinaryResponse.data.secure_url;
       });
       const imageUrls = await Promise.all(uploadPromises);
-      // Gửi từng ảnh lên backend
+      // Send each image to backend
       for (const imageUrl of imageUrls) {
         await axios.post(`${API_URL}/user/image`, {
           userId: user.userId,
@@ -249,7 +259,18 @@ const ProfilePage = ({ user, onUpdateUser }) => {
     }
   };
 
-  // Group userImages theo documentType
+  const handleSign = async (requestId) => {
+    if (!window.confirm('Are you sure you have received the money? This action cannot be undone!')) return;
+    try {
+      await axios.patch(`${API_URL}/owner-withdraw/${requestId}/sign`, { sign: true });
+      setWithdrawRequests(his => his.map(w => w.requestId === requestId ? { ...w, sign: true } : w));
+      showSuccessToast('Confirmed money receipt!');
+    } catch {
+      showErrorToast('Confirmation failed!');
+    }
+  };
+
+  // Group userImages by documentType
   const groupedImages = userImages.reduce((acc, img) => {
     if (!acc[img.documentType]) acc[img.documentType] = [];
     acc[img.documentType].push(img);
@@ -560,6 +581,39 @@ const ProfilePage = ({ user, onUpdateUser }) => {
               </div>
             )}
           </div>
+        </div>
+
+        <div className="profile-section">
+          <div className="section-header">
+            <h3>
+              <i className="bi bi-cash-coin me-2"></i>
+              Withdrawal Requests
+            </h3>
+          </div>
+          <Table
+            dataSource={withdrawRequests}
+            rowKey="requestId"
+            columns={[
+              { title: "Amount", dataIndex: "amount" },
+              { title: "Status", dataIndex: "status" },
+              { title: "Note", dataIndex: "note" },
+              { title: "Request Date", dataIndex: "requestedAt" },
+              {
+                title: "Money Received",
+                dataIndex: "sign",
+                render: (sign, record) => {
+                  if (sign) {
+                    return <span style={{ color: 'green', fontWeight: 600 }}>Confirmed</span>;
+                  }
+                  if (record.status === 'completed') {
+                    return <input type="checkbox" onChange={() => handleSign(record.requestId)} />;
+                  }
+                  return <span style={{ color: '#999' }}>Not completed</span>;
+                }
+              }
+            ]}
+            style={{ marginTop: 32 }}
+          />
         </div>
       </div>
     </div>

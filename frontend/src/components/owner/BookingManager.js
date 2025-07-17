@@ -50,7 +50,7 @@ const RentalStats = ({ stats }) => (
       </div>
       <div>
         <div className="statValue" style={{ color: "#f1c40f" }}>
-          {stats.totalRevenue?.toLocaleString("vi-VN")} đ
+          {stats.totalRevenue?.toLocaleString("en-US")} ₫
         </div>
         <div className="statLabel">Total Revenue</div>
       </div>
@@ -116,6 +116,10 @@ const RentalHistoryPage = () => {
   const [search, setSearch] = useState("");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 7));
   const [hoveredRow, setHoveredRow] = useState(null);
+  const [isLicenseModalVisible, setIsLicenseModalVisible] = useState(false);
+  const [selectedRenter, setSelectedRenter] = useState(null);
+  const [licenseImages, setLicenseImages] = useState([]);
+  const [loadingLicense, setLoadingLicense] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -125,18 +129,20 @@ const RentalHistoryPage = () => {
     }
   }, [fetchRentalsData]);
 
-  // Stats calculation
+  // Stats calculation (exclude PENDING payments)
+  const validRentalsData = rentalsData.filter((r) => r.paymentStatus?.toUpperCase() !== 'PENDING');
   const stats = {
-    totalRentals: rentalsData.length,
-    completed: rentalsData.filter((r) => r.status === "completed").length,
-    totalRevenue: rentalsData.reduce((sum, r) => sum + (r.totalPrice || 0), 0),
-    thisMonth: rentalsData.filter(
+    totalRentals: validRentalsData.length,
+    completed: validRentalsData.filter((r) => r.status === "completed").length,
+    totalRevenue: validRentalsData.reduce((sum, r) => sum + (r.totalPrice || 0), 0),
+    thisMonth: validRentalsData.filter(
       (r) => new Date(r.startTime).getMonth() === new Date().getMonth()
     ).length,
   };
 
-  // Filtered data
-  const filteredData = rentalsData.filter((rental) => {
+  // Filtered and sorted data (newest bookings first)
+  const filteredData = rentalsData
+    .filter((rental) => {
     const matchesStatus =
       !statusFilter || rental.status?.toLowerCase() === statusFilter;
     const matchesSearch =
@@ -147,7 +153,16 @@ const RentalHistoryPage = () => {
       rental.pickupLocation?.toLowerCase().includes(search.toLowerCase()) ||
       rental.dropoffLocation?.toLowerCase().includes(search.toLowerCase());
     const matchesDate = !date || (rental.startTime && rental.startTime.slice(0, 7) === date);
-    return matchesStatus && matchesSearch && matchesDate;
+      // Hide bookings with PENDING payment status
+      const hasValidPayment = rental.paymentStatus?.toUpperCase() !== 'PENDING';
+      return matchesStatus && matchesSearch && matchesDate && hasValidPayment;
+    })
+    .sort((a, b) => {
+      // Sort by booking creation time (newest first)
+      // If no booking creation time, fallback to startTime
+      const timeA = a.createdAt || a.startTime || '0';
+      const timeB = b.createdAt || b.startTime || '0';
+      return new Date(timeB) - new Date(timeA);
   });
 
   const handleStatusChange = async (rentalId, newStatus) => {
@@ -157,6 +172,44 @@ const RentalHistoryPage = () => {
     } catch (err) {
       showErrorToast("Failed to update status!");
     }
+  };
+
+  const fetchLicenseImages = async (userId) => {
+    try {
+      setLoadingLicense(true);
+      const response = await fetch(`${API_URL}/user/image?userId=${userId}`);
+      if (response.ok) {
+        const images = await response.json();
+        const licenseOnly = images.filter(img => img.documentType === 'license');
+        setLicenseImages(licenseOnly);
+      } else {
+        showErrorToast("Không thể tải hình ảnh bằng lái!");
+        setLicenseImages([]);
+      }
+    } catch (error) {
+      console.error("Error fetching license images:", error);
+      showErrorToast("Lỗi khi tải hình ảnh bằng lái!");
+      setLicenseImages([]);
+    } finally {
+      setLoadingLicense(false);
+    }
+  };
+
+  const handleRowClick = (rental) => {
+    const renterId = rental.renter?.userId || rental.renter?.id || rental.renter?._id;
+    if (renterId) {
+      setSelectedRenter(rental.renter);
+      setIsLicenseModalVisible(true);
+      fetchLicenseImages(renterId);
+    } else {
+      showErrorToast("Không tìm thấy thông tin người thuê!");
+    }
+  };
+
+  const handleCloseLicenseModal = () => {
+    setIsLicenseModalVisible(false);
+    setSelectedRenter(null);
+    setLicenseImages([]);
   };
 
   const getPaymentStatusStyle = (status) => {
@@ -174,7 +227,7 @@ const RentalHistoryPage = () => {
   const exportToPDF = () => {
     try {
       const user = JSON.parse(localStorage.getItem("user"));
-      const currentDate = new Date().toLocaleDateString('vi-VN');
+      const currentDate = new Date().toLocaleDateString('en-US');
       
       // Prepare table data
       const tableBody = [
@@ -195,12 +248,12 @@ const RentalHistoryPage = () => {
         tableBody.push([
           `${rental.car?.brand} ${rental.car?.model}\n${rental.car?.licensePlate}`,
           rental.renter?.fullName || rental.renter?.email || rental.renter?.id,
-          rental.startTime ? new Date(rental.startTime).toLocaleDateString('vi-VN') : '',
-          rental.endTime ? new Date(rental.endTime).toLocaleDateString('vi-VN') : '',
+          rental.startTime ? new Date(rental.startTime).toLocaleDateString('en-US') : '',
+          rental.endTime ? new Date(rental.endTime).toLocaleDateString('en-US') : '',
           rental.pickupLocation || '',
           rental.dropoffLocation || '',
           rental.status || '',
-          `${rental.totalPrice?.toLocaleString("vi-VN")} đ` || '0 đ'
+                      `${rental.totalPrice?.toLocaleString("en-US")} ₫` || '0 ₫'
         ]);
       });
 
@@ -239,7 +292,7 @@ const RentalHistoryPage = () => {
                 style: 'statText'
               },
               {
-                text: `Total Revenue: ${stats.totalRevenue?.toLocaleString("vi-VN")} đ`,
+                text: `Total Revenue: ${stats.totalRevenue?.toLocaleString("en-US")} ₫`,
                 style: 'statText'
               }
             ],
@@ -352,7 +405,14 @@ const RentalHistoryPage = () => {
                   key={rental.id}
                   onMouseEnter={() => setHoveredRow(rental.id)}
                   onMouseLeave={() => setHoveredRow(null)}
-                  style={{ position: "relative" }}
+                  onClick={() => handleRowClick(rental)}
+                  style={{ 
+                    position: "relative", 
+                    cursor: "pointer",
+                    backgroundColor: hoveredRow === rental.id ? "#f0f8ff" : "transparent",
+                    transition: "background-color 0.2s ease"
+                  }}
+                  title="Click để xem bằng lái của người thuê"
                 >
                   <td>
                     <b>
@@ -374,8 +434,9 @@ const RentalHistoryPage = () => {
                         fontSize: 20,
                         color: "#6c63ff"
                       }}
-                      title="Nhắn tin với người thuê"
-                      onClick={() => {
+                      title="Message with renter"
+                      onClick={(e) => {
+                        e.stopPropagation();
                         console.log('Renter info:', rental.renter);
                         navigate("/messages", {
                           state: {
@@ -394,8 +455,8 @@ const RentalHistoryPage = () => {
                       rental.renter?.email ||
                       rental.renter?.id}
                   </td>
-                  <td>{rental.startTime ? new Date(rental.startTime).toLocaleDateString('vi-VN') : ''}</td>
-                  <td>{rental.endTime ? new Date(rental.endTime).toLocaleDateString('vi-VN') : ''}</td>
+                  <td>{rental.startTime ? new Date(rental.startTime).toLocaleDateString('en-US') : ''}</td>
+                  <td>{rental.endTime ? new Date(rental.endTime).toLocaleDateString('en-US') : ''}</td>
                   <td>
                     <span className="locationTag">{rental.pickupLocation}</span>
                   </td>
@@ -410,9 +471,11 @@ const RentalHistoryPage = () => {
                         "statusBadge" + rental.status?.toLowerCase()
                       }`}
                       value={rental.status}
-                      onChange={(e) =>
-                        handleStatusChange(rental.id, e.target.value)
-                      }
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        handleStatusChange(rental.id, e.target.value);
+                      }}
+                      onClick={(e) => e.stopPropagation()}
                     >
                       {statusOptions.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -430,6 +493,98 @@ const RentalHistoryPage = () => {
           </table>
         )}
       </div>
+
+      {/* Modal hiển thị bằng lái */}
+      {isLicenseModalVisible && (
+        <div 
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1000
+          }}
+          onClick={handleCloseLicenseModal}
+        >
+          <div 
+            style={{
+              backgroundColor: "white",
+              borderRadius: "8px",
+              padding: "20px",
+              maxWidth: "800px",
+              maxHeight: "80vh",
+              overflow: "auto",
+              position: "relative"
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+              <h3 style={{ margin: 0, color: "#2c3e50" }}>
+                Bằng lái xe - {selectedRenter?.fullName || selectedRenter?.email || "Người thuê"}
+              </h3>
+              <button 
+                onClick={handleCloseLicenseModal}
+                style={{
+                  background: "none",
+                  border: "none",
+                  fontSize: "24px",
+                  cursor: "pointer",
+                  color: "#666"
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Content */}
+            {loadingLicense ? (
+              <div style={{ textAlign: "center", padding: "40px" }}>
+                <p>Đang tải hình ảnh...</p>
+              </div>
+            ) : licenseImages.length > 0 ? (
+              <div>
+                {licenseImages.map((image, index) => (
+                  <div key={index} style={{ marginBottom: "20px" }}>
+                    {image.description && (
+                      <p style={{ marginBottom: "10px", fontWeight: "bold", color: "#555" }}>
+                        {image.description}
+                      </p>
+                    )}
+                    <img 
+                      src={image.imageUrl} 
+                      alt={`Bằng lái ${index + 1}`}
+                      style={{
+                        maxWidth: "100%",
+                        maxHeight: "400px",
+                        objectFit: "contain",
+                        border: "1px solid #ddd",
+                        borderRadius: "4px"
+                      }}
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                        e.target.nextSibling.style.display = "block";
+                      }}
+                    />
+                    <div style={{ display: "none", padding: "20px", textAlign: "center", color: "#999" }}>
+                      Không thể tải hình ảnh
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ textAlign: "center", padding: "40px", color: "#666" }}>
+                <p>Người thuê chưa tải lên bằng lái xe</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

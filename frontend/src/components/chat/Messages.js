@@ -529,10 +529,10 @@ const Messages = () => {
         {selectedUser ? (
           <>
             <div className="chat-header">
-              {/* Icon menu để mở/tắt sidebar */}
+              {/* Icon menu to open/close sidebar */}
               <button
                 className="menu-btn"
-                title="Hiện/tắt danh sách hội thoại"
+                title="Show/hide conversation list"
                 onClick={() => setShowSidebar((prev) => !prev)}
                 style={{ background: 'none', border: 'none', marginRight: 8, fontSize: 22, cursor: 'pointer' }}
               >
@@ -540,11 +540,11 @@ const Messages = () => {
               </button>
               <img src={selectedUser.avatar} alt={selectedUser.name} className="chat-avatar" />
               <h3>{selectedUser.name}</h3>
-              {/* Nút icon đóng và xóa đoạn chat */}
+              {/* Close and delete chat buttons */}
               <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
                 <button
                   className="close-chat-btn"
-                  title="Đóng đoạn chat"
+                  title="Close chat"
                   onClick={() => setSelectedUser(null)}
                   style={{ padding: '4px', borderRadius: '4px', border: 'none', background: '#eee', cursor: 'pointer', fontSize: 20 }}
                 >
@@ -552,9 +552,9 @@ const Messages = () => {
                 </button>
                 <button
                   className="delete-chat-btn"
-                  title="Xóa đoạn chat"
+                  title="Delete chat"
                   onClick={async () => {
-                    if (window.confirm('Bạn có chắc muốn xóa toàn bộ đoạn chat này?')) {
+                    if (window.confirm('Are you sure you want to delete this entire chat?')) {
                       try {
                         await axios.delete(`${API_URL}/messages/conversation/${currentUser.userId}/${selectedUser.id}`);
                         setMessages([]);

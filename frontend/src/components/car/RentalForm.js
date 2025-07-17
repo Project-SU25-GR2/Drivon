@@ -67,14 +67,13 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
-    const isCancelled = searchParams.get('status') === 'CANCELLED' && searchParams.get('orderCode');
-    if (isCancelled) {
+    if (searchParams.get('status') === 'CANCELLED' && searchParams.get('orderCode')) {
       axios.post(`${API_URL}/payments/cancel`, { orderCode: searchParams.get('orderCode') })
         .then(() => {
-          message.info('Đơn hàng đã được huỷ.');
+          message.info('Order has been cancelled.');
         })
         .catch(() => {
-          message.error('Không thể huỷ đơn hàng.');
+          message.error('Unable to cancel order.');
         })
         .finally(() => {
           navigate(location.pathname, { replace: true });
@@ -82,7 +81,7 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
       return;
     }
     if (searchParams.get('cancel') === 'true') {
-      message.info('Thanh toán đã bị hủy');
+      message.info('Payment was cancelled');
       navigate(location.pathname, { replace: true });
     }
   }, [location, navigate]);
@@ -109,10 +108,10 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
   const handleApplyCoupon = (coupon) => {
     if (selectedCoupon && selectedCoupon.code === coupon.code) {
       setSelectedCoupon(null);
-      message.info('Đã bỏ áp dụng mã khuyến mãi');
+      message.info('Coupon removed');
     } else {
       setSelectedCoupon(coupon);
-      message.success(`Đã áp dụng mã: ${coupon.code}`);
+      message.success(`Applied coupon: ${coupon.code}`);
     }
     setShowCouponModal(false);
   };
@@ -121,16 +120,23 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
     setLoading(true);
 
     if (!car || !contract || !contract.pricePerDay || !dateRange[0].startDate || !dateRange[0].endDate || isNaN(amount) || amount <= 0) {
-      message.error('Thông tin xe, hợp đồng, ngày thuê hoặc số tiền không hợp lệ. Vui lòng thử lại.');
+      message.error('Car information, contract, rental dates or amount is invalid. Please try again.');
       setLoading(false);
       return;
     }
 
+    // Fix timezone issue by setting time to noon local time before converting to ISO
+    const startDate = new Date(dateRange[0].startDate);
+    startDate.setHours(12, 0, 0, 0); // Set to noon to avoid timezone issues
+    
+    const endDate = new Date(dateRange[0].endDate);
+    endDate.setHours(12, 0, 0, 0); // Set to noon to avoid timezone issues
+
     const bookingData = {
       renterId: user.userId,
       carId: car.licensePlate,
-      startTime: dateRange[0].startDate.toISOString(),
-      endTime: dateRange[0].endDate.toISOString(),
+      startTime: startDate.toISOString(),
+      endTime: endDate.toISOString(),
       pickupLocation: values.pickupLocation,
       dropoffLocation: values.dropoffLocation,
       totalPrice: amount,
@@ -148,8 +154,8 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
           carId: car.licensePlate,
           bookingId: newBooking.id,
           additionalRequirements: values.requirements,
-          rentalStartDate: dateRange[0].startDate.toISOString(),
-          rentalEndDate: dateRange[0].endDate.toISOString(),
+          rentalStartDate: startDate.toISOString(),
+          rentalEndDate: endDate.toISOString(),
           promotionCode: selectedCoupon ? selectedCoupon.code : null,
           discountPercent: selectedCoupon ? selectedCoupon.discount_percent : null
         };
@@ -159,8 +165,8 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
         const rentalData = {
           orderCode: cashPaymentData.orderCode,
           carLicensePlate: car.licensePlate,
-          rentalStartDate: dateRange[0].startDate.toISOString(),
-          rentalEndDate: dateRange[0].endDate.toISOString(),
+          rentalStartDate: startDate.toISOString(),
+          rentalEndDate: endDate.toISOString(),
           amount: amount,
           promotionCode: selectedCoupon ? selectedCoupon.code : null,
           discountPercent: selectedCoupon ? selectedCoupon.discount_percent : 0,
@@ -174,15 +180,15 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
         const bankPaymentRequest = {
           orderCode: Date.now(),
           amount: amount,
-          description: `Thuê xe ${car.licensePlate}`,
+          description: `Car rental ${car.licensePlate}`,
           returnUrl: `${window.location.origin}/payment-success`,
           cancelUrl: `${window.location.origin}/rent-car?cancel=true`,
           userId: user.userId,
           carId: car.licensePlate,
           bookingId: newBooking.id,
           additionalRequirements: values.requirements,
-          rentalStartDate: dateRange[0].startDate.toISOString(),
-          rentalEndDate: dateRange[0].endDate.toISOString(),
+          rentalStartDate: startDate.toISOString(),
+          rentalEndDate: endDate.toISOString(),
           promotionCode: selectedCoupon ? selectedCoupon.code : null,
           discountPercent: selectedCoupon ? selectedCoupon.discount_percent : 0,
         };
@@ -191,12 +197,12 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
         if (paymentResponse.data.data && paymentResponse.data.data.checkoutUrl) {
           window.location.href = paymentResponse.data.data.checkoutUrl;
         } else {
-          message.error('Không thể chuyển hướng đến trang thanh toán. Vui lòng thử lại.');
+          message.error('Unable to redirect to payment page. Please try again.');
         }
       }
-    } catch (error) {
-      console.error('Lỗi xảy ra:', error);
-      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Có lỗi xảy ra. Vui lòng thử lại.';
+          } catch (error) {
+        console.error('Error occurred:', error);
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'An error occurred. Please try again.';
       message.error(errorMessage);
     } finally {
       setLoading(false);
@@ -206,15 +212,15 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
   return (
     <>
       <Modal
-        title="Xác nhận thuê xe"
+        title="Confirm Car Rental"
         open={visible}
         onCancel={onClose}
         footer={[
           <Button key="back" onClick={onClose}>
-            Hủy
+            Cancel
           </Button>,
           <Button key="submit" type="primary" loading={loading} onClick={() => form.submit()}>
-            Xác nhận và Thanh toán
+            Confirm and Pay
           </Button>,
         ]}
         width={800}
@@ -223,38 +229,38 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
         <Form form={form} onFinish={handleSubmit} layout="vertical">
           <div className="form-sections-container">
             <div className="form-section">
-              <h3>Thông tin người thuê</h3>
-              <Form.Item label="Họ và tên" name="fullName" rules={[{ required: true, message: 'Vui lòng nhập họ và tên' }]}>
+              <h3>Renter Information</h3>
+              <Form.Item label="Full Name" name="fullName" rules={[{ required: true, message: 'Please enter full name' }]}>
                 <Input />
               </Form.Item>
-              <Form.Item label="Email" name="email" rules={[{ required: true, message: 'Vui lòng nhập email' }]}>
+              <Form.Item label="Email" name="email" rules={[{ required: true, message: 'Please enter email' }]}>
                 <Input />
               </Form.Item>
-              <Form.Item label="Số điện thoại" name="phone" rules={[{ required: true, message: 'Vui lòng nhập số điện thoại' }]}>
+              <Form.Item label="Phone Number" name="phone" rules={[{ required: true, message: 'Please enter phone number' }]}>
                 <Input />
               </Form.Item>
-              <Form.Item label="Địa chỉ" name="address">
+              <Form.Item label="Address" name="address">
                 <Input />
               </Form.Item>
-              <Form.Item label="Địa điểm nhận xe" name="pickupLocation" rules={[{ required: true, message: 'Vui lòng nhập địa điểm nhận xe!' }]}>
+              <Form.Item label="Pickup Location" name="pickupLocation" rules={[{ required: true, message: 'Please enter pickup location!' }]}>
                 <Input />
               </Form.Item>
-              <Form.Item label="Địa điểm trả xe" name="dropoffLocation" rules={[{ required: true, message: 'Vui lòng nhập địa điểm trả xe!' }]}>
+              <Form.Item label="Drop-off Location" name="dropoffLocation" rules={[{ required: true, message: 'Please enter drop-off location!' }]}>
                 <Input />
               </Form.Item>
-              <Form.Item name="requirements" label="Yêu cầu bổ sung">
-                <Input.TextArea rows={2} placeholder="Nhập các yêu cầu bổ sung của bạn (nếu có)" />
+              <Form.Item name="requirements" label="Additional Requirements">
+                <Input.TextArea rows={2} placeholder="Enter your additional requirements (if any)" />
               </Form.Item>
             </div>
 
             <div className="form-section">
-              <h3>Chi tiết thuê</h3>
+              <h3>Rental Details</h3>
               <div className="date-range-container">
-                <label>Ngày thuê và trả</label>
+                <label>Rental and Return Dates</label>
                 <div className="date-range-display" onClick={() => setShowCalendar(!showCalendar)}>
                   <i className="bi bi-calendar-range"></i>
                   <span>
-                    {dateRange[0].startDate.toLocaleDateString('vi-VN')} - {dateRange[0].endDate.toLocaleDateString('vi-VN')}
+                    {dateRange[0].startDate.toLocaleDateString('en-US')} - {dateRange[0].endDate.toLocaleDateString('en-US')}
                   </span>
                 </div>
                 {showCalendar && (
@@ -272,22 +278,22 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
               </div>
               
               <div className="coupon-section">
-                <label>Mã khuyến mãi</label>
-                <Button onClick={() => setShowCouponModal(true)}>Chọn hoặc nhập mã</Button>
-                {selectedCoupon && <p className="coupon-info">Đã chọn: {selectedCoupon.code} (-{selectedCoupon.discount_percent}%)</p>}
+                <label>Promotion Code</label>
+                <Button onClick={() => setShowCouponModal(true)}>Select or Enter Code</Button>
+                {selectedCoupon && <p className="coupon-info">Selected: {selectedCoupon.code} (-{selectedCoupon.discount_percent}%)</p>}
               </div>
 
               <div className="total-amount-section">
-                <h3>Tổng tiền</h3>
-                <p>{amount.toLocaleString('vi-VN')} VNĐ</p>
-                {contract && contract.deposit > 0 && <p className="deposit-info">(Đã bao gồm {contract.deposit.toLocaleString('vi-VN')} VNĐ tiền cọc)</p>}
+                <h3>Total Amount</h3>
+                <p>{amount.toLocaleString('en-US')} VND</p>
+                {contract && contract.deposit > 0 && <p className="deposit-info">(Including {contract.deposit.toLocaleString('en-US')} VND deposit)</p>}
               </div>
 
-              <h3>Phương thức thanh toán</h3>
+              <h3>Payment Method</h3>
               <Form.Item name="paymentMethod" initialValue="bank">
                 <Radio.Group onChange={(e) => setPaymentMethod(e.target.value)}>
-                  <Radio value="bank">Chuyển khoản ngân hàng</Radio>
-                  <Radio value="cash">Thanh toán tiền mặt</Radio>
+                  <Radio value="bank">Bank Transfer</Radio>
+                  <Radio value="cash">Cash Payment</Radio>
                 </Radio.Group>
               </Form.Item>
             </div>
@@ -296,7 +302,7 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
       </Modal>
 
       <Modal
-        title="Chọn mã khuyến mãi"
+        title="Select Promotion Code"
         open={showCouponModal}
         onCancel={() => setShowCouponModal(false)}
         footer={null}
@@ -305,11 +311,11 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
           dataSource={couponList}
           renderItem={item => (
             <List.Item
-              actions={[<Button onClick={() => handleApplyCoupon(item)}>{selectedCoupon && selectedCoupon.code === item.code ? 'Bỏ chọn' : 'Áp dụng'}</Button>]}
+              actions={[<Button onClick={() => handleApplyCoupon(item)}>{selectedCoupon && selectedCoupon.code === item.code ? 'Remove' : 'Apply'}</Button>]}
             >
               <List.Item.Meta
                 title={item.code}
-                description={`Giảm ${item.discount_percent}% - Hết hạn: ${new Date(item.expiry_date).toLocaleDateString('vi-VN')}`}
+                description={`${item.discount_percent}% off - Expires: ${new Date(item.expiry_date).toLocaleDateString('en-US')}`}
               />
             </List.Item>
           )}

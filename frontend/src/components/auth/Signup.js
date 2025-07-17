@@ -43,7 +43,7 @@ const Signup = ({ onSignupSuccess }) => {
         try {
             const response = await axios.post(`${API_URL}/auth/signup`, formData);
             if (response.data) {
-                showSuccessToast('Đăng ký thành công. Vui lòng kiểm tra email để xác thực tài khoản.');
+                showSuccessToast('Registration successful. Please check your email to verify your account.');
                 setShowVerification(true);
             }
         } catch (err) {
@@ -63,12 +63,12 @@ const Signup = ({ onSignupSuccess }) => {
                 }
                 else {
                     // Fallback for unexpected error response format
-                    showErrorToast('Đăng ký thất bại. Định dạng lỗi không xác định.');
+                    showErrorToast('Registration failed. Unknown error format.');
                     setErrors({});
                 }
             } else {
                 // Handle network errors or no response
-                showErrorToast('Đăng ký thất bại. Không nhận được phản hồi từ máy chủ.');
+                showErrorToast('Registration failed. No response from server.');
                 setErrors({});
             }
         } finally {
@@ -89,7 +89,7 @@ const Signup = ({ onSignupSuccess }) => {
             if (response.data) {
                 // Format data same as Login
                 const userDataWithToken = { ...response.data.user, token: response.data.token };
-                showSuccessToast('Xác thực email thành công!');
+                showSuccessToast('Email verification successful!');
                 onSignupSuccess(userDataWithToken);
             }
         } catch (err) {
@@ -108,7 +108,7 @@ const Signup = ({ onSignupSuccess }) => {
         const now = new Date();
         if (lastResendTime && (now - lastResendTime) < 5 * 60 * 1000) {
             if (resendCount >= 3) {
-                showErrorToast('Bạn đã gửi lại mã quá nhiều lần. Vui lòng thử lại sau 5 phút.');
+                showErrorToast('You have sent the code too many times. Please try again in 5 minutes.');
                 return;
             }
         } else {
@@ -123,7 +123,7 @@ const Signup = ({ onSignupSuccess }) => {
             const response = await axios.post(`${API_URL}/auth/resend-verification`, {
                 email: formData.email
             });
-            showSuccessToast('Mã xác thực mới đã được gửi đến email của bạn.');
+            showSuccessToast('New verification code has been sent to your email.');
             setResendCount(prev => prev + 1);
             setLastResendTime(now);
         } catch (err) {
@@ -150,7 +150,7 @@ const Signup = ({ onSignupSuccess }) => {
             if (response.data) {
                 // Format data same as Login
                 const userDataWithToken = { ...response.data.user, token: response.data.token };
-                showSuccessToast('Đăng ký Google thành công!');
+                showSuccessToast('Google signup successful!');
                 onSignupSuccess(userDataWithToken);
             }
         } catch (err) {
@@ -167,12 +167,12 @@ const Signup = ({ onSignupSuccess }) => {
     if (showVerification) {
         return (
             <form onSubmit={handleVerifyEmail} className="auth-form">
-                <h3>Xác thực email</h3>
+                <h3>Email Verification</h3>
                 
                 <div>
                     <input
                         type="text"
-                        placeholder="Nhập mã xác thực"
+                        placeholder="Enter verification code"
                         value={verificationCode}
                         onChange={(e) => {
                             // Only allow numbers
@@ -185,7 +185,7 @@ const Signup = ({ onSignupSuccess }) => {
                         pattern="[0-9]*"
                     />
                     <small style={{ color: '#666', display: 'block', marginTop: '5px' }}>
-                        Mã xác thực gồm 6 chữ số, có hiệu lực trong 5 phút
+                        6-digit verification code, valid for 5 minutes
                     </small>
                 </div>
 
@@ -193,7 +193,7 @@ const Signup = ({ onSignupSuccess }) => {
                     type="submit"
                     isLoading={isLoading}
                 >
-                    Xác thực
+                    Verify
                 </SimpleButton>
 
                 <SimpleButton
@@ -203,7 +203,7 @@ const Signup = ({ onSignupSuccess }) => {
                     style={{ marginTop: '10px', backgroundColor: '#6c757d' }}
                     disabled={resendCount >= 3 && lastResendTime && (new Date() - lastResendTime) < 5 * 60 * 1000}
                 >
-                    {resendCount >= 3 ? 'Đã gửi lại 3 lần' : 'Gửi lại mã'}
+                    {resendCount >= 3 ? 'Sent 3 times' : 'Resend code'}
                 </SimpleButton>
             </form>
         );

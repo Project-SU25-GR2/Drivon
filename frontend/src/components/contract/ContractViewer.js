@@ -11,15 +11,15 @@ const ContractViewer = ({ carData }) => {
     const generateContract = async () => {
       try {
         setLoading(true);
-        // Gọi API để tạo hợp đồng
+        // Call API to generate contract
         const response = await axios.post(`${API_URL}/contracts/generate`, {
           carData: carData,
-          // Thêm các thông tin khác nếu cần
+          // Add additional information if needed
         });
         setContractData(response.data);
       } catch (err) {
         console.error('Error generating contract:', err);
-        setError('Có lỗi xảy ra khi tạo hợp đồng. Vui lòng thử lại sau.');
+        setError('An error occurred while generating the contract. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -34,7 +34,7 @@ const ContractViewer = ({ carData }) => {
     return (
       <div className="contract-loading">
         <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Đang tạo hợp đồng...</span>
+          <span className="visually-hidden">Generating contract...</span>
         </div>
       </div>
     );
@@ -54,19 +54,19 @@ const ContractViewer = ({ carData }) => {
   return (
     <div className="contract-viewer">
       <div className="contract-header">
-        <h2>Hợp Đồng Cho Thuê Xe</h2>
+        <h2>Car Rental Contract</h2>
         <div className="contract-info">
-          <p>Số hợp đồng: {contractData?.contractNumber}</p>
-          <p>Ngày tạo: {new Date().toLocaleDateString('vi-VN')}</p>
+          <p>Contract Number: {contractData?.contractNumber}</p>
+          <p>Creation Date: {new Date().toLocaleDateString('en-US')}</p>
         </div>
       </div>
 
       <div className="contract-content">
         <section className="contract-section">
-          <h3>Thông Tin Xe</h3>
+          <h3>Vehicle Information</h3>
           <div className="info-grid">
             <div className="info-item">
-              <label>Hãng xe:</label>
+              <label>Brand:</label>
               <span>{carData.brand}</span>
             </div>
             <div className="info-item">
@@ -74,58 +74,58 @@ const ContractViewer = ({ carData }) => {
               <span>{carData.model}</span>
             </div>
             <div className="info-item">
-              <label>Năm sản xuất:</label>
+              <label>Year:</label>
               <span>{carData.year}</span>
             </div>
             <div className="info-item">
-              <label>Biển số xe:</label>
+              <label>License Plate:</label>
               <span>{carData.licensePlate}</span>
             </div>
           </div>
         </section>
 
         <section className="contract-section">
-          <h3>Điều Khoản Cho Thuê</h3>
+          <h3>Rental Terms</h3>
           <div className="terms-content">
-            <p>1. Giá cho thuê: {carData.dailyRate.toLocaleString('vi-VN')} VND/ngày</p>
-            <p>2. Địa điểm giao xe: {carData.location}</p>
-            <p>3. Thời gian cho thuê: Theo thỏa thuận giữa hai bên</p>
-            <p>4. Điều kiện thanh toán: Thanh toán trước 50% giá trị hợp đồng</p>
+            <p>1. Rental rate: {carData.dailyRate.toLocaleString('en-US')} VND/day</p>
+            <p>2. Vehicle pickup location: {carData.location}</p>
+            <p>3. Rental period: As agreed by both parties</p>
+            <p>4. Payment terms: Pay 50% of contract value in advance</p>
           </div>
         </section>
 
         <section className="contract-section">
-          <h3>Quyền và Nghĩa Vụ</h3>
+          <h3>Rights and Obligations</h3>
           <div className="terms-content">
-            <h4>Bên cho thuê:</h4>
+            <h4>Lessor:</h4>
             <ul>
-              <li>Giao xe đúng thời gian và địa điểm đã thỏa thuận</li>
-              <li>Đảm bảo xe trong tình trạng tốt, đầy đủ giấy tờ</li>
-              <li>Hỗ trợ kỹ thuật trong quá trình thuê</li>
+              <li>Deliver vehicle on time and at agreed location</li>
+              <li>Ensure vehicle is in good condition with complete documentation</li>
+              <li>Provide technical support during rental period</li>
             </ul>
 
-            <h4>Bên thuê:</h4>
+            <h4>Lessee:</h4>
             <ul>
-              <li>Thanh toán đầy đủ theo thỏa thuận</li>
-              <li>Sử dụng xe đúng mục đích</li>
-              <li>Bảo quản xe và tài sản trên xe</li>
-              <li>Bồi thường thiệt hại nếu có</li>
+              <li>Pay in full as agreed</li>
+              <li>Use vehicle for intended purpose only</li>
+              <li>Maintain vehicle and property in vehicle</li>
+              <li>Compensate for damages if any</li>
             </ul>
           </div>
         </section>
 
         <div className="contract-signatures">
           <div className="signature-section">
-            <h4>Bên cho thuê</h4>
+            <h4>Lessor</h4>
             <div className="signature-box">
-              <p>Chữ ký</p>
+              <p>Signature</p>
               <div className="signature-line"></div>
             </div>
           </div>
           <div className="signature-section">
-            <h4>Bên thuê</h4>
+            <h4>Lessee</h4>
             <div className="signature-box">
-              <p>Chữ ký</p>
+              <p>Signature</p>
               <div className="signature-line"></div>
             </div>
           </div>
@@ -135,11 +135,11 @@ const ContractViewer = ({ carData }) => {
       <div className="contract-actions">
         <button className="btn btn-primary" onClick={() => window.print()}>
           <i className="bi bi-printer me-2"></i>
-          In hợp đồng
+          Print Contract
         </button>
         <button className="btn btn-success">
           <i className="bi bi-check-circle me-2"></i>
-          Xác nhận hợp đồng
+          Confirm Contract
         </button>
       </div>
     </div>

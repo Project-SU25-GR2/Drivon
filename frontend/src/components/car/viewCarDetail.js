@@ -148,7 +148,7 @@ const ViewCarDetail = () => {
         })
         .catch(error => {
           console.error('Error fetching car:', error);
-          setError('Không tìm thấy xe');
+          setError('Car not found');
           setLoading(false);
         });
 
@@ -254,10 +254,10 @@ const ViewCarDetail = () => {
   const handleApplyCoupon = (coupon) => {
     if (selectedCoupon && selectedCoupon.code === coupon.code) {
       setSelectedCoupon(null);
-      message.info('Đã bỏ áp dụng mã khuyến mãi');
+      message.info('Coupon removed');
     } else {
       setSelectedCoupon(coupon);
-      message.success(`Đã áp dụng mã: ${coupon.code}`);
+      message.success(`Applied coupon: ${coupon.code}`);
     }
   };
 
@@ -348,7 +348,7 @@ const ViewCarDetail = () => {
       message.warning('Please log in to rent a car');
       return;
     }
-    // Kiểm tra license
+    // Check license
     try {
       const res = await axios.get(`${API_URL}/user/image/check-license/${user.userId}`);
       if (!res.data.hasLicense) {
@@ -363,7 +363,7 @@ const ViewCarDetail = () => {
   };
 
   const handleRentalSuccess = (rentalData) => {
-    message.success('Đặt xe thành công!');
+    message.success('Car booking successful!');
     setShowRentalForm(false);
     // You can add additional logic here, such as redirecting to a confirmation page
   };
@@ -375,24 +375,24 @@ const ViewCarDetail = () => {
     console.log('Owner info:', ownerInfo);
 
     if (!user) {
-      message.warning('Vui lòng đăng nhập để liên hệ với chủ xe');
+      message.warning('Please log in to contact car owner');
       navigate('/auth');
       return;
     }
 
     if (!ownerInfo) {
-      message.error('Không thể lấy thông tin chủ xe');
+      message.error('Unable to get car owner information');
       return;
     }
 
-    // Kiểm tra nếu người dùng đang cố gắng liên hệ với chính họ
+    // Check if user is trying to contact themselves
     if (user.userId === ownerInfo.userId) {
-      message.warning('Bạn không thể liên hệ với chính mình');
+      message.warning('You cannot contact yourself');
       return;
     }
 
-    // Tạo tin nhắn mặc định
-    const defaultMessage = `Xin chào, tôi quan tâm đến xe ${car.brand} ${car.model} của bạn`;
+    // Create default message
+    const defaultMessage = `Hello, I'm interested in your ${car.brand} ${car.model}`;
 
     console.log('Navigating to messages with:', {
       selectedUser: {
@@ -433,10 +433,10 @@ const ViewCarDetail = () => {
     setShowAllReviewsModal(false);
   };
 
-  if (loading) return <div>Đang tải...</div>;
+  if (loading) return <div>Loading...</div>;
 
   if (error) return <div>{error}</div>;
-  if (!car) return <div>Không có dữ liệu xe</div>;
+  if (!car) return <div>No car data available</div>;
 
   return (
     <div className="car-detail-page ">
@@ -465,20 +465,20 @@ const ViewCarDetail = () => {
             </div>
           )}
           <div className="rental-rules">
-            <h1>Quy định thuê xe</h1>
+            <h1>Car Rental Terms</h1>
             <ol>
-              <li>Người thuê xe phải có giấy phép lái xe hợp lệ và còn thời hạn.</li>
-              <li>Xe chỉ được sử dụng cho mục đích cá nhân, không được sử dụng để vận chuyển hàng hóa hoặc cho thuê lại.</li>
-              <li>Người thuê chịu trách nhiệm bảo quản xe và bồi thường nếu có hư hỏng do lỗi cá nhân.</li>
-              <li>Thời gian thuê và trả xe phải đúng theo hợp đồng đã ký. Quá hạn sẽ bị tính thêm phí.</li>
+              <li>Renter must have a valid and current driver's license.</li>
+              <li>Car can only be used for personal purposes, not for goods transportation or re-rental.</li>
+              <li>Renter is responsible for car maintenance and compensation for damages due to personal fault.</li>
+              <li>Rental and return times must comply with the signed contract. Late returns will incur additional fees.</li>
             </ol>
           </div>
 
-          {/* Phần đánh giá */}
+          {/* Reviews section */}
           <div className="car-reviews">
-            <h1>Đánh giá từ khách hàng</h1>
+            <h1>Customer Reviews</h1>
             
-            {/* Tổng quan đánh giá */}
+            {/* Review overview */}
             <div className="reviews-overview">
               <div className="overview-left">
                 <div className="average-rating">
@@ -486,7 +486,7 @@ const ViewCarDetail = () => {
                   <div className="rating-stars">
                     <Rate disabled allowHalf value={reviewsData.averageRating} />
                   </div>
-                  <div className="total-reviews">{reviewsData.totalReviews} đánh giá</div>
+                  <div className="total-reviews">{reviewsData.totalReviews} reviews</div>
                 </div>
               </div>
               
@@ -494,7 +494,7 @@ const ViewCarDetail = () => {
                 <div className="rating-bars">
                   {[5, 4, 3, 2, 1].map(star => (
                     <div key={star} className="rating-bar-item">
-                      <span className="star-label">{star} sao</span>
+                      <span className="star-label">{star} star{star > 1 ? 's' : ''}</span>
                       <div className="rating-bar">
                         <div 
                           className="rating-bar-fill" 
@@ -512,13 +512,13 @@ const ViewCarDetail = () => {
 
             <Divider />
 
-            {/* Danh sách đánh giá nổi bật */}
+            {/* Featured reviews list */}
             <div className="reviews-list">
               {reviewsLoading ? (
-                <p>Đang tải đánh giá...</p>
+                <p>Loading reviews...</p>
               ) : topHighlightReviews.length === 0 ? (
                 <div className="no-reviews">
-                  <p>Chưa có đánh giá nào nổi bật.</p>
+                  <p>No featured reviews yet.</p>
                 </div>
               ) : (
                 topHighlightReviews.map(review => (
@@ -529,7 +529,7 @@ const ViewCarDetail = () => {
                         <div className="reviewer-details">
                           <div className="reviewer-name-date">
                             <span className="reviewer-name">{review.userName}</span>
-                            <span className="review-date">{new Date(review.date).toLocaleDateString('vi-VN')}</span>
+                            <span className="review-date">{new Date(review.date).toLocaleDateString('en-US')}</span>
                           </div>
                         </div>
                       </div>
@@ -545,26 +545,26 @@ const ViewCarDetail = () => {
               )}
             </div>
 
-            {/* Nút xem thêm đánh giá */}
+            {/* View more reviews button */}
             <div className="reviews-footer">
               <Button type="primary" size="large" style={{ marginTop: '20px' }} onClick={handleShowAllReviews} disabled={reviewsLoading}>
-                Xem tất cả đánh giá ({reviewsData.totalReviews})
+                View All Reviews ({reviewsData.totalReviews})
               </Button>
             </div>
           </div>
 
           <div className="same-car">
             <div className="same-car-filter">
-              <button onClick={() => setCarFilter('all')} className={carFilter==='all' ? 'active' : ''}>Tất cả</button>
-              <button onClick={() => setCarFilter('brand')} className={carFilter==='brand' ? 'active' : ''}>Cùng hãng</button>
-              <button onClick={() => setCarFilter('type')} className={carFilter==='type' ? 'active' : ''}>Cùng loại</button>
+              <button onClick={() => setCarFilter('all')} className={carFilter==='all' ? 'active' : ''}>All</button>
+              <button onClick={() => setCarFilter('brand')} className={carFilter==='brand' ? 'active' : ''}>Same Brand</button>
+              <button onClick={() => setCarFilter('type')} className={carFilter==='type' ? 'active' : ''}>Same Type</button>
             </div>
             <div className="same-car-slider-wrapper">
               {filteredCars.length > carsPerPage && (
                 <button className="same-car-arrow left" onClick={handlePrev} disabled={currentIndex === 0}>&lt;</button>
               )}
               <div className="same-car-list slide" style={{ transform: `translateX(${translateX}px)` }}>
-                {filteredCars.length === 0 && <div>Không có xe tương tự</div>}
+                {filteredCars.length === 0 && <div>No similar cars available</div>}
                 {filteredCars.map(item => (
                   <div className="same-car-card" key={item.licensePlate} onClick={() => handleSelectCar(item)} style={{ cursor: 'pointer' }}>
                     <div className="same-car-image-wrapper">
@@ -572,7 +572,7 @@ const ViewCarDetail = () => {
                       <div className="same-car-info-overlay">
                         <div className="same-car-title">{item.brand} {item.model}</div>
                         <div className="same-car-specs">
-                          <span>{item.seats} chỗ</span>
+                          <span>{item.seats} seats</span>
                           <span style={{margin: '0 6px', color: '#fff'}}>|</span>
                           <span>
                             {item.transmission === 'manual' ? <GiGearStickPattern className="same-car-icon"/> : <TbAutomaticGearboxFilled className="same-car-icon"/>}
@@ -591,7 +591,7 @@ const ViewCarDetail = () => {
                         <div className="same-car-specs">
                           <span style={{color: '#ffd700'}}>
                             {carContracts[item.licensePlate]?.pricePerDay
-                              ? `${carContracts[item.licensePlate].pricePerDay.toLocaleString()} VNĐ/ngày`
+                              ? `${carContracts[item.licensePlate].pricePerDay.toLocaleString()} VND/day`
                               : ''}
                           </span>
                         </div>
@@ -611,42 +611,42 @@ const ViewCarDetail = () => {
             <h2>{car.brand} {car.model}</h2>
             <div className="car-info-row">
               <span className="car-info-icon"><FaCalendarAlt /></span>
-              <span className="car-info-label">Năm sản xuất</span>
+              <span className="car-info-label">Year</span>
               <span className="car-info-value car-info-badge">{car.year}</span>
             </div>
             <div className="car-info-row">
               <span className="car-info-icon"><FaUserFriends /></span>
-              <span className="car-info-label">Số chỗ ngồi</span>
-              <span className="car-info-value">{car.seats} chỗ</span>
+              <span className="car-info-label">Seats</span>
+              <span className="car-info-value">{car.seats} seats</span>
             </div>
             <div className="car-info-row">
               <span className="car-info-icon"><FaCogs /></span>
-              <span className="car-info-label">Hộp số</span>
-              <span className="car-info-value">{car.transmission === 'manual' ? 'Số sàn' : 'Số tự động'}</span>
+              <span className="car-info-label">Transmission</span>
+              <span className="car-info-value">{car.transmission === 'manual' ? 'Manual' : 'Automatic'}</span>
             </div>
             <div className="car-info-row">
               <span className="car-info-icon"><FaGasPump /></span>
-              <span className="car-info-label">Nhiên liệu</span>
+              <span className="car-info-label">Fuel</span>
               <span className="car-info-value">{
-                car.fuelType === 'gasoline' ? 'Xăng' :
-                car.fuelType === 'diesel' ? 'Dầu' :
-                car.fuelType === 'electric' ? 'Điện' :
+                car.fuelType === 'gasoline' ? 'Gasoline' :
+                car.fuelType === 'diesel' ? 'Diesel' :
+                car.fuelType === 'electric' ? 'Electric' :
                 car.fuelType === 'hybrid' ? 'Hybrid' : car.fuelType
               }</span>
             </div>
             <div className="car-info-row">
               <span className="car-info-icon"><FaRoad /></span>
-              <span className="car-info-label">Mức tiêu thụ</span>
-              <span className="car-info-value car-info-badge car-info-badge-red">{car.fuelConsumption} lít/100km</span>
+              <span className="car-info-label">Consumption</span>
+              <span className="car-info-value car-info-badge car-info-badge-red">{car.fuelConsumption} L/100km</span>
             </div>
             <div className="car-info-row">
               <span className="car-info-icon"><FaMapMarkerAlt /></span>
-              <span className="car-info-label">Địa điểm</span>
+              <span className="car-info-label">Location</span>
               <span className="car-info-value">{car.location}</span>
             </div>
             <div className="car-info-row car-info-desc">
               <span className="car-info-icon"><FaInfoCircle /></span>
-              <span className="car-info-label">Mô tả:</span>
+              <span className="car-info-label">Description:</span>
               <span className="car-info-value">{car.description}</span>
             </div>
           </div>
@@ -654,38 +654,35 @@ const ViewCarDetail = () => {
             {contract && (
               <>
                 <div className="car-price-row">
-                  <span className="car-price-label">Giá: </span>
+                  <span className="car-price-label">Price: </span>
                   <span className="car-price-value">{contract.pricePerDay?.toLocaleString()}</span>
-                  <span className="car-price-unit">VNĐ/ngày</span>
+                  <span className="car-price-unit">VND/day</span>
                 </div>
                 <div className="car-price-row">
                   <span className="car-price-label">Deposit: </span>
                   <span className="car-price-value" style={{fontSize: '1.2rem'}}>{contract.deposit?.toLocaleString()}</span>
-                  <span className="car-price-unit">VNĐ</span>
+                  <span className="car-price-unit">VND</span>
                 </div>
               </>
             )}
             <button 
               className="btn-contact-owner" 
               onClick={handleContactOwner}
-              
             >
-              Liên hệ với chủ xe
+              Contact Car Owner
             </button>
-            <button className="btn-rent-car" onClick={handleRentClick}>Thuê xe</button>
+            <button className="btn-rent-car" onClick={handleRentClick}>Rent Car</button>
             <div className="car-detail-rental-papers">
               <div className="car-rental-papers">
-                <h3>Ưu điểm khi thuê xe</h3>
-                <p>Nhận xe thuận tiện</p>
-                <p>Thanh toán nhanh chóng</p>
-                <p>Thủ tục đơn giản</p>
-                <p>Hỗ trợ 24/7</p>
+                <h3>Rental Benefits</h3>
+                <p>Convenient car pickup</p>
+                <p>Quick payment</p>
+                <p>Simple procedures</p>
+                <p>24/7 support</p>
               </div>
             </div>
-            
           </div>
         </div>
-
       </div>
 
       {showRentalForm && (
@@ -701,7 +698,7 @@ const ViewCarDetail = () => {
       )}
 
       <Modal
-        title={<h2 style={{ textAlign: 'center', marginBottom: '0' }}>Đánh giá từ khách hàng</h2>}
+        title={<h2 style={{ textAlign: 'center', marginBottom: '0' }}>Customer Reviews</h2>}
         open={showAllReviewsModal}
         onCancel={handleCloseAllReviews}
         footer={null}
@@ -715,7 +712,7 @@ const ViewCarDetail = () => {
               className={`filter-btn ${allReviewsFilter === 0 ? 'active' : ''}`}
               onClick={() => { setAllReviewsFilter(0); setCurrentPage(1); }}
             >
-              Tất cả ({reviewsData.totalReviews})
+              All ({reviewsData.totalReviews})
             </button>
             {[5, 4, 3, 2, 1].map(star => (
               <button
@@ -723,7 +720,7 @@ const ViewCarDetail = () => {
                 className={`filter-btn ${allReviewsFilter === star ? 'active' : ''}`}
                 onClick={() => { setAllReviewsFilter(star); setCurrentPage(1); }}
               >
-                {star} sao ({reviewsData.ratingCounts[star] || 0})
+                {star} star{star > 1 ? 's' : ''} ({reviewsData.ratingCounts[star] || 0})
               </button>
             ))}
           </div>
@@ -732,7 +729,7 @@ const ViewCarDetail = () => {
         <div className="reviews-list">
           {currentReviews.length === 0 ? (
             <div className="no-reviews">
-              <p>Không có đánh giá nào cho mức {allReviewsFilter > 0 ? `${allReviewsFilter} sao` : ''}</p>
+                              <p>No reviews for {allReviewsFilter > 0 ? `${allReviewsFilter} star${allReviewsFilter > 1 ? 's' : ''}` : 'this filter'}</p>
             </div>
           ) : (
             currentReviews.map(review => (
@@ -743,7 +740,7 @@ const ViewCarDetail = () => {
                     <div className="reviewer-details">
                       <div className="reviewer-name-date">
                         <span className="reviewer-name">{review.userName}</span>
-                        <span className="review-date">{new Date(review.date).toLocaleDateString('vi-VN')}</span>
+                        <span className="review-date">{new Date(review.date).toLocaleDateString('en-US')}</span>
                       </div>
                     </div>
                   </div>
@@ -770,7 +767,7 @@ const ViewCarDetail = () => {
       </Modal>
 
       <Modal
-        title={<h2 style={{ textAlign: 'center', marginBottom: '0' }}>Xem ảnh xe</h2>}
+        title={<h2 style={{ textAlign: 'center', marginBottom: '0' }}>View Car Image</h2>}
         open={showImageModal}
         onCancel={handleCloseImageModal}
         footer={null}

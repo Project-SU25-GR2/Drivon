@@ -15,13 +15,13 @@ const ForgotPasswordPage = () => {
 
   const validatePassword = (password) => {
     if (password.length < 6) {
-      return "Mật khẩu phải có ít nhất 6 ký tự";
+      return "Password must be at least 6 characters";
     }
     if (!/[A-Z]/.test(password)) {
-      return "Mật khẩu phải chứa ít nhất 1 chữ hoa";
+      return "Password must contain at least 1 uppercase letter";
     }
     if (!/[0-9]/.test(password)) {
-      return "Mật khẩu phải chứa ít nhất 1 số";
+      return "Password must contain at least 1 number";
     }
     return null;
   };
@@ -34,11 +34,11 @@ const ForgotPasswordPage = () => {
       await axios.post(`${API_URL}/auth/send-reset-code`, {
         email,  
       });
-      showSuccessToast("Mã xác thực đã được gửi đến email của bạn");
+      showSuccessToast("Verification code has been sent to your email");
       setCodeSent(true);
       setStep(2);
     } catch (err) {
-      showErrorToast(err.response?.data || "Không thể gửi mã xác thực");
+      showErrorToast(err.response?.data || "Unable to send verification code");
     } finally {
       setIsLoading(false);
     }
@@ -53,10 +53,10 @@ const ForgotPasswordPage = () => {
         email,
         code: verificationCode,
       });
-      showSuccessToast("Mã xác thực hợp lệ");
+      showSuccessToast("Valid verification code");
       setStep(3);
     } catch (err) {
-      showErrorToast(err.response?.data || "Mã xác thực không hợp lệ");
+      showErrorToast(err.response?.data || "Invalid verification code");
     } finally {
       setIsLoading(false);
     }
@@ -74,7 +74,7 @@ const ForgotPasswordPage = () => {
     }
 
     if (newPassword !== confirmPassword) {
-      showErrorToast("Mật khẩu không khớp");
+      showErrorToast("Passwords do not match");
       setIsLoading(false);
       return;
     }
@@ -85,10 +85,10 @@ const ForgotPasswordPage = () => {
         code: verificationCode,
         newPassword,
       });
-      showSuccessToast("Đặt lại mật khẩu thành công");
+      showSuccessToast("Password reset successfully");
       setTimeout(() => (window.location.href = "/auth"), 2000);
     } catch (err) {
-      showErrorToast(err.response?.data || "Không thể đặt lại mật khẩu");
+      showErrorToast(err.response?.data || "Unable to reset password");
     } finally {
       setIsLoading(false);
     }
@@ -96,7 +96,7 @@ const ForgotPasswordPage = () => {
 
   return (
     <div style={{ maxWidth: "400px", margin: "0 auto", padding: "20px" }}>
-      <h2>Quên mật khẩu</h2>
+      <h2>Forgot Password</h2>
       {step === 1 && (
         <form onSubmit={handleSendCode} className="auth-form">
           <div>
@@ -111,7 +111,7 @@ const ForgotPasswordPage = () => {
           </div>
 
           <SimpleButton type="submit" isLoading={isLoading}>
-            Gửi mã xác thực
+            Send verification code
           </SimpleButton>
         </form>
       )}
@@ -121,7 +121,7 @@ const ForgotPasswordPage = () => {
           <div>
             <input
               type="text"
-              placeholder="Nhập mã xác thực"
+              placeholder="Enter verification code"
               value={verificationCode}
               onChange={(e) => setVerificationCode(e.target.value)}
               className="auth-input"
@@ -131,7 +131,7 @@ const ForgotPasswordPage = () => {
           </div>
 
           <SimpleButton type="submit" isLoading={isLoading}>
-            Xác thực
+            Verify
           </SimpleButton>
 
           <SimpleButton
@@ -139,7 +139,7 @@ const ForgotPasswordPage = () => {
             onClick={handleSendCode}
             style={{ marginTop: "10px", backgroundColor: "#6c757d" }}
           >
-            Gửi lại mã
+            Resend code
           </SimpleButton>
         </form>
       )}
@@ -149,7 +149,7 @@ const ForgotPasswordPage = () => {
           <div>
             <input
               type="password"
-              placeholder="Mật khẩu mới"
+              placeholder="New password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               className="auth-input"
@@ -160,7 +160,7 @@ const ForgotPasswordPage = () => {
           <div>
             <input
               type="password"
-              placeholder="Xác nhận mật khẩu mới"
+              placeholder="Confirm new password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="auth-input"
@@ -170,16 +170,16 @@ const ForgotPasswordPage = () => {
           </div>
 
           <div style={{ marginTop: "10px", fontSize: "14px", color: "#666" }}>
-            Mật khẩu mới phải:
+            New password must:
             <ul style={{ marginLeft: "20px" }}>
-              <li>Có ít nhất 6 ký tự</li>
-              <li>Chứa ít nhất 1 chữ hoa</li>
-              <li>Chứa ít nhất 1 số</li>
+              <li>Be at least 6 characters</li>
+              <li>Contain at least 1 uppercase letter</li>
+              <li>Contain at least 1 number</li>
             </ul>
           </div>
 
           <SimpleButton type="submit" isLoading={isLoading}>
-            Đặt lại mật khẩu
+            Reset password
           </SimpleButton>
         </form>
       )}

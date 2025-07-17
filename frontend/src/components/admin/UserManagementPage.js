@@ -26,10 +26,10 @@ const UserManagementPage = () => {
     const handleUpdateRole = async (userId, newRole) => {
         try {
             await updateUserRole(userId, newRole);
-            showSuccessToast('Cập nhật vai trò người dùng thành công!');
+            showSuccessToast('User role updated successfully!');
         } catch (err) {
-            console.error('Lỗi khi cập nhật vai trò:', err);
-            showErrorToast('Không thể cập nhật vai trò người dùng: ' + (err.response?.data?.message || err.message));
+            console.error('Error updating role:', err);
+            showErrorToast('Unable to update user role: ' + (err.response?.data?.message || err.message));
         }
     };
 
@@ -48,10 +48,10 @@ const UserManagementPage = () => {
     const handleUpdateStatus = async (userId, newStatus) => {
         try {
             await updateUserStatus(userId, newStatus);
-            showSuccessToast('Cập nhật trạng thái người dùng thành công!');
+            showSuccessToast('User status updated successfully!');
         } catch (err) {
-            console.error('Lỗi khi cập nhật trạng thái người dùng:', err);
-            showErrorToast('Không thể cập nhật trạng thái người dùng: ' + (err.response?.data?.message || err.message));
+            console.error('Error updating user status:', err);
+            showErrorToast('Unable to update user status: ' + (err.response?.data?.message || err.message));
         }
     };
 
@@ -165,7 +165,7 @@ const UserManagementPage = () => {
                                             <span className="toggle-slider"></span>
                                         </label>
                                         <span className="toggle-label">
-                                            {user.status === 'active' ? 'Đang hoạt động' : (user.status === 'banned' ? 'Đã khóa' : 'Ngưng hoạt động')}
+                                            {user.status === 'active' ? 'Active' : (user.status === 'banned' ? 'Banned' : 'Inactive')}
                                         </span>
                                     </div>
                                 </td>

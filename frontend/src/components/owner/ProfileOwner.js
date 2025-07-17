@@ -139,19 +139,19 @@ const ProfileOwner = ({ user }) => {
     }
   };
 
-  // Thêm vào đầu file:
+  // Added at the beginning of file:
   const handleSign = async (requestId) => {
-    if (!window.confirm('Bạn đã chắc chắn nhận được tiền chưa? Hành động này sẽ không thể hoàn tác!')) return;
+    if (!window.confirm('Are you sure you have received the money? This action cannot be undone!')) return;
     try {
       await axios.patch(`${API_URL}/owner-withdraw/${requestId}/sign`, { sign: true });
       setWithdrawHistory(his => his.map(w => w.requestId === requestId ? { ...w, sign: true } : w));
-      showSuccessToast('Đã xác nhận nhận tiền!');
+      showSuccessToast('Confirmed money receipt!');
     } catch {
-      showErrorToast('Xác nhận thất bại!');
+      showErrorToast('Confirmation failed!');
     }
   };
 
-  // Giả lập ngày tham gia (nên lấy từ user nếu có)
+  // Simulate join date (should get from user if available)
   const memberSince = user?.createdAt
     ? new Date(user.createdAt).toLocaleString("en-US", { month: "long", year: "numeric" })
     : "January 2024";
@@ -303,33 +303,33 @@ const ProfileOwner = ({ user }) => {
             </div>
           </div>
           <div className="profile-section-card">
-            <div className="profile-section-title">Lịch sử rút tiền</div>
+            <div className="profile-section-title">Withdrawal History</div>
             <table className="withdraw-history-table" style={{width: '100%', borderCollapse: 'collapse', marginTop: 12}}>
               <thead>
                 <tr>
-                  <th>Ngày yêu cầu</th>
-                  <th>Số tiền</th>
-                  <th>Trạng thái</th>
-                  <th>Ghi chú</th>
-                  <th>Đã nhận tiền</th>
+                  <th>Request Date</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Note</th>
+                  <th>Money Received</th>
                 </tr>
               </thead>
               <tbody>
                 {withdrawHistory.length === 0 ? (
-                  <tr><td colSpan="5">Chưa có yêu cầu rút tiền nào.</td></tr>
+                  <tr><td colSpan="5">No withdrawal requests yet.</td></tr>
                 ) : withdrawHistory.map(w => (
                   <tr key={w.requestId}>
-                    <td>{w.requestedAt ? new Date(w.requestedAt).toLocaleString('vi-VN') : ''}</td>
-                    <td>{w.amount?.toLocaleString('vi-VN')} ₫</td>
+                    <td>{w.requestedAt ? new Date(w.requestedAt).toLocaleString('en-US') : ''}</td>
+                    <td>{w.amount?.toLocaleString('en-US')} ₫</td>
                     <td>{w.status}</td>
                     <td>{w.note || ''}</td>
                     <td>
                       {w.sign ? (
-                        <span style={{color: 'green', fontWeight: 600}}>Đã xác nhận</span>
+                        <span style={{color: 'green', fontWeight: 600}}>Confirmed</span>
                       ) : w.status === 'completed' ? (
                         <input type="checkbox" onChange={() => handleSign(w.requestId)} />
                       ) : (
-                        <span style={{color: '#999'}}>Chưa hoàn thành</span>
+                        <span style={{color: '#999'}}>Not completed</span>
                       )}
                     </td>
                   </tr>

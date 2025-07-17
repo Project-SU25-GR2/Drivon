@@ -11,6 +11,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.List;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/payments")
@@ -184,6 +185,36 @@ public class PaymentController {
             return ResponseEntity.ok(payment);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/update/{paymentId}")
+    public ResponseEntity<?> updatePayment(@PathVariable String paymentId, @RequestBody Map<String, Object> updateRequest) {
+        try {
+            logger.info("Updating payment {} with request: {}", paymentId, updateRequest);
+            
+            String paymentMethod = (String) updateRequest.get("paymentMethod");
+            String status = (String) updateRequest.get("status");
+            String newPaymentId = (String) updateRequest.get("paymentId");
+            
+            if (paymentMethod == null || status == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "paymentMethod and status are required"));
+            }
+            
+            Payment updatedPayment = paymentService.updatePayment(paymentId, paymentMethod, status, newPaymentId);
+            if (updatedPayment == null) {
+                Map<String, String> errorResponse = new HashMap<>();
+                errorResponse.put("error", "Payment not found");
+                return ResponseEntity.status(404).body(errorResponse);
+            }
+            
+            logger.info("Successfully updated payment: {}", updatedPayment);
+            return ResponseEntity.ok(updatedPayment);
+        } catch (Exception e) {
+            logger.error("Error updating payment: {}", e.getMessage(), e);
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
         }
     }
 }

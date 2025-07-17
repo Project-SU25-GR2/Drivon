@@ -33,7 +33,7 @@ const CarRentalContractForm = () => {
 
     useEffect(() => {
         if (contractData) {
-            // Tự động điền thông tin xe vào form
+            // Automatically fill car information into form
             setFormData(prev => ({
                 ...prev,
                 carId: contractData.carId,
@@ -58,21 +58,21 @@ const CarRentalContractForm = () => {
         // Validate input based on field type
         if (name === 'phone' && value) {
             if (!/^[0-9]{10,11}$/.test(value)) {
-                setErrors(prev => ({ ...prev, [name]: 'Số điện thoại phải có 10-11 chữ số' }));
+                setErrors(prev => ({ ...prev, [name]: 'Phone number must have 10-11 digits' }));
                 return;
             }
         }
         
         if (name === 'cccd' && value) {
             if (!/^[0-9]{12}$/.test(value)) {
-                setErrors(prev => ({ ...prev, [name]: 'CCCD phải có 12 chữ số' }));
+                setErrors(prev => ({ ...prev, [name]: 'ID number must have 12 digits' }));
                 return;
             }
         }
         
         if (name === 'email' && value) {
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-                setErrors(prev => ({ ...prev, [name]: 'Email không hợp lệ' }));
+                setErrors(prev => ({ ...prev, [name]: 'Invalid email format' }));
                 return;
             }
         }
@@ -92,34 +92,34 @@ const CarRentalContractForm = () => {
         const newErrors = {};
         
         if (!formData.contractNumber) {
-            newErrors.contractNumber = 'Vui lòng nhập số hợp đồng';
+            newErrors.contractNumber = 'Please enter contract number';
         }
         if (!formData.startDate) {
-            newErrors.startDate = 'Vui lòng chọn ngày bắt đầu';
+            newErrors.startDate = 'Please select start date';
         }
         if (!formData.endDate) {
-            newErrors.endDate = 'Vui lòng chọn ngày kết thúc';
+            newErrors.endDate = 'Please select end date';
         }
         if (!formData.carId) {
-            newErrors.carId = 'Vui lòng nhập mã xe';
+            newErrors.carId = 'Please enter car ID';
         }
         if (!formData.customerId) {
-            newErrors.customerId = 'Vui lòng nhập mã khách hàng';
+            newErrors.customerId = 'Please enter customer ID';
         }
         if (!formData.deposit) {
-            newErrors.deposit = 'Vui lòng nhập tiền cọc';
+            newErrors.deposit = 'Please enter deposit amount';
         }
         if (!formData.name) {
-            newErrors.name = 'Vui lòng nhập họ tên';
+            newErrors.name = 'Please enter full name';
         }
         if (!formData.phone) {
-            newErrors.phone = 'Vui lòng nhập số điện thoại';
+            newErrors.phone = 'Please enter phone number';
         }
         if (!formData.cccd) {
-            newErrors.cccd = 'Vui lòng nhập CCCD';
+            newErrors.cccd = 'Please enter ID number';
         }
         if (!formData.email) {
-            newErrors.email = 'Vui lòng nhập email';
+            newErrors.email = 'Please enter email';
         }
 
         setErrors(newErrors);
@@ -132,12 +132,12 @@ const CarRentalContractForm = () => {
                 email: formData.email
             });
             if (response.data.success) {
-                setMessage('Mã xác thực đã được gửi đến email của bạn');
+                setMessage('Verification code has been sent to your email');
                 setCountdown(120); // 2 minutes
                 setIsCountingDown(true);
             }
         } catch (error) {
-            setMessage('Lỗi khi gửi mã xác thực: ' + (error.response?.data?.error || error.message));
+            setMessage('Error sending verification code: ' + (error.response?.data?.error || error.message));
         }
     };
 
@@ -149,65 +149,65 @@ const CarRentalContractForm = () => {
             });
             if (response.data.success) {
                 setIsVerified(true);
-                setMessage('Xác thực thành công!');
+                setMessage('Verification successful!');
             } else {
-                setMessage('Mã xác thực không đúng');
+                setMessage('Incorrect verification code');
             }
         } catch (error) {
-            setMessage('Lỗi khi xác thực: ' + (error.response?.data?.error || error.message));
+            setMessage('Verification error: ' + (error.response?.data?.error || error.message));
         }
     };
 
     const generatePDF = (contractData) => {
         const docDefinition = {
             content: [
-                { text: 'CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM', style: 'header', alignment: 'center' },
-                { text: 'Độc lập – Tự do – Hạnh phúc', style: 'subheader', alignment: 'center' },
+                { text: 'SOCIALIST REPUBLIC OF VIETNAM', style: 'header', alignment: 'center' },
+                { text: 'Independence – Freedom – Happiness', style: 'subheader', alignment: 'center' },
                 { text: '-------------------------------', alignment: 'center', margin: [0, 0, 0, 10] },
-                { text: 'HỢP ĐỒNG THUÊ XE', style: 'title', alignment: 'center', margin: [0, 10, 0, 0] },
-                { text: `Ngày: ${new Date().toLocaleDateString('vi-VN')}`, alignment: 'center' },
-                { text: `Số HĐ: ${contractData.contractNumber}`, alignment: 'center', margin: [0, 0, 0, 20] },
+                { text: 'CAR RENTAL CONTRACT', style: 'title', alignment: 'center', margin: [0, 10, 0, 0] },
+                { text: `Date: ${new Date().toLocaleDateString('en-US')}`, alignment: 'center' },
+                { text: `Contract No: ${contractData.contractNumber}`, alignment: 'center', margin: [0, 0, 0, 20] },
 
-                { text: 'BÊN A', style: 'section' },
-                { text: `Tên: ${contractData.name}` },
-                { text: `Số điện thoại: ${contractData.phone}` },
-                { text: `CCCD: ${contractData.cccd}` },
-                { text: `Mail: ${contractData.email}`, margin: [0, 0, 0, 10] },
+                { text: 'PARTY A', style: 'section' },
+                { text: `Name: ${contractData.name}` },
+                { text: `Phone: ${contractData.phone}` },
+                { text: `ID: ${contractData.cccd}` },
+                { text: `Email: ${contractData.email}`, margin: [0, 0, 0, 10] },
 
-                { text: 'BÊN B', style: 'section' },
-                { text: 'Tên: Cty TNHH Group2' },
-                { text: 'Số điện thoại: 0394672210' },
-                { text: 'Mail: Binhvuong221004@gmail.com', margin: [0, 0, 0, 20] },
+                { text: 'PARTY B', style: 'section' },
+                { text: 'Name: Group2 Co., Ltd' },
+                { text: 'Phone: 0394672210' },
+                { text: 'Email: Binhvuong221004@gmail.com', margin: [0, 0, 0, 20] },
 
-                { text: 'THÔNG TIN XE', style: 'section' },
-                { text: `Hãng xe: ${contractData.carData?.carBrand || 'N/A'}` },
+                { text: 'VEHICLE INFORMATION', style: 'section' },
+                { text: `Brand: ${contractData.carData?.carBrand || 'N/A'}` },
                 { text: `Model: ${contractData.carData?.carModel || 'N/A'}` },
-                { text: `Năm sản xuất: ${contractData.carData?.year || 'N/A'}` },
-                { text: `Biển số xe: ${contractData.carData?.licensePlate || 'N/A'}` },
-                { text: `Giá thuê/ngày: ${contractData.carData?.dailyRate?.toLocaleString('vi-VN') || 'N/A'} VND` },
-                { text: `Tiền cọc: ${contractData.deposit.toLocaleString('vi-VN')} VNĐ` },
-                { text: `Địa điểm: ${contractData.carData?.location || 'N/A'}`, margin: [0, 0, 0, 20] },
+                { text: `Year: ${contractData.carData?.year || 'N/A'}` },
+                { text: `License Plate: ${contractData.carData?.licensePlate || 'N/A'}` },
+                { text: `Daily Rate: ${contractData.carData?.dailyRate?.toLocaleString('en-US') || 'N/A'} VND` },
+                { text: `Deposit: ${contractData.deposit.toLocaleString('en-US')} VND` },
+                { text: `Location: ${contractData.carData?.location || 'N/A'}`, margin: [0, 0, 0, 20] },
 
-                { text: 'THÔNG TIN HỢP ĐỒNG', style: 'section' },
-                { text: `Ngày bắt đầu: ${contractData.startDate}` },
-                { text: `Ngày kết thúc: ${contractData.endDate}` },
+                { text: 'CONTRACT INFORMATION', style: 'section' },
+                { text: `Start Date: ${contractData.startDate}` },
+                { text: `End Date: ${contractData.endDate}` },
 
                 {
                     columns: [
                         {
                             width: '*',
                             text: [
-                                { text: 'BÊN A:\n', style: 'section' },
-                                { text: `Tên: ${contractData.name}\n` },
-                                { text: 'Đã ký online "verify code"', italics: true }
+                                { text: 'PARTY A:\n', style: 'section' },
+                                { text: `Name: ${contractData.name}\n` },
+                                { text: 'Signed online "verify code"', italics: true }
                             ]
                         },
                         {
                             width: '*',
                             text: [
-                                { text: 'BÊN B:\n', style: 'section' },
-                                { text: 'Tên: Group2\n' },
-                                { text: 'Đã ký!' }
+                                { text: 'PARTY B:\n', style: 'section' },
+                                { text: 'Name: Group2\n' },
+                                { text: 'Signed!' }
                             ]
                         }
                     ]
@@ -235,12 +235,12 @@ const CarRentalContractForm = () => {
         e.preventDefault();
         
         if (!validateForm()) {
-            setMessage('Vui lòng điền đầy đủ thông tin hợp lệ');
+            setMessage('Please fill in all required information correctly');
             return;
         }
 
         if (!isVerified) {
-            setMessage('Vui lòng xác thực email trước khi tạo hợp đồng');
+            setMessage('Please verify your email before creating the contract');
             return;
         }
 
@@ -256,7 +256,7 @@ const CarRentalContractForm = () => {
                 const response = await axios.post(`${API_URL}/contracts`, formattedData);
 
             if (response.data) {
-                setMessage('Tạo hợp đồng thành công!');
+                setMessage('Contract created successfully!');
                 console.log('Response data received:', response.data);
                 
                 // Generate PDF Blob
@@ -271,7 +271,7 @@ const CarRentalContractForm = () => {
                 // Create a temporary link to trigger download
                 const link = document.createElement('a');
                 link.href = pdfUrl;
-                link.download = 'hopdong.pdf';
+                link.download = 'contract.pdf';
                 link.click();
 
                 // Clean up the Blob URL after a short delay
@@ -280,25 +280,25 @@ const CarRentalContractForm = () => {
                 }, 100);
 
             } else {
-                setMessage('Tạo hợp đồng thành công, nhưng không nhận được dữ liệu trả về.');
+                setMessage('Contract created successfully, but no response data received.');
             }
         } catch (error) {
             console.error('Contract creation error:', error.response?.data);
-            setMessage('Lỗi khi tạo hợp đồng: ' + (error.response?.data?.error || error.message));
+            setMessage('Error creating contract: ' + (error.response?.data?.error || error.message));
         }
     };
 
     return (
         <div className="contract-form-container">
-            <h2>Tạo Hợp Đồng</h2>
-            {message && <div className={`message ${message.includes('thành công') ? 'success' : 'error'}`}>{message}</div>}
+            <h2>Create Contract</h2>
+            {message && <div className={`message ${message.includes('successful') ? 'success' : 'error'}`}>{message}</div>}
             
             {contractData?.carData && (
                 <div className="car-info-section">
-                    <h3>Thông Tin Xe</h3>
+                    <h3>Vehicle Information</h3>
                     <div className="info-grid">
                         <div className="info-item">
-                            <label>Hãng xe:</label>
+                            <label>Brand:</label>
                             <span>{contractData.carData.carBrand}</span>
                         </div>
                         <div className="info-item">
@@ -306,11 +306,11 @@ const CarRentalContractForm = () => {
                             <span>{contractData.carData.carModel}</span>
                         </div>
                         <div className="info-item">
-                            <label>Năm sản xuất:</label>
+                            <label>Year:</label>
                             <span>{contractData.carData.year}</span>
                         </div>
                         <div className="info-item">
-                            <label>Biển số xe:</label>
+                            <label>License Plate:</label>
                             <span>{contractData.carData.licensePlate}</span>
                         </div>
                         <div className="info-item">
@@ -318,30 +318,20 @@ const CarRentalContractForm = () => {
                             <span>{contractData.carData.type}</span>
                         </div>
                         <div className="info-item">
-                            <label>Giá thuê/ngày:</label>
-                            <span>{contractData.carData.dailyRate.toLocaleString('vi-VN')} VND</span>
+                            <label>Daily Rate:</label>
+                            <span>{contractData.carData.dailyRate.toLocaleString('en-US')} VND</span>
                         </div>
                         <div className="info-item">
-                            <label>Địa điểm:</label>
+                            <label>Location:</label>
                             <span>{contractData.carData.location}</span>
                         </div>
                     </div>
-                    {contractData.carData.images && contractData.carData.images.length > 0 && (
-                        <div className="car-images">
-                            <h4>Hình ảnh xe:</h4>
-                            <div className="image-grid">
-                                {contractData.carData.images.map((image, index) => (
-                                    <img key={index} src={image} alt={`Car ${index + 1}`} />
-                                ))}
-                            </div>
-                        </div>
-                    )}
                 </div>
             )}
 
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className="contract-form">
                 <div className="form-group">
-                    <label>Số hợp đồng:</label>
+                    <label>Contract Number:</label>
                     <input
                         type="text"
                         name="contractNumber"
@@ -354,7 +344,7 @@ const CarRentalContractForm = () => {
                 </div>
 
                 <div className="form-group">
-                    <label>Ngày bắt đầu:</label>
+                    <label>Start Date:</label>
                     <input
                         type="date"
                         name="startDate"
@@ -367,7 +357,7 @@ const CarRentalContractForm = () => {
                 </div>
 
                 <div className="form-group">
-                    <label>Ngày kết thúc:</label>
+                    <label>End Date:</label>
                     <input
                         type="date"
                         name="endDate"
@@ -380,7 +370,7 @@ const CarRentalContractForm = () => {
                 </div>
 
                 <div className="form-group">
-                    <label>Mã xe:</label>
+                    <label>Car ID:</label>
                     <input
                         type="text"
                         name="carId"
@@ -393,7 +383,7 @@ const CarRentalContractForm = () => {
                 </div>
 
                 <div className="form-group">
-                    <label>Mã khách hàng:</label>
+                    <label>Customer ID:</label>
                     <input
                         type="text"
                         name="customerId"
@@ -406,7 +396,7 @@ const CarRentalContractForm = () => {
                 </div>
 
                 <div className="form-group">
-                    <label>Tiền cọc:</label>
+                    <label>Deposit (VND):</label>
                     <input
                         type="number"
                         name="deposit"
@@ -419,7 +409,7 @@ const CarRentalContractForm = () => {
                 </div>
 
                 <div className="form-group">
-                    <label>Họ tên:</label>
+                    <label>Full Name:</label>
                     <input
                         type="text"
                         name="name"
@@ -432,13 +422,12 @@ const CarRentalContractForm = () => {
                 </div>
 
                 <div className="form-group">
-                    <label>Số điện thoại:</label>
+                    <label>Phone Number:</label>
                     <input
-                        type="tel"
+                        type="text"
                         name="phone"
                         value={formData.phone}
                         onChange={handleChange}
-                        pattern="[0-9]{10,11}"
                         className={errors.phone ? 'error' : ''}
                         required
                     />
@@ -446,13 +435,12 @@ const CarRentalContractForm = () => {
                 </div>
 
                 <div className="form-group">
-                    <label>CCCD:</label>
+                    <label>ID Number:</label>
                     <input
                         type="text"
                         name="cccd"
                         value={formData.cccd}
                         onChange={handleChange}
-                        pattern="[0-9]{12}"
                         className={errors.cccd ? 'error' : ''}
                         required
                     />
@@ -461,62 +449,59 @@ const CarRentalContractForm = () => {
 
                 <div className="form-group">
                     <label>Email:</label>
-                    <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        className={errors.email ? 'error' : ''}
-                        required
-                    />
-                    {errors.email && <div className="field-error">{errors.email}</div>}
-                </div>
-
-                <div className="verification-section">
-                    <button
-                        type="button"
-                        onClick={sendVerificationCode}
-                        disabled={isCountingDown || !formData.email}
-                        className="verification-button"
-                    >
-                        Gửi mã xác nhận
-                    </button>
-                    {isCountingDown && (
-                        <span className="countdown">
-                            {Math.floor(countdown / 60)}:{(countdown % 60).toString().padStart(2, '0')}
-                        </span>
-                    )}
-                </div>
-
-                <div className="form-group">
-                    <label>Mã xác nhận:</label>
-                    <div className="verification-input-group">
+                    <div className="email-verification-group">
                         <input
-                            type="text"
-                            value={verificationCode}
-                            onChange={(e) => setVerificationCode(e.target.value)}
-                            className={errors.verificationCode ? 'error' : ''}
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            className={errors.email ? 'error' : ''}
                             required
                         />
                         <button
                             type="button"
-                            onClick={verifyCode}
-                            className="verify-button"
+                            onClick={sendVerificationCode}
+                            disabled={!formData.email || isCountingDown || isVerified}
                         >
-                            Xác nhận
+                            {isCountingDown ? `Resend (${countdown}s)` : isVerified ? 'Verified' : 'Send Code'}
                         </button>
                     </div>
-                    {errors.verificationCode && (
-                        <div className="field-error">{errors.verificationCode}</div>
-                    )}
+                    {errors.email && <div className="field-error">{errors.email}</div>}
                 </div>
 
-                <button
-                    type="submit"
-                    className="submit-button"
-                    disabled={!isVerified}
-                >
-                    Tạo Hợp Đồng
+                {isCountingDown && (
+                    <div className="verification-code-group">
+                        <input
+                            type="text"
+                            placeholder="Enter verification code"
+                            value={verificationCode}
+                            onChange={(e) => setVerificationCode(e.target.value)}
+                        />
+                        <button
+                            type="button"
+                            onClick={verifyCode}
+                            disabled={!verificationCode || isVerified}
+                        >
+                            Verify
+                        </button>
+                    </div>
+                )}
+
+                <div className="form-group checkbox-group">
+                    <label>
+                        <input
+                            type="checkbox"
+                            name="terms"
+                            checked={formData.terms}
+                            onChange={handleChange}
+                            required
+                        />
+                        I agree to the terms and conditions
+                    </label>
+                </div>
+
+                <button type="submit" className="submit-button" disabled={!isVerified}>
+                    Create Contract
                 </button>
             </form>
         </div>

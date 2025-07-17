@@ -108,7 +108,7 @@ const MainLayout = ({ user, handleLogout, children }) => {
     checkUserRole();
   }, [user]);
 
-  // Đóng menu khi click ra ngoài
+  // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -299,7 +299,7 @@ const MainLayout = ({ user, handleLogout, children }) => {
                     className="link-button"
                     style={{ fontSize: "14px" }}
                   >
-                    Quên mật khẩu?
+                    Forgot password?
                   </button>
                 </div>
               </>
@@ -315,7 +315,7 @@ const MainLayout = ({ user, handleLogout, children }) => {
                     onClick={() => setAuthMode("login")}
                     className="link-button"
                   >
-                    Quay lại đăng nhập
+                    Back to login
                   </button>
                 </div>
               </>

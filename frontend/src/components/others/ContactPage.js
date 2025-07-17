@@ -46,21 +46,21 @@ const ContactPage = () => {
     <div className="contact-page">
       <div className="contact-hero">
         <div className="hero-content">
-          <h1>Liên Hệ Với Chúng Tôi</h1>
-          <p>Chúng tôi luôn sẵn sàng hỗ trợ bạn 24/7. Hãy liên hệ với chúng tôi nếu bạn cần bất kỳ sự trợ giúp nào.</p>
+          <h1>Contact Us</h1>
+          <p>We're always ready to support you 24/7. Contact us if you need any assistance.</p>
         </div>
       </div>
 
       <div className="contact-container">
         <div className="contact-info-section">
-          <h2>Thông Tin Liên Hệ</h2>
+          <h2>Contact Information</h2>
           <div className="contact-info-grid">
             <div className="contact-info-item">
               <div className="contact-icon">
                 <FaPhone />
               </div>
               <div className="contact-details">
-                <h3>Điện thoại</h3>
+                <h3>Phone</h3>
                 <p>+84 123 456 789</p>
                 <p>+84 987 654 321</p>
               </div>
@@ -82,7 +82,7 @@ const ContactPage = () => {
                 <FaMapMarkerAlt />
               </div>
               <div className="contact-details">
-                <h3>Địa chỉ</h3>
+                <h3>Address</h3>
                 <p>FPT University</p>
                 <p>District 9, Ho Chi Minh City</p>
               </div>
@@ -93,15 +93,15 @@ const ContactPage = () => {
                 <FaClock />
               </div>
               <div className="contact-details">
-                <h3>Giờ làm việc</h3>
-                <p>Thứ 2 - Thứ 6: 8:00 - 18:00</p>
-                <p>Thứ 7: 8:00 - 12:00</p>
+                <h3>Business Hours</h3>
+                <p>Monday - Friday: 8:00 - 18:00</p>
+                <p>Saturday: 8:00 - 12:00</p>
               </div>
             </div>
           </div>
 
           <div className="social-links-section">
-            <h3>Theo dõi chúng tôi</h3>
+            <h3>Follow Us</h3>
             <div className="social-links">
               <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="social-link facebook">
                 <FaFacebook />
@@ -120,11 +120,11 @@ const ContactPage = () => {
         </div>
 
         <div className="contact-form-section">
-          <h2>Gửi Tin Nhắn Cho Chúng Tôi</h2>
+          <h2>Send Us A Message</h2>
           <form onSubmit={handleSubmit} className="contact-form">
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="name">Họ và tên *</label>
+                <label htmlFor="name">Full Name *</label>
                 <input
                   type="text"
                   id="name"
@@ -149,7 +149,7 @@ const ContactPage = () => {
 
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="phone">Số điện thoại</label>
+                <label htmlFor="phone">Phone Number</label>
                 <input
                   type="tel"
                   id="phone"
@@ -159,7 +159,7 @@ const ContactPage = () => {
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="subject">Chủ đề *</label>
+                <label htmlFor="subject">Subject *</label>
                 <select
                   id="subject"
                   name="subject"
@@ -167,19 +167,19 @@ const ContactPage = () => {
                   onChange={handleChange}
                   required
                 >
-                  <option value="">Chọn chủ đề</option>
-                  <option value="general">Thông tin chung</option>
-                  <option value="booking">Đặt xe</option>
-                  <option value="partnership">Hợp tác</option>
-                  <option value="support">Hỗ trợ kỹ thuật</option>
-                  <option value="complaint">Khiếu nại</option>
-                  <option value="other">Khác</option>
+                  <option value="">Select subject</option>
+                  <option value="general">General Information</option>
+                  <option value="booking">Car Booking</option>
+                  <option value="partnership">Partnership</option>
+                  <option value="support">Technical Support</option>
+                  <option value="complaint">Complaint</option>
+                  <option value="other">Other</option>
                 </select>
               </div>
             </div>
 
             <div className="form-group">
-              <label htmlFor="message">Nội dung tin nhắn *</label>
+              <label htmlFor="message">Message Content *</label>
               <textarea
                 id="message"
                 name="message"
@@ -187,7 +187,7 @@ const ContactPage = () => {
                 onChange={handleChange}
                 rows="6"
                 required
-                placeholder="Hãy mô tả chi tiết vấn đề hoặc câu hỏi của bạn..."
+                placeholder="Please describe your issue or question in detail..."
               ></textarea>
             </div>
 
@@ -196,12 +196,12 @@ const ContactPage = () => {
               className="submit-btn"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Đang gửi...' : 'Gửi tin nhắn'}
+              {isSubmitting ? 'Sending...' : 'Send Message'}
             </button>
 
             {submitStatus === 'success' && (
               <div className="success-message">
-                <p>✅ Tin nhắn đã được gửi thành công! Chúng tôi sẽ phản hồi trong thời gian sớm nhất.</p>
+                <p>✅ Message sent successfully! We will respond as soon as possible.</p>
               </div>
             )}
           </form>
@@ -209,12 +209,12 @@ const ContactPage = () => {
       </div>
 
       <div className="special-departments-section">
-        <h2 className="special-departments-title">Các Phòng Ban Chuyên Biệt</h2>
+        <h2 className="special-departments-title">Specialized Departments</h2>
         <div className="departments-grid">
           <div className="department-card">
             <FaCar className="department-icon" style={{ color: '#1976d2' }} size={48} />
-            <h3>Phòng Đặt Xe</h3>
-            <p>Tư vấn và đặt xe thuê</p>
+            <h3>Car Booking Department</h3>
+            <p>Car rental consultation and booking</p>
             <div className="department-contact">
               <div>
                 <span role="img" aria-label="phone">📞</span> 028 1234 5678
@@ -226,8 +226,8 @@ const ContactPage = () => {
           </div>
           <div className="department-card">
             <FaHeadphones className="department-icon" style={{ color: '#43a047' }} size={48} />
-            <h3>Chăm Sóc Khách Hàng</h3>
-            <p>Hỗ trợ và giải đáp thắc mắc</p>
+            <h3>Customer Care</h3>
+            <p>Support and answer questions</p>
             <div className="department-contact">
               <div>
                 <span role="img" aria-label="phone">📞</span> 028 1234 5679
@@ -239,8 +239,8 @@ const ContactPage = () => {
           </div>
           <div className="department-card">
             <FaExclamationTriangle className="department-icon" style={{ color: '#ff9800' }} size={48} />
-            <h3>Bảo Hiểm & Khiếu Nại</h3>
-            <p>Xử lý bảo hiểm và khiếu nại</p>
+            <h3>Insurance & Claims</h3>
+            <p>Handle insurance and complaints</p>
             <div className="department-contact">
               <div>
                 <span role="img" aria-label="phone">📞</span> 028 1234 5680
@@ -254,7 +254,7 @@ const ContactPage = () => {
       </div>
 
       <div className="map-section">
-        <h2>Vị Trí Của Chúng Tôi</h2>
+        <h2>Our Location</h2>
         <div className="map-container">
           <iframe
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.484123456789!2d106.8064!3d10.8417!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTDCsDUwJzMwLjEiTiAxMDbCsDQ4JzIzLjAiRQ!5e0!3m2!1sen!2s!4v1234567890"

@@ -38,7 +38,7 @@ const AuthPage = ({ handleLoginSuccess, handleSignupSuccess }) => {
         )}
         {showLogin && (
           <p style={{ marginTop: '10px' }}>
-            <Link to="/forgot-password">Quên mật khẩu?</Link>
+            <Link to="/forgot-password">Forgot password?</Link>
           </p>
         )}
       </div>

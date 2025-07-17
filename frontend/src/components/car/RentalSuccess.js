@@ -62,15 +62,15 @@ const RentalSuccess = () => {
       const res = await axios.post(`${API_URL}/payments/confirm`, payload);
       if (res.data && res.data.success) {
         setConfirmed(true);
-        message.success('Xác nhận đơn hàng thành công!');
+        message.success('Order confirmed successfully!');
         setTimeout(() => {
           navigate('/my-rentals');
         }, 1000);
       } else {
-        message.error('Không thể xác nhận đơn hàng.');
+        message.error('Unable to confirm order.');
       }
     } catch (err) {
-      message.error('Lỗi xác nhận đơn hàng: ' + (err.response?.data?.error || err.message));
+      message.error('Order confirmation error: ' + (err.response?.data?.error || err.message));
     } finally {
       setConfirming(false);
     }
@@ -79,7 +79,7 @@ const RentalSuccess = () => {
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <Spin size="large" tip="Đang tải thông tin đơn hàng..."></Spin>
+        <Spin size="large" tip="Loading order information..."></Spin>
       </div>
     );
   }
@@ -87,7 +87,7 @@ const RentalSuccess = () => {
   if (!rentalData || !rentalData.orderCode) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <Spin size="large" tip="Không tìm thấy thông tin đơn hàng..."></Spin>
+        <Spin size="large" tip="Order information not found..."></Spin>
       </div>
     );
   }
@@ -96,30 +96,30 @@ const RentalSuccess = () => {
     <div style={{ padding: '24px', maxWidth: '800px', margin: 'auto' }}>
       <Result
         status="success"
-        title="Đặt xe thành công!"
-        subTitle={rentalData.paymentMethod === 'cash' ? "Cảm ơn bạn đã đặt xe. Vui lòng thanh toán tiền mặt khi nhận xe." : "Cảm ơn bạn đã đặt xe. Giao dịch chuyển khoản đã thành công."}
+        title="Car Booking Successful!"
+        subTitle={rentalData.paymentMethod === 'cash' ? "Thank you for booking. Please pay cash when receiving the car." : "Thank you for booking. Bank transfer transaction was successful."}
         extra={[
           !confirmed && (
             <Button type="primary" key="confirm" loading={confirming} onClick={handleConfirmOrder}>
-              Xác nhận đơn hàng
+              Confirm Order
             </Button>
           ),
-          <Button key="console" onClick={() => navigate('/')}>Về trang chủ</Button>,
-          <Button key="buy" onClick={() => navigate('/my-rentals')}>Xem đơn đặt xe của tôi</Button>,
+          <Button key="console" onClick={() => navigate('/')}>Go to Homepage</Button>,
+          <Button key="buy" onClick={() => navigate('/my-rentals')}>View My Bookings</Button>,
         ].filter(Boolean)}
       />
       <Card style={{ marginTop: 24 }}>
         <Descriptions bordered column={1}>
-          <Descriptions.Item label="Mã đơn">{rentalData.orderCode || rentalData.paymentId || 'Không xác định'}</Descriptions.Item>
-          <Descriptions.Item label="Xe">{rentalData.carLicensePlate || rentalData.carId || 'Không xác định'}</Descriptions.Item>
-          <Descriptions.Item label="Ngày bắt đầu">{rentalData.rentalStartDate ? new Date(rentalData.rentalStartDate).toLocaleDateString() : 'Không xác định'}</Descriptions.Item>
-          <Descriptions.Item label="Ngày kết thúc">{rentalData.rentalEndDate ? new Date(rentalData.rentalEndDate).toLocaleDateString() : 'Không xác định'}</Descriptions.Item>
-          <Descriptions.Item label="Tổng tiền">{rentalData.amount ? Number(rentalData.amount).toLocaleString() + ' VNĐ' : 'Không xác định'}</Descriptions.Item>
+          <Descriptions.Item label="Order Code">{rentalData.orderCode || rentalData.paymentId || 'Not specified'}</Descriptions.Item>
+          <Descriptions.Item label="Car">{rentalData.carLicensePlate || rentalData.carId || 'Not specified'}</Descriptions.Item>
+          <Descriptions.Item label="Start Date">{rentalData.rentalStartDate ? new Date(rentalData.rentalStartDate).toLocaleDateString('en-US') : 'Not specified'}</Descriptions.Item>
+          <Descriptions.Item label="End Date">{rentalData.rentalEndDate ? new Date(rentalData.rentalEndDate).toLocaleDateString('en-US') : 'Not specified'}</Descriptions.Item>
+          <Descriptions.Item label="Total Amount">{rentalData.amount ? Number(rentalData.amount).toLocaleString() + ' VND' : 'Not specified'}</Descriptions.Item>
           {rentalData.promotionCode && (
-            <Descriptions.Item label="Mã giảm giá">{rentalData.promotionCode} {rentalData.discountPercent ? `(Giảm ${rentalData.discountPercent}%)` : ''}</Descriptions.Item>
+            <Descriptions.Item label="Discount Code">{rentalData.promotionCode} {rentalData.discountPercent ? `(${rentalData.discountPercent}% off)` : ''}</Descriptions.Item>
           )}
-          <Descriptions.Item label="Yêu cầu thêm">{rentalData.additionalRequirements || 'Không có'}</Descriptions.Item>
-          <Descriptions.Item label="Phương thức thanh toán">{rentalData.paymentMethod === 'cash' ? 'Tiền mặt' : 'Chuyển khoản'}</Descriptions.Item>
+          <Descriptions.Item label="Additional Requirements">{rentalData.additionalRequirements || 'None'}</Descriptions.Item>
+          <Descriptions.Item label="Payment Method">{rentalData.paymentMethod === 'cash' ? 'Cash' : 'Bank Transfer'}</Descriptions.Item>
         </Descriptions>
       </Card>
     </div>

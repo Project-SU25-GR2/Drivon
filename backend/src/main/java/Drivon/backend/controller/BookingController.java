@@ -29,8 +29,15 @@ public class BookingController {
         return ResponseEntity.ok(bookings);
     }
 
+    @GetMapping
+    public ResponseEntity<List<Booking>> getAllBookings() {
+        List<Booking> bookings = bookingService.getAllBookings();
+        return ResponseEntity.ok(bookings);
+    }
+
     @PutMapping("/status/{bookingId}")
-    public ResponseEntity<Booking> updateBookingStatus(@PathVariable Integer bookingId, @RequestBody java.util.Map<String, String> body) {
+    public ResponseEntity<Booking> updateBookingStatus(@PathVariable Integer bookingId,
+            @RequestBody java.util.Map<String, String> body) {
         String status = body.get("status");
         Booking updatedBooking = bookingService.updateBookingStatus(bookingId, status);
         return ResponseEntity.ok(updatedBooking);
@@ -43,6 +50,20 @@ public class BookingController {
             return ResponseEntity.ok(booking);
         } else {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteBooking(@PathVariable Integer id) {
+        try {
+            boolean deleted = bookingService.deleteBooking(id);
+            if (deleted) {
+                return ResponseEntity.ok("Booking deleted successfully");
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
         }
     }
 }

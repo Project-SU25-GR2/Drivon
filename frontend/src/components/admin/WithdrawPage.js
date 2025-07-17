@@ -6,10 +6,10 @@ import pdfMake from 'pdfmake/build/pdfmake';
 import 'pdfmake/build/vfs_fonts';
 
 const STATUS_OPTIONS = [
-    { value: 'pending', label: 'Đang chờ', color: '#ffe082', text: '#b26a00' },
-    { value: 'approved', label: 'Đã duyệt', color: '#b2f2bb', text: '#087f23' },
-    { value: 'rejected', label: 'Từ chối', color: '#ffcdd2', text: '#c62828' },
-    { value: 'completed', label: 'Hoàn thành', color: '#c8e6c9', text: '#388e3c' }
+    { value: 'pending', label: 'Pending', color: '#ffe082', text: '#b26a00' },
+    { value: 'approved', label: 'Approved', color: '#b2f2bb', text: '#087f23' },
+    { value: 'rejected', label: 'Rejected', color: '#ffcdd2', text: '#c62828' },
+    { value: 'completed', label: 'Completed', color: '#c8e6c9', text: '#388e3c' }
 ];
 
 const WithdrawPage = () => {
@@ -98,7 +98,7 @@ const WithdrawPage = () => {
                     amountChange
                 });
             } catch (err) {
-                setError('Không thể tải dữ liệu rút tiền!');
+                setError('Unable to load withdrawal data!');
             } finally {
                 setLoading(false);
             }
@@ -117,9 +117,9 @@ const WithdrawPage = () => {
             const status = statusOverride ?? editStatus[requestId];
             await axios.patch(`${API_URL}/owner-withdraw/${requestId}/status`, { status });
             setWithdraws(withdraws => withdraws.map(w => w.requestId === requestId ? { ...w, status } : w));
-            showSuccessToast('Cập nhật trạng thái thành công!');
+            showSuccessToast('Status updated successfully!');
         } catch {
-            showErrorToast('Cập nhật trạng thái thất bại!');
+            showErrorToast('Failed to update status!');
         } finally {
             setSaving(prev => ({ ...prev, [requestId]: false }));
         }
@@ -143,15 +143,15 @@ const WithdrawPage = () => {
             const tableBody = [
                 // Header row
                 [
-                    { text: 'Ngày yêu cầu', style: 'tableHeader' },
-                    { text: 'Chủ xe', style: 'tableHeader' },
+                    { text: 'Request Date', style: 'tableHeader' },
+                    { text: 'Car Owner', style: 'tableHeader' },
                     { text: 'Email', style: 'tableHeader' },
-                    { text: 'Số TK', style: 'tableHeader' },
-                    { text: 'Ngân hàng', style: 'tableHeader' },
-                    { text: 'Số tiền', style: 'tableHeader' },
-                    { text: 'Trạng thái', style: 'tableHeader' },
-                    { text: 'Ghi chú', style: 'tableHeader' },
-                    { text: 'Xác nhận', style: 'tableHeader' }
+                    { text: 'Account No.', style: 'tableHeader' },
+                    { text: 'Bank', style: 'tableHeader' },
+                    { text: 'Amount', style: 'tableHeader' },
+                    { text: 'Status', style: 'tableHeader' },
+                    { text: 'Note', style: 'tableHeader' },
+                    { text: 'Confirmation', style: 'tableHeader' }
                 ]
             ];
 
@@ -161,19 +161,19 @@ const WithdrawPage = () => {
                     { text: w.requestedAt ? new Date(w.requestedAt).toLocaleString('vi-VN') : 'N/A', alignment: 'left', margin: [4,4,4,4] },
                     { text: w.ownerFullName || w.ownerId || 'N/A', alignment: 'left', margin: [4,4,4,4] },
                     { text: w.ownerEmail || 'N/A', alignment: 'left', margin: [4,4,4,4] },
-                    { text: w.accountNumber || 'Chưa cập nhật', alignment: 'left', margin: [4,4,4,4] },
-                    { text: w.bankName || 'Chưa cập nhật', alignment: 'left', margin: [4,4,4,4] },
+                    { text: w.accountNumber || 'Not updated', alignment: 'left', margin: [4,4,4,4] },
+                    { text: w.bankName || 'Not updated', alignment: 'left', margin: [4,4,4,4] },
                     { text: w.amount ? (w.amount.toLocaleString('vi-VN') + ' ₫') : '0 ₫', alignment: 'left', margin: [4,4,4,4] },
                     { text: STATUS_OPTIONS.find(opt => opt.value === w.status)?.label || w.status || 'N/A', alignment: 'left', margin: [4,4,4,4] },
                     { text: w.note || 'N/A', alignment: 'left', margin: [4,4,4,4] },
-                    { text: w.sign ? 'Đã xác nhận' : 'Chờ xác nhận', alignment: 'left', margin: [4,4,4,4] }
+                    { text: w.sign ? 'Confirmed' : 'Pending confirmation', alignment: 'left', margin: [4,4,4,4] }
                 ]);
             });
 
             // Nếu không có dữ liệu
             if (filteredWithdraws.length === 0) {
                 tableBody.push([
-                    { text: 'Không có dữ liệu', colSpan: 9, alignment: 'center', margin: [4,8,4,8] },
+                    { text: 'No data available', colSpan: 9, alignment: 'center', margin: [4,8,4,8] },
                     {}, {}, {}, {}, {}, {}, {}, {}
                 ]);
             }
@@ -181,13 +181,13 @@ const WithdrawPage = () => {
             const docDefinition = {
                 content: [
                     { 
-                        text: 'DANH SÁCH YÊU CẦU RÚT TIỀN', 
+                        text: 'WITHDRAWAL REQUESTS LIST', 
                         style: 'header', 
                         alignment: 'center', 
                         margin: [0, 0, 0, 20] 
                     },
                     { 
-                        text: `Ngày xuất: ${currentDate}`, 
+                        text: `Export date: ${currentDate}`, 
                         alignment: 'right', 
                         margin: [0, 0, 0, 10] 
                     },
@@ -236,45 +236,45 @@ const WithdrawPage = () => {
             pdfDoc.download(fileName);
             pdfDoc.open();
             
-            showSuccessToast('Đã xuất PDF thành công!');
+            showSuccessToast('PDF exported successfully!');
         } catch (error) {
             console.error('PDF export error:', error);
-            showErrorToast('Xuất PDF thất bại!');
+            showErrorToast('PDF export failed!');
         }
     };
 
     return (
         <div className="admin-content-page" style={{ background: '#f8f9fb', minHeight: '100vh', padding: 24 }}>
-            <h2 style={{ fontWeight: 700, fontSize: 32, marginBottom: 4 }}>Quản lý rút tiền</h2>
-            <div style={{ color: '#666', marginBottom: 32 }}>Theo dõi và xử lý các yêu cầu rút tiền từ chủ xe</div>
+            <h2 style={{ fontWeight: 700, fontSize: 32, marginBottom: 4 }}>Withdrawal Management</h2>
+            <div style={{ color: '#666', marginBottom: 32 }}>Monitor and process withdrawal requests from car owners</div>
             {/* Summary Cards */}
             <div style={{ display: 'flex', gap: 24, marginBottom: 32 }}>
                 <div style={{ flex: 1, background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #0001', padding: 24 }}>
-                    <div style={{ color: '#888', fontWeight: 500 }}>Tổng yêu cầu</div>
+                    <div style={{ color: '#888', fontWeight: 500 }}>Total Requests</div>
                     <div style={{ fontSize: 28, fontWeight: 700 }}>{stats.total}</div>
                     <div style={{ color: stats.totalChange >= 0 ? '#27ae60' : '#e74c3c', fontSize: 14, marginTop: 4 }}>
-                        {stats.totalChange >= 0 ? '+' : ''}{stats.totalChange}% so với tháng trước
+                        {stats.totalChange >= 0 ? '+' : ''}{stats.totalChange}% compared to last month
                     </div>
                 </div>
                 <div style={{ flex: 1, background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #0001', padding: 24 }}>
-                    <div style={{ color: '#888', fontWeight: 500 }}>Đang chờ xử lý</div>
+                    <div style={{ color: '#888', fontWeight: 500 }}>Pending Processing</div>
                     <div style={{ fontSize: 28, fontWeight: 700 }}>{stats.pending}</div>
                     <div style={{ color: stats.pendingChange >= 0 ? '#27ae60' : '#e74c3c', fontSize: 14, marginTop: 4 }}>
-                        {stats.pendingChange >= 0 ? '+' : ''}{stats.pendingChange}% so với tháng trước
+                        {stats.pendingChange >= 0 ? '+' : ''}{stats.pendingChange}% compared to last month
                     </div>
                 </div>
                 <div style={{ flex: 1, background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #0001', padding: 24 }}>
-                    <div style={{ color: '#888', fontWeight: 500 }}>Đã hoàn thành</div>
+                    <div style={{ color: '#888', fontWeight: 500 }}>Completed</div>
                     <div style={{ fontSize: 28, fontWeight: 700 }}>{stats.completed}</div>
                     <div style={{ color: stats.completedChange >= 0 ? '#27ae60' : '#e74c3c', fontSize: 14, marginTop: 4 }}>
-                        {stats.completedChange >= 0 ? '+' : ''}{stats.completedChange}% so với tháng trước
+                        {stats.completedChange >= 0 ? '+' : ''}{stats.completedChange}% compared to last month
                     </div>
                 </div>
                 <div style={{ flex: 1, background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #0001', padding: 24 }}>
-                    <div style={{ color: '#888', fontWeight: 500 }}>Tổng tiền rút</div>
+                    <div style={{ color: '#888', fontWeight: 500 }}>Total Withdrawn</div>
                     <div style={{ fontSize: 28, fontWeight: 700 }}>{formatCurrency(stats.totalAmount)}</div>
                     <div style={{ color: stats.amountChange >= 0 ? '#27ae60' : '#e74c3c', fontSize: 14, marginTop: 4 }}>
-                        {stats.amountChange >= 0 ? '+' : ''}{stats.amountChange}% so với tháng trước
+                        {stats.amountChange >= 0 ? '+' : ''}{stats.amountChange}% compared to last month
                     </div>
                 </div>
             </div>
@@ -283,7 +283,7 @@ const WithdrawPage = () => {
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16, gap: 8 }}>
                     <input
                         type="text"
-                        placeholder="Tìm kiếm theo tên hoặc email..."
+                        placeholder="Search by name or email..."
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                         style={{ flex: 1, padding: 8, borderRadius: 6, border: '1px solid #ccc', fontSize: 15 }}
@@ -293,39 +293,39 @@ const WithdrawPage = () => {
                         onChange={e => setFilter(e.target.value)}
                         style={{ padding: 8, borderRadius: 6, border: '1px solid #ccc', fontSize: 15 }}
                     >
-                        <option value="">Tất cả</option>
+                        <option value="">All</option>
                         {STATUS_OPTIONS.map(opt => (
                             <option key={opt.value} value={opt.value}>{opt.label}</option>
                         ))}
                     </select>
                     <button onClick={exportToPDF} style={{ padding: '8px 16px', borderRadius: 6, background: '#1976d2', color: '#fff', border: 'none', fontWeight: 500, marginLeft: 8 }}>
-                        <i className="fas fa-file-pdf"></i> Xuất PDF
+                        <i className="fas fa-file-pdf"></i> Export PDF
                     </button>
                 </div>
                 <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 8, overflow: 'hidden' }}>
                     <thead>
                         <tr style={{ background: '#f5f7fa' }}>
-                            <th style={{ padding: 12 }}>Ngày yêu cầu</th>
-                            <th>Chủ xe</th>
+                            <th style={{ padding: 12 }}>Request Date</th>
+                            <th>Car Owner</th>
                             <th>Email</th>
-                            <th>Số tài khoản</th>
-                            <th>Tên ngân hàng</th>
-                            <th>Số tiền</th>
-                            <th>Trạng thái</th>
-                            <th>Ghi chú</th>
-                            <th>Xác nhận</th>
+                            <th>Account Number</th>
+                            <th>Bank Name</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Note</th>
+                            <th>Confirmation</th>
                         </tr>
                     </thead>
                     <tbody>
                         {filteredWithdraws.length === 0 ? (
-                            <tr><td colSpan="9" style={{ textAlign: 'center', padding: 24 }}>Không có yêu cầu rút tiền nào.</td></tr>
+                            <tr><td colSpan="9" style={{ textAlign: 'center', padding: 24 }}>No withdrawal requests found.</td></tr>
                         ) : filteredWithdraws.map(w => (
                             <tr key={w.requestId} style={{ borderBottom: '1px solid #f0f0f0' }}>
                                 <td style={{ padding: 10 }}>{w.requestedAt ? new Date(w.requestedAt).toLocaleTimeString('vi-VN') + ' ' + new Date(w.requestedAt).toLocaleDateString('vi-VN') : ''}</td>
                                 <td>{w.ownerFullName || w.ownerId}</td>
                                 <td>{w.ownerEmail || ''}</td>
-                                <td style={{ color: '#2e7d32', fontWeight: 500 }}>{w.accountNumber || 'Chưa cập nhật'}</td>
-                                <td style={{ color: '#1565c0', fontWeight: 500 }}>{w.bankName || 'Chưa cập nhật'}</td>
+                                <td style={{ color: '#2e7d32', fontWeight: 500 }}>{w.accountNumber || 'Not updated'}</td>
+                                <td style={{ color: '#1565c0', fontWeight: 500 }}>{w.bankName || 'Not updated'}</td>
                                 <td style={{ color: '#1976d2', fontWeight: 600 }}>{formatCurrency(w.amount)}</td>
                                 <td>
                                     <select
@@ -342,9 +342,9 @@ const WithdrawPage = () => {
                                 <td>{w.note || ''}</td>
                                 <td>
                                     {w.sign ? (
-                                        <span style={{ color: '#27ae60', fontWeight: 600, background: '#eafaf1', padding: '4px 12px', borderRadius: 12 }}>✓ Đã xác nhận</span>
+                                        <span style={{ color: '#27ae60', fontWeight: 600, background: '#eafaf1', padding: '4px 12px', borderRadius: 12 }}>✓ Confirmed</span>
                                     ) : (
-                                        <span style={{ color: '#b26a00', fontWeight: 600, background: '#fffbe6', padding: '4px 12px', borderRadius: 12 }}>Chờ xác nhận</span>
+                                        <span style={{ color: '#b26a00', fontWeight: 600, background: '#fffbe6', padding: '4px 12px', borderRadius: 12 }}>Pending confirmation</span>
                                     )}
                                 </td>
                             </tr>

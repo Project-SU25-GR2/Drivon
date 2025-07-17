@@ -255,11 +255,11 @@ const AdminPage = ({ user }) => {
     setSending(true);
     try {
       await createNotification(content, type);
-      showSuccessToast('Đã gửi thông báo đến tất cả user!');
+      showSuccessToast('Notification sent to all users successfully!');
       setContent('');
       setShowForm(false);
     } catch {
-      showErrorToast('Gửi thông báo thất bại!');
+      showErrorToast('Failed to send notification!');
     }
     setSending(false);
   };

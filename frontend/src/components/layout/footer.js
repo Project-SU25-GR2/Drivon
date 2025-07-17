@@ -11,7 +11,7 @@ const Footer = () => {
     contactInfo: !isMobile(),
   });
 
-  // Đảm bảo cập nhật khi resize (nếu muốn realtime responsive)
+  // Ensure update on resize (if you want realtime responsive)
   React.useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth > 768) {
