@@ -3,6 +3,7 @@ import EditCarForm from "./EditCarForm";
 import AddCarForm from "./AddCarForm";
 import "./CarManagementPage.css";
 import { useCarManagement } from "../../contexts/CarManagementContext";
+import { useCarData } from "../../contexts/CarDataContext";
 import { API_URL } from "../../api/configApi";
 import { showErrorToast, showSuccessToast } from "../notification/notification";
 const CarManagementPage = ({ user }) => {
@@ -16,6 +17,7 @@ const CarManagementPage = ({ user }) => {
     addCar,
     updateCar,
   } = useCarManagement();
+  const { refreshCarsData } = useCarData();
   const [isEditing, setIsEditing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [currentCarToEdit, setCurrentCarToEdit] = useState(null);
@@ -41,6 +43,7 @@ const CarManagementPage = ({ user }) => {
     try {
       await updateCarStatus(licensePlate, newStatus);
       showSuccessToast("Car status updated successfully!");
+      refreshCarsData(); // Force refresh car data for rent page
     } catch (error) {
       showErrorToast("Failed to update car status. Please try again.");
     }
