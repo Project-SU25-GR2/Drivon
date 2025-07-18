@@ -8,8 +8,8 @@ import { API_URL } from '../../api/configApi';
 import { showErrorToast, showSuccessToast } from '../notification/notification';
   const RentYourCarForm = () => {
     const navigate = useNavigate();
-    
-    // Gom tất cả các hook lên đầu hàm
+
+    // All hooks must be called at the top, before any return
     const [showCCCDModal, setShowCCCDModal] = useState(false);
     const [formData, setFormData] = useState({
       brand: '',
@@ -34,25 +34,76 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
     const [cavetPreviewUrls, setCavetPreviewUrls] = useState([]);
     const [otherDocImages, setOtherDocImages] = useState([]);
     const [otherDocPreviewUrls, setOtherDocPreviewUrls] = useState([]);
+    // CCCD verification status: 'loading', 'not_uploaded', 'pending', 'verified'
+    const [cccdStatus, setCccdStatus] = useState('loading');
+
+    // Check if user is already Owner
+    const storedUser = localStorage.getItem("user");
+    let isOwner = false;
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        if (user.role && (user.role.toLowerCase() === "owner" || user.role.toLowerCase() === "verify_owner")) {
+          isOwner = true;
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
 
     useEffect(() => {
-      const storedUser = localStorage.getItem("user");
       if (storedUser) {
         const user = JSON.parse(storedUser);
-        axios.get(`${API_URL}/user/image/check-cccd/${user.userId}`)
+        axios.get(`${API_URL}/user/image?userId=${user.userId}`)
           .then(res => {
-            if (!res.data.hasCCCD) {
-              setShowCCCDModal(true);
+            const cccdImages = (res.data || []).filter(img => img.documentType === 'cccd');
+            if (!cccdImages.length) {
+              setCccdStatus('not_uploaded');
+            } else if (cccdImages.some(img => img.verified === true || img.verified === 1)) {
+              setCccdStatus('verified');
+            } else {
+              setCccdStatus('pending');
             }
           })
-          .catch(() => setShowCCCDModal(true));
+          .catch(() => setCccdStatus('not_uploaded'));
       } else {
-        setShowCCCDModal(true);
+        setCccdStatus('not_uploaded');
       }
-    }, []);
+    }, [storedUser]);
 
-    // Sau khi đã khai báo xong hook, mới kiểm tra và return modal
-    if (showCCCDModal) {
+    // Now, after all hooks, check isOwner and return modal if needed
+    if (isOwner) {
+      return (
+        <div style={{
+          position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
+          background: "rgba(0,0,0,0.4)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center"
+        }}>
+          <div style={{
+            background: "#fff", borderRadius: 8, padding: 32, minWidth: 320, boxShadow: "0 2px 16px rgba(0,0,0,0.15)", textAlign: "center"
+          }}>
+            <h2>You are already an Owner</h2>
+            <p>You do not need to register again to become a partner. Please manage your cars and contracts in the Owner Dashboard.</p>
+            <div style={{ marginTop: 24, display: "flex", justifyContent: "center", gap: 16 }}>
+              <button
+                className="cccd-modal-btn"
+                onClick={() => navigate('/')}
+              >
+                Cancel
+              </button>
+              <button
+                className="cccd-modal-btn primary"
+                onClick={() => navigate('/owner')}
+              >
+                Go to Owner Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Modal: chưa upload CCCD
+    if (cccdStatus === 'not_uploaded') {
       return (
         <div style={{
           position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
@@ -75,6 +126,31 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
                 onClick={() => navigate('/')}
               >
                 Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Modal: đã upload nhưng chưa xác thực
+    if (cccdStatus === 'pending') {
+      return (
+        <div style={{
+          position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
+          background: "rgba(0,0,0,0.4)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center"
+        }}>
+          <div style={{
+            background: "#fff", borderRadius: 8, padding: 32, minWidth: 320, boxShadow: "0 2px 16px rgba(0,0,0,0.15)", textAlign: "center"
+          }}>
+            <h2>CCCD Verification Pending</h2>
+            <p>Please wait for your Citizen ID (CCCD) to be verified before continuing to become a partner.</p>
+            <div style={{ marginTop: 24, display: "flex", justifyContent: "center", gap: 16 }}>
+              <button
+                className="cccd-modal-btn"
+                onClick={() => navigate('/')}
+              >
+                Back to Home
               </button>
             </div>
           </div>

@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/user/image")
@@ -53,7 +54,18 @@ public class UserImageController {
             return ResponseEntity.badRequest().body("User not found");
         }
         List<UserImage> images = userImageService.getUserImages(userOpt.get());
-        return ResponseEntity.ok(images);
+        // Trả về cả trạng thái verified
+        List<Map<String, Object>> result = images.stream().map(img -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("imageId", img.getImageId());
+            map.put("imageUrl", img.getImageUrl());
+            map.put("documentType", img.getDocumentType());
+            map.put("description", img.getDescription());
+            map.put("uploadedAt", img.getUploadedAt());
+            map.put("verified", img.isVerified());
+            return map;
+        }).collect(Collectors.toList());
+        return ResponseEntity.ok(result);
     }
 
     // Xoá giấy tờ theo imageId
@@ -75,15 +87,13 @@ public class UserImageController {
             if (userOpt.isEmpty()) {
                 return ResponseEntity.badRequest().body("User not found");
             }
-            
             List<UserImage> userImages = userImageService.getUserImages(userOpt.get());
-            boolean hasCCCD = userImages.stream()
-                .anyMatch(image -> "cccd".equals(image.getDocumentType().name()));
-            
+            boolean hasCCCD = userImages.stream().anyMatch(image -> "cccd".equals(image.getDocumentType().name()));
+            boolean verified = userImages.stream().anyMatch(image -> "cccd".equals(image.getDocumentType().name()) && image.isVerified());
             Map<String, Object> response = new HashMap<>();
             response.put("hasCCCD", hasCCCD);
+            response.put("verified", verified);
             response.put("message", hasCCCD ? "User has uploaded CCCD" : "User has not uploaded CCCD");
-            
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
@@ -101,10 +111,11 @@ public class UserImageController {
                 return ResponseEntity.badRequest().body("User not found");
             }
             List<UserImage> userImages = userImageService.getUserImages(userOpt.get());
-            boolean hasLicense = userImages.stream()
-                .anyMatch(image -> image.getDocumentType() != null && "license".equals(image.getDocumentType().name()));
+            boolean hasLicense = userImages.stream().anyMatch(image -> image.getDocumentType() != null && "license".equals(image.getDocumentType().name()));
+            boolean verified = userImages.stream().anyMatch(image -> image.getDocumentType() != null && "license".equals(image.getDocumentType().name()) && image.isVerified());
             Map<String, Object> response = new HashMap<>();
             response.put("hasLicense", hasLicense);
+            response.put("verified", verified);
             response.put("message", hasLicense ? "User has uploaded license" : "User has not uploaded license");
             return ResponseEntity.ok(response);
         } catch (Exception e) {

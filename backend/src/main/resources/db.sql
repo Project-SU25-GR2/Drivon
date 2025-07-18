@@ -33,6 +33,7 @@ CREATE TABLE user_image (
     uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
+ALTER TABLE user_image ADD COLUMN verified BOOLEAN DEFAULT FALSE;
 
 -- 2. Bảng user_verification
 CREATE TABLE user_verification (

@@ -24,4 +24,24 @@ public class UserImageService {
     public void deleteUserImage(Long imageId) {
         userImageRepository.deleteById(imageId);
     }
+
+    public List<UserImage> getAllUserImages() {
+        return userImageRepository.findAll();
+    }
+
+    public UserImage getUserImageById(Long imageId) {
+        return userImageRepository.findById(imageId).orElse(null);
+    }
+
+    public UserImage verifyUserImage(Long imageId, boolean verified, String description) {
+        UserImage userImage = userImageRepository.findById(imageId).orElse(null);
+        if (userImage != null) {
+            userImage.setVerified(verified);
+            if (description != null) {
+                userImage.setDescription(description);
+            }
+            return userImageRepository.save(userImage);
+        }
+        return null;
+    }
 } 

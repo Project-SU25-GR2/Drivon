@@ -115,10 +115,14 @@ public class BookingService {
     public Booking updateBookingStatus(Integer bookingId, String status) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found with id: " + bookingId));
+        Booking.BookingStatus oldStatus = booking.getStatus();
         Booking.BookingStatus newStatus;
         try {
             newStatus = Booking.BookingStatus.valueOf(status.toLowerCase());
-            booking.setStatus(newStatus);
+            // Nếu trạng thái không đổi thì không làm gì cả
+            if (oldStatus == newStatus) {
+                return booking;
+            }
 
             // Cập nhật trạng thái xe dựa trên trạng thái booking
             Car car = booking.getCar();

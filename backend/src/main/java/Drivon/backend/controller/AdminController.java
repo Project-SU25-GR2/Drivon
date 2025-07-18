@@ -25,6 +25,9 @@ import Drivon.backend.service.NotificationService;
 import Drivon.backend.entity.Notification;
 import Drivon.backend.repository.OwnerWalletRepository;
 import Drivon.backend.model.OwnerWallet;
+import Drivon.backend.model.UserImage;
+import Drivon.backend.service.UserImageService;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -46,10 +49,16 @@ public class AdminController {
     private CarImageRepository carImageRepository; // Inject CarImageRepository
 
     @Autowired
+    private UserImageService userImageService;
+
+    @Autowired
     private NotificationService notificationService;
 
     @Autowired
     private OwnerWalletRepository ownerWalletRepository;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
@@ -289,6 +298,79 @@ public class AdminController {
             response.put("status", user.getStatus());
             return ResponseEntity.ok(response);
         }).orElse(ResponseEntity.notFound().build());
+    }
+
+    // Get all user identity documents (optionally filter by userId, documentType, verified)
+    @GetMapping("/user-identity-documents")
+    public ResponseEntity<?> getUserIdentityDocuments(
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) String documentType,
+            @RequestParam(required = false) Boolean verified) {
+        List<UserImage> images;
+        if (userId != null) {
+            images = userImageService.getUserImages(userRepository.findById(userId).orElse(null));
+        } else {
+            images = userImageService.getAllUserImages();
+        }
+        if (documentType != null) {
+            images = images.stream().filter(img -> img.getDocumentType().name().equalsIgnoreCase(documentType)).toList();
+        }
+        if (verified != null) {
+            images = images.stream().filter(img -> img.isVerified() == verified).toList();
+        }
+        // Convert to map and ensure 'verified' is 0/1
+        List<Map<String, Object>> result = images.stream().map(img -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("imageId", img.getImageId());
+            map.put("userId", img.getUser() != null ? img.getUser().getUserId() : null);
+            map.put("imageUrl", img.getImageUrl());
+            map.put("documentType", img.getDocumentType());
+            map.put("description", img.getDescription());
+            map.put("uploadedAt", img.getUploadedAt());
+            map.put("verified", img.isVerified() ? 1 : 0);
+            return map;
+        }).toList();
+        return ResponseEntity.ok(result);
+    }
+
+    // Admin verify (accept/reject) user identity document
+    @PutMapping("/user-identity-documents/{imageId}/verify")
+    public ResponseEntity<?> verifyUserIdentityDocument(
+            @PathVariable Long imageId,
+            @RequestBody Map<String, Object> body) {
+        Boolean accept = (Boolean) body.get("accept");
+        String rejectReason = (String) body.get("rejectReason");
+        UserImage userImage = userImageService.getUserImageById(imageId);
+        if (userImage == null) {
+            return ResponseEntity.badRequest().body("User image not found");
+        }
+        boolean verified = Boolean.TRUE.equals(accept);
+        userImageService.verifyUserImage(imageId, verified, rejectReason);
+        // Send notification to user
+        String content;
+        if (verified) {
+            content = "Your document (" + userImage.getDocumentType().name().toUpperCase() + ") has been verified.";
+        } else {
+            content = "Your document (" + userImage.getDocumentType().name().toUpperCase() + ") was rejected. Reason: " + (rejectReason != null ? rejectReason : "No reason provided.");
+        }
+        var notification = notificationService.createNotificationForSpecificUser(
+                content,
+                Drivon.backend.entity.Notification.NotificationType.SYSTEM,
+                userImage.getUser().getUserId()
+        );
+        // Real-time WebSocket notification
+        messagingTemplate.convertAndSendToUser(
+            String.valueOf(userImage.getUser().getUserId()),
+            "/notifications/new",
+            java.util.Map.of(
+                "notificationId", notification.getNotificationId(),
+                "content", notification.getContent(),
+                "type", notification.getType().toString(),
+                "targetType", notification.getTargetType().toString(),
+                "createdAt", notification.getCreatedAt().toString()
+            )
+        );
+        return ResponseEntity.ok("Verification status updated and notification sent.");
     }
 
 }

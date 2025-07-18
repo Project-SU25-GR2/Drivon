@@ -30,6 +30,9 @@ public class UserImage {
     @Column(name = "uploaded_at")
     private LocalDateTime uploadedAt = LocalDateTime.now();
 
+    @Column(name = "verified", nullable = false)
+    private boolean verified = false;
+
     public DocumentType getDocumentType() {
         return documentType;
     }
