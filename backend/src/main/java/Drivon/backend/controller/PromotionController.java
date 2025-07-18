@@ -28,8 +28,16 @@ public class PromotionController {
         for (Promotion promo : promotions) {
             long usedCount = paymentRepository.countByPromotionCode(promo.getCode());
             Integer maxUses = promo.getMaxUses();
-            // Ẩn promotion nếu đã hết lượt dùng (maxUses != null và usedCount >= maxUses)
-            if (maxUses != null && maxUses > 0 && usedCount >= maxUses) {
+            java.util.Date validUntil = promo.getValid_until();
+            // Ẩn promotion nếu đã hết lượt dùng hoặc đã quá hạn
+            boolean expired = false;
+            if (validUntil != null) {
+                java.util.Date now = new java.util.Date();
+                if (validUntil.before(now)) {
+                    expired = true;
+                }
+            }
+            if ((maxUses != null && maxUses > 0 && usedCount >= maxUses) || expired) {
                 continue;
             }
             Map<String, Object> map = new HashMap<>();
