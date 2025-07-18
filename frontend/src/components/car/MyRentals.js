@@ -325,11 +325,10 @@ const MyRentals = () => {
       console.log('User confirmed switch to bank');
       console.log('Updating payment method for payment:', rentalToSwitchToBank.paymentId);
       
-      // Cập nhật payment cũ từ cash sang bank
+      // Chỉ update payment method và status, không tạo paymentId mới
       const updateRequest = {
         paymentMethod: 'bank',
-        status: 'PENDING', // Bank cần thanh toán sau
-        paymentId: `PAYOS_${Date.now()}` // Tạo paymentId mới cho bank
+        status: 'PENDING' // Bank cần thanh toán sau
       };
 
       console.log('Update payment request:', updateRequest);
@@ -410,11 +409,10 @@ const MyRentals = () => {
       console.log('User confirmed switch to cash');
       console.log('Updating payment method for payment:', rentalToSwitch.paymentId);
       
-      // Cập nhật payment cũ từ bank sang cash
+      // Chỉ update payment method và status, không tạo paymentId mới
       const updateRequest = {
         paymentMethod: 'cash',
-        status: 'SUCCESS', // Cash được coi như đã thanh toán
-        paymentId: `CASH_${Date.now()}` // Tạo paymentId mới cho cash
+        status: 'SUCCESS' // Cash được coi như đã thanh toán
       };
 
       console.log('Update payment request:', updateRequest);
@@ -954,3 +952,4 @@ const MyRentals = () => {
 };
 
 export default MyRentals;
+//bnmbzvxnmvxcmnbzxcnmbzc
