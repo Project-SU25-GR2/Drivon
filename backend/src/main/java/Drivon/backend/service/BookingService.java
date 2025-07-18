@@ -123,6 +123,7 @@ public class BookingService {
             if (oldStatus == newStatus) {
                 return booking;
             }
+            booking.setStatus(newStatus);
 
             // Cập nhật trạng thái xe dựa trên trạng thái booking
             Car car = booking.getCar();

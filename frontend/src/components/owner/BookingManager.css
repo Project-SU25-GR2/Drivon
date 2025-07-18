@@ -476,3 +476,49 @@ input[type="month"]::-webkit-outer-spin-button {
 input[type="month"]::-moz-dropdown-arrow {
   display: none;
 }
+
+.cancel-action-row {
+  background: #fffbe6;
+  text-align: center;
+  vertical-align: middle;
+  padding: 18px 0;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.08);
+}
+
+.cancel-action-row span {
+  color: #faad14;
+  font-weight: 600;
+  margin-right: 24px;
+  font-size: 17px;
+  letter-spacing: 0.5px;
+}
+
+.cancel-action-btn {
+  border: none;
+  border-radius: 6px;
+  padding: 7px 22px;
+  font-size: 15px;
+  font-weight: 500;
+  margin: 0 6px;
+  transition: background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.cancel-action-btn.accept {
+  background: #ff4d4f;
+  color: #fff;
+}
+
+.cancel-action-btn.accept:hover {
+  background: #d9363e;
+}
+
+.cancel-action-btn.reject {
+  background: #1890ff;
+  color: #fff;
+}
+
+.cancel-action-btn.reject:hover {
+  background: #1765ad;
+}

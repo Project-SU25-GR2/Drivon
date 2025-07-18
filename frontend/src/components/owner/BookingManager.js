@@ -542,22 +542,24 @@ const RentalHistoryPage = () => {
                     </tr>
                     {isCancelPending && (
                       <tr>
-                        <td colSpan={8} style={{ background: "#fffbe6", textAlign: "center", verticalAlign: "middle", padding: "18px 0" }}>
-                          <span style={{ color: '#faad14', fontWeight: 600, marginRight: 16, fontSize: 16 }}>
-                            Awaiting cancellation confirmation
-                          </span>
-                          <button
-                            style={{ marginRight: 12, background: '#ff4d4f', color: 'white', border: 'none', borderRadius: 4, padding: '6px 18px', cursor: 'pointer', fontSize: 15 }}
-                            onClick={e => { e.stopPropagation(); handleAcceptCancel(rental.id); }}
-                          >
-                            Accept cancellation
-                          </button>
-                          <button
-                            style={{ background: '#1890ff', color: 'white', border: 'none', borderRadius: 4, padding: '6px 18px', cursor: 'pointer', fontSize: 15 }}
-                            onClick={e => { e.stopPropagation(); handleRejectCancel(rental.id); }}
-                          >
-                            Reject cancellation
-                          </button>
+                        <td colSpan={8} className="cancel-action-row">
+                          <div style={{ marginBottom: 12 }}>
+                            <span>Awaiting cancellation confirmation</span>
+                          </div>
+                          <div>
+                            <button
+                              className="cancel-action-btn accept"
+                              onClick={e => { e.stopPropagation(); handleAcceptCancel(rental.id); }}
+                            >
+                              Accept 
+                            </button>
+                            <button
+                              className="cancel-action-btn reject"
+                              onClick={e => { e.stopPropagation(); handleRejectCancel(rental.id); }}
+                            >
+                              Reject 
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     )}
