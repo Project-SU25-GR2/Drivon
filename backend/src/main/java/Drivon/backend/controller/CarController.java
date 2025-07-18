@@ -390,4 +390,19 @@ public class CarController {
             return ResponseEntity.badRequest().body(error);
         }
     }
+
+    @PatchMapping("/{licensePlate}/status")
+    public ResponseEntity<?> updateCarStatus(@PathVariable String licensePlate, @RequestBody Map<String, String> body) {
+        String newStatus = body.get("status");
+        if (!"available".equalsIgnoreCase(newStatus) && !"unavailable".equalsIgnoreCase(newStatus)) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Invalid status. Only 'available' or 'unavailable' allowed."));
+        }
+        Car car = carService.getCarById(licensePlate);
+        if (car == null) {
+            return ResponseEntity.notFound().build();
+        }
+        car.setStatus(newStatus.toLowerCase());
+        carService.updateCar(car);
+        return ResponseEntity.ok(Map.of("success", true, "status", car.getStatus()));
+    }
 }

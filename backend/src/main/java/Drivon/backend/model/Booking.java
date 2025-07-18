@@ -56,6 +56,16 @@ public class Booking {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @Override
+    public String toString() {
+        return "Booking{" +
+                "id=" + id +
+                ", status=" + status +
+                ", renterId=" + (renter != null ? renter.getUserId() : null) +
+                ", carId=" + (car != null ? car.getLicensePlate() : null) +
+                '}';
+    }
+
     public enum BookingStatus {
         pending,
         approved,

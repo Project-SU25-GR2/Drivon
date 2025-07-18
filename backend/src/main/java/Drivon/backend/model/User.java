@@ -159,4 +159,14 @@ public class User {
     public void setResetPasswordTokenExpiry(Date resetPasswordTokenExpiry) {
         this.resetPasswordTokenExpiry = resetPasswordTokenExpiry;
     }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "userId=" + userId +
+                ", email='" + email + '\'' +
+                ", fullName='" + fullName + '\'' +
+                ", phone='" + phone + '\'' +
+                '}';
+    }
 } 

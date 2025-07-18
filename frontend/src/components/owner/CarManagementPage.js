@@ -3,8 +3,8 @@ import EditCarForm from "./EditCarForm";
 import AddCarForm from "./AddCarForm";
 import "./CarManagementPage.css";
 import { useCarManagement } from "../../contexts/CarManagementContext";
-import { API_URL } from '../../api/configApi';
-import { showErrorToast, showSuccessToast } from '../notification/notification';    
+import { API_URL } from "../../api/configApi";
+import { showErrorToast, showSuccessToast } from "../notification/notification";
 const CarManagementPage = ({ user }) => {
   const {
     carsData,
@@ -162,12 +162,22 @@ const CarManagementPage = ({ user }) => {
                   <i className="fas fa-dollar-sign"></i>
                   <span>
                     {car.pricePerDay
-                      ? `${car.pricePerDay.toLocaleString('en-US')} VND/day`
+                      ? `${car.pricePerDay.toLocaleString("en-US")} VND/day`
                       : "Contact for price"}
                   </span>
                 </div>
               </div>
               <div className="car-actions">
+                <select
+                  value={car.status}
+                  onChange={(e) =>
+                    handleStatusChange(car.licensePlate, e.target.value)
+                  }
+                  className="car-status-dropdown"
+                >
+                  <option value="available">Available</option>
+                  <option value="unavailable">Unavailable</option>
+                </select>
                 <button
                   className="edit-btn"
                   onClick={() => handleEditClick(car)}
