@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -42,5 +43,12 @@ public class EarningsController {
     public ResponseEntity<Map<String, Object>> getSystemStatistics() {
         Map<String, Object> statistics = earningsService.getSystemStatistics();
         return ResponseEntity.ok(statistics);
+    }
+
+    @GetMapping("/admin/monthly-revenue")
+    public ResponseEntity<List<Map<String, Object>>> getMonthlyRevenue(@RequestParam(required = false) Integer year) {
+        int queryYear = (year != null) ? year : java.time.Year.now().getValue();
+        List<Map<String, Object>> stats = earningsService.getMonthlyRevenueStats(queryYear);
+        return ResponseEntity.ok(stats);
     }
 } 

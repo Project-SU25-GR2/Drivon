@@ -267,4 +267,23 @@ public class EarningsService {
         
         systemRevenueRepository.save(systemRevenue);
     }
+
+    /**
+     * Trả về danh sách doanh thu từng tháng trong năm hiện tại (hoặc 12 tháng gần nhất)
+     */
+    public List<Map<String, Object>> getMonthlyRevenueStats(int year) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (int month = 1; month <= 12; month++) {
+            java.time.LocalDateTime start = java.time.LocalDateTime.of(year, month, 1, 0, 0);
+            java.time.LocalDateTime end = (month < 12)
+                ? java.time.LocalDateTime.of(year, month + 1, 1, 0, 0)
+                : java.time.LocalDateTime.of(year + 1, 1, 1, 0, 0);
+            Double revenue = systemRevenueRepository.getMonthlyRevenue(start, end);
+            Map<String, Object> item = new HashMap<>();
+            item.put("month", String.format("%d-%02d", year, month));
+            item.put("revenue", revenue != null ? revenue : 0.0);
+            result.add(item);
+        }
+        return result;
+    }
 } 
