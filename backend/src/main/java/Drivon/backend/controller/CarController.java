@@ -226,7 +226,8 @@ public class CarController {
     @GetMapping("/active-lease")
     public ResponseEntity<?> getActiveLeaseCars() {
         try {
-            List<Car> cars = carService.getActiveLeaseCars();
+            // Lấy tất cả xe có status = 'available' (không lấy theo hợp đồng nữa)
+            List<Car> cars = carService.getCarsByStatus("available");
             List<Map<String, Object>> carsWithImages = new ArrayList<>();
 
             for (Car car : cars) {
@@ -244,8 +245,6 @@ public class CarController {
                 carData.put("status", car.getStatus());
                 carData.put("location", car.getLocation());
                 carData.put("ownerId", car.getOwnerId());
-                System.out.println(car);
-                // Get main image from cars table
                 carData.put("mainImage", car.getMainImage());
 
                 // Get other images from car_images table
@@ -256,7 +255,6 @@ public class CarController {
                 }
                 carData.put("otherImages", otherImageUrls);
                 carsWithImages.add(carData);
-
             }
 
             return ResponseEntity.ok(carsWithImages);
@@ -270,7 +268,8 @@ public class CarController {
     @GetMapping("/active-lease-with-details")
     public ResponseEntity<?> getActiveLeaseCarsWithDetails() {
         try {
-            List<Car> cars = carService.getActiveLeaseCars();
+            // Lấy tất cả xe có status = 'available' (không lấy theo hợp đồng nữa)
+            List<Car> cars = carService.getCarsByStatus("available");
             List<Map<String, Object>> carsWithDetails = new ArrayList<>();
 
             for (Car car : cars) {
@@ -288,8 +287,6 @@ public class CarController {
                 carData.put("status", car.getStatus());
                 carData.put("location", car.getLocation());
                 carData.put("ownerId", car.getOwnerId());
-                
-                // Get main image from cars table
                 carData.put("mainImage", car.getMainImage());
 
                 // Get other images from car_images table
@@ -317,7 +314,7 @@ public class CarController {
                     ReviewResponseDto reviewStats = reviewService.getReviewsForCar(car.getLicensePlate());
                     carData.put("reviewStats", reviewStats);
                 } catch (Exception e) {
-                    carData.put("reviewStats", new ReviewResponseDto(0, 0, new HashMap<>(), new ArrayList<>()));
+                    carData.put("reviewStats", null);
                 }
 
                 carsWithDetails.add(carData);
