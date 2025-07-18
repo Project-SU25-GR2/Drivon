@@ -2,12 +2,15 @@ package Drivon.backend.controller;
 
 import Drivon.backend.dto.BookingRequest;
 import Drivon.backend.model.Booking;
+import Drivon.backend.model.CancelRequest;
+import Drivon.backend.repository.CancelRequestRepository;
 import Drivon.backend.service.BookingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -15,6 +18,7 @@ import java.util.List;
 public class BookingController {
 
     private final BookingService bookingService;
+    private final CancelRequestRepository cancelRequestRepository;
 
     @PostMapping
     public ResponseEntity<Booking> createBooking(@RequestBody BookingRequest bookingRequest) {
@@ -65,5 +69,35 @@ public class BookingController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    // Lấy CancelRequest trạng thái PENDING theo bookingId
+    @GetMapping("/{bookingId}/cancel-request")
+    public ResponseEntity<CancelRequest> getCancelRequestByBooking(@PathVariable Integer bookingId) {
+        Booking booking = bookingService.getBookingById(bookingId);
+        if (booking == null) return ResponseEntity.notFound().build();
+        Optional<CancelRequest> req = cancelRequestRepository.findByBookingAndStatus(booking, CancelRequest.Status.PENDING);
+        return req.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    // Người thuê yêu cầu huỷ booking khi đang thuê (tạo CancelRequest, không đổi trạng thái booking)
+    @PostMapping("/{bookingId}/request-cancel")
+    public ResponseEntity<CancelRequest> requestCancelByRenter(@PathVariable Integer bookingId, @RequestParam Long renterId) {
+        CancelRequest cancelRequest = bookingService.requestCancelByRenter(bookingId, renterId);
+        return ResponseEntity.ok(cancelRequest);
+    }
+
+    // Chủ xe xác nhận huỷ booking (duyệt CancelRequest, đổi trạng thái booking)
+    @PutMapping("/{bookingId}/accept-cancel")
+    public ResponseEntity<Booking> acceptCancelByOwner(@PathVariable Integer bookingId, @RequestParam Long ownerId) {
+        Booking updated = bookingService.acceptCancelByOwner(bookingId, ownerId);
+        return ResponseEntity.ok(updated);
+    }
+
+    // Chủ xe từ chối huỷ booking (từ chối CancelRequest, booking vẫn ongoing)
+    @PutMapping("/{bookingId}/reject-cancel")
+    public ResponseEntity<CancelRequest> rejectCancelByOwner(@PathVariable Integer bookingId, @RequestParam Long ownerId) {
+        CancelRequest updated = bookingService.rejectCancelByOwner(bookingId, ownerId);
+        return ResponseEntity.ok(updated);
     }
 }

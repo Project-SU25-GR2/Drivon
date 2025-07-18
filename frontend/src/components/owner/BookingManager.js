@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./BookingManager.css";
 import { useRentalHistory } from "../../contexts/RentalHistoryContext";
 import {
@@ -12,6 +12,7 @@ import { API_URL } from '../../api/configApi';
 import pdfMake from 'pdfmake/build/pdfmake';
 import 'pdfmake/build/vfs_fonts';
 import { showErrorToast, showSuccessToast } from '../notification/notification';
+import axios from "axios";
 
 pdfMake.vfs = pdfMake.vfs || {};
 
@@ -110,7 +111,7 @@ const RentalFilters = ({
 );
 
 const RentalHistoryPage = () => {
-  const { rentalsData, loading, error, fetchRentalsData, updateRentalStatus } =
+  const { rentalsData, loading, error, refreshRentalsData, updateRentalStatus } =
     useRentalHistory();
   const [statusFilter, setStatusFilter] = useState("");
   const [search, setSearch] = useState("");
@@ -121,13 +122,38 @@ const RentalHistoryPage = () => {
   const [licenseImages, setLicenseImages] = useState([]);
   const [loadingLicense, setLoadingLicense] = useState(false);
   const navigate = useNavigate();
+  const [cancelRequests, setCancelRequests] = useState({});
+  const user = JSON.parse(localStorage.getItem("user"));
+  const initialFetchDone = useRef(false);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
-    if (user && user.userId) {
-      fetchRentalsData(user.userId);
+    if (user && user.userId && !initialFetchDone.current) {
+      refreshRentalsData(user.userId);
+      initialFetchDone.current = true;
     }
-  }, [fetchRentalsData]);
+  }, [refreshRentalsData]);
+
+  // Fetch cancel requests for each booking
+  useEffect(() => {
+    const fetchCancelRequests = async () => {
+      const requests = {};
+      for (const rental of rentalsData) {
+        if (rental.id) {
+          try {
+            const res = await axios.get(`${API_URL}/bookings/${rental.id}/cancel-request`);
+            if (res.data && res.data.status === 'PENDING') {
+              requests[rental.id] = res.data;
+            }
+          } catch (e) {
+            // Không có cancel request hoặc lỗi, bỏ qua
+          }
+        }
+      }
+      setCancelRequests(requests);
+    };
+    if (rentalsData.length > 0) fetchCancelRequests();
+  }, [rentalsData]);
 
   // Stats calculation (exclude PENDING payments)
   const validRentalsData = rentalsData.filter((r) => r.paymentStatus?.toUpperCase() !== 'PENDING');
@@ -171,6 +197,36 @@ const RentalHistoryPage = () => {
       showSuccessToast("Status updated successfully!");
     } catch (err) {
       showErrorToast("Failed to update status!");
+    }
+  };
+
+  const handleAcceptCancel = async (bookingId) => {
+    try {
+      await axios.put(`${API_URL}/bookings/${bookingId}/accept-cancel?ownerId=${user.userId}`);
+      showSuccessToast("Cancellation accepted successfully!");
+      setCancelRequests(prev => {
+        const newRequests = { ...prev };
+        delete newRequests[bookingId];
+        return newRequests;
+      });
+      refreshRentalsData(user.userId);
+    } catch (e) {
+      showErrorToast("Unable to accept cancellation.");
+    }
+  };
+
+  const handleRejectCancel = async (bookingId) => {
+    try {
+      await axios.put(`${API_URL}/bookings/${bookingId}/reject-cancel?ownerId=${user.userId}`);
+      showSuccessToast("Cancellation request rejected!");
+      setCancelRequests(prev => {
+        const newRequests = { ...prev };
+        delete newRequests[bookingId];
+        return newRequests;
+      });
+      refreshRentalsData(user.userId);
+    } catch (e) {
+      showErrorToast("Unable to reject cancellation request.");
     }
   };
 
@@ -400,95 +456,114 @@ const RentalHistoryPage = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredData.map((rental) => (
-                <tr
-                  key={rental.id}
-                  onMouseEnter={() => setHoveredRow(rental.id)}
-                  onMouseLeave={() => setHoveredRow(null)}
-                  onClick={() => handleRowClick(rental)}
-                  style={{ 
-                    position: "relative", 
-                    cursor: "pointer",
-                    backgroundColor: hoveredRow === rental.id ? "#f0f8ff" : "transparent",
-                    transition: "background-color 0.2s ease"
-                  }}
-                  title="Click để xem bằng lái của người thuê"
-                >
-                  <td>
-                    <b>
-                      {rental.car?.brand} {rental.car?.model}
-                    </b>
-                    <div className="licensePlate">
-                      {rental.car?.licensePlate}
-                    </div>
-                  </td>
-                  <td style={{ position: "relative" }}>
-                    <button
-                      className="chatIconBtn"
+              {filteredData.map((rental) => {
+                const isCancelPending = cancelRequests[rental.id];
+                return (
+                  <React.Fragment key={rental.id}>
+                    <tr
+                      onMouseEnter={() => setHoveredRow(rental.id)}
+                      onMouseLeave={() => setHoveredRow(null)}
+                      onClick={() => handleRowClick(rental)}
                       style={{
-                        background: "none",
-                        border: "none",
-                        marginRight: 8,
+                        position: "relative",
                         cursor: "pointer",
-                        verticalAlign: "middle",
-                        fontSize: 20,
-                        color: "#6c63ff"
+                        backgroundColor: hoveredRow === rental.id ? "#f0f8ff" : "transparent",
+                        transition: "background-color 0.2s ease"
                       }}
-                      title="Message with renter"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        console.log('Renter info:', rental.renter);
-                        navigate("/messages", {
-                          state: {
-                            selectedUser: {
-                              id: rental.renter?.userId || rental.renter?.id || rental.renter?._id,
-                              name: rental.renter?.fullName || rental.renter?.email || rental.renter?.id,
-                              avatar: rental.renter?.avatar || undefined,
-                            },
-                          },
-                        });
-                      }}
+                      title="Click để xem bằng lái của người thuê"
                     >
-                      <i className="bi bi-chat-dots"></i>
-                    </button>
-                    {rental.renter?.fullName ||
-                      rental.renter?.email ||
-                      rental.renter?.id}
-                  </td>
-                  <td>{rental.startTime ? new Date(rental.startTime).toLocaleDateString('en-US') : ''}</td>
-                  <td>{rental.endTime ? new Date(rental.endTime).toLocaleDateString('en-US') : ''}</td>
-                  <td>
-                    <span className="locationTag">{rental.pickupLocation}</span>
-                  </td>
-                  <td>
-                    <span className="locationTag">
-                      {rental.dropoffLocation}
-                    </span>
-                  </td>
-                  <td>
-                    <select
-                      className={`${"statusBadge"} ${
-                        "statusBadge" + rental.status?.toLowerCase()
-                      }`}
-                      value={rental.status}
-                      onChange={(e) => {
-                        e.stopPropagation();
-                        handleStatusChange(rental.id, e.target.value);
-                      }}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {statusOptions.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td style={getPaymentStatusStyle(rental.paymentStatus)}>
-                    {rental.totalPrice?.toLocaleString("vi-VN")} đ
-                  </td>
-                </tr>
-              ))}
+                      <td>
+                        <b>
+                          {rental.car?.brand} {rental.car?.model}
+                        </b>
+                        <div className="licensePlate">
+                          {rental.car?.licensePlate}
+                        </div>
+                      </td>
+                      <td style={{ position: "relative" }}>
+                        <button
+                          className="chatIconBtn"
+                          style={{
+                            background: "none",
+                            border: "none",
+                            marginRight: 8,
+                            cursor: "pointer",
+                            verticalAlign: "middle",
+                            fontSize: 20,
+                            color: "#6c63ff"
+                          }}
+                          title="Message with renter"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate("/messages", {
+                              state: {
+                                selectedUser: {
+                                  id: rental.renter?.userId || rental.renter?.id || rental.renter?._id,
+                                  name: rental.renter?.fullName || rental.renter?.email || rental.renter?.id,
+                                  avatar: rental.renter?.avatar || undefined,
+                                },
+                              },
+                            });
+                          }}
+                        >
+                          <i className="bi bi-chat-dots"></i>
+                        </button>
+                        {rental.renter?.fullName || rental.renter?.email || rental.renter?.id}
+                      </td>
+                      <td>{rental.startTime ? new Date(rental.startTime).toLocaleDateString('en-US') : ''}</td>
+                      <td>{rental.endTime ? new Date(rental.endTime).toLocaleDateString('en-US') : ''}</td>
+                      <td>
+                        <span className="locationTag">{rental.pickupLocation}</span>
+                      </td>
+                      <td>
+                        <span className="locationTag">{rental.dropoffLocation}</span>
+                      </td>
+                      <td>
+                        <select
+                          className={`${"statusBadge"} ${"statusBadge" + rental.status?.toLowerCase()}`}
+                          value={rental.status}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            handleStatusChange(rental.id, e.target.value);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          disabled={isCancelPending}
+                        >
+                          {statusOptions.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td style={getPaymentStatusStyle(rental.paymentStatus)}>
+                        {rental.totalPrice?.toLocaleString("vi-VN")} đ
+                      </td>
+                    </tr>
+                    {isCancelPending && (
+                      <tr>
+                        <td colSpan={8} style={{ background: "#fffbe6", textAlign: "center", verticalAlign: "middle", padding: "18px 0" }}>
+                          <span style={{ color: '#faad14', fontWeight: 600, marginRight: 16, fontSize: 16 }}>
+                            Awaiting cancellation confirmation
+                          </span>
+                          <button
+                            style={{ marginRight: 12, background: '#ff4d4f', color: 'white', border: 'none', borderRadius: 4, padding: '6px 18px', cursor: 'pointer', fontSize: 15 }}
+                            onClick={e => { e.stopPropagation(); handleAcceptCancel(rental.id); }}
+                          >
+                            Accept cancellation
+                          </button>
+                          <button
+                            style={{ background: '#1890ff', color: 'white', border: 'none', borderRadius: 4, padding: '6px 18px', cursor: 'pointer', fontSize: 15 }}
+                            onClick={e => { e.stopPropagation(); handleRejectCancel(rental.id); }}
+                          >
+                            Reject cancellation
+                          </button>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })}
             </tbody>
           </table>
         )}

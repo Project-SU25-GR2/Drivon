@@ -20,6 +20,8 @@ import Drivon.backend.model.OwnerWallet;
 import Drivon.backend.model.Payment;
 import java.time.LocalDateTime;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import Drivon.backend.model.CancelRequest;
+import Drivon.backend.repository.CancelRequestRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +37,7 @@ public class BookingService {
     private final PaymentRepository paymentRepository;
     private final EarningsService earningsService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final CancelRequestRepository cancelRequestRepository;
 
     public Booking createBooking(BookingRequest bookingRequest) {
         User renter = userRepository.findById(bookingRequest.getRenterId())
@@ -242,5 +245,136 @@ public class BookingService {
         } catch (Exception e) {
                 throw new RuntimeException("Error deleting booking: " + e.getMessage());
         }
+    }
+
+    // Người thuê yêu cầu huỷ booking khi đang thuê (tạo CancelRequest, không đổi trạng thái booking)
+    public CancelRequest requestCancelByRenter(Integer bookingId, Long renterId) {
+        Booking booking = bookingRepository.findById(bookingId)
+            .orElseThrow(() -> new RuntimeException("Booking not found"));
+        if (!booking.getRenter().getUserId().equals(renterId)) {
+            throw new RuntimeException("Bạn không phải là người thuê của booking này!");
+        }
+        if (booking.getStatus() != Booking.BookingStatus.ongoing) {
+            throw new RuntimeException("Chỉ có thể yêu cầu huỷ khi đang thuê!");
+        }
+        // Kiểm tra đã có yêu cầu huỷ chưa
+        if (cancelRequestRepository.findByBookingAndStatus(booking, CancelRequest.Status.PENDING).isPresent()) {
+            throw new RuntimeException("Đã có yêu cầu huỷ đang chờ xử lý!");
+        }
+        CancelRequest cancelRequest = new CancelRequest();
+        cancelRequest.setBooking(booking);
+        cancelRequest.setRequester(booking.getRenter());
+        cancelRequest.setRequestedAt(java.time.LocalDateTime.now());
+        cancelRequest.setStatus(CancelRequest.Status.PENDING);
+        CancelRequest saved = cancelRequestRepository.save(cancelRequest);
+
+        // Gửi notification cho chủ xe
+        Car car = booking.getCar();
+        if (car != null && car.getOwnerId() != null) {
+            User owner = userRepository.findById(car.getOwnerId().longValue()).orElse(null);
+            if (owner != null) {
+                String content = "The renter has requested to cancel booking #" + bookingId + ". Please accept or reject the request.";
+                Notification noti = notificationService.createNotificationForSpecificUser(
+                    content,
+                    Notification.NotificationType.SYSTEM,
+                    owner.getUserId()
+                );
+                // Gửi notification realtime cho owner
+                messagingTemplate.convertAndSendToUser(
+                    String.valueOf(owner.getUserId()),
+                    "/notifications/new",
+                    java.util.Map.of(
+                        "notificationId", noti.getNotificationId(),
+                        "content", noti.getContent(),
+                        "type", noti.getType().toString(),
+                        "targetType", Notification.TargetType.USER_SPECIFIC.toString(),
+                        "createdAt", noti.getCreatedAt().toString()
+                    )
+                );
+            }
+        }
+        return saved;
+    }
+
+    // Chủ xe xác nhận huỷ booking (duyệt CancelRequest, đổi trạng thái booking)
+    public Booking acceptCancelByOwner(Integer bookingId, Long ownerId) {
+        Booking booking = bookingRepository.findById(bookingId)
+            .orElseThrow(() -> new RuntimeException("Booking not found"));
+        Car car = booking.getCar();
+        if (car == null || !car.getOwnerId().equals(ownerId.intValue())) {
+            throw new RuntimeException("Bạn không phải là chủ xe của booking này!");
+        }
+        CancelRequest cancelRequest = cancelRequestRepository.findByBookingAndStatus(booking, CancelRequest.Status.PENDING)
+            .orElseThrow(() -> new RuntimeException("Không có yêu cầu huỷ nào đang chờ xử lý!"));
+        cancelRequest.setStatus(CancelRequest.Status.ACCEPTED);
+        cancelRequest.setProcessedAt(java.time.LocalDateTime.now());
+        cancelRequestRepository.save(cancelRequest);
+        booking.setStatus(Booking.BookingStatus.cancelled);
+        car.setStatus("available");
+        carRepository.save(car);
+        Booking saved = bookingRepository.save(booking);
+
+        // Gửi notification cho người thuê
+        User renter = booking.getRenter();
+        if (renter != null) {
+            String content = "The owner has accepted the cancellation request for booking #" + bookingId + ". The booking has been cancelled.";
+            Notification noti = notificationService.createNotificationForSpecificUser(
+                content,
+                Notification.NotificationType.SYSTEM,
+                renter.getUserId()
+            );
+            // Gửi notification realtime cho renter
+            messagingTemplate.convertAndSendToUser(
+                String.valueOf(renter.getUserId()),
+                "/notifications/new",
+                java.util.Map.of(
+                    "notificationId", noti.getNotificationId(),
+                    "content", noti.getContent(),
+                    "type", noti.getType().toString(),
+                    "targetType", Notification.TargetType.USER_SPECIFIC.toString(),
+                    "createdAt", noti.getCreatedAt().toString()
+                )
+            );
+        }
+        return saved;
+    }
+
+    // Chủ xe từ chối huỷ booking (từ chối CancelRequest, booking vẫn ongoing)
+    public CancelRequest rejectCancelByOwner(Integer bookingId, Long ownerId) {
+        Booking booking = bookingRepository.findById(bookingId)
+            .orElseThrow(() -> new RuntimeException("Booking not found"));
+        Car car = booking.getCar();
+        if (car == null || !car.getOwnerId().equals(ownerId.intValue())) {
+            throw new RuntimeException("Bạn không phải là chủ xe của booking này!");
+        }
+        CancelRequest cancelRequest = cancelRequestRepository.findByBookingAndStatus(booking, CancelRequest.Status.PENDING)
+            .orElseThrow(() -> new RuntimeException("Không có yêu cầu huỷ nào đang chờ xử lý!"));
+        cancelRequest.setStatus(CancelRequest.Status.REJECTED);
+        cancelRequest.setProcessedAt(java.time.LocalDateTime.now());
+        CancelRequest saved = cancelRequestRepository.save(cancelRequest);
+
+        // Gửi notification cho người thuê
+        User renter = booking.getRenter();
+        if (renter != null) {
+            String content = "The owner has rejected the cancellation request for booking #" + bookingId + ". The booking remains active.";
+            Notification noti = notificationService.createNotificationForSpecificUser(
+                content,
+                Notification.NotificationType.SYSTEM,
+                renter.getUserId()
+            );
+            // Gửi notification realtime cho renter
+            messagingTemplate.convertAndSendToUser(
+                String.valueOf(renter.getUserId()),
+                "/notifications/new",
+                java.util.Map.of(
+                    "notificationId", noti.getNotificationId(),
+                    "content", noti.getContent(),
+                    "type", noti.getType().toString(),
+                    "targetType", Notification.TargetType.USER_SPECIFIC.toString(),
+                    "createdAt", noti.getCreatedAt().toString()
+                )
+            );
+        }
+        return saved;
     }
 }

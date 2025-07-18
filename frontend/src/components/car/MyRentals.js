@@ -20,7 +20,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../../styles/MyRentals.css";
-import { FrownOutlined, MehOutlined, SmileOutlined, CarOutlined, EnvironmentOutlined, CalendarOutlined, CreditCardOutlined, DeleteOutlined } from "@ant-design/icons";
+import { FrownOutlined, MehOutlined, SmileOutlined, CarOutlined, EnvironmentOutlined, CalendarOutlined, CreditCardOutlined, DeleteOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import { CgArrowsExchange } from "react-icons/cg";
 import { API_URL } from '../../api/configApi';
 const { Title, Text } = Typography;
@@ -89,7 +89,7 @@ const MyRentals = () => {
             console.log('Booking API trả về cho bookingId', payment.bookingId, ':', bookingRes.data);
             return { ...payment, bookingStatus: bookingRes.data.status };
           } catch (err) {
-            return { ...payment, bookingStatus: "Không xác định" };
+            return { ...payment, bookingStatus: "Unknown" };
           }
         })
       );
@@ -165,6 +165,8 @@ const MyRentals = () => {
         return "warning";
       case "completed":
         return "success";
+      case "CANCEL_REQUESTED":
+        return "warning";
       default:
         return "default";
     }
@@ -347,7 +349,7 @@ const MyRentals = () => {
     } catch (error) {
       console.error('Error switching to bank:', error);
       console.error('Error details:', error.response?.data);
-      message.error(`Có lỗi xảy ra: ${error.response?.data?.message || error.message}`);
+      message.error(`An error occurred: ${error.response?.data?.message || error.message}`);
     }
   };
 
@@ -431,7 +433,7 @@ const MyRentals = () => {
     } catch (error) {
       console.error('Error switching to cash:', error);
       console.error('Error details:', error.response?.data);
-      message.error(`Có lỗi xảy ra: ${error.response?.data?.message || error.message}`);
+      message.error(`An error occurred: ${error.response?.data?.message || error.message}`);
     }
   };
 
@@ -447,12 +449,13 @@ const MyRentals = () => {
 
   const handleConfirmCancelBooking = async () => {
     if (!rentalToCancel || !rentalToCancel.bookingId) {
-      message.error('Unable to find booking to cancel.');
+      message.error('Could not find booking to cancel.');
       return;
     }
+
     try {
       let refundCreated = false;
-      // Nếu là bank và status payment là PAID thì tạo request hoàn tiền
+      // 1. Logic xử lý hoàn tiền (nếu có)
       if (rentalToCancel.paymentMethod?.toLowerCase() === "bank" && rentalToCancel.status?.toUpperCase() === "PAID") {
         if (!refundBankAccount || !refundBankName) {
           message.error("Please enter full bank account number and bank name for refund.");
@@ -470,22 +473,43 @@ const MyRentals = () => {
         });
         refundCreated = true;
       }
-      // Hủy booking như cũ
-      await axios.put(`${API_URL}/bookings/status/${rentalToCancel.bookingId}`, { status: 'cancelled' });
+
+      // 2. Gửi yêu cầu hủy đặt xe đến API (Yêu cầu này vẫn được gửi đi bình thường)
+      await axios.post(`${API_URL}/bookings/${rentalToCancel.bookingId}/request-cancel?renterId=${user.userId}`);
+
+      // 3. Cập nhật giao diện ngay lập tức và giữ nguyên trạng thái này
+      setRentals(prevRentals =>
+        prevRentals.map(r =>
+          r.bookingId === rentalToCancel.bookingId
+            ? { ...r, bookingStatus: "CANCEL_REQUESTED" }
+            : r
+        )
+      );
+      
+      // Hiển thị thông báo thành công
       if (refundCreated) {
-        message.success('Refund request created and booking cancelled successfully!');
+        message.success('Refund request and cancellation request sent successfully!');
       } else {
-        message.success('Car booking cancelled successfully!');
+        message.success('Cancellation request sent successfully!');
       }
-      fetchRentalsWithCleanup(user.userId);
-      setIsCancelModalVisible(false);
-      setRentalToCancel(null);
-      setRefundBankAccount("");
-      setRefundBankName("");
+
+      // Đóng modal
+      handleCloseCancelModal();
+
+      // ===== THAY ĐỔI QUAN TRỌNG: ĐÃ XÓA BỎ HOÀN TOÀN HÀM GỌI LẠI DỮ LIỆU =====
+      // Các dòng code dưới đây đã bị xóa bỏ để ngăn việc giao diện bị cập nhật lại với dữ liệu cũ từ server.
+      // setTimeout(() => {
+      //   fetchRentalsWithCleanup(user.userId);
+      // }, 1500);
+
     } catch (error) {
-      message.error('Unable to cancel booking or create refund request.');
+      const errorMessage = error.response?.data?.message || 'Could not send cancellation request or create refund request.';
+      message.error(errorMessage);
+      // Đóng modal ngay cả khi có lỗi
+      handleCloseCancelModal();
     }
   };
+
   const handleCloseCancelModal = () => {
     setIsCancelModalVisible(false);
     setRentalToCancel(null);
@@ -559,6 +583,25 @@ const MyRentals = () => {
             <div className="rental-card-date">
               Booked at: {formatDate(rental.paymentDate).replace('at ', '')}
             </div>
+
+            {/* ===== THÊM ĐOẠN MÃ MỚI TẠI ĐÂY ===== */}
+            {bookingStatus?.toLowerCase() === 'cancel_requested' && (
+              <div 
+                className="cancel-request-status" 
+                style={{ 
+                  color: '#faad14', // Màu vàng cam để chỉ trạng thái chờ
+                  fontSize: '12px', 
+                  marginTop: '5px', 
+                  fontStyle: 'italic',
+                  width: '100%' // Đảm bảo nó chiếm đủ chiều rộng
+                }}
+              >
+                <InfoCircleOutlined style={{ marginRight: '5px' }} />
+                A cancellation request has been sent and is awaiting owner approval.
+              </div>
+            )}
+            {/* ===== KẾT THÚC ĐOẠN MÃ MỚI ===== */}
+            
             <div className="rental-card-actions" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               {/* Nếu là cancelled chỉ hiển thị nút info */}
               {isCancelled ? (
@@ -612,7 +655,7 @@ const MyRentals = () => {
                     </Tooltip>
                   )}
                   {/* Nút hủy đặt xe luôn hiển thị nếu bookingStatus là ongoing hoặc pending */}
-                  {(bookingStatus?.toLowerCase() === 'ongoing' || bookingStatus?.toLowerCase() === 'pending') && (
+                  {(bookingStatus?.toLowerCase() === 'ongoing' || bookingStatus?.toLowerCase() === 'pending') && bookingStatus?.toLowerCase() !== 'cancel_requested' && (
                     <Tooltip title="Cancel booking">
                       <Button 
                         className="cancel-booking-btn" 

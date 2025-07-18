@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { API_URL } from '../api/configApi';
 const RentalHistoryContext = createContext();
@@ -21,11 +21,11 @@ export const RentalHistoryProvider = ({ children }) => {
   // Cache timeout: 5 phút
   const CACHE_TIMEOUT = 5 * 60 * 1000;
 
-  const shouldRefetch = () => {
+  const shouldRefetch = useCallback(() => {
     if (!lastFetchTime) return true;
     if (!isInitialized) return true;
     return Date.now() - lastFetchTime > CACHE_TIMEOUT;
-  };
+  }, [lastFetchTime, isInitialized]);
 
   const fetchPaymentStatus = async (bookingId) => {
     try {
@@ -40,14 +40,14 @@ export const RentalHistoryProvider = ({ children }) => {
     }
   };
 
-  const fetchRentalsData = async (userId, forceRefresh = false) => {
+  const fetchRentalsData = useCallback(async (userId, forceRefresh = false) => {
     if (!userId) {
       setError('User ID is required');
-      return [];
+      return;
     }
 
     if (!forceRefresh && !shouldRefetch()) {
-      return rentalsData;
+      return;
     }
 
     setLoading(true);
@@ -67,21 +67,20 @@ export const RentalHistoryProvider = ({ children }) => {
       setRentalsData(rentalsWithPaymentStatus);
       setLastFetchTime(Date.now());
       setIsInitialized(true);
-      setLoading(false);
       
-      return rentalsWithPaymentStatus;
     } catch (err) {
       setError('Failed to fetch rentals data');
-      setLoading(false);
       throw err;
+    } finally {
+        setLoading(false);
     }
-  };
+  }, [shouldRefetch]);
 
-  const refreshRentalsData = (userId) => {
+  const refreshRentalsData = useCallback((userId) => {
     return fetchRentalsData(userId, true);
-  };
+  }, [fetchRentalsData]);
 
-  const updateRentalStatus = async (rentalId, newStatus) => {
+  const updateRentalStatus = useCallback(async (rentalId, newStatus) => {
     try {
       await axios.put(
       `${API_URL}/bookings/status/${rentalId}`,
@@ -107,28 +106,31 @@ export const RentalHistoryProvider = ({ children }) => {
       setError('Failed to update rental status');
       throw err;
     }
-  };
+  }, []);
 
-  const getRentalsByFilter = (filterFn) => {
+  const getRentalsByFilter = useCallback((filterFn) => {
     return rentalsData.filter(filterFn);
-  };
+  }, [rentalsData]);
 
-  const value = {
+  const value = useMemo(() => ({
     rentalsData,
     loading,
     error,
-    lastFetchTime,
-    isInitialized,
     fetchRentalsData,
     refreshRentalsData,
     updateRentalStatus,
-    getRentalsByFilter,
-    shouldRefetch
-  };
+  }), [
+    rentalsData,
+    loading,
+    error,
+    fetchRentalsData,
+    refreshRentalsData,
+    updateRentalStatus,
+  ]);
 
   return (
     <RentalHistoryContext.Provider value={value}>
       {children}
     </RentalHistoryContext.Provider>
   );
-}; 
+};
