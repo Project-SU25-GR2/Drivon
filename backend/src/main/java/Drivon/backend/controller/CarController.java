@@ -37,7 +37,19 @@ public class CarController {
     @GetMapping
     public ResponseEntity<?> getAllCars() {
         try {
-            List<Car> cars = carService.getCarsByStatus("available");
+            List<Car> availableCars = carService.getCarsByStatus("available");
+            List<Car> activeLeaseCars = carService.getActiveLeaseCars();
+
+            // Gộp hai danh sách, loại trùng (theo licensePlate)
+            Map<String, Car> carMap = new HashMap<>();
+            for (Car car : availableCars) {
+                carMap.put(car.getLicensePlate(), car);
+            }
+            for (Car car : activeLeaseCars) {
+                carMap.put(car.getLicensePlate(), car);
+            }
+            List<Car> cars = new ArrayList<>(carMap.values());
+
             List<Map<String, Object>> carsWithImages = new ArrayList<>();
 
             for (Car car : cars) {
@@ -226,8 +238,19 @@ public class CarController {
     @GetMapping("/active-lease")
     public ResponseEntity<?> getActiveLeaseCars() {
         try {
-            // Lấy tất cả xe có status = 'available' (không lấy theo hợp đồng nữa)
-            List<Car> cars = carService.getCarsByStatus("available");
+            List<Car> availableCars = carService.getCarsByStatus("available");
+            List<Car> activeLeaseCars = carService.getActiveLeaseCars();
+
+            // Gộp hai danh sách, loại trùng (theo licensePlate)
+            Map<String, Car> carMap = new HashMap<>();
+            for (Car car : availableCars) {
+                carMap.put(car.getLicensePlate(), car);
+            }
+            for (Car car : activeLeaseCars) {
+                carMap.put(car.getLicensePlate(), car);
+            }
+            List<Car> cars = new ArrayList<>(carMap.values());
+
             List<Map<String, Object>> carsWithImages = new ArrayList<>();
 
             for (Car car : cars) {
@@ -268,8 +291,19 @@ public class CarController {
     @GetMapping("/active-lease-with-details")
     public ResponseEntity<?> getActiveLeaseCarsWithDetails() {
         try {
-            // Lấy tất cả xe có status = 'available' (không lấy theo hợp đồng nữa)
-            List<Car> cars = carService.getCarsByStatus("available");
+            List<Car> availableCars = carService.getCarsByStatus("available");
+            List<Car> activeLeaseCars = carService.getActiveLeaseCars();
+
+            // Gộp hai danh sách, loại trùng (theo licensePlate)
+            Map<String, Car> carMap = new HashMap<>();
+            for (Car car : availableCars) {
+                carMap.put(car.getLicensePlate(), car);
+            }
+            for (Car car : activeLeaseCars) {
+                carMap.put(car.getLicensePlate(), car);
+            }
+            List<Car> cars = new ArrayList<>(carMap.values());
+
             List<Map<String, Object>> carsWithDetails = new ArrayList<>();
 
             for (Car car : cars) {
