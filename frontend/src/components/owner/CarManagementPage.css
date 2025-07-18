@@ -94,6 +94,33 @@
   font-weight: bold;
 }
 
+.car-status-dropdown {
+  padding: 4px 12px;
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  min-width: 100px;
+  outline: none;
+  margin-right: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.car-status-dropdown.available {
+  background: #e6f9ed;
+  color: #1ca94c;
+  border-color: #1ca94c;
+}
+.car-status-dropdown.unavailable {
+  background: #ffeaea;
+  color: #e74c3c;
+  border-color: #e74c3c;
+}
+.car-status-dropdown:focus,
+.car-status-dropdown:hover {
+  border-color: #888;
+}
+
 .car-info {
   padding: 20px 20px 0 20px;
   text-align: left;
@@ -182,42 +209,58 @@
 
 .car-actions {
   display: flex;
-  gap: 16px;
+  align-items: center;
+  gap: 8px;
   justify-content: flex-start;
-  padding: 18px 20px 20px 20px;
-  border-top: none;
+  margin-top: 8px;
 }
-
-.edit-btn {
-  background: #fff;
-  color: #2563eb;
-  border: 2px solid #2563eb;
-  border-radius: 8px;
-  font-size: 16px;
-  padding: 10px 28px;
-  font-weight: 500;
-  transition: background 0.2s, color 0.2s;
-}
-
-.edit-btn:hover {
-  background: #2563eb;
-  color: #fff;
-}
-
+.car-status-dropdown,
+.edit-btn,
 .delete-btn {
-  background: #fff;
-  color: #e11d48;
-  border: 2px solid #e11d48;
-  border-radius: 8px;
-  font-size: 16px;
-  padding: 10px 28px;
+  height: 40px;
+  min-width: 70px;
+  padding: 0 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
   font-weight: 500;
+  box-sizing: border-box;
+}
+.edit-btn {
+  border: 2px solid #1890ff;
+  background: #fff;
+  color: #1890ff;
   transition: background 0.2s, color 0.2s;
 }
-
+.edit-btn:hover {
+  background: #e6f0ff;
+  color: #1765ad;
+}
+.delete-btn {
+  border: 2px solid #e74c3c;
+  background: #fff;
+  color: #e74c3c;
+  transition: background 0.2s, color 0.2s;
+}
 .delete-btn:hover {
-  background: #e11d48;
-  color: #fff;
+  background: #ffeaea;
+  color: #c0392b;
+}
+.car-status-dropdown.available {
+  background: #e6f9ed;
+  color: #1ca94c;
+  border-color: #1ca94c;
+}
+.car-status-dropdown.unavailable {
+  background: #ffeaea;
+  color: #e74c3c;
+  border-color: #e74c3c;
+}
+.car-status-dropdown:focus,
+.car-status-dropdown:hover {
+  border-color: #888;
 }
 
 .no-cars {
@@ -251,5 +294,3 @@
   background: #ffebee;
   border-radius: 10px;
 }
-
-
