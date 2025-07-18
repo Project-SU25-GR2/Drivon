@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { API_URL } from '../../api/configApi';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, PieChart, Pie, Cell } from 'recharts';
 
 const cardStyle = {
   background: '#fff',
@@ -95,6 +96,16 @@ export default function DashboardOverview() {
     { label: 'Prepare Monthly Report', p: 'high', done: false },
   ]);
   const [newTask, setNewTask] = useState('');
+
+  // State cho dữ liệu doanh thu theo tháng
+  const [monthlyRevenue, setMonthlyRevenue] = useState([]);
+  const [loadingMonthlyRevenue, setLoadingMonthlyRevenue] = useState(true);
+  const [errorMonthlyRevenue, setErrorMonthlyRevenue] = useState(null);
+
+  // State cho dữ liệu Pie chart trạng thái xe
+  const [carStatusPie, setCarStatusPie] = useState([]);
+  const [loadingCarStatusPie, setLoadingCarStatusPie] = useState(true);
+  const [errorCarStatusPie, setErrorCarStatusPie] = useState(null);
 
   const handleAddTask = () => {
     if (newTask.trim() === '') return;
@@ -299,11 +310,73 @@ export default function DashboardOverview() {
     fetchFleetStatus();
   }, []);
 
+  useEffect(() => {
+    // Fetch monthly revenue for current year
+    const fetchMonthlyRevenue = async () => {
+      setLoadingMonthlyRevenue(true);
+      setErrorMonthlyRevenue(null);
+      try {
+        const year = new Date().getFullYear();
+        const res = await axios.get(`${API_URL}/earnings/admin/monthly-revenue?year=${year}`);
+        if (Array.isArray(res.data)) {
+          setMonthlyRevenue(res.data);
+        } else {
+          setMonthlyRevenue([]);
+        }
+      } catch (err) {
+        setErrorMonthlyRevenue('Unable to load monthly revenue');
+        setMonthlyRevenue([]);
+      } finally {
+        setLoadingMonthlyRevenue(false);
+      }
+    };
+    fetchMonthlyRevenue();
+  }, []);
+
+  useEffect(() => {
+    // Fetch car list để tính tỉ lệ trạng thái xe
+    const fetchCarStatusPie = async () => {
+      setLoadingCarStatusPie(true);
+      setErrorCarStatusPie(null);
+      try {
+        const res = await axios.get(`${API_URL}/cars`);
+        let cars = [];
+        if (Array.isArray(res.data)) {
+          cars = res.data;
+        } else if (Array.isArray(res.data.cars)) {
+          cars = res.data.cars;
+        }
+        const statusCount = { rented: 0, available: 0, maintenance: 0, other: 0 };
+        cars.forEach(car => {
+          const status = (car.status || '').toLowerCase();
+          if (status === 'rented') statusCount.rented++;
+          else if (status === 'available') statusCount.available++;
+          else if (status === 'maintenance') statusCount.maintenance++;
+          else statusCount.other++;
+        });
+        const pieData = [
+          { name: 'Rented', value: statusCount.rented },
+          { name: 'Available', value: statusCount.available },
+          { name: 'Maintenance', value: statusCount.maintenance },
+        ];
+        setCarStatusPie(pieData);
+      } catch (err) {
+        setErrorCarStatusPie('Unable to load car status data');
+        setCarStatusPie([]);
+      } finally {
+        setLoadingCarStatusPie(false);
+      }
+    };
+    fetchCarStatusPie();
+  }, []);
+
   // Currency format function VND
   const formatCurrency = (amount) => {
     if (amount === null || amount === undefined || isNaN(amount)) return '0 ₫';
     return amount.toLocaleString('vi-VN') + ' ₫';
   };
+
+  const pieColors = ['#4f8cff', '#22c55e', '#f59e42'];
 
   // Thêm logo Google Maps dạng SVG (inline, không cần import file ngoài)
   const googleMapsLogo = (
@@ -435,6 +508,55 @@ export default function DashboardOverview() {
               )}
             </div>
           </div>
+        </div>
+        {/* Biểu đồ doanh thu theo tháng */}
+        <div style={{ ...cardStyle, marginBottom: 32 }}>
+          <div style={sectionTitle}><i className="fas fa-chart-bar"></i> Monthly Revenue (VND)</div>
+          {loadingMonthlyRevenue ? (
+            <div>Loading chart...</div>
+          ) : errorMonthlyRevenue ? (
+            <div style={{ color: 'red' }}>{errorMonthlyRevenue}</div>
+          ) : (
+            <ResponsiveContainer width="100%" height={320}>
+              <BarChart data={monthlyRevenue} margin={{ top: 16, right: 32, left: 0, bottom: 8 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis tickFormatter={v => v.toLocaleString('vi-VN')} />
+                <Tooltip formatter={v => v.toLocaleString('vi-VN') + ' ₫'} />
+                <Legend />
+                <Bar dataKey="revenue" fill="#4f8cff" name="Revenue" />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+        {/* Biểu đồ tròn trạng thái xe */}
+        <div style={{ ...cardStyle, marginBottom: 32, maxWidth: 500 }}>
+          <div style={sectionTitle}><i className="fas fa-chart-pie"></i> Fleet Status Distribution</div>
+          {loadingCarStatusPie ? (
+            <div>Loading chart...</div>
+          ) : errorCarStatusPie ? (
+            <div style={{ color: 'red' }}>{errorCarStatusPie}</div>
+          ) : (
+            <ResponsiveContainer width="100%" height={280}>
+              <PieChart>
+                <Pie
+                  data={carStatusPie}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={90}
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                >
+                  {carStatusPie.map((entry, idx) => (
+                    <Cell key={`cell-${idx}`} fill={pieColors[idx % pieColors.length]} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={v => `${v} xe`} />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
         </div>
         {/* Bottom Widgets */}
         <div style={{ display: 'flex', gap: 24 }}>
