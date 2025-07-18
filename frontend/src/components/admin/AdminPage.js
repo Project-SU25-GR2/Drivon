@@ -20,6 +20,7 @@ import AdminNotificationManager from '../notification/AdminNotificationManager';
 import { createNotification } from '../../api/notification';
 import { API_URL } from '../../api/configApi';
 import { showErrorToast, showSuccessToast } from '../notification/notification';
+import IdentityDocumentPage from './IdentityDocumentPage';
 // Component for Admin Page
 const AdminPage = ({ user }) => {
   const [users, setUsers] = useState([]);
@@ -245,6 +246,8 @@ const AdminPage = ({ user }) => {
         return <MultipleLevelsPage />;
       case 'notification-manager':
         return <AdminNotificationManager />;
+      case 'identity-documents':
+        return <IdentityDocumentPage />;
       default:
         return <div>Select a component from the sidebar</div>;
     }
@@ -455,6 +458,20 @@ const AdminPage = ({ user }) => {
             >
               <i className="fas fa-bell"></i>
               <span>Notification Management</span>
+            </a>
+          </li>
+          <li>
+            <a 
+              href="#" 
+              className={activeComponent === 'identity-documents' ? 'active' : ''}
+              onClick={(e) => {
+                e.preventDefault();
+                setActiveComponent('identity-documents');
+              }}
+              data-title="Identity Documents"
+            >
+              <i className="fas fa-id-card"></i>
+              <span>Identity Documents</span>
             </a>
           </li>
         </ul>

@@ -7,6 +7,7 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
 import cloudinaryConfig from '../../config/cloudinary';
 import { FiUpload, FiTrash2 } from 'react-icons/fi';
 import { Table } from "antd";
+import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 
 const ProfilePage = ({ user, onUpdateUser }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -525,7 +526,7 @@ const ProfilePage = ({ user, onUpdateUser }) => {
               </div>
               <div className="col-md-6">
                 <label>Document Type</label>
-                <select className="form-select mb-2" value={pendingDocType} onChange={e => setPendingDocType(e.target.value)} disabled={!docEditMode}>
+                <select className="form-select mb-2" value={pendingDocType} onChange={e => setPendingDocType(e.target.value)} disabled={!docEditMode || (userImages.some(img => (img.verified === true || img.verified === 1) && img.documentType === pendingDocType))}>
                   <option value="cccd">Citizen ID</option>
                   <option value="license">Driver's License</option>
                   <option value="passport">Passport</option>
@@ -556,8 +557,30 @@ const ProfilePage = ({ user, onUpdateUser }) => {
                         <div className="d-flex flex-row flex-wrap justify-content-center align-items-start gap-4 mb-2">
                           {images.map((img, idx) => (
                             <div key={img.imageId} style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '0 8px' }}>
-                              <img src={img.imageUrl} alt={img.documentType} style={{ maxHeight: 240, maxWidth: 320, border: '1px solid #eee', borderRadius: 8 }} />
-                              {docEditMode && (
+                              <img src={img.imageUrl} alt={img.documentType} 
+                                style={{ 
+                                  maxHeight: 240, 
+                                  maxWidth: 320, 
+                                  border: `2.5px solid ${img.verified === true || img.verified === 1 ? '#28a745' : '#dc3545'}`,
+                                  borderRadius: 8 
+                                }} 
+                              />
+                              {/* Chỉ hiển thị description nếu chưa verify */}
+                              <div className="mt-3 text-center" style={{minWidth:180}}>
+                                {(!img.verified || img.verified === 0) && img.description && <div className="text-muted small">{img.description}</div>}
+                                <small className="text-muted">Uploaded: {img.uploadedAt ? new Date(img.uploadedAt).toLocaleString() : ''}</small>
+                                <div className="mt-2">
+                                  {typeof img.verified !== 'undefined' && (
+                                    img.verified === true || img.verified === 1 ? (
+                                      <span style={{ color: 'green', fontWeight: 500 }}><FaCheckCircle style={{marginRight:4}}/>Verified</span>
+                                    ) : (
+                                      <span style={{ color: 'red', fontWeight: 500 }}><FaTimesCircle style={{marginRight:4}}/>Not Verified</span>
+                                    )
+                                  )}
+                                </div>
+                              </div>
+                              {/* Ẩn nút xóa nếu đã verify */}
+                              {docEditMode && (!img.verified || img.verified === 0) && (
                                 <button
                                   className="btn btn-sm btn-danger"
                                   style={{ position: 'absolute', top: 8, right: 8, padding: '4px 10px', borderRadius: '50%', zIndex: 2 }}
@@ -567,10 +590,6 @@ const ProfilePage = ({ user, onUpdateUser }) => {
                                   <FiTrash2 size={20} />
                                 </button>
                               )}
-                              <div className="mt-3 text-center" style={{minWidth:180}}>
-                                {img.description && <div className="text-muted small">{img.description}</div>}
-                                <small className="text-muted">Uploaded: {img.uploadedAt ? new Date(img.uploadedAt).toLocaleString() : ''}</small>
-                              </div>
                             </div>
                           ))}
                         </div>
