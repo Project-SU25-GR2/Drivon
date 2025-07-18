@@ -526,7 +526,7 @@ const ProfilePage = ({ user, onUpdateUser }) => {
               </div>
               <div className="col-md-6">
                 <label>Document Type</label>
-                <select className="form-select mb-2" value={pendingDocType} onChange={e => setPendingDocType(e.target.value)} disabled={!docEditMode || (userImages.some(img => (img.verified === true || img.verified === 1) && img.documentType === pendingDocType))}>
+                <select className="form-select mb-2" value={pendingDocType} onChange={e => setPendingDocType(e.target.value)} disabled={!docEditMode}>
                   <option value="cccd">Citizen ID</option>
                   <option value="license">Driver's License</option>
                   <option value="passport">Passport</option>
