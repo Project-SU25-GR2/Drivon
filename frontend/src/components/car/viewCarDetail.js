@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { DateRange } from 'react-date-range';
@@ -93,13 +93,13 @@ const ViewCarDetail = () => {
   const currentReviews = allReviewsFiltered.slice(indexOfFirstReview, indexOfLastReview);
 
   // Đặt filteredCars lên trên các useEffect để tránh lỗi ReferenceError
-  const filteredCars = allCars.filter(item => {
+  const filteredCars = useMemo(() => allCars.filter(item => {
     if (!car) return false;
     if (item.licensePlate === car.licensePlate) return false;
     if (carFilter === 'brand') return item.brand === car.brand;
     if (carFilter === 'type') return item.type === car.type;
     return true;
-  });
+  }), [allCars, car, carFilter]);
 
   useEffect(() => {
     // Fetch cars data using context first
@@ -241,8 +241,8 @@ const ViewCarDetail = () => {
       }
     };
     if (filteredCars.length > 0) fetchContracts();
-    // eslint-disable-next-line
-  }, [filteredCars, carContracts]);
+    // Đã loại bỏ carContracts khỏi dependency để tránh vòng lặp vô tận
+  }, [filteredCars]);
 
   useEffect(() => {
     if (zoomLevel === 1) {

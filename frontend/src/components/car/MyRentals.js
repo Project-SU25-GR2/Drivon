@@ -71,6 +71,15 @@ const MyRentals = () => {
     }
     setUser(userData);
     fetchRentalsWithCleanup(userData.userId);
+
+    // Fetch danh sách các booking đã review từ backend
+    axios.get(`${API_URL}/reviews/user/${userData.userId}`)
+      .then(res => {
+        // Giả sử mỗi review có bookingId
+        const reviewedBookingIds = res.data.map(r => r.bookingId);
+        setReviewedRentals(reviewedBookingIds);
+      })
+      .catch(() => setReviewedRentals([]));
   }, [navigate]);
 
   const fetchRentals = async (userId) => {
@@ -518,9 +527,9 @@ const MyRentals = () => {
   };
 
   const renderRentalCard = (rental) => {
-    // A user can rate a car if the booking is completed.
+    // A user can rate a car if the booking is completed and chưa đánh giá
     const bookingStatus = rental.bookingStatus || rental.booking_status || rental.booking_status_text;
-    const canRate = bookingStatus?.toLowerCase() === "completed";
+    const canRate = bookingStatus?.toLowerCase() === "completed" && !reviewedRentals.includes(rental.bookingId);
     const isPending = rental.status?.toUpperCase() === "PENDING";
     const isCash = rental.paymentMethod?.toLowerCase() === "cash";
     const isBank = rental.paymentMethod?.toLowerCase() === "bank";

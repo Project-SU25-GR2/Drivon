@@ -69,6 +69,13 @@ public class Booking {
         this.paymentStatus = paymentStatus;
     }
 
+    public int getId() {
+        return id;
+    }
+    public Car getCar() {
+        return car;
+    }
+
     @Override
     public String toString() {
         return "Booking{" +
