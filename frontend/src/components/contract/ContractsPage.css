@@ -362,6 +362,13 @@
   margin-top: 1rem;
 }
 
+.image-grid.two-cols {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
 .image-item {
   text-align: center;
   background: #f8f9fa;
@@ -377,7 +384,7 @@
 .image-item img {
   width: 100%;
   height: 150px;
-  object-fit: cover;
+  object-fit: contain;
   border-radius: 6px;
   cursor: pointer;
   border: 2px solid #e9ecef;
@@ -403,6 +410,34 @@
   background: #f8f9fa;
   border-radius: 8px;
   border: 2px dashed #dee2e6;
+}
+
+/* Overlay zoom image */
+.zoom-image-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.7);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.zoom-image-overlay img {
+  max-width: 90vw;
+  max-height: 90vh;
+  border-radius: 8px;
+  box-shadow: 0 2px 16px #0008;
+}
+.zoom-image-overlay .zoom-close-btn {
+  position: fixed;
+  top: 30px;
+  right: 40px;
+  font-size: 32px;
+  color: #fff;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 10000;
 }
 
 /* Responsive Design */

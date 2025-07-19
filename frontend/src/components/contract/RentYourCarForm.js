@@ -8,6 +8,7 @@ import { API_URL } from '../../api/configApi';
 import { showErrorToast, showSuccessToast } from '../notification/notification';
   const RentYourCarForm = () => {
     const navigate = useNavigate();
+    const storedUser = localStorage.getItem("user");
 
     // All hooks must be called at the top, before any return
     const [showCCCDModal, setShowCCCDModal] = useState(false);
@@ -39,20 +40,29 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
     const [contractStatus, setContractStatus] = useState(null); // null | 'pending' | 'canceled' | 'expired' | 'other'
     const [latestContract, setLatestContract] = useState(null);
     const [loadingContract, setLoadingContract] = useState(true);
+    // State for checking owner role from backend
+    const [isOwner, setIsOwner] = useState(false);
+    const [roleLoading, setRoleLoading] = useState(true);
 
-    // Check if user is already Owner
-    const storedUser = localStorage.getItem("user");
-    let isOwner = false;
-    if (storedUser) {
-      try {
-        const user = JSON.parse(storedUser);
-        if (user.role && (user.role.toLowerCase() === "owner" || user.role.toLowerCase() === "verify_owner")) {
-          isOwner = true;
-        }
-      } catch (e) {
-        // ignore
+    useEffect(() => {
+      if (!storedUser) {
+        setIsOwner(false);
+        setRoleLoading(false);
+        return;
       }
-    }
+      const user = JSON.parse(storedUser);
+      axios.get(`${API_URL}/admin/check-role/${user.userId}`)
+        .then(res => {
+          const role = res.data?.role?.toLowerCase();
+          if (role === "owner" || role === "verify_owner") {
+            setIsOwner(true);
+          } else {
+            setIsOwner(false);
+          }
+        })
+        .catch(() => setIsOwner(false))
+        .finally(() => setRoleLoading(false));
+    }, [storedUser]);
 
     useEffect(() => {
       if (storedUser) {
@@ -116,9 +126,40 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
       fetchLatestContract();
     }, [storedUser]);
 
-    // Show loading spinner while checking contract
-    if (loadingContract) {
+    // Show loading spinner while checking role or contract
+    if (roleLoading || loadingContract) {
       return <div className="loading"><span>Loading...</span></div>;
+    }
+
+    // Show modal if user is already an owner
+    if (isOwner) {
+      return (
+        <div style={{
+          position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
+          background: "rgba(0,0,0,0.4)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center"
+        }}>
+          <div style={{
+            background: "#fff", borderRadius: 8, padding: 32, minWidth: 320, boxShadow: "0 2px 16px rgba(0,0,0,0.15)", textAlign: "center"
+          }}>
+            <h2>You are already a partner</h2>
+            <p>You are already our partner. Please use the Owner Dashboard to manage your cars and earnings.</p>
+            <div style={{ marginTop: 24, display: "flex", justifyContent: "center", gap: 16 }}>
+              <button
+                className="cccd-modal-btn"
+                onClick={() => navigate('/')}
+              >
+                Cancel
+              </button>
+              <button
+                className="cccd-modal-btn primary"
+                onClick={() => navigate('/owner')}
+              >
+                Go to Owner Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      );
     }
 
     // Modal: User has a pending become a partner contract
@@ -200,7 +241,13 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
                 className="cccd-modal-btn"
                 onClick={() => navigate('/')}
               >
-                Back to Home
+                Cancel
+              </button>
+              <button
+                className="cccd-modal-btn primary"
+                onClick={() => navigate('/profile')}
+              >
+                View Profile / Document Status
               </button>
             </div>
           </div>

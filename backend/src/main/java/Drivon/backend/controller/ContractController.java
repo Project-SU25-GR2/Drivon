@@ -12,40 +12,40 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 
-@RestController
-@RequestMapping("/api/contracts")
-@CrossOrigin(origins = "http://localhost:3000")
-public class ContractController {
+ @RestController
+ @RequestMapping("/api/contracts")
+ @CrossOrigin(origins = "http://localhost:3000")
+ public class ContractController {
 
-    @Autowired
-    private ContractService contractService;
+     @Autowired
+     private ContractService contractService;
 
-    @Autowired
-    private EmailService emailService;
+     @Autowired
+     private EmailService emailService;
 
-    @PostMapping
-    public ResponseEntity<?> createContract(@Valid @RequestBody ContractRequest contractRequest) {
-        try {
-            Contract contract = contractService.createContract(contractRequest);
-            return ResponseEntity.ok(contract);
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", e.getMessage());
-            return ResponseEntity.badRequest().body(error);
-        }
-    }
+     @PostMapping
+     public ResponseEntity<?> createContract(@Valid @RequestBody ContractRequest contractRequest) {
+         try {
+             Contract contract = contractService.createContract(contractRequest);
+             return ResponseEntity.ok(contract);
+         } catch (Exception e) {
+             Map<String, String> error = new HashMap<>();
+             error.put("error", e.getMessage());
+             return ResponseEntity.badRequest().body(error);
+         }
+     }
 
-    @PostMapping("/lease")
-    public ResponseEntity<?> createLeaseContract(@Valid @RequestBody ContractRequest contractRequest) {
-        try {
-            Contract contract = contractService.createLeaseContract(contractRequest);
-            return ResponseEntity.ok(contract);
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", e.getMessage());
-            return ResponseEntity.badRequest().body(error);
-        }
-    }
+     @PostMapping("/lease")
+     public ResponseEntity<?> createLeaseContract(@Valid @RequestBody ContractRequest contractRequest) {
+         try {
+             Contract contract = contractService.createLeaseContract(contractRequest);
+             return ResponseEntity.ok(contract);
+         } catch (Exception e) {
+             Map<String, String> error = new HashMap<>();
+             error.put("error", e.getMessage());
+             return ResponseEntity.badRequest().body(error);
+         }
+     }
 
     /* Comment out verification code endpoints
     @PostMapping("/send-code")
@@ -77,41 +77,42 @@ public class ContractController {
     }
     */
 
-    @PostMapping("/send-pdf")
-    public ResponseEntity<?> sendContractPDF(@RequestBody Map<String, String> request) {
-        try {
-            String email = request.get("email");
-            String contractId = request.get("contractId");
-            emailService.sendContractPDF(email, contractId);
-            return ResponseEntity.ok(Map.of("success", true));
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", e.getMessage());
-            return ResponseEntity.badRequest().body(error);
-        }
-    }
+     @PostMapping("/send-pdf")
+     public ResponseEntity<?> sendContractPDF(@RequestBody Map<String, String> request) {
+         try {
+             String email = request.get("email");
+             String contractId = request.get("contractId");
+             emailService.sendContractPDF(email, contractId);
+             return ResponseEntity.ok(Map.of("success", true));
+         } catch (Exception e) {
+             Map<String, String> error = new HashMap<>();
+             error.put("error", e.getMessage());
+             return ResponseEntity.badRequest().body(error);
+         }
+     }
 
-    @GetMapping("/check-car/{carId}")
-    public ResponseEntity<?> checkCarExists(@PathVariable String carId) {
-        try {
-            boolean exists = contractService.checkCarExists(carId);
-            return ResponseEntity.ok(Map.of("exists", exists));
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", e.getMessage());
-            return ResponseEntity.badRequest().body(error);
-        }
-    }
+     @GetMapping("/check-car/{carId}")
+     public ResponseEntity<?> checkCarExists(@PathVariable String carId) {
+         try {
+             boolean exists = contractService.checkCarExists(carId);
+             return ResponseEntity.ok(Map.of("exists", exists));
+         } catch (Exception e) {
+             Map<String, String> error = new HashMap<>();
+             error.put("error", e.getMessage());
+             return ResponseEntity.badRequest().body(error);
+         }
+     }
 
-    @GetMapping("/by-car/{carId}")
-    public ResponseEntity<?> getLatestContractByCar(@PathVariable String carId) {
-        var contractOpt = contractService.getLatestContractByCar(carId);
-        if (contractOpt.isPresent()) {
-            return ResponseEntity.ok(contractOpt.get());
-        } else {
-            return ResponseEntity.status(404).body("No contract found for this car");
-        }
-    }
+
+     @GetMapping("/by-car/{carId}")
+     public ResponseEntity<?> getLatestContractByCar(@PathVariable String carId) {
+         var contractOpt = contractService.getLatestContractByCar(carId);
+         if (contractOpt.isPresent()) {
+             return ResponseEntity.ok(contractOpt.get());
+         } else {
+             return ResponseEntity.status(404).body("No contract found for this car");
+         }
+     }
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<?> getContractsByUserId(@PathVariable String userId) {
@@ -124,4 +125,4 @@ public class ContractController {
             return ResponseEntity.badRequest().body(error);
         }
     }
-}
+ }

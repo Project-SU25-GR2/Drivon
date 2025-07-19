@@ -1,12 +1,18 @@
 function toast({
-    title = '', message = '', type = 'success', duration = 3000
+    title = '', message = '', type = 'success', duration = 5000, position = 'right'
 }) {
     const main = document.getElementById('toast')
     if (main) {
         // Đảm bảo toast container có styles đúng
         main.style.position = 'fixed';
         main.style.top = '32px';
-        main.style.right = '32px';
+        if (position === 'left') {
+            main.style.left = '32px';
+            main.style.right = '';
+        } else {
+            main.style.right = '32px';
+            main.style.left = '';
+        }
         main.style.zIndex = '9999999';
         const toast = document.createElement('div');
 
@@ -24,7 +30,7 @@ function toast({
 
         const icons = {
             success: 'fas fa-circle-check',
-            info: 'fas fa-info-circle',
+            info: 'fas fa-bell', // Đổi thành quả chuông
             error: 'fas fa-circle-exclamation',
             warning: 'fas fa-triangle-exclamation'
         };
@@ -88,6 +94,10 @@ function showSuccessToast(mess) {
         type: 'success',
         duration: 5000
     });
+}
+
+if (typeof window !== 'undefined') {
+  window.toast = toast;
 }
 
 export { showErrorToast, showSuccessToast }; 
