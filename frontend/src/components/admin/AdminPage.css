@@ -1006,17 +1006,112 @@
   cursor: not-allowed;
 }
 .id-docs-reject-input {
-  padding: 6px 10px;
-  border: 1px solid #cbd5e1;
+  padding: 6px 12px;
+  border: 1px solid #d1d5db;
   border-radius: 6px;
-  font-size: 1rem;
-  min-width: 160px;
-  outline: none;
-  transition: border 0.18s;
+  font-size: 0.95rem;
+  min-width: 200px;
 }
 .id-docs-reject-input:focus {
-  border: 1.5px solid #3182ce;
+  outline: none;
+  border-color: #3182ce;
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
 }
+
+/* New styles for bulk actions and document grouping */
+.document-type-group {
+  margin-bottom: 24px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.document-type-header {
+  background: #f8fafc;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.document-type-header h4 {
+  margin: 0;
+  color: #2d3748;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.document-stats {
+  display: flex;
+  gap: 16px;
+  font-size: 0.9rem;
+}
+
+.verified-count {
+  color: #38a169;
+  font-weight: 600;
+}
+
+.pending-count {
+  color: #d69e2e;
+  font-weight: 600;
+}
+
+.bulk-actions {
+  background: #f7fafc;
+  padding: 16px 20px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.bulk-action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.bulk-btn {
+  padding: 8px 16px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  min-width: 120px;
+}
+
+.bulk-input {
+  flex: 1;
+  min-width: 250px;
+  max-width: 400px;
+}
+
+/* Responsive design for bulk actions */
+@media (max-width: 768px) {
+  .document-type-header {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  
+  .bulk-action-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .bulk-input {
+    min-width: 100%;
+    max-width: none;
+  }
+  
+  .id-docs-action-group {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .id-docs-reject-input {
+    min-width: 100%;
+  }
+}
+
 /* Modal styles for zoomed image */
 .id-docs-modal {
   position: fixed;

@@ -373,4 +373,89 @@ public class AdminController {
         return ResponseEntity.ok("Verification status updated and notification sent.");
     }
 
+    // Admin verify (accept/reject) all documents of same type for a user
+    @PutMapping("/user-identity-documents/bulk-verify")
+    public ResponseEntity<?> bulkVerifyUserIdentityDocuments(
+            @RequestBody Map<String, Object> body) {
+        try {
+            System.out.println("Bulk verify request body: " + body);
+            
+            Long userId = Long.valueOf(body.get("userId").toString());
+            String documentType = (String) body.get("documentType");
+            Boolean accept = (Boolean) body.get("accept");
+            String rejectReason = (String) body.get("rejectReason");
+            
+            System.out.println("Parsed values - userId: " + userId + ", documentType: " + documentType + ", accept: " + accept);
+            
+            if (userId == null || documentType == null || accept == null) {
+                return ResponseEntity.badRequest().body("userId, documentType, and accept are required");
+            }
+            
+            User user = userRepository.findById(userId).orElse(null);
+            if (user == null) {
+                return ResponseEntity.badRequest().body("User not found");
+            }
+            
+            UserImage.DocumentType docType = UserImage.DocumentType.valueOf(documentType.toLowerCase());
+            System.out.println("Document type enum: " + docType);
+            
+            List<UserImage> userImages = userImageService.getUserImages(user);
+            System.out.println("Total user images: " + userImages.size());
+            
+            List<UserImage> targetImages = userImages.stream()
+                .filter(img -> img.getDocumentType() == docType && !img.isVerified())
+                .toList();
+            
+            System.out.println("Target images count: " + targetImages.size());
+            
+            if (targetImages.isEmpty()) {
+                return ResponseEntity.badRequest().body("No unverified documents found for this user and document type");
+            }
+            
+            boolean verified = Boolean.TRUE.equals(accept);
+            
+            // Verify all matching documents
+            for (UserImage userImage : targetImages) {
+                userImageService.verifyUserImage(userImage.getImageId(), verified, rejectReason);
+            }
+            
+            // Send notification to user
+            String content;
+            if (verified) {
+                content = "All your " + documentType.toUpperCase() + " documents have been verified.";
+            } else {
+                content = "All your " + documentType.toUpperCase() + " documents were rejected. Reason: " + (rejectReason != null ? rejectReason : "No reason provided.");
+            }
+            
+            var notification = notificationService.createNotificationForSpecificUser(
+                    content,
+                    Drivon.backend.entity.Notification.NotificationType.SYSTEM,
+                    userId
+            );
+            
+            // Real-time WebSocket notification
+            messagingTemplate.convertAndSendToUser(
+                String.valueOf(userId),
+                "/notifications/new",
+                java.util.Map.of(
+                    "notificationId", notification.getNotificationId(),
+                    "content", notification.getContent(),
+                    "type", notification.getType().toString(),
+                    "targetType", notification.getTargetType().toString(),
+                    "createdAt", notification.getCreatedAt().toString()
+                )
+            );
+            
+            return ResponseEntity.ok("Bulk verification completed. " + targetImages.size() + " documents processed.");
+            
+        } catch (IllegalArgumentException e) {
+            System.err.println("IllegalArgumentException: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Invalid document type: " + body.get("documentType"));
+        } catch (Exception e) {
+            System.err.println("Exception during bulk verification: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error during bulk verification: " + e.getMessage());
+        }
+    }
 }
