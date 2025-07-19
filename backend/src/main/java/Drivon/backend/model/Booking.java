@@ -1,6 +1,6 @@
 package Drivon.backend.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Data
@@ -25,12 +26,10 @@ public class Booking {
 
     @ManyToOne
     @JoinColumn(name = "renter_id", nullable = false)
-    @JsonBackReference(value = "booking-renter")
     private User renter;
 
     @ManyToOne
     @JoinColumn(name = "car_id", nullable = false)
-    @JsonBackReference(value = "booking-car")
     private Car car;
 
     @Column(name = "start_time", nullable = false)
@@ -55,6 +54,18 @@ public class Booking {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    @Transient
+    @JsonIgnore
+    private String paymentStatus;
+
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
 
     @Override
     public String toString() {

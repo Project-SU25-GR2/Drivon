@@ -1,6 +1,6 @@
 package Drivon.backend.model;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
@@ -59,7 +59,7 @@ public class Car {
     private String mainImage;
 
     @OneToMany(mappedBy = "car")
-    @JsonManagedReference(value = "booking-car")
+    @JsonIgnore
     private List<Booking> bookings;
 
     public enum Transmission {
