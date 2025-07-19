@@ -301,12 +301,12 @@ public class ContractService {
                     carData.put("location", car.getLocation());
                     carData.put("mainImage", car.getMainImage());
                     
-                    // Get car images
-                    List<CarImage> carImages = carImageRepository.findByCarId(car.getLicensePlate());
-                    List<String> imageUrls = carImages.stream()
+                    // Get car images (only type = 'car_image')
+                    List<CarImage> carImages = carImageRepository.findByCarIdAndType(car.getLicensePlate(), "car_image");
+                    List<String> otherImageUrls = carImages.stream()
                         .map(CarImage::getImageUrl)
                         .collect(java.util.stream.Collectors.toList());
-                    carData.put("images", imageUrls);
+                    carData.put("otherImages", otherImageUrls);
                     
                     // Get cavet images
                     List<CarImage> cavetImages = carImageRepository.findByCarIdAndType(car.getLicensePlate(), "cavet");

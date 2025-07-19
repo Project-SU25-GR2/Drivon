@@ -362,6 +362,13 @@
   margin-top: 1rem;
 }
 
+.image-grid.two-cols {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
 .image-item {
   text-align: center;
   background: #f8f9fa;

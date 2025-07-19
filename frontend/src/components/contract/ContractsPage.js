@@ -278,17 +278,30 @@ const ContractsPage = () => {
                   <div className="detail-section">
                     <h4>📸 Car Images</h4>
                     <div className="car-images">
-                      {contract.carData?.images && contract.carData.images.length > 0 ? (
-                        <div className="image-grid">
-                          {contract.carData.images.map((image, index) => (
+                      {(contract.carData?.mainImage || (contract.carData?.otherImages && contract.carData.otherImages.length > 0)) ? (
+                        <div className="image-grid two-cols">
+                          {/* Main image */}
+                          {contract.carData.mainImage && (
+                            <div className="image-item">
+                              <img 
+                                src={contract.carData.mainImage} 
+                                alt="Main Car Image"
+                                onClick={() => setZoomImg(contract.carData.mainImage)}
+                                style={{ cursor: 'zoom-in' }}
+                              />
+                              <p>Ảnh xe 1 (Main)</p>
+                            </div>
+                          )}
+                          {/* Other car images */}
+                          {contract.carData.otherImages && contract.carData.otherImages.map((image, index) => (
                             <div key={index} className="image-item">
                               <img 
                                 src={image} 
-                                alt={`Ảnh xe ${index + 1}`}
+                                alt={`Ảnh xe ${contract.carData.mainImage ? index + 2 : index + 1}`}
                                 onClick={() => setZoomImg(image)}
                                 style={{ cursor: 'zoom-in' }}
                               />
-                              <p>Ảnh xe {index + 1}</p>
+                              <p>Ảnh xe {contract.carData.mainImage ? index + 2 : index + 1}</p>
                             </div>
                           ))}
                         </div>
