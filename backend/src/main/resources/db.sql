@@ -157,13 +157,20 @@ CREATE TABLE complaints (
 
 -- 10. Bảng notifications
 CREATE TABLE notifications (
-    notification_id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id BIGINT,
-    content TEXT,
-    type ENUM('system', 'message', 'promo'),
-    is_read BOOLEAN DEFAULT FALSE,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
+    notification_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    content TEXT NOT NULL,
+    type ENUM('SYSTEM', 'PROMO') NOT NULL,
+    target_type ENUM('ALL_USERS', 'OWNER_ONLY', 'USER_SPECIFIC', 'ADMIN_ONLY') NOT NULL,
+    target_user_id BIGINT DEFAULT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE notification_reads (
+    notification_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    read_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (notification_id, user_id),
+    FOREIGN KEY (notification_id) REFERENCES notifications(notification_id)
 );
 
 -- 11. Bảng support_requests

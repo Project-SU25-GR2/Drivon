@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { getNotifications, getUnreadCount, markAsRead, markAllAsRead } from '../../api/notification';
+import { getNotifications, getUnreadCount, markAsRead, markAllAsRead, getReadNotificationIds } from '../../api/notification';
 import webSocketService from '../../services/WebSocketService';
 import './NotificationList.css';
 import { showErrorToast } from './notification';
@@ -9,6 +9,7 @@ const NotificationBell = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [readNotificationIds, setReadNotificationIds] = useState(new Set());
 
   // Separate functions to avoid re-render
   const loadNotifications = useCallback(async () => {
@@ -40,12 +41,25 @@ const NotificationBell = () => {
     }
   }, []);
 
+  const loadReadNotificationIds = useCallback(async () => {
+    try {
+      console.log('Loading read notification ids...');
+      const response = await getReadNotificationIds();
+      console.log('Read notification ids loaded:', response.data.readIds);
+      setReadNotificationIds(new Set(response.data.readIds || []));
+    } catch (error) {
+      console.error('Error loading read notification ids:', error);
+      setReadNotificationIds(new Set());
+    }
+  }, []);
+
   // Load data when component mounts
   useEffect(() => {
     console.log('NotificationBell mounted, loading data...');
     loadNotifications();
     loadUnreadCount();
-  }, [loadNotifications, loadUnreadCount]);
+    loadReadNotificationIds();
+  }, [loadNotifications, loadUnreadCount, loadReadNotificationIds]);
 
   // Setup WebSocket subscriptions
   useEffect(() => {
@@ -58,7 +72,6 @@ const NotificationBell = () => {
         content: data.content,
         type: data.type,
         targetType: data.targetType,
-        isRead: false,
         createdAt: data.createdAt
       };
       setNotifications(prev => {
@@ -77,7 +90,6 @@ const NotificationBell = () => {
         content: data.content,
         type: data.type,
         targetType: data.targetType,
-        isRead: false,
         createdAt: data.createdAt
       };
       setNotifications(prev => {
@@ -110,17 +122,25 @@ const NotificationBell = () => {
   const handleMarkAsRead = async (notificationId) => {
     try {
       await markAsRead(notificationId);
-      setNotifications(prev =>
-        prev.map(notif =>
-          notif.notificationId === notificationId
-            ? { ...notif, isRead: true }
-            : notif
-        )
-      );
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      // Reload data to ensure consistency
+      await loadUnreadCount();
+      await loadReadNotificationIds();
     } catch (error) {
       console.error('Error marking notification as read:', error);
       showErrorToast('Failed to mark notification as read');
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await markAllAsRead();
+      // Reload data from server to ensure consistency
+      await loadNotifications();
+      await loadUnreadCount();
+      await loadReadNotificationIds();
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+      showErrorToast('Failed to mark all notifications as read');
     }
   };
 
@@ -159,36 +179,50 @@ const NotificationBell = () => {
     if (!isOpen) {
       loadNotifications();
       loadUnreadCount();
+      loadReadNotificationIds();
     }
+  };
+
+  const isNotificationRead = (notificationId) => {
+    return readNotificationIds.has(notificationId);
   };
 
   return (
     <div className="notification-bell">
       <div className="notification-icon" onClick={handleBellClick}>
-        <i className="bi bi-bell-fill bell-icon"></i>
+        <span className="bell-icon">🔔</span>
         {unreadCount > 0 && (
-          <span className="notification-badge">{unreadCount}</span>
+          <span className="notification-badge">
+            {unreadCount > 99 ? '99+' : unreadCount}
+          </span>
         )}
       </div>
 
       {isOpen && (
         <div className="notification-dropdown">
           <div className="notification-header">
-            <h3>Notifications ({notifications.length})</h3>
-            {/* Removed mark all as read button */}
+            <h3>Notifications</h3>
+            {unreadCount > 0 && (
+              <button className="mark-all-read-btn" onClick={handleMarkAllAsRead}>
+                Mark all read
+              </button>
+            )}
           </div>
-
           <div className="notification-list">
             {loading ? (
-              <div className="loading">Loading...</div>
+              <div style={{ padding: 20, textAlign: 'center', color: '#666' }}>
+                Loading...
+              </div>
             ) : notifications.length === 0 ? (
-              <div className="no-notifications">No notifications</div>
+              <div style={{ padding: 20, textAlign: 'center', color: '#666' }}>
+                No notifications
+              </div>
             ) : (
               notifications.map((notification) => (
                 <div
                   key={notification.notificationId}
-                  className={`notification-item ${!notification.isRead ? 'unread' : ''}`}
-                  onClick={() => !notification.isRead && handleMarkAsRead(notification.notificationId)}
+                  className={`notification-item ${!isNotificationRead(notification.notificationId) ? 'unread' : ''}`}
+                  onClick={() => !isNotificationRead(notification.notificationId) && handleMarkAsRead(notification.notificationId)}
                 >
                   <div className="notification-content">
                     <div className="notification-header-item">
@@ -198,7 +232,7 @@ const NotificationBell = () => {
                       <span className={`notification-type${notification.type === 'PROMO' ? ' promotion' : ''}`}>
                         {getTypeLabel(notification.type)}
                       </span>
-                      {!notification.isRead && (
+                      {!isNotificationRead(notification.notificationId) && (
                         <span className="unread-indicator">●</span>
                       )}
                     </div>

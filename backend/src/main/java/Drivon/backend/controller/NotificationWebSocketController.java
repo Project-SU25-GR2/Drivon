@@ -83,6 +83,9 @@ public class NotificationWebSocketController {
                 case OWNER_ONLY:
                     savedNotification = notificationService.createNotificationForOwners(content, type);
                     break;
+                case ADMIN_ONLY:
+                    savedNotification = notificationService.createNotificationForAdmins(content, type);
+                    break;
                 case USER_SPECIFIC:
                     Long targetUserId = Long.valueOf(notificationData.get("targetUserId").toString());
                     savedNotification = notificationService.createNotificationForSpecificUser(content, type, targetUserId);

@@ -1,20 +1,26 @@
 package Drivon.backend.service;
 
 import Drivon.backend.entity.Notification;
+import Drivon.backend.entity.NotificationRead;
 import Drivon.backend.model.User;
 import Drivon.backend.model.UserRole;
 import Drivon.backend.repository.NotificationRepository;
+import Drivon.backend.repository.NotificationReadRepository;
 import Drivon.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class NotificationService {
     @Autowired
     private NotificationRepository notificationRepository;
+
+    @Autowired
+    private NotificationReadRepository notificationReadRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -37,6 +43,12 @@ public class NotificationService {
         return notificationRepository.save(notification);
     }
 
+    // Tạo thông báo chỉ cho admin
+    public Notification createNotificationForAdmins(String content, Notification.NotificationType type) {
+        Notification notification = new Notification(content, type, Notification.TargetType.ADMIN_ONLY);
+        return notificationRepository.save(notification);
+    }
+
     // Lấy thông báo cho user (dựa trên role và target_type)
     public List<Notification> getNotificationsForUser(Long userId) {
         User user = userRepository.findById(userId).orElse(null);
@@ -50,32 +62,38 @@ public class NotificationService {
 
     // Lấy thông báo chưa đọc cho user
     public List<Notification> getUnreadNotificationsForUser(Long userId) {
-        User user = userRepository.findById(userId).orElse(null);
-        if (user == null) {
-            return List.of();
-        }
+        List<Notification> allNotifications = getNotificationsForUser(userId);
+        List<Long> readNotificationIds = notificationReadRepository.findReadNotificationIdsByUserId(userId);
         
-        String userRole = user.getRole().toString().toLowerCase();
-        return notificationRepository.findUnreadNotificationsForUser(userId, userRole);
+        return allNotifications.stream()
+                .filter(notification -> !readNotificationIds.contains(notification.getNotificationId()))
+                .collect(Collectors.toList());
     }
 
     // Đếm thông báo chưa đọc cho user
     public Long getUnreadNotificationCount(Long userId) {
-        User user = userRepository.findById(userId).orElse(null);
-        if (user == null) {
-            return 0L;
-        }
+        List<Notification> allNotifications = getNotificationsForUser(userId);
+        List<Long> readNotificationIds = notificationReadRepository.findReadNotificationIdsByUserId(userId);
         
-        String userRole = user.getRole().toString().toLowerCase();
-        return notificationRepository.countUnreadNotificationsForUser(userId, userRole);
+        return allNotifications.stream()
+                .filter(notification -> !readNotificationIds.contains(notification.getNotificationId()))
+                .count();
     }
 
     // Đánh dấu thông báo đã đọc
-    public void markAsRead(Long notificationId) {
-        Notification notification = notificationRepository.findById(notificationId).orElse(null);
-        if (notification != null) {
-            notification.setIsRead(true);
-            notificationRepository.save(notification);
+    public void markAsRead(Long notificationId, Long userId) {
+        // Kiểm tra xem đã đọc chưa
+        if (notificationReadRepository.findByNotificationIdAndUserId(notificationId, userId).isEmpty()) {
+            NotificationRead notificationRead = new NotificationRead(notificationId, userId);
+            notificationReadRepository.save(notificationRead);
+        }
+    }
+
+    // Đánh dấu tất cả thông báo đã đọc cho user
+    public void markAllAsRead(Long userId) {
+        List<Notification> unreadNotifications = getUnreadNotificationsForUser(userId);
+        for (Notification notification : unreadNotifications) {
+            markAsRead(notification.getNotificationId(), userId);
         }
     }
 
@@ -113,6 +131,9 @@ public class NotificationService {
 
     // Xoá thông báo theo ID
     public void deleteNotification(Long notificationId) {
+        // Xóa notification reads trước
+        notificationReadRepository.deleteByNotificationId(notificationId);
+        // Sau đó xóa notification
         notificationRepository.deleteById(notificationId);
     }
 
@@ -127,5 +148,15 @@ public class NotificationService {
             return notificationRepository.save(notification);
         }
         return null;
+    }
+
+    // Kiểm tra xem notification đã được đọc bởi user chưa
+    public boolean isNotificationReadByUser(Long notificationId, Long userId) {
+        return notificationReadRepository.findByNotificationIdAndUserId(notificationId, userId).isPresent();
+    }
+
+    // Lấy danh sách ID thông báo đã đọc của user
+    public List<Long> getReadNotificationIds(Long userId) {
+        return notificationReadRepository.findReadNotificationIdsByUserId(userId);
     }
 } 

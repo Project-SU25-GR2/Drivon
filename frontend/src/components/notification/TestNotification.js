@@ -1,115 +1,112 @@
 import React, { useState } from 'react';
-import { createNotification } from '../../api/notification';
-import { showErrorToast, showSuccessToast } from './notification';
+import axios from 'axios';
+import { getBackendUrl, getAuthHeader } from '../../api/notification';
 
 const TestNotification = () => {
-  const [content, setContent] = useState('');
-  const [type, setType] = useState('SYSTEM');
-  const [targetType, setTargetType] = useState('ALL_USERS');
+  const [testResult, setTestResult] = useState('');
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!content.trim()) {
-      setMessage('Please enter content');
-      showErrorToast('Please enter notification content');
-      return;
-    }
-
+  const testAuth = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      setMessage('');
-
-      await createNotification(content, type, targetType);
-
-      setMessage('Notification sent successfully!');
-      showSuccessToast('Notification sent successfully!');
-      setContent('');
-      // Call reload notification if available
-      if (window.reloadNotifications) {
-        window.reloadNotifications();
-      }
+      console.log('Testing authentication...');
+      console.log('Auth header:', getAuthHeader());
+      
+      const response = await axios.get(`${getBackendUrl()}/api/notifications/test-auth`, {
+        headers: getAuthHeader()
+      });
+      
+      console.log('Auth test response:', response.data);
+      setTestResult(JSON.stringify(response.data, null, 2));
     } catch (error) {
-      console.error('Error sending notification:', error);
-      setMessage('An error occurred while sending notification');
-      showErrorToast('Failed to send notification');
+      console.error('Auth test error:', error.response?.data || error.message);
+      setTestResult(`Error: ${error.response?.data?.error || error.message}`);
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div style={{ padding: '20px', maxWidth: '500px', margin: '0 auto' }}>
-      <h2>Test Send Notification</h2>
+  const testGetNotifications = async () => {
+    setLoading(true);
+    try {
+      console.log('Testing get notifications...');
       
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-        <div>
-          <label>Content:</label>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Enter notification content..."
-            rows="4"
-            style={{ width: '100%', padding: '10px' }}
-            required
-          />
-        </div>
+      const response = await axios.get(`${getBackendUrl()}/api/notifications`, {
+        headers: getAuthHeader()
+      });
+      
+      console.log('Get notifications response:', response.data);
+      setTestResult(JSON.stringify(response.data, null, 2));
+    } catch (error) {
+      console.error('Get notifications error:', error.response?.data || error.message);
+      setTestResult(`Error: ${error.response?.data?.error || error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <div style={{ flex: 1 }}>
-            <label>Type:</label>
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-              style={{ width: '100%', padding: '8px' }}
-            >
-              <option value="SYSTEM">System</option>
-              <option value="PROMO">Promotion</option>
-            </select>
-          </div>
+  const testUnreadCount = async () => {
+    setLoading(true);
+    try {
+      console.log('Testing unread count...');
+      
+      const response = await axios.get(`${getBackendUrl()}/api/notifications/unread-count`, {
+        headers: getAuthHeader()
+      });
+      
+      console.log('Unread count response:', response.data);
+      setTestResult(JSON.stringify(response.data, null, 2));
+    } catch (error) {
+      console.error('Unread count error:', error.response?.data || error.message);
+      setTestResult(`Error: ${error.response?.data?.error || error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-          <div style={{ flex: 1 }}>
-            <label>Target:</label>
-            <select
-              value={targetType}
-              onChange={(e) => setTargetType(e.target.value)}
-              style={{ width: '100%', padding: '8px' }}
-            >
-              <option value="ALL_USERS">All users</option>
-              <option value="OWNER_ONLY">Car owners only</option>
-            </select>
-          </div>
-        </div>
+  const checkToken = () => {
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('userData');
+    
+    setTestResult(`
+Token: ${token ? 'Present' : 'Missing'}
+User Data: ${userData ? 'Present' : 'Missing'}
+Token Value: ${token ? token.substring(0, 50) + '...' : 'N/A'}
+User Data Value: ${userData ? JSON.stringify(JSON.parse(userData), null, 2) : 'N/A'}
+    `);
+  };
 
-        {message && (
-          <div style={{ 
-            padding: '10px', 
-            borderRadius: '4px',
-            backgroundColor: message.includes('successfully') ? '#d4edda' : '#f8d7da',
-            color: message.includes('successfully') ? '#155724' : '#721c24'
-          }}>
-            {message}
-          </div>
-        )}
-
-        <button 
-          type="submit" 
-          disabled={loading}
-          style={{
-            padding: '12px 24px',
-            backgroundColor: '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            opacity: loading ? 0.6 : 1
-          }}
-        >
-          {loading ? 'Sending...' : 'Send Notification'}
+  return (
+    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
+      <h2>Notification System Test</h2>
+      
+      <div style={{ marginBottom: '20px' }}>
+        <button onClick={checkToken} style={{ marginRight: '10px' }}>
+          Check Token & User Data
         </button>
-      </form>
+        <button onClick={testAuth} style={{ marginRight: '10px' }}>
+          Test Authentication
+        </button>
+        <button onClick={testGetNotifications} style={{ marginRight: '10px' }}>
+          Test Get Notifications
+        </button>
+        <button onClick={testUnreadCount}>
+          Test Unread Count
+        </button>
+      </div>
+
+      {loading && <div style={{ color: 'blue' }}>Loading...</div>}
+      
+      <div style={{ 
+        backgroundColor: '#f5f5f5', 
+        padding: '15px', 
+        borderRadius: '5px',
+        whiteSpace: 'pre-wrap',
+        fontFamily: 'monospace',
+        fontSize: '12px'
+      }}>
+        {testResult || 'Click a button to test...'}
+      </div>
     </div>
   );
 };

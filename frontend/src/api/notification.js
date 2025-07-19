@@ -1,12 +1,12 @@
 import axios from 'axios';
 
-const getBackendUrl = () => {
+export const getBackendUrl = () => {
   const host = window.location.hostname;
   const port = '8080';
   return `http://${host}:${port}`;
 };
 
-const getAuthHeader = () => {
+export const getAuthHeader = () => {
   const token = localStorage.getItem('token');
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
@@ -63,6 +63,20 @@ export const markAllAsRead = async () => {
     return response;
   } catch (error) {
     console.error('markAllAsRead error:', error);
+    throw error;
+  }
+};
+
+export const getReadNotificationIds = async () => {
+  try {
+    console.log('Calling getReadNotificationIds API...');
+    const response = await axios.get(`${getBackendUrl()}/api/notifications/read-ids`, {
+      headers: getAuthHeader()
+    });
+    console.log('getReadNotificationIds response:', response);
+    return response;
+  } catch (error) {
+    console.error('getReadNotificationIds error:', error);
     throw error;
   }
 };

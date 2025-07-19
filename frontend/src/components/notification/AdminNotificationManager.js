@@ -102,7 +102,20 @@ const AdminNotificationManager = () => {
     return date.toLocaleString('en-US');
   };
 
-  const getTargetTypeLabel = (targetType) => '';
+  const getTargetTypeLabel = (targetType) => {
+    switch (targetType) {
+      case 'ALL_USERS':
+        return 'All users';
+      case 'OWNER_ONLY':
+        return 'Car owners only';
+      case 'USER_SPECIFIC':
+        return 'Specific user';
+      case 'ADMIN_ONLY':
+        return 'Admins only';
+      default:
+        return targetType;
+    }
+  };
 
   const getTypeLabel = (type) => {
     switch (type) {
@@ -120,74 +133,84 @@ const AdminNotificationManager = () => {
     return user ? `${user.fullName} (${user.email})` : `User ID: ${userId}`;
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this notification?')) {
-      try {
-        await deleteNotification(id);
-        await loadNotifications();
-        showSuccessToast('Notification deleted successfully!');
-      } catch (error) {
-        showErrorToast('Error deleting notification');
-      }
-    }
-  };
-
   const handleEditClick = (notification) => {
     setEditingId(notification.notificationId);
     setEditData({
       content: notification.content,
       type: notification.type,
       targetType: notification.targetType,
-      targetUserId: notification.targetUserId || ''
+      targetUserId: notification.targetUserId ? notification.targetUserId.toString() : ''
     });
   };
 
   const handleEditChange = (e) => {
     const { name, value } = e.target;
-    setEditData(prev => ({ ...prev, [name]: value }));
+    setEditData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  const handleEditSave = async (id) => {
+  const handleEditSave = async (notificationId) => {
     try {
-      const data = { ...editData };
-      if (data.targetType !== 'USER_SPECIFIC') data.targetUserId = null;
-      await updateNotification(id, data);
+      const targetUserId = editData.targetUserId ? parseInt(editData.targetUserId) : null;
+      await updateNotification(notificationId, {
+        content: editData.content,
+        type: editData.type,
+        targetType: editData.targetType,
+        targetUserId: targetUserId
+      });
+      
       setEditingId(null);
       await loadNotifications();
       showSuccessToast('Notification updated successfully!');
     } catch (error) {
-      showErrorToast('Error updating notification');
+      console.error('Error updating notification:', error);
+      showErrorToast('Failed to update notification');
     }
   };
 
   const handleEditCancel = () => {
     setEditingId(null);
+    setEditData({ content: '', type: 'SYSTEM', targetType: 'ALL_USERS', targetUserId: '' });
+  };
+
+  const handleDelete = async (notificationId) => {
+    if (window.confirm('Are you sure you want to delete this notification?')) {
+      try {
+        await deleteNotification(notificationId);
+        await loadNotifications();
+        showSuccessToast('Notification deleted successfully!');
+      } catch (error) {
+        console.error('Error deleting notification:', error);
+        showErrorToast('Failed to delete notification');
+      }
+    }
   };
 
   return (
     <div className="admin-notification-manager">
-      <h2>Notification Management</h2>
-
-      {/* Notification creation form */}
       <div className="notification-form-container">
-        <h3>Create New Notification</h3>
+        <h3>Send New Notification</h3>
         <form onSubmit={handleSubmit} className="notification-form">
           <div className="form-group">
-            <label>Notification Content:</label>
+            <label htmlFor="content">Notification Content:</label>
             <textarea
+              id="content"
               name="content"
               value={formData.content}
               onChange={handleInputChange}
-              placeholder="Enter notification content..."
-              required
               rows="4"
+              required
+              placeholder="Enter notification content..."
             />
           </div>
 
           <div className="form-row">
             <div className="form-group">
-              <label>Notification Type:</label>
+              <label htmlFor="type">Type:</label>
               <select
+                id="type"
                 name="type"
                 value={formData.type}
                 onChange={handleInputChange}
@@ -198,8 +221,9 @@ const AdminNotificationManager = () => {
             </div>
 
             <div className="form-group">
-              <label>Recipient:</label>
+              <label htmlFor="targetType">Target:</label>
               <select
+                id="targetType"
                 name="targetType"
                 value={formData.targetType}
                 onChange={handleInputChange}
@@ -207,14 +231,16 @@ const AdminNotificationManager = () => {
                 <option value="ALL_USERS">All users</option>
                 <option value="OWNER_ONLY">Car owners only</option>
                 <option value="USER_SPECIFIC">Specific user</option>
+                <option value="ADMIN_ONLY">Admins only</option>
               </select>
             </div>
           </div>
 
           {formData.targetType === 'USER_SPECIFIC' && (
             <div className="form-group">
-              <label>Select User:</label>
+              <label htmlFor="targetUserId">Select User:</label>
               <select
+                id="targetUserId"
                 name="targetUserId"
                 value={formData.targetUserId}
                 onChange={handleInputChange}
@@ -230,19 +256,14 @@ const AdminNotificationManager = () => {
             </div>
           )}
 
-          {message && (
-            <div className={`message ${message.includes('successfully') ? 'success' : 'error'}`}>
-              {message}
-            </div>
-          )}
-
           <button type="submit" disabled={loading} className="submit-btn">
             {loading ? 'Sending...' : 'Send Notification'}
           </button>
         </form>
+
+        {message && <div className="message">{message}</div>}
       </div>
 
-      {/* Notification history */}
       <div className="notifications-list-container">
         <h3>Notification History</h3>
         <div className="notifications-list">
@@ -267,6 +288,7 @@ const AdminNotificationManager = () => {
                       <option value="ALL_USERS">All users</option>
                       <option value="OWNER_ONLY">Car owners only</option>
                       <option value="USER_SPECIFIC">Specific user</option>
+                      <option value="ADMIN_ONLY">Admins only</option>
                     </select>
                     {editData.targetType === 'USER_SPECIFIC' && (
                       <select name="targetUserId" value={editData.targetUserId} onChange={handleEditChange}>
@@ -278,8 +300,11 @@ const AdminNotificationManager = () => {
                         ))}
                       </select>
                     )}
-                    <button onClick={() => handleEditSave(notification.notificationId)} className="save-btn">Save</button>
-                    <button onClick={handleEditCancel} className="cancel-btn">Cancel</button>
+                    
+                    <div className="edit-actions">
+                      <button onClick={() => handleEditSave(notification.notificationId)} className="save-btn">Save</button>
+                      <button onClick={handleEditCancel} className="cancel-btn">Cancel</button>
+                    </div>
                   </div>
                 ) : (
                   <>
@@ -302,9 +327,6 @@ const AdminNotificationManager = () => {
                     <div className="notification-meta">
                       <span className="notification-time">
                         {formatDate(notification.createdAt)}
-                      </span>
-                      <span className="notification-status">
-                        {notification.isRead ? 'Read' : 'Unread'}
                       </span>
                     </div>
                     <div className="notification-actions">

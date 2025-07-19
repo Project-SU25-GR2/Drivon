@@ -25,9 +25,6 @@ public class Notification {
     @Column(name = "target_user_id")
     private Long targetUserId;
 
-    @Column(name = "is_read")
-    private Boolean isRead = false;
-
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -39,7 +36,8 @@ public class Notification {
     public enum TargetType {
         ALL_USERS,      // Tất cả người dùng
         OWNER_ONLY,     // Chỉ chủ xe
-        USER_SPECIFIC   // Người dùng cụ thể
+        USER_SPECIFIC,  // Người dùng cụ thể
+        ADMIN_ONLY      // Chỉ admin
     }
 
     // Constructors
@@ -51,7 +49,6 @@ public class Notification {
         this.content = content;
         this.type = type;
         this.targetType = targetType;
-        this.isRead = false;
         this.createdAt = LocalDateTime.now();
     }
 
@@ -60,7 +57,6 @@ public class Notification {
         this.type = type;
         this.targetType = targetType;
         this.targetUserId = targetUserId;
-        this.isRead = false;
         this.createdAt = LocalDateTime.now();
     }
 
@@ -79,9 +75,6 @@ public class Notification {
     
     public Long getTargetUserId() { return targetUserId; }
     public void setTargetUserId(Long targetUserId) { this.targetUserId = targetUserId; }
-    
-    public Boolean getIsRead() { return isRead; }
-    public void setIsRead(Boolean isRead) { this.isRead = isRead; }
     
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
