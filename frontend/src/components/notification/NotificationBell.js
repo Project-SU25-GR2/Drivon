@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { getNotifications, getUnreadCount, markAsRead, markAllAsRead, getReadNotificationIds } from '../../api/notification';
 import webSocketService from '../../services/WebSocketService';
 import './NotificationList.css';
-import { showErrorToast } from './notification';
+import { showErrorToast, showSuccessToast } from './notification';
 
 const NotificationBell = () => {
   const [notifications, setNotifications] = useState([]);
@@ -10,6 +10,15 @@ const NotificationBell = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [readNotificationIds, setReadNotificationIds] = useState(new Set());
+
+  // Lấy userId hiện tại từ localStorage
+  let currentUserId = null;
+  try {
+    const userData = JSON.parse(localStorage.getItem('user'));
+    currentUserId = userData?.userId;
+  } catch (e) {
+    currentUserId = null;
+  }
 
   // Separate functions to avoid re-render
   const loadNotifications = useCallback(async () => {
@@ -72,7 +81,8 @@ const NotificationBell = () => {
         content: data.content,
         type: data.type,
         targetType: data.targetType,
-        createdAt: data.createdAt
+        createdAt: data.createdAt,
+        senderId: data.senderId // cần backend gửi kèm senderId
       };
       setNotifications(prev => {
         if (prev.some(n => n.notificationId === newNotification.notificationId)) {
@@ -81,6 +91,15 @@ const NotificationBell = () => {
         return [newNotification, ...prev];
       });
       setUnreadCount(prev => prev + 1);
+      // Nếu notification do chính mình gửi thì không hiện toast realtime
+      if (newNotification.senderId && newNotification.senderId === currentUserId) return;
+      window.toast && window.toast({
+        title: 'Notification',
+        message: data.content,
+        type: 'info',
+        duration: 5000,
+        position: 'left'
+      });
     };
 
     const handleBroadcastNotification = (data) => {
@@ -90,7 +109,8 @@ const NotificationBell = () => {
         content: data.content,
         type: data.type,
         targetType: data.targetType,
-        createdAt: data.createdAt
+        createdAt: data.createdAt,
+        senderId: data.senderId // cần backend gửi kèm senderId
       };
       setNotifications(prev => {
         if (prev.some(n => n.notificationId === newNotification.notificationId)) {
@@ -99,6 +119,15 @@ const NotificationBell = () => {
         return [newNotification, ...prev];
       });
       setUnreadCount(prev => prev + 1);
+      // Nếu notification do chính mình gửi thì không hiện toast realtime
+      if (newNotification.senderId && newNotification.senderId === currentUserId) return;
+      window.toast && window.toast({
+        title: 'Notification',
+        message: data.content,
+        type: 'info',
+        duration: 5000,
+        position: 'left'
+      });
     };
 
     // Subscribe to both personal and broadcast notifications

@@ -42,7 +42,12 @@ const IdentityDocumentPage = () => {
         accept: true
       });
       showSuccessToast(response.data || 'All documents verified successfully!');
-      fetchDocuments();
+      // Update documents state directly
+      setDocuments(prevDocs => prevDocs.map(doc =>
+        doc.userId === userId && doc.documentType === documentType && doc.verified === 0
+          ? { ...doc, verified: 1 }
+          : doc
+      ));
     } catch (err) {
       console.error('Bulk accept error:', err);
       const errorMessage = err.response?.data || 'Failed to verify documents';
@@ -69,7 +74,10 @@ const IdentityDocumentPage = () => {
         rejectReason: rejectReason[rejectReasonKey]
       });
       showSuccessToast(response.data || 'All documents rejected and user notified!');
-      fetchDocuments();
+      // Remove rejected documents from state
+      setDocuments(prevDocs => prevDocs.filter(doc =>
+        !(doc.userId === userId && doc.documentType === documentType && doc.verified === 0)
+      ));
     } catch (err) {
       console.error('Bulk reject error:', err);
       const errorMessage = err.response?.data || 'Failed to reject documents';
