@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import Drivon.backend.model.CancelRequest;
 import Drivon.backend.repository.CancelRequestRepository;
+import Drivon.backend.service.EarningsService;
 
 @Service
 @RequiredArgsConstructor
@@ -109,7 +110,24 @@ public class BookingService {
     }
 
     public List<Booking> getBookingsByOwnerId(Integer ownerId) {
-        return bookingRepository.findByCarOwnerId(ownerId);
+        List<Booking> bookings = bookingRepository.findByCarOwnerId(ownerId);
+        
+        // Set payment status for each booking
+        for (Booking booking : bookings) {
+            try {
+                Payment payment = paymentRepository.findByBookingId(booking.getId());
+                if (payment != null) {
+                    booking.setPaymentStatus(payment.getStatus());
+                } else {
+                    booking.setPaymentStatus("Not Paid");
+                }
+            } catch (Exception e) {
+                log.warn("Error fetching payment status for booking {}: {}", booking.getId(), e.getMessage());
+                booking.setPaymentStatus("Unknown");
+            }
+        }
+        
+        return bookings;
     }
 
     public Booking updateBookingStatus(Integer bookingId, String status) {

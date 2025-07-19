@@ -1,6 +1,6 @@
 package Drivon.backend.model;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.Data;
@@ -44,7 +44,7 @@ public class User {
     private Date resetPasswordTokenExpiry;
 
     @OneToMany(mappedBy = "renter")
-    @JsonManagedReference(value = "booking-renter")
+    @JsonIgnore
     private List<Booking> bookings;
 
     // Getters and Setters
@@ -94,6 +94,11 @@ public class User {
 
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
+    }
+
+    // Alias for avatarUrl to match frontend expectations
+    public String getAvatar() {
+        return this.avatarUrl;
     }
 
     public String getAddress() {
