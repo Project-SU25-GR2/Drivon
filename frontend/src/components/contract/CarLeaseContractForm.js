@@ -19,15 +19,12 @@ const CarLeaseContractForm = ({ user }) => {
 
   const [formData, setFormData] = useState({
     contractNumber: contractData?.contractNumber || "",
-    startDate: contractData?.startDate || "",
-    endDate: contractData?.endDate || "",
     carId: contractData?.carId || "",
     ownerId: currentUser?.userId || "",
     customerId: currentUser?.userId || "",
     deposit: contractData?.deposit || "",
     name: currentUser?.fullName || "",
     phone: currentUser?.phone || "",
-    cccd: currentUser?.cccd || "",
     email: currentUser?.email || "",
     pricePerDay: contractData?.carData?.dailyRate || "",
   });
@@ -39,6 +36,8 @@ const CarLeaseContractForm = ({ user }) => {
   const [isContractCreated, setIsContractCreated] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
+  const [cccdImages, setCccdImages] = useState([]);
+  const [zoomImg, setZoomImg] = useState(null);
 
   useEffect(() => {
     if (contractData) {
@@ -58,11 +57,21 @@ const CarLeaseContractForm = ({ user }) => {
         customerId: currentUser.userId,
         name: currentUser.fullName || prev.name,
         phone: currentUser.phone || prev.phone,
-        cccd: currentUser.cccd || prev.cccd,
         email: currentUser.email || prev.email,
       }));
     }
   }, [currentUser]);
+
+  useEffect(() => {
+    if (currentUser?.userId) {
+      axios.get(`${API_URL}/user/image?userId=${currentUser.userId}`)
+        .then(res => {
+          const cccdImgs = (res.data || []).filter(img => img.documentType === 'cccd');
+          setCccdImages(cccdImgs.map(img => img.imageUrl));
+        })
+        .catch(() => setCccdImages([]));
+    }
+  }, [currentUser?.userId]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -79,8 +88,6 @@ const CarLeaseContractForm = ({ user }) => {
         ...prev,
         [name]: "Phone number must be 10-11 digits",
       }));
-    } else if (name === "cccd" && value && !/^[0-9]{12}$/.test(value)) {
-      setErrors((prev) => ({ ...prev, [name]: "ID number must be 12 digits" }));
     } else if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
@@ -92,12 +99,6 @@ const CarLeaseContractForm = ({ user }) => {
     if (!formData.contractNumber) {
       newErrors.contractNumber = "Please enter contract number";
     }
-    if (!formData.startDate) {
-      newErrors.startDate = "Please select start date";
-    }
-    if (!formData.endDate) {
-      newErrors.endDate = "Please select end date";
-    }
     if (!formData.carId) {
       newErrors.carId = "Please enter car ID";
     }
@@ -107,8 +108,8 @@ const CarLeaseContractForm = ({ user }) => {
     if (!formData.phone) {
       newErrors.phone = "Please enter phone number";
     }
-    if (!formData.cccd) {
-      newErrors.cccd = "Please enter CCCD";
+    if (!formData.email) {
+      newErrors.email = "Please enter email";
     }
     if (!acceptedTerms) {
       newErrors.terms = "Please accept the terms";
@@ -172,14 +173,11 @@ const CarLeaseContractForm = ({ user }) => {
     // Ensure all required fields are present and properly formatted
     const formattedData = {
       contractNumber: newContractNumber,
-      startDate: formData.startDate,
-      endDate: formData.endDate,
       carId: formData.carId.toString(),
       customerId: formData.ownerId,
       deposit: parseFloat(formData.deposit) || 0,
       name: formData.name,
       phone: formData.phone,
-      cccd: formData.cccd,
       email: formData.email,
       pricePerDay: parseFloat(formData.pricePerDay) || 0,
       carData: contractData?.carData,
@@ -356,40 +354,12 @@ const CarLeaseContractForm = ({ user }) => {
             type="text"
             name="contractNumber"
             value={formData.contractNumber}
-            onChange={handleChange}
-            className={errors.contractNumber ? "lease-error-input" : ""}
+            readOnly
+            className={errors.contractNumber ? "lease-error-input" : "lease-readonly-input"}
             required
           />
           {errors.contractNumber && (
             <div className="lease-field-error">{errors.contractNumber}</div>
-          )}
-        </div>
-        <div className="lease-form-group">
-          <label>Start Date:</label>
-          <input
-            type="date"
-            name="startDate"
-            value={formData.startDate}
-            onChange={handleChange}
-            className={errors.startDate ? "lease-error-input" : ""}
-            required
-          />
-          {errors.startDate && (
-            <div className="lease-field-error">{errors.startDate}</div>
-          )}
-        </div>
-        <div className="lease-form-group">
-          <label>End Date:</label>
-          <input
-            type="date"
-            name="endDate"
-            value={formData.endDate}
-            onChange={handleChange}
-            className={errors.endDate ? "lease-error-input" : ""}
-            required
-          />
-          {errors.endDate && (
-            <div className="lease-field-error">{errors.endDate}</div>
           )}
         </div>
         <div className="lease-form-group">
@@ -398,8 +368,8 @@ const CarLeaseContractForm = ({ user }) => {
             type="text"
             name="carId"
             value={formData.carId}
-            onChange={handleChange}
-            className={errors.carId ? "lease-error-input" : ""}
+            readOnly
+            className={errors.carId ? "lease-error-input" : "lease-readonly-input"}
             required
           />
           {errors.carId && <div className="lease-field-error">{errors.carId}</div>}
@@ -440,19 +410,6 @@ const CarLeaseContractForm = ({ user }) => {
           {errors.phone && <div className="lease-field-error">{errors.phone}</div>}
         </div>
         <div className="lease-form-group">
-          <label>ID Number:</label>
-          <input
-            type="text"
-            name="cccd"
-            value={formData.cccd}
-            onChange={handleChange}
-            pattern="[0-9]{12}"
-            className={errors.cccd ? "lease-error-input" : ""}
-            required
-          />
-          {errors.cccd && <div className="lease-field-error">{errors.cccd}</div>}
-        </div>
-        <div className="lease-form-group">
           <label>Email:</label>
           <input
             type="email"
@@ -462,6 +419,43 @@ const CarLeaseContractForm = ({ user }) => {
             className="lease-readonly-input"
           />
         </div>
+        {cccdImages.length > 0 && (
+          <div className="lease-image-section">
+            <h4>Verified Citizen ID Images</h4>
+            <div className="lease-image-grid">
+              {cccdImages.map((img, idx) => (
+                <img
+                  key={idx}
+                  src={img}
+                  alt={`CCCD ${idx + 1}`}
+                  style={{ cursor: 'zoom-in' }}
+                  onClick={() => setZoomImg(img)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+        {zoomImg && (
+          <div
+            style={{
+              position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+              background: 'rgba(0,0,0,0.7)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}
+            onClick={() => setZoomImg(null)}
+          >
+            <img
+              src={zoomImg}
+              alt="Zoom CCCD"
+              style={{ maxWidth: '90vw', maxHeight: '90vh', borderRadius: 8, boxShadow: '0 2px 16px #0008' }}
+              onClick={e => e.stopPropagation()}
+            />
+            <button
+              style={{ position: 'fixed', top: 30, right: 40, fontSize: 32, color: '#fff', background: 'none', border: 'none', cursor: 'pointer', zIndex: 10000 }}
+              onClick={() => setZoomImg(null)}
+              aria-label="Close"
+            >×</button>
+          </div>
+        )}
         <div className="lease-form-group lease-full-width">
           <div className="partner-terms-checkbox">
             <input

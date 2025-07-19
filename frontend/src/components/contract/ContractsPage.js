@@ -62,23 +62,17 @@ const ContractsPage = () => {
     }
   }, [currentUser?.userId]);
 
+  // 1. Sửa getStatusBadge để chỉ còn 4 trạng thái, đồng bộ với Partner Manager và chuyển text sang tiếng Anh
   const getStatusBadge = (status) => {
     const statusConfig = {
-      'PENDING': { class: 'status-pending', text: 'Chờ duyệt' },
-      'PENDING_LEASE': { class: 'status-pending', text: 'Chờ duyệt' },
-      'APPROVED': { class: 'status-approved', text: 'Đã duyệt' },
-      'REJECTED': { class: 'status-rejected', text: 'Từ chối' },
-      'ACTIVE': { class: 'status-active', text: 'Đang hoạt động' },
-      'COMPLETED': { class: 'status-completed', text: 'Hoàn thành' },
-      'CANCELLED': { class: 'status-cancelled', text: 'Đã hủy' }
+      'PENDING_LEASE': { class: 'status-pending', text: 'PENDING' },
+      'ACTIVE_LEASE': { class: 'status-active', text: 'ACTIVE' },
+      'CANCELLED_LEASE': { class: 'status-cancelled', text: 'CANCELLED' },
+      'EXPIRED_LEASE': { class: 'status-expired', text: 'EXPIRED' },
     };
-
     const config = statusConfig[status] || { class: 'status-unknown', text: status };
-    
     return (
-      <span className={`status-badge ${config.class}`}>
-        {config.text}
-      </span>
+      <span className={`status-badge ${config.class}`}>{config.text}</span>
     );
   };
 
@@ -139,22 +133,22 @@ const ContractsPage = () => {
   return (
     <div className="contracts-page">
       <div className="contracts-header">
-        <h1>Hợp đồng của tôi</h1>
-        <p>Quản lý tất cả hợp đồng và trạng thái của bạn</p>
+        <h1>My Contracts</h1>
+        <p>Manage all your contracts and their statuses</p>
       </div>
 
       {!contracts || contracts.length === 0 ? (
         <div className="no-contracts">
           <div className="no-contracts-content">
             <i className="bi bi-file-earmark-text"></i>
-            <h3>Chưa có hợp đồng nào</h3>
-            <p>Bạn chưa có hợp đồng nào trong hệ thống.</p>
+            <h3>No contracts found</h3>
+            <p>You have no contracts in the system.</p>
             <div className="no-contracts-actions">
               <button 
                 className="btn-primary"
                 onClick={() => window.location.href = '/rent-your-car'}
               >
-                Đăng ký trở thành Partner
+                Register as a Partner
               </button>
             </div>
           </div>
@@ -165,10 +159,8 @@ const ContractsPage = () => {
             <div key={contract.id || contract.contractNumber} className="contract-card">
               <div className="contract-header">
                 <div className="contract-info">
-                  <h3>Hợp đồng #{contract.contractNumber || 'N/A'}</h3>
-                  <p className="contract-date">
-                    Tạo ngày: {formatDate(contract.createdAt)}
-                  </p>
+                  <h3>Contract #{contract.contractNumber || 'N/A'}</h3>
+                  <p className="contract-date">Created at: {formatDate(contract.createdAt)}</p>
                 </div>
                 <div className="contract-header-actions">
                   {getStatusBadge(contract.status)}
@@ -177,7 +169,7 @@ const ContractsPage = () => {
                     onClick={() => toggleContractExpansion(contract.id)}
                   >
                     <i className={`bi ${expandedContract === contract.id ? 'bi-chevron-up' : 'bi-chevron-down'}`}></i>
-                    {expandedContract === contract.id ? 'Thu gọn' : 'Xem chi tiết'}
+                    {expandedContract === contract.id ? 'Collapse' : 'View Details'}
                   </button>
                 </div>
               </div>
@@ -186,33 +178,22 @@ const ContractsPage = () => {
               <div className="contract-details">
                 <div className="detail-row">
                   <div className="detail-group">
-                    <label>Mã hợp đồng:</label>
+                    <label>Contract Number:</label>
                     <span>{contract.contractNumber || 'N/A'}</span>
                   </div>
                   <div className="detail-group">
-                    <label>Trạng thái:</label>
+                    <label>Status:</label>
                     {getStatusBadge(contract.status)}
                   </div>
                 </div>
 
                 <div className="detail-row">
                   <div className="detail-group">
-                    <label>Ngày bắt đầu:</label>
-                    <span>{formatDate(contract.startDate)}</span>
-                  </div>
-                  <div className="detail-group">
-                    <label>Ngày kết thúc:</label>
-                    <span>{formatDate(contract.endDate)}</span>
-                  </div>
-                </div>
-
-                <div className="detail-row">
-                  <div className="detail-group">
-                    <label>Giá thuê/ngày:</label>
+                    <label>Price per day:</label>
                     <span>{formatCurrency(contract.pricePerDay)}</span>
                   </div>
                   <div className="detail-group">
-                    <label>Tiền cọc:</label>
+                    <label>Deposit:</label>
                     <span>{formatCurrency(contract.deposit)}</span>
                   </div>
                 </div>
@@ -222,52 +203,48 @@ const ContractsPage = () => {
               {expandedContract === contract.id && (
                 <div className="contract-expanded-details">
                   <div className="detail-section">
-                    <h4>📋 Thông tin người đăng ký</h4>
+                    <h4>📋 Applicant Information</h4>
                     <div className="detail-grid">
                       <div className="detail-group">
-                        <label>Họ và tên:</label>
+                        <label>Full Name:</label>
                         <span>{contract.name || 'N/A'}</span>
                       </div>
                       <div className="detail-group">
-                        <label>Số điện thoại:</label>
+                        <label>Phone:</label>
                         <span>{contract.phone || 'N/A'}</span>
                       </div>
                       <div className="detail-group">
                         <label>Email:</label>
                         <span>{contract.email || 'N/A'}</span>
                       </div>
-                      <div className="detail-group">
-                        <label>Số CCCD:</label>
-                        <span>{contract.cccd || 'N/A'}</span>
-                      </div>
                     </div>
                   </div>
 
                   <div className="detail-section">
-                    <h4>🚗 Thông tin xe đăng ký</h4>
+                    <h4>🚗 Car Information</h4>
                     <div className="detail-grid">
                       <div className="detail-group">
-                        <label>Biển số xe:</label>
+                        <label>License Plate:</label>
                         <span>{contract.carId || 'N/A'}</span>
                       </div>
                       <div className="detail-group">
-                        <label>Loại xe:</label>
+                        <label>Car Type:</label>
                         <span>{contract.carData?.brand || 'N/A'} {contract.carData?.model || ''}</span>
                       </div>
                       <div className="detail-group">
-                        <label>Năm sản xuất:</label>
+                        <label>Year:</label>
                         <span>{contract.carData?.year || 'N/A'}</span>
                       </div>
                       <div className="detail-group">
-                        <label>Màu xe:</label>
+                        <label>Color:</label>
                         <span>{contract.carData?.color || 'N/A'}</span>
                       </div>
                       <div className="detail-group">
-                        <label>Số chỗ ngồi:</label>
-                        <span>{contract.carData?.seats || 'N/A'} chỗ</span>
+                        <label>Seats:</label>
+                        <span>{contract.carData?.seats || 'N/A'} seats</span>
                       </div>
                       <div className="detail-group">
-                        <label>Nhiên liệu:</label>
+                        <label>Fuel Type:</label>
                         <span>{contract.carData?.fuelType || 'N/A'}</span>
                       </div>
                     </div>
@@ -275,7 +252,7 @@ const ContractsPage = () => {
 
                   {/* CCCD Images */}
                   <div className="detail-section">
-                    <h4>🆔 Ảnh CCCD</h4>
+                    <h4>🆔 ID Card Images</h4>
                     <div className="cccd-images">
                       {contract.cccdImages && contract.cccdImages.length > 0 ? (
                         <div className="image-grid">
@@ -291,14 +268,14 @@ const ContractsPage = () => {
                           ))}
                         </div>
                       ) : (
-                        <p className="no-images">Chưa có ảnh CCCD</p>
+                        <p className="no-images">No ID card images</p>
                       )}
                     </div>
                   </div>
 
                   {/* Car Images */}
                   <div className="detail-section">
-                    <h4>📸 Ảnh xe</h4>
+                    <h4>📸 Car Images</h4>
                     <div className="car-images">
                       {contract.carData?.images && contract.carData.images.length > 0 ? (
                         <div className="image-grid">
@@ -314,14 +291,14 @@ const ContractsPage = () => {
                           ))}
                         </div>
                       ) : (
-                        <p className="no-images">Chưa có ảnh xe</p>
+                        <p className="no-images">No car images</p>
                       )}
                     </div>
                   </div>
 
                   {/* Cavet Images */}
                   <div className="detail-section">
-                    <h4>📋 Cavet xe</h4>
+                    <h4>📋 Cavet Images</h4>
                     <div className="cavet-images">
                       {contract.carData?.cavetImages && contract.carData.cavetImages.length > 0 ? (
                         <div className="image-grid">
@@ -337,7 +314,7 @@ const ContractsPage = () => {
                           ))}
                         </div>
                       ) : (
-                        <p className="no-images">Chưa có cavet xe</p>
+                        <p className="no-images">No cavet images</p>
                       )}
                     </div>
                   </div>
@@ -350,14 +327,21 @@ const ContractsPage = () => {
                   onClick={() => toggleContractExpansion(contract.id)}
                 >
                   <i className="bi bi-eye"></i>
-                  {expandedContract === contract.id ? 'Thu gọn' : 'Xem chi tiết'}
+                  {expandedContract === contract.id ? 'Collapse' : 'View Details'}
                 </button>
-                {contract.status === 'PENDING' || contract.status === 'PENDING_LEASE' ? (
-                  <button className="btn-danger">
+                {contract.status === 'PENDING_LEASE' && (
+                  <button className="btn-danger" onClick={async () => {
+                    try {
+                      await axios.put(`${API_URL}/admin/partners/${contract.id}/status`, { status: 'CANCELLED_LEASE' });
+                      fetchUserContracts();
+                    } catch (e) {
+                      alert('Failed to cancel contract!');
+                    }
+                  }}>
                     <i className="bi bi-x-circle"></i>
-                    Hủy hợp đồng
+                    Cancel contract
                   </button>
-                ) : null}
+                )}
               </div>
             </div>
           ))}

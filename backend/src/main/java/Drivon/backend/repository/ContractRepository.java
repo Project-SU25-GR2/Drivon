@@ -8,6 +8,6 @@ import java.util.List;
 
 @Repository
 public interface ContractRepository extends JpaRepository<Contract, Long> {
-    Optional<Contract> findTopByCarIdOrderByStartDateDesc(String carId);
     List<Contract> findByCustomerId(String customerId);
+    List<Contract> findByCarIdOrderByIdDesc(String carId);
 }

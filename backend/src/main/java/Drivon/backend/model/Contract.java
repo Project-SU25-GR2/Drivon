@@ -19,12 +19,6 @@ public class Contract {
     @Column(name = "contract_number", unique = true, nullable = false)
     private String contractNumber;
 
-    @Column(name = "start_date", nullable = false)
-    private LocalDate startDate;
-
-    @Column(name = "end_date", nullable = false)
-    private LocalDate endDate;
-
     @Column(name = "car_id", nullable = false)
     private String carId;
 
@@ -42,9 +36,6 @@ public class Contract {
 
     @Column(name = "phone", nullable = false)
     private String phone;
-
-    @Column(name = "cccd", nullable = false)
-    private String cccd;
 
     @Column(name = "email", nullable = false)
     private String email;

@@ -36,6 +36,9 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
     const [otherDocPreviewUrls, setOtherDocPreviewUrls] = useState([]);
     // CCCD verification status: 'loading', 'not_uploaded', 'pending', 'verified'
     const [cccdStatus, setCccdStatus] = useState('loading');
+    const [contractStatus, setContractStatus] = useState(null); // null | 'pending' | 'canceled' | 'expired' | 'other'
+    const [latestContract, setLatestContract] = useState(null);
+    const [loadingContract, setLoadingContract] = useState(true);
 
     // Check if user is already Owner
     const storedUser = localStorage.getItem("user");
@@ -71,8 +74,55 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
       }
     }, [storedUser]);
 
-    // Now, after all hooks, check isOwner and return modal if needed
-    if (isOwner) {
+    useEffect(() => {
+      // Check for latest become a partner contract
+      async function fetchLatestContract() {
+        setLoadingContract(true);
+        try {
+          if (storedUser) {
+            const user = JSON.parse(storedUser);
+            const res = await axios.get(`${API_URL}/contracts/user/${user.userId}`);
+            const contracts = res.data || [];
+            // Filter for contracts that are 'become a partner' (e.g., status PENDING, PENDING_LEASE, etc.)
+            // You may need to adjust this filter based on your backend logic
+            const sorted = contracts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            const latest = sorted.find(c => c.status && [
+              'PENDING', 'PENDING_LEASE', 'APPROVED', 'REJECTED', 'CANCELLED', 'EXPIRED'
+            ].includes(c.status.toUpperCase()));
+            setLatestContract(latest);
+            if (latest) {
+              const status = latest.status.toUpperCase();
+              if (status === 'PENDING' || status === 'PENDING_LEASE') {
+                setContractStatus('pending');
+              } else if (status === 'CANCELLED' || status === 'REJECTED' || status === 'EXPIRED') {
+                setContractStatus('canceled');
+              } else if (status === 'APPROVED' || status === 'ACTIVE' || status === 'COMPLETED') {
+                setContractStatus('other');
+              } else {
+                setContractStatus('other');
+              }
+            } else {
+              setContractStatus(null);
+            }
+          } else {
+            setContractStatus(null);
+          }
+        } catch (e) {
+          setContractStatus(null);
+        } finally {
+          setLoadingContract(false);
+        }
+      }
+      fetchLatestContract();
+    }, [storedUser]);
+
+    // Show loading spinner while checking contract
+    if (loadingContract) {
+      return <div className="loading"><span>Loading...</span></div>;
+    }
+
+    // Modal: User has a pending become a partner contract
+    if (contractStatus === 'pending') {
       return (
         <div style={{
           position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
@@ -81,8 +131,8 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
           <div style={{
             background: "#fff", borderRadius: 8, padding: 32, minWidth: 320, boxShadow: "0 2px 16px rgba(0,0,0,0.15)", textAlign: "center"
           }}>
-            <h2>You are already an Owner</h2>
-            <p>You do not need to register again to become a partner. Please manage your cars and contracts in the Owner Dashboard.</p>
+            <h2>Partner Application Pending</h2>
+            <p>Your partner application has been submitted and is pending admin approval. Please wait for the result.</p>
             <div style={{ marginTop: 24, display: "flex", justifyContent: "center", gap: 16 }}>
               <button
                 className="cccd-modal-btn"
@@ -92,9 +142,9 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
               </button>
               <button
                 className="cccd-modal-btn primary"
-                onClick={() => navigate('/owner')}
+                onClick={() => navigate('/contracts')}
               >
-                Go to Owner Dashboard
+                View Contract Status
               </button>
             </div>
           </div>
@@ -433,14 +483,11 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
       const allImages = mainImage ? [mainImage, ...otherImages] : [...otherImages];
       const contractData = {
         contractNumber: `HD${Date.now()}`, // Auto-generate contract number
-        startDate: new Date().toISOString().split('T')[0], // Current date
-        endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days later
         carId: formData.licensePlate, // Use license plate as ID
         customerId: '1', // Default customer ID
         deposit: formData.dailyRate * 0.5, // Deposit = 50% of daily rate
         name: '', // Leave blank for user to fill
         phone: '', // Leave blank for user to fill
-        cccd: '', // Leave blank for user to fill
         email: '', // Leave blank for user to fill
         carData: { // Add vehicle information
           brand: formData.brand,

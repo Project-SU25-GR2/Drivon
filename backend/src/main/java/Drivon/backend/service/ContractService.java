@@ -75,15 +75,14 @@ public class ContractService {
     public Contract createContract(ContractRequest request) {
         Contract contract = new Contract();
         contract.setContractNumber(request.getContractNumber());
-        contract.setStartDate(request.getStartDate());
-        contract.setEndDate(request.getEndDate());
+        // XÓA: contract.setStartDate(request.getStartDate());
+        // XÓA: contract.setEndDate(request.getEndDate());
         contract.setCarId(request.getCarId());
         contract.setCustomerId(request.getCustomerId());
         contract.setDeposit(request.getDeposit());
         contract.setStatus("PENDING");
         contract.setName(request.getName());
         contract.setPhone(request.getPhone());
-        contract.setCccd(request.getCccd());
         contract.setEmail(request.getEmail());
         contract.setPricePerDay(request.getPricePerDay());
         contract.setPdfUrl(request.getPdfUrl());
@@ -144,15 +143,14 @@ public class ContractService {
         }
         Contract contract = new Contract();
         contract.setContractNumber(request.getContractNumber());
-        contract.setStartDate(request.getStartDate());
-        contract.setEndDate(request.getEndDate());
+        // XÓA: contract.setStartDate(request.getStartDate());
+        // XÓA: contract.setEndDate(request.getEndDate());
         contract.setCarId(request.getCarId());
         contract.setCustomerId(request.getCustomerId());
         contract.setDeposit(request.getDeposit());
         contract.setStatus("PENDING_LEASE");
         contract.setName(request.getName());
         contract.setPhone(request.getPhone());
-        contract.setCccd(request.getCccd());
         contract.setEmail(request.getEmail());
         contract.setPricePerDay(request.getPricePerDay());
         contract.setPdfUrl(request.getPdfUrl());
@@ -217,15 +215,14 @@ public class ContractService {
             writer.write("Độc lập – Tự do – Hạnh phúc\n");
             writer.write("------------------------------\n");
             writer.write("HỢP ĐỒNG CHO THUÊ XE\n");
-            writer.write("Ngày " + contract.getStartDate().format(DateTimeFormatter.ofPattern("d")) +
-                    " tháng " + contract.getStartDate().format(DateTimeFormatter.ofPattern("M")) +
-                    " năm " + contract.getStartDate().format(DateTimeFormatter.ofPattern("yyyy")) + "\n");
+            // XÓA: writer.write("Ngày " + contract.getStartDate().format(DateTimeFormatter.ofPattern("d")) +
+            // XÓA:                     " tháng " + contract.getStartDate().format(DateTimeFormatter.ofPattern("M")) +
+            // XÓA:                     " năm " + contract.getStartDate().format(DateTimeFormatter.ofPattern("yyyy")) + "\n");
             writer.write("Số: " + contract.getContractNumber() + "\n\n");
 
             writer.write("BÊN A\n");
             writer.write("Tên: " + contract.getName() + "\n");
             writer.write("Số điện thoại: " + contract.getPhone() + "\n");
-            writer.write("CCCD: " + contract.getCccd() + "\n");
             writer.write("Email: " + contract.getEmail() + "\n\n");
 
             writer.write("BÊN B\n");
@@ -261,7 +258,7 @@ public class ContractService {
     }
 
     public Optional<Contract> getLatestContractByCar(String carId) {
-        return contractRepository.findTopByCarIdOrderByStartDateDesc(carId);
+        return contractRepository.findByCarIdOrderByIdDesc(carId).stream().findFirst();
     }
 
     public List<Map<String, Object>> getContractsByUserId(String userId) {
@@ -274,15 +271,12 @@ public class ContractService {
             // Add basic contract data
             enrichedContract.put("id", contract.getId());
             enrichedContract.put("contractNumber", contract.getContractNumber());
-            enrichedContract.put("startDate", contract.getStartDate());
-            enrichedContract.put("endDate", contract.getEndDate());
             enrichedContract.put("carId", contract.getCarId());
             enrichedContract.put("customerId", contract.getCustomerId());
             enrichedContract.put("deposit", contract.getDeposit());
             enrichedContract.put("status", contract.getStatus());
             enrichedContract.put("name", contract.getName());
             enrichedContract.put("phone", contract.getPhone());
-            enrichedContract.put("cccd", contract.getCccd());
             enrichedContract.put("email", contract.getEmail());
             enrichedContract.put("pricePerDay", contract.getPricePerDay());
             enrichedContract.put("pdfUrl", contract.getPdfUrl());

@@ -229,6 +229,7 @@ const PartnerPage = () => {
                     }
                     onClick={e => e.stopPropagation()}
                     style={{ minWidth: 80, maxWidth: 110 }}
+                    disabled={partner.status === 'CANCELLED_LEASE'}
                   >
                     <option value="PENDING_LEASE">PENDING</option>
                     <option value="ACTIVE_LEASE">ACTIVE</option>

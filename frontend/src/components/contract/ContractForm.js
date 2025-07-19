@@ -12,14 +12,11 @@ const CarRentalContractForm = () => {
 
     const [formData, setFormData] = useState({
         contractNumber: contractData?.contractNumber || '',
-        startDate: contractData?.startDate || '',
-        endDate: contractData?.endDate || '',
         carId: contractData?.carId || '',
         customerId: contractData?.customerId || '',
         deposit: contractData?.deposit || '',
         name: contractData?.name || '',
         phone: contractData?.phone || '',
-        cccd: contractData?.cccd || '',
         email: contractData?.email || '',
         terms: false
     });
@@ -63,13 +60,6 @@ const CarRentalContractForm = () => {
             }
         }
         
-        if (name === 'cccd' && value) {
-            if (!/^[0-9]{12}$/.test(value)) {
-                setErrors(prev => ({ ...prev, [name]: 'ID number must have 12 digits' }));
-                return;
-            }
-        }
-        
         if (name === 'email' && value) {
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
                 setErrors(prev => ({ ...prev, [name]: 'Invalid email format' }));
@@ -94,12 +84,6 @@ const CarRentalContractForm = () => {
         if (!formData.contractNumber) {
             newErrors.contractNumber = 'Please enter contract number';
         }
-        if (!formData.startDate) {
-            newErrors.startDate = 'Please select start date';
-        }
-        if (!formData.endDate) {
-            newErrors.endDate = 'Please select end date';
-        }
         if (!formData.carId) {
             newErrors.carId = 'Please enter car ID';
         }
@@ -114,9 +98,6 @@ const CarRentalContractForm = () => {
         }
         if (!formData.phone) {
             newErrors.phone = 'Please enter phone number';
-        }
-        if (!formData.cccd) {
-            newErrors.cccd = 'Please enter ID number';
         }
         if (!formData.email) {
             newErrors.email = 'Please enter email';
@@ -171,7 +152,6 @@ const CarRentalContractForm = () => {
                 { text: 'PARTY A', style: 'section' },
                 { text: `Name: ${contractData.name}` },
                 { text: `Phone: ${contractData.phone}` },
-                { text: `ID: ${contractData.cccd}` },
                 { text: `Email: ${contractData.email}`, margin: [0, 0, 0, 10] },
 
                 { text: 'PARTY B', style: 'section' },
@@ -344,32 +324,6 @@ const CarRentalContractForm = () => {
                 </div>
 
                 <div className="form-group">
-                    <label>Start Date:</label>
-                    <input
-                        type="date"
-                        name="startDate"
-                        value={formData.startDate}
-                        onChange={handleChange}
-                        className={errors.startDate ? 'error' : ''}
-                        required
-                    />
-                    {errors.startDate && <div className="field-error">{errors.startDate}</div>}
-                </div>
-
-                <div className="form-group">
-                    <label>End Date:</label>
-                    <input
-                        type="date"
-                        name="endDate"
-                        value={formData.endDate}
-                        onChange={handleChange}
-                        className={errors.endDate ? 'error' : ''}
-                        required
-                    />
-                    {errors.endDate && <div className="field-error">{errors.endDate}</div>}
-                </div>
-
-                <div className="form-group">
                     <label>Car ID:</label>
                     <input
                         type="text"
@@ -432,19 +386,6 @@ const CarRentalContractForm = () => {
                         required
                     />
                     {errors.phone && <div className="field-error">{errors.phone}</div>}
-                </div>
-
-                <div className="form-group">
-                    <label>ID Number:</label>
-                    <input
-                        type="text"
-                        name="cccd"
-                        value={formData.cccd}
-                        onChange={handleChange}
-                        className={errors.cccd ? 'error' : ''}
-                        required
-                    />
-                    {errors.cccd && <div className="field-error">{errors.cccd}</div>}
                 </div>
 
                 <div className="form-group">
