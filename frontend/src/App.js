@@ -6,6 +6,7 @@ import Signup from "./components/auth/Signup";
 import PaymentForm from "./components/payment/PaymentForm";
 import AdminPage from "./components/admin/AdminPage";
 import ContractForm from "./components/contract/ContractForm";
+import ContractsPage from "./components/contract/ContractsPage";
 import ProfilePage from "./components/profile/ProfilePage";
 import ChangePasswordPage from "./components/auth/ChangePasswordPage";
 import ChangeAvatarPage from "./components/profile/ChangeAvatarPage";
@@ -223,18 +224,18 @@ function App() {
                     }
                   />
 
-                  {/* <Route
+                  <Route
                     path="/contracts"
                     element={
                       user ? (
                         <MainLayout user={user} handleLogout={handleLogout}>
-                          <ContractForm />
+                          <ContractsPage />
                         </MainLayout>
                       ) : (
                         <Navigate to="/auth" replace />
                       )
                     }
-                  /> */}
+                  />
 
                   <Route
                     path="/contracts/lease"

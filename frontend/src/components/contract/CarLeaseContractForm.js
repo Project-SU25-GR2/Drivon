@@ -1,18 +1,16 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import pdfMake from "pdfmake/build/pdfmake";
-import pdfFonts from "pdfmake/build/vfs_fonts";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 // import "./ContractForm.css";
 import "./CarLeaseContractForm.css";
+import "./RentYourCarForm.css";
 import cloudinaryConfig from "../../config/cloudinary";
 import SimpleButton from "../others/SimpleButton";
 import { API_URL } from '../../api/configApi';
-// Initialize pdfMake with fonts
-pdfMake.vfs = pdfFonts.pdfMake ? pdfFonts.pdfMake.vfs : pdfFonts.vfs;
 
 const CarLeaseContractForm = ({ user }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const contractData = location.state?.contractData;
 
   // Get user from localStorage as fallback
@@ -31,7 +29,6 @@ const CarLeaseContractForm = ({ user }) => {
     phone: currentUser?.phone || "",
     cccd: currentUser?.cccd || "",
     email: currentUser?.email || "",
-    terms: false,
     pricePerDay: contractData?.carData?.dailyRate || "",
   });
 
@@ -40,6 +37,8 @@ const CarLeaseContractForm = ({ user }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isContractCreated, setIsContractCreated] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
 
   useEffect(() => {
     if (contractData) {
@@ -111,7 +110,7 @@ const CarLeaseContractForm = ({ user }) => {
     if (!formData.cccd) {
       newErrors.cccd = "Please enter CCCD";
     }
-    if (!formData.terms) {
+    if (!acceptedTerms) {
       newErrors.terms = "Please accept the terms";
     }
 
@@ -119,152 +118,20 @@ const CarLeaseContractForm = ({ user }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-      const generatePDF = (contractData) => {
-    const docDefinition = {
-      content: [
-        {
-          text: "SOCIALIST REPUBLIC OF VIETNAM",
-          style: "header",
-          alignment: "center",
-        },
-        {
-          text: "Independence – Freedom – Happiness",
-          style: "subheader",
-          alignment: "center",
-        },
-        {
-          text: "-------------------------------",
-          alignment: "center",
-          margin: [0, 0, 0, 10],
-        },
-        {
-          text: "CAR LEASE REGISTRATION CONTRACT",
-          style: "title",
-          alignment: "center",
-          margin: [0, 10, 0, 0],
-        },
-        {
-          text: `Date: ${new Date().toLocaleDateString("en-US")}`,
-          alignment: "center",
-        },
-        {
-          text: `Contract No: ${contractData.contractNumber}`,
-          alignment: "center",
-          margin: [0, 0, 0, 20],
-        },
-
-        { text: "PARTY A", style: "section" },
-        { text: `Name: ${contractData.name}` },
-        { text: `Phone: ${contractData.phone}` },
-        { text: `ID: ${contractData.cccd}` },
-        { text: `Email: ${contractData.email}`, margin: [0, 0, 0, 10] },
-
-        { text: "PARTY B", style: "section" },
-        { text: "Name: Group2 Co., Ltd" },
-        { text: "Phone: 0394672210" },
-        { text: "Email: Binhvuong221004@gmail.com", margin: [0, 0, 0, 20] },
-
-        { text: "VEHICLE INFORMATION", style: "section" },
-        { text: `Brand: ${contractData.carData?.brand || "N/A"}` },
-        { text: `Model: ${contractData.carData?.model || "N/A"}` },
-        { text: `Year: ${contractData.carData?.year || "N/A"}` },
-        { text: `License Plate: ${contractData.carData?.licensePlate || "N/A"}` },
-        { text: `Description: ${contractData.carData?.description || "N/A"}` },
-        {
-          text: `Location: ${contractData.carData?.location || "N/A"}`,
-          margin: [0, 0, 0, 20],
-        },
-
-        { text: "REQUIRED DOCUMENTS FROM LESSEE", style: "section" },
-        { text: `Requirements: ID/Passport, Driver's License` },
-        {
-          text: `Daily Rate: ${contractData.pricePerDay.toLocaleString(
-            "en-US"
-          )} VND`,
-        },
-        {
-          text: `Deposit: ${contractData.deposit.toLocaleString("en-US")} VND`,
-          margin: [0, 0, 0, 20],
-        },
-
-        { text: "CONTRACT INFORMATION", style: "section" },
-        { text: `Start Date: ${contractData.startDate}` },
-        {
-          text: `End Date: ${contractData.endDate}`,
-          margin: [0, 0, 0, 20],
-        },
-
-        { text: "TERMS AND CONDITIONS", style: "section" },
-        {
-          text: "Party A has read and agreed to the terms and conditions of this contract.",
-          margin: [0, 0, 0, 20],
-        },
-        { text: "☒ Agreed to terms and conditions", margin: [0, 0, 0, 20] },
-
-        {
-          columns: [
-            {
-              width: "*",
-              text: [
-                { text: "PARTY A:\n", style: "section" },
-                { text: `Name: ${contractData.name}\n` },
-                { text: 'Signed online "verify code"', italics: true },
-              ],
-            },
-            {
-              width: "*",
-              text: [
-                { text: "PARTY B:\n", style: "section" },
-                { text: "Name: Group2\n" },
-                { text: "Signed!" },
-              ],
-            },
-          ],
-        },
-      ],
-      styles: {
-        header: { fontSize: 14, bold: true },
-        subheader: { fontSize: 12, italics: true },
-        title: { fontSize: 16, bold: true },
-        section: { fontSize: 13, bold: true, margin: [0, 10, 0, 5] },
-      },
-      defaultStyle: {
-        font: "Roboto",
-      },
-    };
-
-    return new Promise((resolve) => {
-      pdfMake.createPdf(docDefinition).getBlob((blob) => {
-        resolve(blob);
-      });
-    });
-  };
-
   const generateContractNumber = () => {
-    const date = new Date();
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const random = Math.floor(Math.random() * 10000)
-      .toString()
-      .padStart(4, "0");
-    return `HD${year}${month}${day}${random}`;
-  };
-
-  const uploadPDFToCloudinary = async (pdfBlob) => {
-    const formData = new FormData();
-    formData.append("file", pdfBlob, "contract.pdf");
-    formData.append("upload_preset", cloudinaryConfig.uploadPreset);
-    formData.append("api_key", cloudinaryConfig.apiKey);
-    const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/raw/upload`;
-    const response = await axios.post(cloudinaryUrl, formData);
-    return response.data.secure_url;
+    const timestamp = Date.now();
+    const random = Math.floor(Math.random() * 1000);
+    return `HD${timestamp}${random}`;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateForm()) {
+      if (!acceptedTerms) {
+        setMessage("Vui lòng chấp nhận điều khoản và chính sách sử dụng để tiếp tục");
+        return;
+      }
       setMessage("Please fill in all required fields correctly");
       return;
     }
@@ -319,36 +186,13 @@ const CarLeaseContractForm = ({ user }) => {
     };
 
     try {
-      // 1. Generate PDF
-      const pdfBlob = await generatePDF({
-        ...formData,
-        contractNumber: newContractNumber,
-        carData: contractData?.carData,
-      });
-
-      // 2. Upload PDF lên Cloudinary
-      let pdfUrl = "";
-      try {
-        pdfUrl = await uploadPDFToCloudinary(pdfBlob);
-      } catch (err) {
-        setMessage(
-          "Lỗi khi upload PDF lên Cloudinary: " +
-            (err.response?.data?.error || err.message)
-        );
-        setIsSubmitting(false);
-        return;
-      }
-
-      // 3. Gửi thông tin hợp đồng + pdfUrl lên backend
+      // Gửi thông tin hợp đồng lên backend (không có pdfUrl)
       const response = await axios.post(
         `${API_URL}/contracts/lease`,
-        {
-          ...formattedData,
-          pdfUrl,
-        }
+        formattedData
       );
 
-      // 4. Sau khi tạo hợp đồng thành công, lưu ảnh vào car_images nếu có
+      // Sau khi tạo hợp đồng thành công, lưu ảnh vào car_images nếu có
       if (
         contractData?.carData?.images &&
         contractData.carData.images.length > 0
@@ -379,6 +223,7 @@ const CarLeaseContractForm = ({ user }) => {
           console.error("Lỗi khi lưu ảnh cavet:", cavetErr);
         }
       }
+      
       // Save otherDocImages if available
       if (contractData?.otherDocImages && contractData.otherDocImages.length > 0) {
         try {
@@ -392,18 +237,9 @@ const CarLeaseContractForm = ({ user }) => {
       }
 
       if (response.data) {
-        setMessage("Contract created successfully!");
+        setMessage("Contract created successfully! Your partner application has been submitted.");
         setIsContractCreated(true);
-        // Tạo URL từ pdfBlob và mở tab mới + tải file PDF về
-        const localPdfUrl = URL.createObjectURL(pdfBlob);
-        window.open(localPdfUrl, "_blank");
-        const link = document.createElement("a");
-        link.href = localPdfUrl;
-        link.download = `hopdong_${newContractNumber}.pdf`;
-        link.click();
-        setTimeout(() => {
-          URL.revokeObjectURL(localPdfUrl);
-        }, 100);
+        navigate("/contracts"); // Navigate to contracts page after successful creation
       }
     } catch (error) {
       console.error("Error details:", error.response?.data);
@@ -627,22 +463,37 @@ const CarLeaseContractForm = ({ user }) => {
           />
         </div>
         <div className="lease-form-group lease-full-width">
-                      <label className="lease-checkbox-label">
+          <div className="partner-terms-checkbox">
             <input
               type="checkbox"
-              name="terms"
-              checked={formData.terms}
-              onChange={handleChange}
+              id="acceptTerms"
+              checked={acceptedTerms}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
               required
               disabled={isContractCreated}
             />
-            I agree to the terms and conditions
-          </label>
+            <div style={{flex:1}}>
+              <label htmlFor="acceptTerms">
+                Tôi đã đọc và đồng ý với <button 
+                  type="button" 
+                  onClick={() => setShowTermsModal(true)}
+                  disabled={isContractCreated}
+                >
+                  Điều khoản và Chính sách sử dụng
+                </button> của nền tảng Drivon
+              </label>
+              {!acceptedTerms && errors.terms && (
+                <div className="partner-terms-error">
+                  Vui lòng chấp nhận điều khoản và chính sách để tiếp tục
+                </div>
+              )}
+            </div>
+          </div>
         </div>
         <div className="lease-form-group lease-full-width">
           <SimpleButton
             type="submit"
-            disabled={!formData.terms || isContractCreated}
+            disabled={!acceptedTerms || isContractCreated}
             isLoading={isSubmitting}
             className="lease-submit-btn"
           >
@@ -650,6 +501,144 @@ const CarLeaseContractForm = ({ user }) => {
           </SimpleButton>
         </div>
       </form>
+      
+      {/* --- Terms and Conditions Modal --- */}
+      {showTermsModal && (
+        <div className="partner-terms-modal">
+          <div className="partner-terms-modal-content">
+            {/* Modal Header */}
+            <div className="partner-terms-modal-header">
+              <h2>
+                📄 ĐIỀU KHOẢN VÀ CHÍNH SÁCH SỬ DỤNG
+              </h2>
+              <button
+                onClick={() => setShowTermsModal(false)}
+                className="partner-terms-modal-close"
+              >
+                ×
+              </button>
+            </div>
+            
+            {/* Modal Content */}
+            <div className="partner-terms-modal-body">
+              <p style={{color: '#7f8c8d', marginBottom: '1.5rem', fontSize: '0.9rem'}}>
+                (Áp dụng cho người dùng nền tảng Drivon)<br/>
+                Cập nhật ngày: [●]
+              </p>
+              
+              <div style={{marginBottom: '1.5rem'}}>
+                <h3>1. ĐỊNH NGHĨA</h3>
+                <ul>
+                  <li><strong>Drivon:</strong> Nền tảng trực tuyến (bao gồm website và ứng dụng) cung cấp dịch vụ kết nối giữa người thuê xe tự lái và chủ xe.</li>
+                  <li><strong>Người thuê:</strong> Cá nhân hoặc tổ chức sử dụng nền tảng để tìm và thuê xe từ chủ xe.</li>
+                  <li><strong>Chủ xe (Owner):</strong> Cá nhân hoặc tổ chức sở hữu phương tiện và đăng xe lên nền tảng để cho thuê.</li>
+                  <li><strong>Giao dịch thuê xe:</strong> Bao gồm quá trình đặt xe, thanh toán, bàn giao, sử dụng và hoàn trả xe giữa người thuê và chủ xe.</li>
+                </ul>
+              </div>
+              
+              <div style={{marginBottom: '1.5rem'}}>
+                <h3>2. VAI TRÒ CỦA DRIVON</h3>
+                <ul>
+                  <li>Drivon là nền tảng trung gian kết nối, không phải là bên cho thuê xe, không sở hữu xe, không đại diện cho bất kỳ người thuê hoặc chủ xe nào.</li>
+                  <li>Drivon không tham gia vào giao dịch thuê xe, bao gồm: đàm phán giá, bàn giao xe, xác minh người thuê, hoặc ký hợp đồng thuê xe.</li>
+                  <li>Mọi thông tin về phương tiện, giá thuê, điều kiện thuê… là do chủ xe cung cấp, Drivon không chịu trách nhiệm về tính xác thực hoặc chất lượng của thông tin này.</li>
+                </ul>
+              </div>
+              
+              <div style={{marginBottom: '1.5rem'}}>
+                <h3>3. ĐIỀU KHOẢN DÀNH CHO NGƯỜI THUÊ</h3>
+                <p style={{marginBottom: '0.8rem'}}>Người thuê khi sử dụng nền tảng Drivon đồng ý rằng:</p>
+                <ul>
+                  <li>Cung cấp thông tin cá nhân chính xác và chịu trách nhiệm với các thông tin đã khai báo.</li>
+                  <li>Tự chịu trách nhiệm với quá trình thuê, sử dụng và hoàn trả xe đúng thời hạn, đúng tình trạng.</li>
+                  <li>Tuân thủ luật giao thông và các quy định pháp luật khi điều khiển phương tiện.</li>
+                  <li>Chủ động liên hệ, đàm phán và giải quyết các vấn đề phát sinh trực tiếp với chủ xe.</li>
+                  <li>Drivon không chịu trách nhiệm đối với bất kỳ sự cố nào xảy ra trong giao dịch thuê xe.</li>
+                </ul>
+              </div>
+              
+              <div style={{marginBottom: '1.5rem'}}>
+                <h3>4. ĐIỀU KHOẢN DÀNH CHO CHỦ XE (OWNER)</h3>
+                <p style={{marginBottom: '0.8rem'}}>Chủ xe khi sử dụng nền tảng Drivon đồng ý rằng:</p>
+                <ul>
+                  <li>Là chủ sở hữu hợp pháp của xe hoặc có đủ quyền hợp pháp để cho thuê.</li>
+                  <li>Cung cấp thông tin chính xác, cập nhật về phương tiện và chịu trách nhiệm với thông tin đó.</li>
+                  <li>Tự quyết định điều kiện cho thuê, giá thuê, quy trình đặt cọc, giấy tờ và yêu cầu với người thuê.</li>
+                  <li>Tự chịu trách nhiệm giải quyết mọi rủi ro phát sinh từ việc cho thuê xe (tai nạn, hư hỏng, vi phạm pháp luật, tranh chấp...).</li>
+                  <li>Drivon không chịu trách nhiệm tài chính, pháp lý hay bồi thường trong bất kỳ trường hợp nào liên quan đến xe đã cho thuê.</li>
+                </ul>
+                <div className="highlight-box">
+                  <strong style={{color: '#856404'}}>📌 Khuyến nghị quan trọng:</strong><br/>
+                  Chủ xe nên lập hợp đồng thuê xe riêng bằng văn bản với người thuê trước khi bàn giao xe, bao gồm:
+                  <ul style={{margin: '0.5rem 0 0 1.5rem'}}>
+                    <li>Điều kiện sử dụng xe</li>
+                    <li>Quy định về trách nhiệm khi xảy ra sự cố, mất mát</li>
+                    <li>Quy trình xử lý tranh chấp, mức bồi thường, và các nghĩa vụ cụ thể</li>
+                  </ul>
+                  Drivon không cung cấp, không xác nhận và không lưu trữ hợp đồng này.
+                </div>
+              </div>
+              
+              <div style={{marginBottom: '1.5rem'}}>
+                <h3>5. MIỄN TRỪ TRÁCH NHIỆM PHÁP LÝ</h3>
+                <p style={{marginBottom: '0.8rem'}}>Bằng việc sử dụng nền tảng, người dùng xác nhận rằng:</p>
+                <ul>
+                  <li>Drivon không chịu trách nhiệm pháp lý, tài chính hoặc hình sự với bất kỳ sự cố nào phát sinh từ giao dịch thuê hoặc cho thuê xe.</li>
+                  <li>Drivon không đại diện, không bảo đảm, không bảo lãnh cho chất lượng xe, hành vi người thuê hay chủ xe.</li>
+                  <li>Drivon không chịu trách nhiệm trong các trường hợp tai nạn, vi phạm giao thông, gian lận, lừa đảo hoặc tranh chấp cá nhân giữa hai bên.</li>
+                  <li>Trong trường hợp xảy ra sự cố, người dùng có trách nhiệm tự thương lượng, xử lý với bên còn lại. Drivon chỉ hỗ trợ cung cấp lịch sử giao dịch, nhật ký truy cập khi cần thiết.</li>
+                </ul>
+              </div>
+              
+              <div style={{marginBottom: '1.5rem'}}>
+                <h3>6. GIẢI QUYẾT TRANH CHẤP</h3>
+                <ul>
+                  <li>Mọi tranh chấp giữa người thuê và chủ xe phải được giải quyết trực tiếp giữa hai bên.</li>
+                  <li>Drivon không tham gia tố tụng, hòa giải hay đứng ra đại diện cho bất kỳ bên nào.</li>
+                  <li>Trong trường hợp được yêu cầu bởi cơ quan nhà nước, Drivon sẽ cung cấp dữ liệu liên quan như lịch sử giao dịch, hồ sơ tài khoản… trong phạm vi pháp luật cho phép.</li>
+                </ul>
+              </div>
+              
+              <div style={{marginBottom: '1.5rem'}}>
+                <h3>7. CAM KẾT VÀ RÀNG BUỘC</h3>
+                <ul>
+                  <li>Việc đăng ký tài khoản, đăng xe hoặc thuê xe thông qua nền tảng được xem là người dùng đã đọc, hiểu, đồng ý và ràng buộc với toàn bộ nội dung của bản điều khoản này.</li>
+                  <li>Drivon có quyền cập nhật, chỉnh sửa nội dung chính sách và điều khoản này mà không cần thông báo trước.</li>
+                  <li>Phiên bản mới sẽ được công bố công khai trên nền tảng và có hiệu lực kể từ thời điểm đăng tải.</li>
+                </ul>
+              </div>
+              
+              <div style={{marginBottom: '1.5rem'}}>
+                <h3>8. HIỆU LỰC PHÁP LÝ</h3>
+                <ul>
+                  <li>Chính sách và Điều khoản sử dụng này có hiệu lực kể từ ngày công bố và áp dụng cho toàn bộ người dùng nền tảng Drivon.</li>
+                  <li>Đây là một thỏa thuận sử dụng dịch vụ có giá trị pháp lý giữa người dùng và Drivon, có thể được sử dụng làm căn cứ giải trình với cơ quan chức năng hoặc trong tranh chấp dân sự (nếu có).</li>
+                  <li>Người dùng có trách nhiệm đọc và cập nhật chính sách định kỳ.</li>
+                </ul>
+              </div>
+            </div>
+            
+            {/* Modal Footer */}
+            <div className="partner-terms-modal-footer">
+              <button
+                onClick={() => setShowTermsModal(false)}
+                className="partner-terms-modal-btn secondary"
+              >
+                Đóng
+              </button>
+              <button
+                onClick={() => {
+                  setAcceptedTerms(true);
+                  setShowTermsModal(false);
+                }}
+                className="partner-terms-modal-btn primary"
+              >
+                Tôi đồng ý
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -807,6 +807,7 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
             </span>
           </div>
         </div>
+        
         {/* --- Submit Button --- */}
         <SimpleButton
           type="submit"
@@ -817,6 +818,7 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
           {uploading ? 'Uploading...' : 'Submit'}
         </SimpleButton>
       </form>
+      
       {/* --- Benefits Section --- */}
       <div className="partner-introduction" style={{marginTop:'2.5rem'}} aria-label="Benefits of Becoming Our Partner">
         <h2>Benefits of Becoming Our Partner</h2>

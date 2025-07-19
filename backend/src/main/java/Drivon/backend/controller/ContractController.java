@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/contracts")
@@ -109,6 +110,18 @@ public class ContractController {
             return ResponseEntity.ok(contractOpt.get());
         } else {
             return ResponseEntity.status(404).body("No contract found for this car");
+        }
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<?> getContractsByUserId(@PathVariable String userId) {
+        try {
+            List<Map<String, Object>> contracts = contractService.getContractsByUserId(userId);
+            return ResponseEntity.ok(contracts);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
         }
     }
 }

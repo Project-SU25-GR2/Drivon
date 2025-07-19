@@ -8,17 +8,26 @@ import Drivon.backend.repository.CarRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.time.LocalDateTime;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Optional;
 import Drivon.backend.service.NotificationService;
 import Drivon.backend.entity.Notification;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import Drivon.backend.model.Car;
+import Drivon.backend.model.User;
+import Drivon.backend.repository.CarImageRepository;
+import Drivon.backend.repository.UserRepository;
+import Drivon.backend.service.UserImageService;
+import Drivon.backend.model.CarImage;
+import Drivon.backend.model.UserImage;
+import java.util.ArrayList;
 
 @Service
 public class ContractService {
@@ -34,6 +43,15 @@ public class ContractService {
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    private CarImageRepository carImageRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private UserImageService userImageService;
 
     /* Comment out verification code storage
     // Store verification codes with expiration time
@@ -96,8 +114,6 @@ public class ContractService {
         // Lưu xe nếu chưa có
         if (request.getCarData() != null) {
             String licensePlate = request.getCarData().getLicensePlate();
-            System.out.println("Creating new car with data: " + request.getCarData());
-            System.out.println("Main Image from request: " + request.getCarData().getMainImage());
             
             if (!carRepository.existsById(licensePlate)) {
                 Car car = new Car();
@@ -121,7 +137,6 @@ public class ContractService {
                     car.setMainImage(mainImage);
                 }
                 
-                System.out.println("Saving new car: " + car);
                 carRepository.save(car);
             }
         } else {
@@ -247,5 +262,87 @@ public class ContractService {
 
     public Optional<Contract> getLatestContractByCar(String carId) {
         return contractRepository.findTopByCarIdOrderByStartDateDesc(carId);
+    }
+
+    public List<Map<String, Object>> getContractsByUserId(String userId) {
+        List<Contract> contracts = contractRepository.findByCustomerId(userId);
+        List<Map<String, Object>> enrichedContracts = new ArrayList<>();
+        
+        for (Contract contract : contracts) {
+            Map<String, Object> enrichedContract = new HashMap<>();
+            
+            // Add basic contract data
+            enrichedContract.put("id", contract.getId());
+            enrichedContract.put("contractNumber", contract.getContractNumber());
+            enrichedContract.put("startDate", contract.getStartDate());
+            enrichedContract.put("endDate", contract.getEndDate());
+            enrichedContract.put("carId", contract.getCarId());
+            enrichedContract.put("customerId", contract.getCustomerId());
+            enrichedContract.put("deposit", contract.getDeposit());
+            enrichedContract.put("status", contract.getStatus());
+            enrichedContract.put("name", contract.getName());
+            enrichedContract.put("phone", contract.getPhone());
+            enrichedContract.put("cccd", contract.getCccd());
+            enrichedContract.put("email", contract.getEmail());
+            enrichedContract.put("pricePerDay", contract.getPricePerDay());
+            enrichedContract.put("pdfUrl", contract.getPdfUrl());
+            enrichedContract.put("createdAt", contract.getCreatedAt());
+            
+            try {
+                // Get car data
+                Car car = carRepository.findById(contract.getCarId()).orElse(null);
+                if (car != null) {
+                    Map<String, Object> carData = new HashMap<>();
+                    carData.put("licensePlate", car.getLicensePlate());
+                    carData.put("brand", car.getBrand());
+                    carData.put("model", car.getModel());
+                    carData.put("year", car.getYear());
+                    carData.put("seats", car.getSeats());
+                    carData.put("description", car.getDescription());
+                    carData.put("type", car.getType());
+                    carData.put("transmission", car.getTransmission());
+                    carData.put("fuelType", car.getFuelType());
+                    carData.put("fuelConsumption", car.getFuelConsumption());
+                    carData.put("status", car.getStatus());
+                    carData.put("location", car.getLocation());
+                    carData.put("mainImage", car.getMainImage());
+                    
+                    // Get car images
+                    List<CarImage> carImages = carImageRepository.findByCarId(car.getLicensePlate());
+                    List<String> imageUrls = carImages.stream()
+                        .map(CarImage::getImageUrl)
+                        .collect(java.util.stream.Collectors.toList());
+                    carData.put("images", imageUrls);
+                    
+                    // Get cavet images
+                    List<CarImage> cavetImages = carImageRepository.findByCarIdAndType(car.getLicensePlate(), "cavet");
+                    List<String> cavetImageUrls = cavetImages.stream()
+                        .map(CarImage::getImageUrl)
+                        .collect(java.util.stream.Collectors.toList());
+                    carData.put("cavetImages", cavetImageUrls);
+                    
+                    enrichedContract.put("carData", carData);
+                }
+                
+                // Get CCCD images for the user
+                User user = userRepository.findByEmail(contract.getEmail()).orElse(null);
+                if (user != null) {
+                    List<UserImage> userImages = userImageService.getUserImages(user);
+                    List<String> cccdImageUrls = userImages.stream()
+                        .filter(img -> img.getDocumentType() == UserImage.DocumentType.cccd)
+                        .map(UserImage::getImageUrl)
+                        .collect(java.util.stream.Collectors.toList());
+                    
+                    enrichedContract.put("cccdImages", cccdImageUrls);
+                }
+            } catch (Exception e) {
+                // Log error but continue processing other contracts
+                System.err.println("Error enriching contract " + contract.getId() + ": " + e.getMessage());
+            }
+            
+            enrichedContracts.add(enrichedContract);
+        }
+        
+        return enrichedContracts;
     }
 }
