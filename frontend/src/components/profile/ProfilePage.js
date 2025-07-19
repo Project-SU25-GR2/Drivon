@@ -206,6 +206,20 @@ const ProfilePage = ({ user, onUpdateUser }) => {
     setPendingDocPreviews(prev => [...prev, ...validFiles.map(file => URL.createObjectURL(file))]);
   };
 
+  // Helper: Check if a document type is verified
+  const isDocTypeVerified = (docType) => {
+    const images = groupedImages[docType] || [];
+    return images.some(img => img.verified === true || img.verified === 1);
+  };
+
+  // Helper: Get all imageIds of a document type (optionally only unverified)
+  const getImageIdsByDocType = (docType, onlyUnverified = false) => {
+    const images = groupedImages[docType] || [];
+    return images
+      .filter(img => !onlyUnverified || !img.verified || img.verified === 0)
+      .map(img => img.imageId);
+  };
+
   const handleDocSave = async (e) => {
     e.preventDefault();
     setDocUploading(true);
@@ -215,6 +229,17 @@ const ProfilePage = ({ user, onUpdateUser }) => {
         setDocUploadError('Please select at least 1 document image');
         setDocUploading(false);
         return;
+      }
+      // Check if doc type is verified, block upload
+      if (isDocTypeVerified(pendingDocType)) {
+        setDocUploadError('This document type has already been verified. You cannot upload more images.');
+        setDocUploading(false);
+        return;
+      }
+      // Delete all previous images of this doc type (unverified only)
+      const oldImageIds = getImageIdsByDocType(pendingDocType, true);
+      for (const imageId of oldImageIds) {
+        await axios.delete(`${API_URL}/user/image/${imageId}`);
       }
       // Upload all images to Cloudinary
       const uploadPromises = pendingDocFiles.map(async (file) => {
@@ -482,10 +507,10 @@ const ProfilePage = ({ user, onUpdateUser }) => {
                 <label>Image</label>
                 <div
                   className="doc-dropzone"
-                  onDrop={docEditMode ? handleDrop : undefined}
-                  onDragOver={docEditMode ? handleDragOver : undefined}
-                  onClick={docEditMode ? handleClickDropZone : undefined}
-                  style={{ cursor: docEditMode ? 'pointer' : 'not-allowed', opacity: docEditMode ? 1 : 0.6 }}
+                  onDrop={docEditMode && !isDocTypeVerified(pendingDocType) ? handleDrop : undefined}
+                  onDragOver={docEditMode && !isDocTypeVerified(pendingDocType) ? handleDragOver : undefined}
+                  onClick={docEditMode && !isDocTypeVerified(pendingDocType) ? handleClickDropZone : undefined}
+                  style={{ cursor: docEditMode && !isDocTypeVerified(pendingDocType) ? 'pointer' : 'not-allowed', opacity: docEditMode && !isDocTypeVerified(pendingDocType) ? 1 : 0.6 }}
                 >
                   <div className="doc-dropzone-placeholder">
                     <FiUpload size={48} color="#4fc3f7" />
@@ -498,7 +523,7 @@ const ProfilePage = ({ user, onUpdateUser }) => {
                     style={{ display: 'none' }}
                     ref={fileInputRef}
                     onChange={handleDocFilesChange}
-                    disabled={!docEditMode || docUploading}
+                    disabled={!docEditMode || docUploading || isDocTypeVerified(pendingDocType)}
                   />
                 </div>
                 {pendingDocPreviews.length > 0 && (
@@ -515,6 +540,7 @@ const ProfilePage = ({ user, onUpdateUser }) => {
                             setPendingDocFiles(files => files.filter((_, i) => i !== idx));
                             setPendingDocPreviews(previews => previews.filter((_, i) => i !== idx));
                           }}
+                          disabled={isDocTypeVerified(pendingDocType)}
                         >
                           <FiTrash2 size={16} />
                         </button>
@@ -538,7 +564,7 @@ const ProfilePage = ({ user, onUpdateUser }) => {
             </div>
             {docEditMode && (
               <div className="form-actions mt-3">
-                <button type="submit" className="btn btn-primary me-2" disabled={docUploading}>Save changes</button>
+                <button type="submit" className="btn btn-primary me-2" disabled={docUploading || isDocTypeVerified(pendingDocType)}>Save changes</button>
                 <button type="button" className="btn btn-light" onClick={handleDocCancel} disabled={docUploading}>Cancel</button>
               </div>
             )}
@@ -580,7 +606,7 @@ const ProfilePage = ({ user, onUpdateUser }) => {
                                 </div>
                               </div>
                               {/* Ẩn nút xóa nếu đã verify */}
-                              {docEditMode && (!img.verified || img.verified === 0) && (
+                              {docEditMode && (!img.verified || img.verified === 0) && !isDocTypeVerified(docType) && (
                                 <button
                                   className="btn btn-sm btn-danger"
                                   style={{ position: 'absolute', top: 8, right: 8, padding: '4px 10px', borderRadius: '50%', zIndex: 2 }}

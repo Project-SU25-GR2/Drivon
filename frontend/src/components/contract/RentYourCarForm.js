@@ -200,7 +200,13 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
                 className="cccd-modal-btn"
                 onClick={() => navigate('/')}
               >
-                Back to Home
+                Cancel
+              </button>
+              <button
+                className="cccd-modal-btn primary"
+                onClick={() => navigate('/profile')}
+              >
+                View Profile / Document Status
               </button>
             </div>
           </div>
