@@ -339,4 +339,50 @@ public class ContractService {
         
         return enrichedContracts;
     }
+
+    public byte[] generateContractPDF(Map<String, Object> requestData) {
+        try {
+            // TODO: Implement PDF generation using iText or Apache PDFBox
+            // For now, return a simple text-based PDF
+            String contractText = generateContractText(requestData);
+            return contractText.getBytes("UTF-8");
+        } catch (Exception e) {
+            throw new RuntimeException("Error generating contract PDF", e);
+        }
+    }
+
+    private String generateContractText(Map<String, Object> requestData) {
+        // Extract data from request
+        Map<String, Object> user = (Map<String, Object>) requestData.get("user");
+        Map<String, Object> car = (Map<String, Object>) requestData.get("car");
+        Object amount = requestData.get("amount");
+        
+        StringBuilder contract = new StringBuilder();
+        contract.append("CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM\n");
+        contract.append("Độc lập - Tự do - Hạnh phúc\n");
+        contract.append("HỢP ĐỒNG THUÊ XE Ô TÔ\n\n");
+        
+        contract.append("BÊN CHO THUÊ (BÊN A):\n");
+        contract.append("Cá nhân: Ông/Bà ").append(user.get("fullName")).append("\n");
+        contract.append("Số điện thoại: ").append(user.get("phone")).append("\n");
+        contract.append("Email: ").append(user.get("email")).append("\n");
+        contract.append("Địa chỉ: ").append(user.get("address")).append("\n\n");
+        
+        contract.append("BÊN THUÊ (BÊN B):\n");
+        contract.append("Cá nhân: Ông/Bà ").append(user.get("fullName")).append("\n");
+        contract.append("Số điện thoại: ").append(user.get("phone")).append("\n");
+        contract.append("Email: ").append(user.get("email")).append("\n");
+        contract.append("Địa chỉ: ").append(user.get("address")).append("\n\n");
+        
+        contract.append("ĐIỀU 1: ĐỐI TƯỢNG CỦA HỢP ĐỒNG\n");
+        contract.append("Loại xe: ").append(car.get("brand")).append(" ").append(car.get("model")).append("\n");
+        contract.append("Biển số đăng ký: ").append(car.get("licensePlate")).append("\n");
+        contract.append("Năm sản xuất: ").append(car.get("year")).append("\n");
+        contract.append("Số chỗ ngồi: ").append(car.get("seats")).append(" chỗ\n\n");
+        
+        contract.append("ĐIỀU 3: GIÁ THUÊ VÀ THANH TOÁN\n");
+        contract.append("Tổng giá trị hợp đồng: ").append(amount).append(" VNĐ\n");
+        
+        return contract.toString();
+    }
 }

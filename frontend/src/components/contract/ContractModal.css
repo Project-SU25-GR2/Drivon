@@ -1,0 +1,305 @@
+.contract-modal .ant-modal-content {
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.contract-content {
+    font-family: 'Times New Roman', serif;
+    line-height: 1.6;
+    color: #333;
+}
+
+.contract-header {
+    text-align: center !important;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #000;
+    padding-bottom: 20px;
+    display: block !important;
+    justify-content: unset !important;
+    align-items: unset !important;
+}
+
+.contract-header h2 {
+    margin: 5px 0;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center !important;
+    display: block !important;
+}
+
+.contract-header h3 {
+    margin: 5px 0;
+    font-size: 16px;
+    font-style: italic;
+    text-align: center !important;
+    display: block !important;
+}
+
+.contract-header p {
+    margin: 10px 0;
+    font-size: 14px;
+    text-align: center !important;
+    display: block !important;
+}
+
+.contract-body {
+    margin-bottom: 30px;
+}
+
+.contract-body p {
+    margin: 10px 0;
+    text-align: justify;
+}
+
+.party-section {
+    margin: 20px 0;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.party-section h4 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    font-weight: bold;
+    color: #000;
+}
+
+.party-section ul {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+.party-section li {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.contract-article {
+    margin: 25px 0;
+}
+
+.contract-article h4 {
+    margin: 0 0 15px 0;
+    font-size: 16px;
+    font-weight: bold;
+    color: #000;
+    text-transform: uppercase;
+}
+
+.contract-article ul {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+.contract-article li {
+    margin: 8px 0;
+    font-size: 14px;
+    text-align: justify;
+}
+
+.contract-signature {
+    display: flex;
+    justify-content: space-between;
+    margin: 40px 0;
+    padding: 20px 0;
+    border-top: 1px solid #000;
+}
+
+.signature-section {
+    text-align: center;
+    flex: 1;
+    margin: 0 20px;
+}
+
+.signature-section p {
+    margin: 10px 0;
+    font-size: 14px;
+}
+
+.contract-appendix {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 2px solid #000;
+}
+
+.contract-appendix h4 {
+    margin: 0 0 15px 0;
+    font-size: 16px;
+    font-weight: bold;
+    color: #000;
+    text-align: center;
+}
+
+.contract-appendix h5 {
+    margin: 20px 0 10px 0;
+    font-size: 15px;
+    font-weight: bold;
+    color: #000;
+}
+
+.inspection-table {
+    margin: 20px 0;
+    overflow-x: auto;
+}
+
+.inspection-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.inspection-table th,
+.inspection-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.inspection-table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+    text-align: center;
+}
+
+.inspection-table td:first-child {
+    font-weight: bold;
+    background-color: #f9f9f9;
+}
+
+.contract-actions {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 2px solid #ddd;
+}
+
+.terms-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f0f8ff;
+    border-radius: 5px;
+    border: 1px solid #b3d9ff;
+}
+
+.terms-section .ant-checkbox-wrapper {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.terms-section .ant-btn-link {
+    padding: 0;
+    height: auto;
+    font-size: 12px;
+    color: #1890ff;
+}
+
+.drivon-terms {
+    margin: 20px 0;
+    padding: 20px;
+    background-color: #fff7e6;
+    border: 1px solid #ffd591;
+    border-radius: 5px;
+}
+
+.drivon-terms h4 {
+    margin: 0 0 15px 0;
+    font-size: 16px;
+    font-weight: bold;
+    color: #d46b08;
+}
+
+.drivon-terms p {
+    margin: 10px 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.download-btn {
+    background-color: #52c41a;
+    border-color: #52c41a;
+}
+
+.download-btn:hover {
+    background-color: #389e0d;
+    border-color: #389e0d;
+}
+
+.confirm-btn {
+    background-color: #1890ff;
+    border-color: #1890ff;
+}
+
+.confirm-btn:hover {
+    background-color: #096dd9;
+    border-color: #096dd9;
+}
+
+.confirm-btn:disabled {
+    background-color: #d9d9d9;
+    border-color: #d9d9d9;
+    color: #bfbfbf;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .contract-modal .ant-modal {
+        width: 95% !important;
+        margin: 10px;
+    }
+    
+    .contract-signature {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .signature-section {
+        margin: 0;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .terms-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .inspection-table {
+        font-size: 10px;
+    }
+    
+    .inspection-table th,
+    .inspection-table td {
+        padding: 4px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .contract-actions {
+        display: none;
+    }
+    
+    .contract-modal .ant-modal-content {
+        box-shadow: none;
+        border: none;
+    }
+    
+    .contract-content {
+        font-size: 12px;
+    }
+} 

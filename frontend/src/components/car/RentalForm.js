@@ -7,6 +7,8 @@ import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 import './RentalForm.css';
 import { API_URL } from '../../api/configApi';
+import ContractModal from '../contract/ContractModal';
+
 const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, contract }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -26,6 +28,10 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   const [couponList, setCouponList] = useState([]);
   const [paymentMethod, setPaymentMethod] = useState('bank'); // 'bank' or 'cash'
+  
+  // State cho contract modal
+  const [showContractModal, setShowContractModal] = useState(false);
+  const [contractData, setContractData] = useState(null);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -125,6 +131,26 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
       return;
     }
 
+    // Chuẩn bị dữ liệu cho contract
+    const contractData = {
+      renterInfo: values,
+      pickupLocation: values.pickupLocation,
+      dropoffLocation: values.dropoffLocation,
+      additionalRequirements: values.requirements,
+      paymentMethod: paymentMethod,
+      promotionCode: selectedCoupon ? selectedCoupon.code : null,
+      discountPercent: selectedCoupon ? selectedCoupon.discount_percent : null
+    };
+
+    setContractData(contractData);
+    setShowContractModal(true);
+    setLoading(false);
+  };
+
+  const handleContractContinue = async () => {
+    setLoading(true);
+    setShowContractModal(false);
+
     // Fix timezone issue by setting time to noon local time before converting to ISO
     const startDate = new Date(dateRange[0].startDate);
     startDate.setHours(12, 0, 0, 0); // Set to noon to avoid timezone issues
@@ -137,8 +163,8 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
       carId: car.licensePlate,
       startTime: startDate.toISOString(),
       endTime: endDate.toISOString(),
-      pickupLocation: values.pickupLocation,
-      dropoffLocation: values.dropoffLocation,
+      pickupLocation: contractData.pickupLocation,
+      dropoffLocation: contractData.dropoffLocation,
       totalPrice: amount,
     };
 
@@ -153,11 +179,11 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
           userId: parseInt(user.userId),
           carId: car.licensePlate,
           bookingId: newBooking.id,
-          additionalRequirements: values.requirements,
+          additionalRequirements: contractData.additionalRequirements,
           rentalStartDate: startDate.toISOString(),
           rentalEndDate: endDate.toISOString(),
-          promotionCode: selectedCoupon ? selectedCoupon.code : null,
-          discountPercent: selectedCoupon ? selectedCoupon.discount_percent : null
+          promotionCode: contractData.promotionCode,
+          discountPercent: contractData.discountPercent
         };
         
         await axios.post(`${API_URL}/payments/cash`, cashPaymentData);
@@ -168,9 +194,9 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
           rentalStartDate: startDate.toISOString(),
           rentalEndDate: endDate.toISOString(),
           amount: amount,
-          promotionCode: selectedCoupon ? selectedCoupon.code : null,
-          discountPercent: selectedCoupon ? selectedCoupon.discount_percent : 0,
-          additionalRequirements: values.requirements,
+          promotionCode: contractData.promotionCode,
+          discountPercent: contractData.discountPercent || 0,
+          additionalRequirements: contractData.additionalRequirements,
         };
         
         onClose();
@@ -186,11 +212,11 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
           userId: user.userId,
           carId: car.licensePlate,
           bookingId: newBooking.id,
-          additionalRequirements: values.requirements,
+          additionalRequirements: contractData.additionalRequirements,
           rentalStartDate: startDate.toISOString(),
           rentalEndDate: endDate.toISOString(),
-          promotionCode: selectedCoupon ? selectedCoupon.code : null,
-          discountPercent: selectedCoupon ? selectedCoupon.discount_percent : 0,
+          promotionCode: contractData.promotionCode,
+          discountPercent: contractData.discountPercent || 0,
         };
 
         const paymentResponse = await axios.post(`${API_URL}/payments/create`, bankPaymentRequest);
@@ -200,8 +226,8 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
           message.error('Unable to redirect to payment page. Please try again.');
         }
       }
-          } catch (error) {
-        console.error('Error occurred:', error);
+    } catch (error) {
+      console.error('Error occurred:', error);
       const errorMessage = error.response?.data?.message || error.response?.data?.error || 'An error occurred. Please try again.';
       message.error(errorMessage);
     } finally {
@@ -321,6 +347,17 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
           )}
         />
       </Modal>
+
+      <ContractModal
+        visible={showContractModal}
+        onClose={() => setShowContractModal(false)}
+        onContinue={handleContractContinue}
+        contractData={contractData}
+        user={user}
+        car={car}
+        dateRange={dateRange}
+        amount={amount}
+      />
     </>
   );
 };
