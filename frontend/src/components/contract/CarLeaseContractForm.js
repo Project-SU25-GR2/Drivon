@@ -140,26 +140,26 @@ const CarLeaseContractForm = ({ user }) => {
     setIsSubmitting(true);
     setMessage("Creating contract...");
 
-    // Kiểm tra carId đã tồn tại chưa
-    try {
-      const checkResponse = await axios.get(
-        `${API_URL}/contracts/check-car/${formData.carId}`
-      );
-      if (checkResponse.data.exists) {
-        setMessage(
-          "Car ID already exists in the system. Please choose another car."
-        );
-        setIsSubmitting(false);
-        return;
-      }
-    } catch (error) {
-      setMessage(
-        "Error checking car ID: " +
-          (error.response?.data?.error || error.message)
-      );
-      setIsSubmitting(false);
-      return;
-    }
+    // // Kiểm tra carId đã tồn tại chưa
+    // try {
+    //   const checkResponse = await axios.get(
+    //     `${API_URL}/contracts/check-car/${formData.carId}`
+    //   );
+    //   if (checkResponse.data.exists) {
+    //     setMessage(
+    //       "Car ID already exists in the system. Please choose another car."
+    //     );
+    //     setIsSubmitting(false);
+    //     return;
+    //   }
+    // } catch (error) {
+    //   setMessage(
+    //     "Error checking car ID: " +
+    //       (error.response?.data?.error || error.message)
+    //   );
+    //   setIsSubmitting(false);
+    //   return;
+    // }
 
     // Generate a new contract number
     const newContractNumber = generateContractNumber();
@@ -259,7 +259,7 @@ const CarLeaseContractForm = ({ user }) => {
 
   return (
     <div className="lease-container">
-      <h2 className="lease-title">Car Lease Agreement</h2>
+      <h2 className="lease-title">Partner Registration Form</h2>
       {message && (
         <div
           className={`lease-message ${message.includes("successfully") ? "lease-success" : "lease-error"}`}

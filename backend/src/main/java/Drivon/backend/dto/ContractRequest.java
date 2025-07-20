@@ -41,7 +41,5 @@ public class ContractRequest {
     @NotNull(message = "Price per day is required")
     private Double pricePerDay;
 
-    private String pdfUrl;
-
     private CarData carData;
 }

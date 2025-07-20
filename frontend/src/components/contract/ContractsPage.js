@@ -163,16 +163,6 @@ const ContractsPage = () => {
                   <h3>Contract #{contract.contractNumber || 'N/A'}</h3>
                   <p className="contract-date">Created at: {formatDate(contract.createdAt)}</p>
                 </div>
-                <div className="contract-header-actions">
-                  {getStatusBadge(contract.status)}
-                  <button 
-                    className="expand-btn"
-                    onClick={() => toggleContractExpansion(contract.id)}
-                  >
-                    <i className={`bi ${expandedContract === contract.id ? 'bi-chevron-up' : 'bi-chevron-down'}`}></i>
-                    {expandedContract === contract.id ? 'Collapse' : 'View Details'}
-                  </button>
-                </div>
               </div>
 
               {/* Basic Contract Info */}
@@ -335,8 +325,21 @@ const ContractsPage = () => {
                   </div>
                 </div>
               )}
-              {/* Chỉ giữ lại nút Cancel contract nếu cần, bỏ nút View Details ở contract-actions */}
+
+
+
               <div className="contract-actions">
+                {/*view*/}
+                <div className="contract-header-actions">
+                  <button
+                      className="expand-btn"
+                      onClick={() => toggleContractExpansion(contract.id)}
+                  >
+                    <i className={`bi ${expandedContract === contract.id ? 'bi-chevron-up' : 'bi-chevron-down'}`}></i>
+                    {expandedContract === contract.id ? 'Collapse' : 'View Details'}
+                  </button>
+                </div>
+                {/*cancel*/}
                 {contract.status === 'PENDING_LEASE' && (
                   <button className="btn-danger" onClick={async () => {
                     try {

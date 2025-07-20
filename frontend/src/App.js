@@ -5,7 +5,6 @@ import Login from "./components/auth/Login";
 import Signup from "./components/auth/Signup";
 import PaymentForm from "./components/payment/PaymentForm";
 import AdminPage from "./components/admin/AdminPage";
-import ContractForm from "./components/contract/ContractForm";
 import ContractsPage from "./components/contract/ContractsPage";
 import ProfilePage from "./components/profile/ProfilePage";
 import ChangePasswordPage from "./components/auth/ChangePasswordPage";

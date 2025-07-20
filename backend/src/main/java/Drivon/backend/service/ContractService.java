@@ -85,7 +85,7 @@ public class ContractService {
         contract.setPhone(request.getPhone());
         contract.setEmail(request.getEmail());
         contract.setPricePerDay(request.getPricePerDay());
-        contract.setPdfUrl(request.getPdfUrl());
+        // contract.setPdfUrl(request.getPdfUrl()); // Removed
 
         Contract savedContract = contractRepository.save(contract);
         generateContractFile(savedContract);
@@ -153,7 +153,7 @@ public class ContractService {
         contract.setPhone(request.getPhone());
         contract.setEmail(request.getEmail());
         contract.setPricePerDay(request.getPricePerDay());
-        contract.setPdfUrl(request.getPdfUrl());
+        // contract.setPdfUrl(request.getPdfUrl()); // Removed
 
         Contract savedContract = contractRepository.save(contract);
         // Gửi notification cho user khi gửi đơn become a partner (lease)
@@ -279,7 +279,7 @@ public class ContractService {
             enrichedContract.put("phone", contract.getPhone());
             enrichedContract.put("email", contract.getEmail());
             enrichedContract.put("pricePerDay", contract.getPricePerDay());
-            enrichedContract.put("pdfUrl", contract.getPdfUrl());
+            // enrichedContract.put("pdfUrl", contract.getPdfUrl()); // Removed
             enrichedContract.put("createdAt", contract.getCreatedAt());
             
             try {

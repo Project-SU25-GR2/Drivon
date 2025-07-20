@@ -88,10 +88,8 @@ CREATE TABLE contract_partners (
     status VARCHAR(50),
     name VARCHAR(100) NOT NULL,
     phone VARCHAR(15) NOT NULL,
-    cccd VARCHAR(20) NOT NULL,
     email VARCHAR(100) NOT NULL,
     price_per_day DECIMAL(10,2) NOT NULL,
-    pdf_url TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (car_id) REFERENCES cars(license_plate) ON DELETE SET NULL ON UPDATE CASCADE
 );
@@ -419,18 +417,18 @@ INSERT INTO `car_images` (`car_id`, `image_url`) VALUES
 ('43A99999','https://res.cloudinary.com/dxhcqas4b/image/upload/v1750038234/k82gfputzkzdaxwrfajl.jpg');
 /**/;
 
-INSERT INTO `contract_partners` (`contract_number`, `start_date`, `end_date`, `car_id`, `customer_id`, `deposit`, `status`, `name`, `phone`, `cccd`, `email`, `price_per_day`, `pdf_url`, `created_at`) VALUES 
-('HD202506140049', '2025-06-14', '2025-07-14', '43A99999', '1', 0, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', '040204000628', 'binhvuong221004@gmail.com', 5000, 'https://res.cloudinary.com/dxhcqas4b/raw/upload/v1749913656/yambzfw9cbkusahi8n6a.pdf', NULL),
-('HD202506146073', '2025-06-14', '2025-07-14', '37A40262', '1', 500000, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', '040204000628', 'binhvuong221004@gmail.com', 1000000, 'https://res.cloudinary.com/dxhcqas4b/raw/upload/v1749913991/xwqeaa4ig7cirixe4d4x.pdf', NULL),
-('HD202506149104', '2025-06-14', '2025-07-14', '43A99998', '1', 500000, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', '040204000628', 'binhvuong221004@gmail.com', 1000000, 'https://res.cloudinary.com/dxhcqas4b/raw/upload/v1749914124/clcuocf55kbzan006gwo.pdf', NULL),
-('HD202506144270', '2025-06-14', '2025-07-14', '43A99997', '1', 900000, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', '040204000628', 'binhvuong221004@gmail.com', 1500000, 'https://res.cloudinary.com/dxhcqas4b/raw/upload/v1749914308/i4zzxh2qur2crtrqca6d.pdf', NULL),
-('HD202506147038', '2025-06-14', '2025-07-14', '38A14204', '1', 800000, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', '040204000628', 'binhvuong221004@gmail.com', 199999, 'https://res.cloudinary.com/dxhcqas4b/raw/upload/v1749914387/mkbg6um50gjdh1cp7fel.pdf', NULL),
-('HD202506146676', '2025-06-14', '2025-07-14', '43A99995', '1', 1000000, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', '040204000628', 'binhvuong221004@gmail.com', 2000000, 'https://res.cloudinary.com/dxhcqas4b/raw/upload/v1749914612/nn1dg6e72twacrf3dxee.pdf', NULL),
-('HD202506146865', '2025-06-14', '2025-07-14', '38A1234', '1', 900000, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', '040204000628', 'binhvuong221004@gmail.com', 500000, 'https://res.cloudinary.com/dxhcqas4b/raw/upload/v1749914669/fn0hcitwijmsgxgqvqyl.pdf', NULL),
-('HD202506147807', '2025-06-14', '2025-07-14', '38A1235', '1', 350000, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', '040204000628', 'binhvuong221004@gmail.com', 499999, 'https://res.cloudinary.com/dxhcqas4b/raw/upload/v1749914895/y3ligrtfrfj4izd0xbnu.pdf', NULL),
-('HD202506157594', '2025-06-14', '2025-07-14', '79A13334', '1', 300000, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', '040204000628', 'binhvuong221004@gmail.com', 600000, 'https://res.cloudinary.com/dxhcqas4b/raw/upload/v1749922486/gwdyxopubnfifum755o3.pdf', NULL),
-('HD202506152933', '2025-06-15', '2025-07-15', '79A13337', '1', 400000, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', '040204000628', 'binhvuong221004@gmail.com', 699999, 'https://res.cloudinary.com/dxhcqas4b/raw/upload/v1749959728/i5v6omsf9yxottwqikje.pdf', NULL),
-('HD202506151517', '2025-06-15', '2025-07-15', '43A99900', '1', 800000, 'ACTIVE_LEASE', 'Vương Trần Bình', '0394672210', '040204000628', 'tranbinhvuong123456@gmail.com', 1500000, 'https://res.cloudinary.com/dxhcqas4b/raw/upload/v1749966362/f799japnk0dheapgm9ax.pdf', NULL);
+INSERT INTO `contract_partners` (`contract_number`, `start_date`, `end_date`, `car_id`, `customer_id`, `deposit`, `status`, `name`, `phone`, `email`, `price_per_day`, `created_at`) VALUES 
+('HD202506140049', '2025-06-14', '2025-07-14', '43A99999', '1', 0, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', 'binhvuong221004@gmail.com', 5000, NULL),
+('HD202506146073', '2025-06-14', '2025-07-14', '37A40262', '1', 500000, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', 'binhvuong221004@gmail.com', 1000000, NULL),
+('HD202506149104', '2025-06-14', '2025-07-14', '43A99998', '1', 500000, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', 'binhvuong221004@gmail.com', 1000000, NULL),
+('HD202506144270', '2025-06-14', '2025-07-14', '43A99997', '1', 900000, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', 'binhvuong221004@gmail.com', 1500000, NULL),
+('HD202506147038', '2025-06-14', '2025-07-14', '38A14204', '1', 800000, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', 'binhvuong221004@gmail.com', 199999, NULL),
+('HD202506146676', '2025-06-14', '2025-07-14', '43A99995', '1', 1000000, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', 'binhvuong221004@gmail.com', 2000000, NULL),
+('HD202506146865', '2025-06-14', '2025-07-14', '38A1234', '1', 900000, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', 'binhvuong221004@gmail.com', 500000, NULL),
+('HD202506147807', '2025-06-14', '2025-07-14', '38A1235', '1', 350000, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', 'binhvuong221004@gmail.com', 499999, NULL),
+('HD202506157594', '2025-06-14', '2025-07-14', '79A13334', '1', 300000, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', 'binhvuong221004@gmail.com', 600000, NULL),
+('HD202506152933', '2025-06-15', '2025-07-15', '79A13337', '1', 400000, 'ACTIVE_LEASE', 'VƯƠNG TRẦN BÌNH', '0394672210', 'binhvuong221004@gmail.com', 699999, NULL),
+('HD202506151517', '2025-06-15', '2025-07-15', '43A99900', '1', 800000, 'ACTIVE_LEASE', 'Vương Trần Bình', '0394672210', 'tranbinhvuong123456@gmail.com', 1500000, NULL);
 /**/;
 
 INSERT INTO `promotions` (`code`, `discount_percent`, `valid_until`, `max_uses`) VALUES 
