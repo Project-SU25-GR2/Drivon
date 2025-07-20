@@ -81,7 +81,9 @@ const RentCar = () => {
     }
   }
 
+  // Lọc xe chỉ còn hợp đồng hiệu lực
   const filteredCars = carsData.filter(car => {
+    if (!car.contract || car.contract.status !== 'ACTIVE_LEASE') return false;
     if (car.status !== 'available') return false;
     const matchesSearch = car.brand.toLowerCase().includes(search.toLowerCase()) ||
                          car.model.toLowerCase().includes(search.toLowerCase()) ||
@@ -95,10 +97,8 @@ const RentCar = () => {
     const matchesSeat = !filters.seat || car.seats.toString() === filters.seat;
     const matchesFuel = !filters.fuel || car.fuelType === filters.fuel;
     const matchesType = !filters.type || (car.type && car.type.toLowerCase() === filters.type.toLowerCase());
-    
     const price = car.contract?.pricePerDay;
     const matchesPrice = price && price >= priceRange[0] && price <= priceRange[1];
-
     return matchesSearch && matchesBrand && matchesSeat && matchesFuel && matchesType && matchesPrice;
   });
 
