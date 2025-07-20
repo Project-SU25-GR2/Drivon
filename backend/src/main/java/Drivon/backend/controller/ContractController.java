@@ -3,7 +3,6 @@ package Drivon.backend.controller;
 import Drivon.backend.dto.ContractRequest;
 import Drivon.backend.model.Contract;
 import Drivon.backend.service.ContractService;
-import Drivon.backend.service.PDFService;
 import Drivon.backend.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -24,9 +23,6 @@ public class ContractController {
 
     @Autowired
     private ContractService contractService;
-
-    @Autowired
-    private PDFService pdfService;
 
     @Autowired
     private EmailService emailService;
@@ -69,22 +65,6 @@ public class ContractController {
             Map<String, String> error = new HashMap<>();
             error.put("error", e.getMessage());
             return ResponseEntity.badRequest().body(error);
-        }
-    }
-
-    // Endpoint tạo PDF hợp đồng thuê xe (mới thêm)
-    @PostMapping("/generate-pdf")
-    public ResponseEntity<byte[]> generateContractPDF(@RequestBody Map<String, Object> requestData) {
-        try {
-            byte[] pdfBytes = pdfService.generateContractPDF(requestData);
-            
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_PDF);
-            headers.setContentDispositionFormData("attachment", "hop-dong-thue-xe.pdf");
-            
-            return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
