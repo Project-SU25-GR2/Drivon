@@ -49,6 +49,15 @@ const PartnerPage = () => {
       }
       
       showSuccessToast(`Partner status updated to ${newStatus}`);
+      // Sau khi update status, fetch lại dữ liệu mới nhất
+      const newData = await fetchPartnersData(true);
+      // Nếu đang mở popup chủ xe, cập nhật lại selectedOwner theo dữ liệu mới
+      if (showOwnerModal && selectedOwner) {
+        const key = selectedOwner.owner.userId || selectedOwner.owner.email;
+        const grouped = groupByOwner(newData);
+        const newOwnerGroup = grouped.find(g => (g.owner.userId || g.owner.email) === key);
+        if (newOwnerGroup) setSelectedOwner(newOwnerGroup);
+      }
     } catch (err) {
       console.error('Error updating partner status:', err);
       showErrorToast('Failed to update status: ' + (err.response?.data?.message || err.message));
@@ -129,6 +138,55 @@ const PartnerPage = () => {
   // Thêm hàm đóng modal zoom
   const closeZoom = () => setZoomedImage(null);
 
+  const groupByOwner = (partners) => {
+    const groups = {};
+    partners.forEach((p) => {
+      const key = p.userId || p.email;
+      if (!groups[key]) {
+        groups[key] = {
+          owner: {
+            userId: p.userId,
+            name: p.name,
+            email: p.email,
+            phone: p.phone,
+          },
+          cars: [],
+        };
+      }
+      groups[key].cars.push(p);
+    });
+    return Object.values(groups);
+  };
+
+  const [selectedOwner, setSelectedOwner] = useState(null);
+  const [showOwnerModal, setShowOwnerModal] = useState(false);
+  const [selectedCar, setSelectedCar] = useState(null);
+  const [showCarModal, setShowCarModal] = useState(false);
+
+  const groupedOwners = groupByOwner(partnersData);
+
+  const handleOpenOwnerModal = (ownerGroup) => {
+    setSelectedOwner(ownerGroup);
+    setShowOwnerModal(true);
+  };
+  const closeOwnerModal = () => {
+    setShowOwnerModal(false);
+    setSelectedOwner(null);
+  };
+  const handleOpenCarModal = async (carContract) => {
+    setSelectedCar(carContract);
+    // Reuse logic cũ để fetch ảnh, cavet, cccd...
+    await handleSeeMore(carContract);
+    setShowCarModal(true);
+  };
+  const closeCarModal = () => {
+    setShowCarModal(false);
+    setSelectedPartner(null);
+    setCavetImages([]);
+    setOtherDocImages([]);
+    setCccdImages([]);
+  };
+
   if (loading) {
     return <div className="loading"><Loader text="Loading partners..." /></div>;
   }
@@ -175,80 +233,85 @@ const PartnerPage = () => {
   return (
     <div className="partner-page">
       <h1>Partner Management</h1>
-      {partnersData.length === 0 ? (
-        <div style={{ 
-          padding: '20px', 
-          backgroundColor: '#f8f9fa', 
-          border: '1px solid #dee2e6',
-          borderRadius: '8px',
-          margin: '20px 0',
-          textAlign: 'center'
-        }}>
+      {groupedOwners.length === 0 ? (
+        <div style={{ padding: '20px', backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '8px', margin: '20px 0', textAlign: 'center' }}>
           <h3>No Partners Found</h3>
           <p>There are currently no partner contracts in the system.</p>
         </div>
       ) : (
         <div className="partner-list">
-          {partnersData.map((partner) => {
-            const initials = partner.name?.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
-            return (
-              <div className="partner-card" key={partner.id} onClick={() => handleSeeMore(partner)}>
-                {/* 1. Partner */}
-                <div className="partner-col partner-main">
-                  <div>
-                    <div className="partner-name">{partner.name}</div>
-                    <div className="partner-id">ID: #{String(partner.id).padStart(4, '0')}</div>
-                  </div>
-                </div>
-                {/* 2. Contact */}
-                <div className="partner-col partner-contact">
-                  <div><span className="icon">📞</span> {partner.phone}</div>
-                  <div><span className="icon">✉️</span> {partner.email}</div>
-                </div>
-                {/* 3. Vehicle */}
-                <div className="partner-col vehicle-info">
-                  <div className="vehicle-name">{partner.car?.brand} {partner.car?.model}</div>
-                  <div className="vehicle-detail">Plate: {partner.carId}</div>
-                  <div className="vehicle-detail">Year: {partner.car?.year}</div>
-                </div>
-                {/* 4. Pricing */}
-                <div className="partner-col pricing-info">
-                  <div className="price">{partner.pricePerDay?.toLocaleString('vi-VN')} VND/day</div>
-                  <div className="deposit">Deposit: {partner.deposit?.toLocaleString('vi-VN')} VND</div>
-                </div>
-                {/* 5. Status */}
-                <div className="partner-col status-col">
-                  <select
-                    value={partner.status || ""}
-                    onChange={e => handleStatusChange(partner.id, e.target.value)}
-                    className={
-                      partner.status === 'ACTIVE_LEASE' ? 'status-active' :
-                      partner.status === 'CANCELLED_LEASE' ? 'status-cancelled' :
-                      partner.status === 'EXPIRED_LEASE' ? 'status-expired' :
-                      partner.status === 'PENDING_LEASE' ? 'status-pending' : ''
-                    }
-                    onClick={e => e.stopPropagation()}
-                    style={{ minWidth: 80, maxWidth: 110 }}
-                    disabled={partner.status === 'CANCELLED_LEASE'}
-                  >
-                    <option value="PENDING_LEASE">PENDING</option>
-                    <option value="ACTIVE_LEASE">ACTIVE</option>
-                    <option value="CANCELLED_LEASE">CANCELLED</option>
-                    <option value="EXPIRED_LEASE">EXPIRED</option>
-                  </select>
-                </div>
+          {groupedOwners.map((group, idx) => (
+            <div className="partner-card" key={group.owner.userId || group.owner.email} onClick={() => handleOpenOwnerModal(group)}>
+              <div className="partner-main-info">
+                <div className="partner-name">{group.owner.name}</div>
+                <div className="partner-id">ID: #{group.owner.userId ? String(group.owner.userId).padStart(4, '0') : ''}</div>
               </div>
-            );
-          })}
+              <div className="partner-contact">
+                <span className="icon">📞</span> {group.owner.phone}
+                <span className="icon">✉️</span> {group.owner.email}
+              </div>
+              <div className="partner-car-count">Số lượng xe: {group.cars.length}</div>
+            </div>
+          ))}
         </div>
       )}
-
-      {showModal && selectedPartner && (
+      {/* Popup list xe của chủ xe */}
+      {showOwnerModal && selectedOwner && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2>Danh sách xe của {selectedOwner.owner.name}</h2>
+              <button className="close-btn" onClick={closeOwnerModal}>&times;</button>
+            </div>
+            <div className="modal-body">
+              <div className="partner-list">
+                {selectedOwner.cars.map((carContract) => (
+                  <div className="partner-card" key={carContract.id} onClick={() => handleOpenCarModal(carContract)}>
+                    <div className="partner-col vehicle-info">
+                      <div className="vehicle-name">{carContract.car?.brand} {carContract.car?.model}</div>
+                      <div className="vehicle-detail">Plate: {carContract.carId}</div>
+                      <div className="vehicle-detail">Year: {carContract.car?.year}</div>
+                    </div>
+                    <div className="partner-col pricing-info">
+                      <div className="price">{carContract.pricePerDay?.toLocaleString('vi-VN')} VND/day</div>
+                      <div className="deposit">Deposit: {carContract.deposit?.toLocaleString('vi-VN')} VND</div>
+                    </div>
+                    <div className="partner-col status-col" onClick={e => e.stopPropagation()}>
+                      <select
+                        value={carContract.status || ""}
+                        onChange={e => handleStatusChange(carContract.id, e.target.value)}
+                        className={
+                          carContract.status === 'ACTIVE_LEASE' ? 'status-active' :
+                          carContract.status === 'CANCELLED_LEASE' ? 'status-cancelled' :
+                          carContract.status === 'EXPIRED_LEASE' ? 'status-expired' :
+                          carContract.status === 'PENDING_LEASE' ? 'status-pending' : ''
+                        }
+                        style={{ minWidth: 80, maxWidth: 110 }}
+                        disabled={carContract.status === 'CANCELLED_LEASE'}
+                      >
+                        <option value="PENDING_LEASE">PENDING</option>
+                        <option value="ACTIVE_LEASE">ACTIVE</option>
+                        <option value="CANCELLED_LEASE">CANCELLED</option>
+                        <option value="EXPIRED_LEASE">EXPIRED</option>
+                      </select>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div style={{marginTop: 16, textAlign: 'right'}}>
+                <button className="see-more-btn" onClick={closeOwnerModal}>Đóng</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Popup chi tiết xe (reuse modal cũ) */}
+      {showCarModal && selectedPartner && (
         <div className="modal-overlay">
           <div className="modal-content">
             <div className="modal-header">
               <h2>Car Details</h2>
-              <button className="close-btn" onClick={closeModal}>&times;</button>
+              <button className="close-btn" onClick={closeCarModal}>&times;</button>
             </div>
             <div className="modal-body">
               {/* Container cho ảnh */}
@@ -384,7 +447,7 @@ const PartnerPage = () => {
           </div>
         </div>
       )}
-      {/* Modal phóng to ảnh */}
+      {/* Modal phóng to ảnh giữ nguyên */}
       {zoomedImage && (
         <div 
           style={{
