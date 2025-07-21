@@ -32,6 +32,7 @@ import { RentalHistoryProvider } from "./contexts/RentalHistoryContext";
 import { CarManagementProvider } from "./contexts/CarManagementContext";
 import { PartnerDataProvider } from "./contexts/PartnerDataContext";
 import { UserDataProvider } from "./contexts/UserDataContext";
+import { ContractsProvider } from "./contexts/ContractsContext";
 import webSocketService from "./services/WebSocketService";
 // import CarRental404 from "./components/others/404";
 
@@ -91,6 +92,7 @@ function App() {
           <CarManagementProvider>
             <PartnerDataProvider>
               <UserDataProvider>
+                <ContractsProvider>
                 <Routes>
                   <Route
                     path="/"
@@ -366,6 +368,7 @@ function App() {
                     }
                   />
                 </Routes>
+                </ContractsProvider>
               </UserDataProvider>
             </PartnerDataProvider>
           </CarManagementProvider>

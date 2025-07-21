@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import SimpleButton from '../others/SimpleButton';
 import { API_URL } from '../../api/configApi';
 import { showErrorToast, showSuccessToast } from '../notification/notification';
+import { useContracts } from '../../contexts/ContractsContext';
   const RentYourCarForm = () => {
     const navigate = useNavigate();
     const storedUser = localStorage.getItem("user");
@@ -43,6 +44,9 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
     // State for checking owner role from backend
     const [isOwner, setIsOwner] = useState(false);
     const [roleLoading, setRoleLoading] = useState(true);
+    
+    // Use contracts context
+    const { contractsData, fetchContractsData } = useContracts();
 
     useEffect(() => {
       if (!storedUser) {
@@ -91,8 +95,9 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
         try {
           if (storedUser) {
             const user = JSON.parse(storedUser);
-            const res = await axios.get(`${API_URL}/contracts/user/${user.userId}`);
-            const contracts = res.data || [];
+            // Use context to fetch contracts data
+            await fetchContractsData(user.userId);
+            const contracts = contractsData || [];
             // Filter for contracts that are 'become a partner' (e.g., status PENDING, PENDING_LEASE, etc.)
             // You may need to adjust this filter based on your backend logic
             const sorted = contracts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -124,7 +129,7 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
         }
       }
       fetchLatestContract();
-    }, [storedUser]);
+    }, [storedUser, fetchContractsData, contractsData]);
 
     // Show loading spinner while checking role or contract
     if (roleLoading || loadingContract) {

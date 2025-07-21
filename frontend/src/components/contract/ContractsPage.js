@@ -1,67 +1,22 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
-import { API_URL } from '../../api/configApi';
+import React, { useState, useEffect } from 'react';
+import { useContracts } from '../../contexts/ContractsContext';
 import './ContractsPage.css';
 
 const ContractsPage = () => {
-  const [contracts, setContracts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [expandedContract, setExpandedContract] = useState(null);
   const [zoomImg, setZoomImg] = useState(null);
   
   // Get current user
   const currentUser = JSON.parse(localStorage.getItem('user'));
 
-  const fetchUserContracts = useCallback(async () => {
-    if (!currentUser?.userId) {
-      setLoading(false);
-      setError('Không tìm thấy thông tin người dùng');
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Add timeout to prevent hanging
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-      
-      const response = await axios.get(`${API_URL}/contracts/user/${currentUser.userId}`, {
-        signal: controller.signal,
-        timeout: 10000
-      });
-      
-      clearTimeout(timeoutId);
-      setContracts(response.data || []);
-    } catch (err) {
-      if (err.code === 'ECONNABORTED' || err.name === 'AbortError') {
-        setError('Yêu cầu bị timeout. Vui lòng thử lại.');
-      } else if (err.response?.status === 404) {
-        setError('Không tìm thấy hợp đồng nào cho người dùng này.');
-      } else if (err.response?.status >= 500) {
-        setError('Lỗi server. Vui lòng thử lại sau.');
-      } else if (err.code === 'ERR_NETWORK') {
-        setError('Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.');
-      } else {
-        setError(err.response?.data?.error || 'Không thể tải danh sách hợp đồng');
-      }
-      
-      setContracts([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [currentUser?.userId]);
+  // Use contracts context
+  const { contractsData: contracts, loading, error, fetchContractsData, updateContractStatus } = useContracts();
 
   useEffect(() => {
     if (currentUser?.userId) {
-      fetchUserContracts();
-    } else {
-      setLoading(false);
-      setError('Không tìm thấy thông tin người dùng');
+      fetchContractsData(currentUser.userId);
     }
-  }, [currentUser?.userId]);
+  }, [currentUser?.userId, fetchContractsData]);
 
   // 1. Sửa getStatusBadge để chỉ còn 4 trạng thái, đồng bộ với Partner Manager và chuyển text sang tiếng Anh
   const getStatusBadge = (status) => {
@@ -122,7 +77,7 @@ const ContractsPage = () => {
           <div className="error-message">
             <i className="bi bi-exclamation-triangle"></i>
             <p>{error}</p>
-            <button onClick={fetchUserContracts} className="retry-btn">
+            <button onClick={() => fetchContractsData(currentUser.userId)} className="retry-btn">
               Thử lại
             </button>
           </div>
@@ -343,8 +298,7 @@ const ContractsPage = () => {
                 {contract.status === 'PENDING_LEASE' && (
                   <button className="btn-danger" onClick={async () => {
                     try {
-                      await axios.put(`${API_URL}/admin/partners/${contract.id}/status`, { status: 'CANCELLED_LEASE' });
-                      fetchUserContracts();
+                      await updateContractStatus(contract.id, 'CANCELLED_LEASE');
                     } catch (e) {
                       alert('Failed to cancel contract!');
                     }
