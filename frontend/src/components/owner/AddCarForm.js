@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import axios from "axios";
 import cloudinaryConfig from "../../config/cloudinary";
-import "./EditCarForm.css"; // Reusing the same CSS as EditCarForm
-import { API_URL } from '../../api/configApi';
-import { showErrorToast, showSuccessToast } from '../notification/notification';
+import "./EditCarForm.css";
+import { API_URL } from "../../api/configApi";
+import { showErrorToast, showSuccessToast } from "../notification/notification";
 
 const CAR_BRANDS = [
   "Toyota",
@@ -25,7 +25,6 @@ const CAR_BRANDS = [
   "VinFast",
   "Other",
 ];
-
 const LOCATIONS = [
   "Hanoi",
   "Ho Chi Minh City",
@@ -106,160 +105,224 @@ const AddCarForm = ({ onSave, onClose }) => {
     fuelConsumption: "",
     location: "",
     pricePerDay: "",
-    mainImage: "",
-    otherImages: [],
+    deposit: "",
+    phoneNumber: "",
   });
+  const [mainImage, setMainImage] = useState("");
+  const [mainPreviewUrl, setMainPreviewUrl] = useState("");
+  const [otherImages, setOtherImages] = useState([]);
+  const [otherPreviewUrls, setOtherPreviewUrls] = useState([]);
+  const [cavetImages, setCavetImages] = useState([]);
+  const [cavetPreviewUrls, setCavetPreviewUrls] = useState([]);
+  const [otherDocImages, setOtherDocImages] = useState([]);
+  const [otherDocPreviewUrls, setOtherDocPreviewUrls] = useState([]);
+  const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [selectedMainImageFile, setSelectedMainImageFile] = useState(null);
-  const [selectedOtherImageFiles, setSelectedOtherImageFiles] = useState([]);
-  const [uploadingImage, setUploadingImage] = useState(false);
+
+  // Lấy userId từ localStorage (hoặc context nếu có)
+  const user = JSON.parse(localStorage.getItem("user"));
+  const ownerId = user?.id || user?.userId;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleMainFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedMainImageFile(e.target.files[0]);
-    }
-  };
-
-  const handleOtherFileChange = (e) => {
-    if (e.target.files) {
-      setSelectedOtherImageFiles(Array.from(e.target.files));
-    }
-  };
-
-  const handleImageUpload = async () => {
-    if (!selectedMainImageFile) {
-      showErrorToast("Please select a main image file to upload.");
+  const handleMainImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      showErrorToast("File size must not exceed 5MB");
       return;
     }
-
-    const formDataUpload = new FormData();
-    formDataUpload.append("file", selectedMainImageFile);
-    formDataUpload.append("upload_preset", cloudinaryConfig.uploadPreset);
-    formDataUpload.append("api_key", cloudinaryConfig.apiKey);
-
-    setUploadingImage(true);
-    setError(null);
-
+    if (!file.type.startsWith("image/")) {
+      showErrorToast("Please select an image file");
+      return;
+    }
+    setMainPreviewUrl(URL.createObjectURL(file));
+    setUploading(true);
     try {
+      const formDataImg = new FormData();
+      formDataImg.append("file", file);
+      formDataImg.append("upload_preset", cloudinaryConfig.uploadPreset);
+      formDataImg.append("api_key", cloudinaryConfig.apiKey);
       const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/upload`;
-      const uploadResponse = await axios.post(cloudinaryUrl, formDataUpload);
-      const uploadedImageUrl = uploadResponse.data.secure_url;
-
-      setFormData((prevData) => ({
-        ...prevData,
-        mainImage: uploadedImageUrl,
-      }));
-      setSelectedMainImageFile(null);
-      showSuccessToast("Main image uploaded successfully!");
-    } catch (err) {
-      console.error("Error uploading main image to Cloudinary:", err);
-      setError("Failed to upload main image. Please try again.");
-      showErrorToast("Failed to upload main image. Please try again.");
+      const response = await axios.post(cloudinaryUrl, formDataImg);
+      setMainImage(response.data.secure_url);
+      showSuccessToast("Main image uploaded successfully");
+    } catch (error) {
+      showErrorToast("Error uploading image");
     } finally {
-      setUploadingImage(false);
+      setUploading(false);
     }
   };
 
-  const handleOtherImageUpload = async () => {
-    if (selectedOtherImageFiles.length === 0) {
-      showErrorToast(
-        "Please select at least one image file to upload for other images."
-      );
-      return;
-    }
-
-    setUploadingImage(true);
-    setError(null);
-    const uploadedUrls = [];
-
-    try {
-      const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/upload`;
-
-      for (const file of selectedOtherImageFiles) {
-        const formDataUploadOther = new FormData();
-        formDataUploadOther.append("file", file);
-        formDataUploadOther.append(
-          "upload_preset",
-          cloudinaryConfig.uploadPreset
-        );
-        formDataUploadOther.append("api_key", cloudinaryConfig.apiKey);
-
-        const uploadResponse = await axios.post(
-          cloudinaryUrl,
-          formDataUploadOther
-        );
-        uploadedUrls.push(uploadResponse.data.secure_url);
+  const handleOtherImagesChange = async (e) => {
+    const files = Array.from(e.target.files);
+    for (const file of files) {
+      if (file.size > 5 * 1024 * 1024) {
+        showErrorToast("File size must not exceed 5MB");
+        return;
       }
-
-      setFormData((prevData) => ({
-        ...prevData,
-        otherImages: [...prevData.otherImages, ...uploadedUrls],
-      }));
-      setSelectedOtherImageFiles([]);
-      showSuccessToast("Other images uploaded and added successfully!");
-    } catch (err) {
-      console.error("Error uploading other images to Cloudinary:", err);
-      setError("Failed to upload other images. Please try again.");
-      showErrorToast("Failed to upload other images. Please try again.");
+      if (!file.type.startsWith("image/")) {
+        showErrorToast("Please select an image file");
+        return;
+      }
+    }
+    const newPreviewUrls = files.map((file) => URL.createObjectURL(file));
+    setOtherPreviewUrls((prev) => [...prev, ...newPreviewUrls]);
+    setUploading(true);
+    try {
+      const uploadPromises = files.map(async (file) => {
+        const formDataImg = new FormData();
+        formDataImg.append("file", file);
+        formDataImg.append("upload_preset", cloudinaryConfig.uploadPreset);
+        formDataImg.append("api_key", cloudinaryConfig.apiKey);
+        const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/upload`;
+        const response = await axios.post(cloudinaryUrl, formDataImg);
+        return response.data.secure_url;
+      });
+      const uploadedUrls = await Promise.all(uploadPromises);
+      setOtherImages((prev) => [...prev, ...uploadedUrls]);
+      showSuccessToast(`${files.length} other images uploaded successfully`);
+    } catch (error) {
+      showErrorToast("Error uploading images");
     } finally {
-      setUploadingImage(false);
+      setUploading(false);
     }
   };
 
-  const handleRemoveImage = (indexToRemove) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      otherImages: prevData.otherImages.filter(
-        (_, index) => index !== indexToRemove
-      ),
-    }));
+  const handleCavetImagesChange = async (e) => {
+    const files = Array.from(e.target.files);
+    for (const file of files) {
+      if (file.size > 5 * 1024 * 1024) {
+        showErrorToast("File size must not exceed 5MB");
+        return;
+      }
+      if (!file.type.startsWith("image/")) {
+        showErrorToast("Please select an image file");
+        return;
+      }
+    }
+    const newPreviewUrls = files.map((file) => URL.createObjectURL(file));
+    setCavetPreviewUrls((prev) => [...prev, ...newPreviewUrls]);
+    setUploading(true);
+    try {
+      const uploadPromises = files.map(async (file) => {
+        const formDataImg = new FormData();
+        formDataImg.append("file", file);
+        formDataImg.append("upload_preset", cloudinaryConfig.uploadPreset);
+        formDataImg.append("api_key", cloudinaryConfig.apiKey);
+        const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/upload`;
+        const response = await axios.post(cloudinaryUrl, formDataImg);
+        return response.data.secure_url;
+      });
+      const uploadedUrls = await Promise.all(uploadPromises);
+      setCavetImages((prev) => [...prev, ...uploadedUrls]);
+      showSuccessToast(`${files.length} cavet images uploaded successfully`);
+    } catch (error) {
+      showErrorToast("Error uploading cavet images");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleOtherDocImagesChange = async (e) => {
+    const files = Array.from(e.target.files);
+    for (const file of files) {
+      if (file.size > 5 * 1024 * 1024) {
+        showErrorToast("File size must not exceed 5MB");
+        return;
+      }
+      if (!file.type.startsWith("image/")) {
+        showErrorToast("Please select an image file");
+        return;
+      }
+    }
+    const newPreviewUrls = files.map((file) => URL.createObjectURL(file));
+    setOtherDocPreviewUrls((prev) => [...prev, ...newPreviewUrls]);
+    setUploading(true);
+    try {
+      const uploadPromises = files.map(async (file) => {
+        const formDataImg = new FormData();
+        formDataImg.append("file", file);
+        formDataImg.append("upload_preset", cloudinaryConfig.uploadPreset);
+        formDataImg.append("api_key", cloudinaryConfig.apiKey);
+        const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/upload`;
+        const response = await axios.post(cloudinaryUrl, formDataImg);
+        return response.data.secure_url;
+      });
+      const uploadedUrls = await Promise.all(uploadPromises);
+      setOtherDocImages((prev) => [...prev, ...uploadedUrls]);
+      showSuccessToast(
+        `${files.length} other document images uploaded successfully`
+      );
+    } catch (error) {
+      showErrorToast("Error uploading other document images");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeMainImage = () => {
+    setMainImage("");
+    setMainPreviewUrl("");
+  };
+  const removeOtherImage = (index) => {
+    setOtherImages((prev) => prev.filter((_, i) => i !== index));
+    setOtherPreviewUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+  const removeCavetImage = (index) => {
+    setCavetImages((prev) => prev.filter((_, i) => i !== index));
+    setCavetPreviewUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+  const removeOtherDocImage = (index) => {
+    setOtherDocImages((prev) => prev.filter((_, i) => i !== index));
+    setOtherDocPreviewUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
+    // Validate
+    if (
+      !formData.brand ||
+      !formData.model ||
+      !formData.year ||
+      !formData.licensePlate ||
+      !formData.type ||
+      !formData.location ||
+      !formData.seats ||
+      !formData.transmission ||
+      !formData.fuelType ||
+      !formData.fuelConsumption ||
+      !formData.description ||
+      !formData.pricePerDay ||
+      !formData.deposit ||
+      !formData.phoneNumber
+    ) {
+      showErrorToast("Please fill in all required fields");
+      setLoading(false);
+      return;
+    }
+    if (parseInt(formData.seats) < 2 || parseInt(formData.seats) > 16) {
+      showErrorToast("Seats must be between 2 and 16");
+      setLoading(false);
+      return;
+    }
+    if (parseFloat(formData.fuelConsumption) <= 0) {
+      showErrorToast("Fuel consumption must be positive");
+      setLoading(false);
+      return;
+    }
+    if (parseFloat(formData.deposit) <= 0) {
+      showErrorToast("Deposit must be positive");
+      setLoading(false);
+      return;
+    }
     try {
-      const requiredFields = [
-        "licensePlate",
-        "brand",
-        "model",
-        "year",
-        "type",
-        "seats",
-        "transmission",
-        "fuelType",
-        "fuelConsumption",
-        "location",
-        "pricePerDay",
-      ];
-      const missingFields = requiredFields.filter((field) => !formData[field]);
-
-      if (missingFields.length > 0) {
-        setError(`Missing required fields: ${missingFields.join(", ")}`);
-        setLoading(false);
-        return;
-      }
-
-      const transmissionMap = {
-        manual: "MANUAL",
-        automatic: "AUTOMATIC",
-      };
-
-      const fuelTypeMap = {
-        gasoline: "GASOLINE",
-        diesel: "DIESEL",
-        electric: "ELECTRIC",
-        hybrid: "HYBRID",
-      };
-
       const carData = {
         licensePlate: formData.licensePlate,
         brand: formData.brand,
@@ -268,30 +331,29 @@ const AddCarForm = ({ onSave, onClose }) => {
         type: formData.type,
         description: formData.description || "",
         seats: parseInt(formData.seats),
-        transmission: transmissionMap[formData.transmission.toLowerCase()],
-        fuelType: fuelTypeMap[formData.fuelType.toLowerCase()],
+        transmission: formData.transmission,
+        fuelType: formData.fuelType,
         fuelConsumption: parseFloat(formData.fuelConsumption),
         location: formData.location,
         pricePerDay: parseFloat(formData.pricePerDay),
+        deposit: parseFloat(formData.deposit),
+        phoneNumber: formData.phoneNumber,
         status: "PENDING",
-        mainImage: formData.mainImage || "",
-        otherImages: formData.otherImages || [],
+        mainImage: mainImage || "",
+        otherImages: otherImages || [],
+        cavetImages: cavetImages || [],
+        otherDocImages: otherDocImages || [],
+        ownerId: ownerId, // Thêm ownerId vào payload
       };
-
-      const response = await axios.post(
-        `${API_URL}/cars`,
-        carData
-      );
-      console.log("New car created:", response.data);
-
+      const response = await axios.post(`${API_URL}/cars`, carData);
       onSave(response.data);
-      showSuccessToast("Car registered successfully! Waiting for admin approval.");
+      showSuccessToast(
+        "Car registered successfully! Waiting for admin approval."
+      );
     } catch (err) {
-      console.error("Error registering car:", err);
-      setError(
+      showErrorToast(
         `Failed to register car: ${err.response?.data?.error || err.message}`
       );
-      showErrorToast(`Failed to register car: ${err.response?.data?.error || err.message}`);
     } finally {
       setLoading(false);
     }
@@ -303,31 +365,18 @@ const AddCarForm = ({ onSave, onClose }) => {
         <div className="edit-car-modal-header">
           <h2>Register New Car</h2>
         </div>
-
         {loading && <div className="loading">Registering car...</div>}
         {error && <div className="error-message">{error}</div>}
-
         <form onSubmit={handleSubmit} className="edit-car-form">
+          {/* Vehicle Info */}
           <div className="form-group">
-            <label htmlFor="licensePlate">License Plate:</label>
-            <input
-              type="text"
-              id="licensePlate"
-              name="licensePlate"
-              value={formData.licensePlate}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="brand">Brand:</label>
+            <label htmlFor="brand">Car Brand</label>
             <select
               id="brand"
               name="brand"
               value={formData.brand}
               onChange={handleChange}
               required
-              className="form-control"
             >
               <option value="">Select a brand</option>
               {CAR_BRANDS.map((brand) => (
@@ -336,23 +385,9 @@ const AddCarForm = ({ onSave, onClose }) => {
                 </option>
               ))}
             </select>
-            {formData.brand === "Other" && (
-              <input
-                type="text"
-                name="brand"
-                placeholder="Enter your brand"
-                value={formData.brandInput || ""}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, brand: e.target.value }))
-                }
-                className="form-control"
-                style={{ marginTop: 8 }}
-                required
-              />
-            )}
           </div>
           <div className="form-group">
-            <label htmlFor="model">Model:</label>
+            <label htmlFor="model">Car Model</label>
             <input
               type="text"
               id="model"
@@ -363,7 +398,7 @@ const AddCarForm = ({ onSave, onClose }) => {
             />
           </div>
           <div className="form-group">
-            <label htmlFor="year">Year:</label>
+            <label htmlFor="year">Year</label>
             <input
               type="number"
               id="year"
@@ -374,93 +409,35 @@ const AddCarForm = ({ onSave, onClose }) => {
             />
           </div>
           <div className="form-group">
-            <label htmlFor="type">Type:</label>
+            <label htmlFor="licensePlate">License Plate</label>
             <input
               type="text"
+              id="licensePlate"
+              name="licensePlate"
+              value={formData.licensePlate}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="type">Type</label>
+            <select
               id="type"
               name="type"
               value={formData.type}
               onChange={handleChange}
               required
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="pricePerDay">Price per Day (VND):</label>
-            <input
-              type="number"
-              id="pricePerDay"
-              name="pricePerDay"
-              value={formData.pricePerDay}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="form-group full-width">
-            <label htmlFor="description">Description:</label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows="4"
-              required
-            ></textarea>
-          </div>
-          <div className="form-group">
-            <label htmlFor="seats">Seats:</label>
-            <input
-              type="number"
-              id="seats"
-              name="seats"
-              value={formData.seats}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="transmission">Transmission:</label>
-            <select
-              id="transmission"
-              name="transmission"
-              value={formData.transmission}
-              onChange={handleChange}
-              required
             >
-              <option value="">Select...</option>
-              <option value="manual">Manual</option>
-              <option value="automatic">Automatic</option>
+              <option value="">Select a type</option>
+              <option value="suv">SUV</option>
+              <option value="sedan">Sedan</option>
+              <option value="mpv">MPV</option>
+              <option value="hatchback">Hatchback</option>
+              <option value="pickup">Pickup</option>
             </select>
           </div>
           <div className="form-group">
-            <label htmlFor="fuelType">Fuel Type:</label>
-            <select
-              id="fuelType"
-              name="fuelType"
-              value={formData.fuelType}
-              onChange={handleChange}
-              required
-            >
-              <option value="">Select...</option>
-              <option value="gasoline">Gasoline</option>
-              <option value="diesel">Diesel</option>
-              <option value="electric">Electric</option>
-              <option value="hybrid">Hybrid</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label htmlFor="fuelConsumption">Fuel Consumption (L/100km):</label>
-            <input
-              type="number"
-              step="0.1"
-              id="fuelConsumption"
-              name="fuelConsumption"
-              value={formData.fuelConsumption}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="location">Location:</label>
+            <label htmlFor="location">Location</label>
             <select
               id="location"
               name="location"
@@ -476,80 +453,319 @@ const AddCarForm = ({ onSave, onClose }) => {
               ))}
             </select>
           </div>
-
-          <div className="form-group image-upload-section full-width">
-            <label>Main Image:</label>
-            <div className="main-image-preview">
-              {formData.mainImage ? (
-                <img
-                  src={formData.mainImage}
-                  alt="Main Car"
-                  className="image-preview"
-                />
-              ) : (
-                <p>No main image selected.</p>
-              )}
-            </div>
-            <div className="add-image-input-group">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleMainFileChange}
-              />
-              <button
-                type="button"
-                onClick={handleImageUpload}
-                className="add-image-btn"
-                disabled={uploadingImage || loading}
-              >
-                {uploadingImage ? "Uploading..." : "Upload Main Image"}
-              </button>
-            </div>
+          <div className="form-group">
+            <label htmlFor="seats">Seats</label>
+            <input
+              type="number"
+              id="seats"
+              name="seats"
+              value={formData.seats}
+              onChange={handleChange}
+              required
+              min="2"
+              max="16"
+            />
           </div>
-
-          <div className="form-group image-upload-section full-width">
-            <label>Other Images:</label>
-            <div className="image-preview-container">
-              {formData.otherImages.length > 0 ? (
-                formData.otherImages.map((img, index) => (
-                  <div key={index} className="image-preview-item">
-                    <img src={img} alt="Car" className="image-preview" />
+          <div className="form-group">
+            <label htmlFor="transmission">Transmission</label>
+            <select
+              id="transmission"
+              name="transmission"
+              value={formData.transmission}
+              onChange={handleChange}
+              required
+            >
+              <option value="">Select transmission</option>
+              <option value="manual">Manual</option>
+              <option value="automatic">Automatic</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label htmlFor="fuelType">Fuel Type</label>
+            <select
+              id="fuelType"
+              name="fuelType"
+              value={formData.fuelType}
+              onChange={handleChange}
+              required
+            >
+              <option value="">Select fuel type</option>
+              <option value="gasoline">Gasoline</option>
+              <option value="diesel">Diesel</option>
+              <option value="electric">Electric</option>
+              <option value="hybrid">Hybrid</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label htmlFor="fuelConsumption">
+              Fuel Consumption (liters/100km)
+            </label>
+            <input
+              type="number"
+              id="fuelConsumption"
+              name="fuelConsumption"
+              value={formData.fuelConsumption}
+              onChange={handleChange}
+              required
+              step="0.1"
+              min="0"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="pricePerDay">Price per Day (VND)</label>
+            <input
+              type="number"
+              id="pricePerDay"
+              name="pricePerDay"
+              value={formData.pricePerDay}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="deposit">Deposit (VND)</label>
+            <input
+              type="number"
+              id="deposit"
+              name="deposit"
+              value={formData.deposit}
+              onChange={handleChange}
+              required
+              min="1"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="phoneNumber">Phone Number</label>
+            <input
+              type="tel"
+              id="phoneNumber"
+              name="phoneNumber"
+              value={formData.phoneNumber}
+              onChange={handleChange}
+              required
+              pattern="[0-9]{10,15}"
+              placeholder="Enter your phone number"
+            />
+          </div>
+          <div className="form-group full-width">
+            <label htmlFor="description">Description</label>
+            <textarea
+              id="description"
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              rows="4"
+              required
+            />
+          </div>
+          {/* Images & Documents Section */}
+          <div className="form-group full-width">
+            <label style={{ fontWeight: 600, marginBottom: 8 }}>
+              Car Images
+            </label>
+            <div className="partner-image-upload-section">
+              <div className="partner-image-preview-grid">
+                {mainPreviewUrl && (
+                  <div className="partner-image-preview-item">
+                    <img src={mainPreviewUrl} alt="Main Preview" />
                     <button
                       type="button"
-                      className="remove-image-btn"
-                      onClick={() => handleRemoveImage(index)}
+                      className="partner-remove-image-btn"
+                      onClick={removeMainImage}
                     >
-                      &times;
+                      ×
                     </button>
                   </div>
-                ))
-              ) : (
-                <p>No other images uploaded.</p>
-              )}
+                )}
+                {!mainPreviewUrl && (
+                  <label
+                    className="partner-upload-button"
+                    htmlFor="car-main-image"
+                  >
+                    <span>Car Images</span>
+                    <input
+                      type="file"
+                      id="car-main-image"
+                      accept="image/*"
+                      onChange={handleMainImageChange}
+                      disabled={uploading}
+                      style={{ display: "none" }}
+                    />
+                  </label>
+                )}
+              </div>
             </div>
-            <div className="add-image-input-group">
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleOtherFileChange}
-              />
-              <button
-                type="button"
-                onClick={handleOtherImageUpload}
-                className="add-image-btn"
-                disabled={uploadingImage || loading}
+            <label style={{ fontWeight: 600, margin: "16px 0 8px 0" }}>
+              Other Car Images
+            </label>
+            <div className="partner-image-upload-section">
+              <label
+                className="partner-upload-button"
+                htmlFor="car-other-images"
               >
-                {uploadingImage ? "Uploading..." : "Upload Other Images"}
-              </button>
+                <span>Other Car Images</span>
+                <input
+                  type="file"
+                  id="car-other-images"
+                  accept="image/*"
+                  multiple
+                  onChange={handleOtherImagesChange}
+                  disabled={uploading}
+                  style={{ display: "none" }}
+                />
+              </label>
+              <div className="partner-image-preview-grid">
+                {otherPreviewUrls.map((url, index) => (
+                  <div key={index} className="partner-image-preview-item">
+                    <img src={url} alt={`Other Preview ${index + 1}`} />
+                    <button
+                      type="button"
+                      className="partner-remove-image-btn"
+                      onClick={() => removeOtherImage(index)}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-
+          <div className="form-group full-width">
+            <label style={{ fontWeight: 600, marginBottom: 8 }}>
+              Vehicle Registration (Cavet) Images
+            </label>
+            <div className="partner-image-upload-section">
+              <label
+                className="partner-upload-button"
+                htmlFor="car-cavet-images"
+              >
+                <span>Upload Registration</span>
+                <input
+                  type="file"
+                  id="car-cavet-images"
+                  accept="image/*"
+                  multiple
+                  onChange={handleCavetImagesChange}
+                  disabled={uploading}
+                  style={{ display: "none" }}
+                />
+              </label>
+              <div className="partner-image-preview-grid">
+                {cavetPreviewUrls.map((url, index) => (
+                  <div key={index} className="partner-image-preview-item">
+                    <img src={url} alt={`Cavet Preview ${index + 1}`} />
+                    <button
+                      type="button"
+                      className="partner-remove-image-btn"
+                      onClick={() => removeCavetImage(index)}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <label style={{ fontWeight: 600, margin: "16px 0 8px 0" }}>
+              Other Documents (if needed)
+            </label>
+            <div className="partner-image-upload-section">
+              <label
+                className="partner-upload-button"
+                htmlFor="car-other-doc-images"
+              >
+                <span>Upload Other Documents</span>
+                <input
+                  type="file"
+                  id="car-other-doc-images"
+                  accept="image/*"
+                  multiple
+                  onChange={handleOtherDocImagesChange}
+                  disabled={uploading}
+                  style={{ display: "none" }}
+                />
+              </label>
+              <div className="partner-image-preview-grid">
+                {otherDocPreviewUrls.map((url, index) => (
+                  <div key={index} className="partner-image-preview-item">
+                    <img src={url} alt={`Other Doc Preview ${index + 1}`} />
+                    <button
+                      type="button"
+                      className="partner-remove-image-btn"
+                      onClick={() => removeOtherDocImage(index)}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <small
+              className="partner-upload-info"
+              style={{ marginTop: "0.7rem", display: "block" }}
+            >
+              Supported formats: JPG, PNG, GIF. Max size: 5MB
+            </small>
+          </div>
+          {/* Important Notes */}
+          <div
+            className="form-group full-width"
+            style={{ margin: "0.5rem 0 1.5rem 0" }}
+          >
+            <div
+              style={{
+                background: "#eaf6fb",
+                border: "1.5px solid #b3e0fc",
+                borderRadius: 8,
+                boxShadow: "0 1px 4px rgba(41,128,185,0.07)",
+                padding: "1.1rem 1.2rem",
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "0.8rem",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "1.5rem",
+                  color: "#2980b9",
+                  marginTop: "0.1rem",
+                }}
+              >
+                <i className="bi bi-info-circle-fill"></i>
+              </span>
+              <span>
+                <strong style={{ color: "#2c3e50" }}>
+                  Vehicle document note:
+                </strong>
+                <br />
+                <span
+                  style={{ display: "block", margin: "0.3rem 0 0.1rem 0.2rem" }}
+                >
+                  <span style={{ color: "#27ae60", fontWeight: 500 }}>
+                    &#10003; Owner vehicle:
+                  </span>{" "}
+                  <span style={{ color: "#34495e" }}>
+                    Upload a photo/scan of the vehicle registration with the
+                    same name as the Partner.
+                  </span>
+                </span>
+                <span style={{ display: "block", margin: "0.1rem 0 0 0.2rem" }}>
+                  <span style={{ color: "#e67e22", fontWeight: 500 }}>
+                    &#9888; Not owner vehicle:
+                  </span>{" "}
+                  <span style={{ color: "#34495e" }}>
+                    A valid authorization letter or car rental contract is
+                    required (with signature and clear information).
+                  </span>
+                </span>
+              </span>
+            </div>
+          </div>
+          {/* Submit/Cancel */}
           <div className="form-actions">
             <button
               type="submit"
               className="save-btn"
-              disabled={loading || uploadingImage}
+              disabled={loading || uploading}
             >
               {loading ? "Registering..." : "Register Car"}
             </button>
@@ -557,7 +773,7 @@ const AddCarForm = ({ onSave, onClose }) => {
               type="button"
               className="cancel-btn"
               onClick={onClose}
-              disabled={loading || uploadingImage}
+              disabled={loading || uploading}
             >
               Cancel
             </button>
