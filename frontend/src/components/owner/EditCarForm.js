@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import cloudinaryConfig from "../../config/cloudinary"; // Import Cloudinary config
 import "./EditCarForm.css"; // We will create this CSS file next
-import { API_URL } from '../../api/configApi';  
-import { useParams, useNavigate } from 'react-router-dom';
-import { showErrorToast, showSuccessToast } from '../notification/notification';
+import { API_URL } from "../../api/configApi";
+import { useParams, useNavigate } from "react-router-dom";
+import { showErrorToast, showSuccessToast } from "../notification/notification";
 
 const EditCarForm = ({ car, onSave, onClose }) => {
   const [formData, setFormData] = useState({
@@ -28,6 +28,9 @@ const EditCarForm = ({ car, onSave, onClose }) => {
   const [selectedMainImageFile, setSelectedMainImageFile] = useState(null); // State for selected main image file object
   const [selectedOtherImageFiles, setSelectedOtherImageFiles] = useState([]); // State for selected other image files array
   const [uploadingImage, setUploadingImage] = useState(false); // State to indicate image is being uploaded
+  // 1. Thêm state cho cavetImages và cavetPreviewUrls
+  const [cavetImages, setCavetImages] = useState([]);
+  const [cavetPreviewUrls, setCavetPreviewUrls] = useState([]);
 
   const CAR_BRANDS = [
     "Toyota",
@@ -245,6 +248,42 @@ const EditCarForm = ({ car, onSave, onClose }) => {
     }
   };
 
+  // 2. Thêm hàm handleCavetImagesChange
+  const handleCavetImagesChange = async (e) => {
+    const files = Array.from(e.target.files);
+    for (const file of files) {
+      if (file.size > 5 * 1024 * 1024) {
+        showErrorToast("File size must not exceed 5MB");
+        return;
+      }
+      if (!file.type.startsWith("image/")) {
+        showErrorToast("Please select an image file");
+        return;
+      }
+    }
+    const newPreviewUrls = files.map((file) => URL.createObjectURL(file));
+    setCavetPreviewUrls((prev) => [...prev, ...newPreviewUrls]);
+    setUploadingImage(true);
+    try {
+      const uploadPromises = files.map(async (file) => {
+        const formDataImg = new FormData();
+        formDataImg.append("file", file);
+        formDataImg.append("upload_preset", cloudinaryConfig.uploadPreset);
+        formDataImg.append("api_key", cloudinaryConfig.apiKey);
+        const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/upload`;
+        const response = await axios.post(cloudinaryUrl, formDataImg);
+        return response.data.secure_url;
+      });
+      const uploadedUrls = await Promise.all(uploadPromises);
+      setCavetImages((prev) => [...prev, ...uploadedUrls]);
+      showSuccessToast(`${files.length} cavet images uploaded successfully`);
+    } catch (error) {
+      showErrorToast("Error uploading cavet images");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -333,6 +372,16 @@ const EditCarForm = ({ car, onSave, onClose }) => {
         await axios.post(`${API_URL}/cars/images`, imageData);
       }
 
+      // 4. Khi submit, gửi cavetImages lên backend qua API /cars/images/cavet nếu có thay đổi
+      if (cavetImages.length > 0) {
+        const cavetImageData = {
+          carId: formData.licensePlate,
+          cavetImages: cavetImages,
+        };
+        console.log("Sending cavet image data:", cavetImageData);
+        await axios.post(`${API_URL}/cars/images/cavet`, cavetImageData);
+      }
+
       onSave(response.data);
       showSuccessToast("Car updated successfully!");
     } catch (err) {
@@ -346,7 +395,9 @@ const EditCarForm = ({ car, onSave, onClose }) => {
       setError(
         `Failed to update car: ${err.response?.data?.error || err.message}`
       );
-      showErrorToast(`Failed to update car: ${err.response?.data?.error || err.message}`);
+      showErrorToast(
+        `Failed to update car: ${err.response?.data?.error || err.message}`
+      );
     } finally {
       setLoading(false);
     }
@@ -516,72 +567,146 @@ const EditCarForm = ({ car, onSave, onClose }) => {
             </select>
           </div>
 
-          <div className="form-group image-upload-section full-width">
-            <label>Main Image:</label>
-            <div className="main-image-preview">
-              {formData.mainImage ? (
-                <img
-                  src={formData.mainImage}
-                  alt="Main Car"
-                  className="image-preview"
+          {/* 1. Main Image Upload UI giống cavet */}
+          <div className="form-group full-width">
+            <label style={{ fontWeight: 600, marginBottom: 8 }}>
+              Main Car Image
+            </label>
+            <div className="partner-image-upload-section">
+              <label className="partner-upload-button" htmlFor="car-main-image">
+                <span>Upload Main Image</span>
+                <input
+                  type="file"
+                  id="car-main-image"
+                  accept="image/*"
+                  onChange={handleMainFileChange}
+                  disabled={uploadingImage}
+                  style={{ display: "none" }}
                 />
-              ) : (
-                <p>No main image selected.</p>
-              )}
-            </div>
-            <div className="add-image-input-group">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleMainFileChange}
-              />
-              <button
-                type="button"
-                onClick={handleImageUpload}
-                className="add-image-btn"
-                disabled={uploadingImage || loading}
-              >
-                {uploadingImage ? "Uploading..." : "Upload Main Image"}
-              </button>
-            </div>
-          </div>
-
-          <div className="form-group image-upload-section full-width">
-            <label>Other Images:</label>
-            <div className="image-preview-container">
-              {formData.otherImages.length > 0 ? (
-                formData.otherImages.map((img, index) => (
-                  <div key={index} className="image-preview-item">
-                    <img src={img} alt="Car" className="image-preview" />
+              </label>
+              <div className="partner-image-preview-grid">
+                {formData.mainImage ? (
+                  <div className="partner-image-preview-item">
+                    <img src={formData.mainImage} alt="Main Preview" />
                     <button
                       type="button"
-                      className="remove-image-btn"
-                      onClick={() => handleRemoveImage(index)}
+                      className="partner-remove-image-btn"
+                      onClick={() =>
+                        setFormData((prev) => ({ ...prev, mainImage: "" }))
+                      }
                     >
-                      &times;
+                      ×
                     </button>
                   </div>
-                ))
-              ) : (
-                <p>No other images uploaded.</p>
-              )}
+                ) : (
+                  <p>No main image selected.</p>
+                )}
+              </div>
             </div>
-            <div className="add-image-input-group">
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleOtherFileChange}
-              />
-              <button
-                type="button"
-                onClick={handleOtherImageUpload}
-                className="add-image-btn"
-                disabled={uploadingImage || loading}
+            <small
+              className="partner-upload-info"
+              style={{ marginTop: "0.7rem", display: "block" }}
+            >
+              Supported formats: JPG, PNG, GIF. Max size: 5MB
+            </small>
+          </div>
+
+          {/* 2. Other Images Upload UI giống cavet */}
+          <div className="form-group full-width">
+            <label style={{ fontWeight: 600, marginBottom: 8 }}>
+              Other Car Images
+            </label>
+            <div className="partner-image-upload-section">
+              <label
+                className="partner-upload-button"
+                htmlFor="car-other-images"
               >
-                {uploadingImage ? "Uploading..." : "Upload Other Images"}
-              </button>
+                <span>Upload Other Images</span>
+                <input
+                  type="file"
+                  id="car-other-images"
+                  accept="image/*"
+                  multiple
+                  onChange={handleOtherFileChange}
+                  disabled={uploadingImage}
+                  style={{ display: "none" }}
+                />
+              </label>
+              <div className="partner-image-preview-grid">
+                {formData.otherImages.length > 0 ? (
+                  formData.otherImages.map((img, index) => (
+                    <div key={index} className="partner-image-preview-item">
+                      <img src={img} alt={`Other Preview ${index + 1}`} />
+                      <button
+                        type="button"
+                        className="partner-remove-image-btn"
+                        onClick={() => handleRemoveImage(index)}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <p>No other images uploaded.</p>
+                )}
+              </div>
             </div>
+            <small
+              className="partner-upload-info"
+              style={{ marginTop: "0.7rem", display: "block" }}
+            >
+              Supported formats: JPG, PNG, GIF. Max size: 5MB
+            </small>
+          </div>
+
+          <div className="form-group full-width">
+            <label style={{ fontWeight: 600, marginBottom: 8 }}>
+              Vehicle Registration (Cavet) Images
+            </label>
+            <div className="partner-image-upload-section">
+              <label
+                className="partner-upload-button"
+                htmlFor="car-cavet-images"
+              >
+                <span>Upload Registration</span>
+                <input
+                  type="file"
+                  id="car-cavet-images"
+                  accept="image/*"
+                  multiple
+                  onChange={handleCavetImagesChange}
+                  disabled={uploadingImage}
+                  style={{ display: "none" }}
+                />
+              </label>
+              <div className="partner-image-preview-grid">
+                {cavetPreviewUrls.map((url, index) => (
+                  <div key={index} className="partner-image-preview-item">
+                    <img src={url} alt={`Cavet Preview ${index + 1}`} />
+                    <button
+                      type="button"
+                      className="partner-remove-image-btn"
+                      onClick={() => {
+                        setCavetImages((prev) =>
+                          prev.filter((_, i) => i !== index)
+                        );
+                        setCavetPreviewUrls((prev) =>
+                          prev.filter((_, i) => i !== index)
+                        );
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <small
+              className="partner-upload-info"
+              style={{ marginTop: "0.7rem", display: "block" }}
+            >
+              Supported formats: JPG, PNG, GIF. Max size: 5MB
+            </small>
           </div>
 
           <div className="form-actions">
