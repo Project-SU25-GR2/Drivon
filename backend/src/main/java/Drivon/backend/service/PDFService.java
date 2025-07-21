@@ -81,8 +81,9 @@ public class PDFService {
         PdfDocument pdf = new PdfDocument(writer);
         Document document = new Document(pdf);
         
-        // Sử dụng font hỗ trợ tiếng Việt
-        PdfFont font = PdfFontFactory.createFont("STSong-Light", "UniGB-UCS2-H", true);
+        // Sử dụng font hỗ trợ tiếng Việt - sử dụng font mặc định cho iText 7
+        // Nếu cần hỗ trợ tiếng Việt tốt hơn, có thể sử dụng font có sẵn
+        PdfFont font = PdfFontFactory.createFont();
         
         // Header
         Paragraph header1 = new Paragraph("CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM")
