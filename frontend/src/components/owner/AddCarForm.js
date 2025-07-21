@@ -122,7 +122,7 @@ const AddCarForm = ({ onSave, onClose }) => {
 
   // Lấy userId từ localStorage (hoặc context nếu có)
   const user = JSON.parse(localStorage.getItem("user"));
-  const ownerId = user?.id;
+  const ownerId = user?.id || user?.userId;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
