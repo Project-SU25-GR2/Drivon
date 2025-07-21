@@ -400,14 +400,12 @@ public class CarController {
             car.setFuelType(Car.FuelType.valueOf(((String) carData.get("fuelType")).toLowerCase()));
             car.setFuelConsumption(carData.get("fuelConsumption") != null ? Double.parseDouble(carData.get("fuelConsumption").toString()) : null);
             car.setLocation((String) carData.get("location"));
-            car.setStatus("pending");
+            car.setStatus("available");
             car.setMainImage((String) carData.get("mainImage"));
             // Lấy ownerId từ request nếu có
             Long ownerId = carData.get("ownerId") != null ? Long.valueOf(carData.get("ownerId").toString()) : null;
-            System.out.println("==> [LOG] ownerId from frontend: " + ownerId);
             if (ownerId != null) car.setOwnerId(ownerId.intValue());
             Car savedCar = carRepository.save(car);
-            System.out.println("==> [LOG] Saved car: " + savedCar);
 
             // Lấy thông tin owner
             String name = "";
@@ -417,13 +415,8 @@ public class CarController {
                 Optional<User> userOpt = userRepository.findById(ownerId);
                 if (userOpt.isPresent()) {
                     User user = userOpt.get();
-                    System.out.println("==> [LOG] User found: " + user);
                     name = user.getFullName();
                     email = user.getEmail();
-                    System.out.println("==> [LOG] Full name: " + name);
-                    System.out.println("==> [LOG] Email: " + email);
-                } else {
-                    System.out.println("==> [LOG] User NOT FOUND for ownerId: " + ownerId);
                 }
             }
             // Phone lấy từ frontend
@@ -442,18 +435,10 @@ public class CarController {
             contract.setPhone(phone);
             contract.setEmail(email);
             contract.setPricePerDay(carData.get("pricePerDay") != null ? Double.valueOf(carData.get("pricePerDay").toString()) : 0.0);
-            System.out.println("==> [LOG] Contract to save: contractNumber=" + contract.getContractNumber()
-                + ", carId=" + contract.getCarId()
-                + ", customerId=" + contract.getCustomerId()
-                + ", name=" + contract.getName()
-                + ", phone=" + contract.getPhone()
-                + ", email=" + contract.getEmail());
             contractRepository.save(contract);
 
             return ResponseEntity.ok(savedCar);
         } catch (Exception e) {
-            System.out.println("==> [LOG] Exception: " + e.getMessage());
-            e.printStackTrace();
             Map<String, String> error = new HashMap<>();
             error.put("error", e.getMessage());
             return ResponseEntity.badRequest().body(error);
