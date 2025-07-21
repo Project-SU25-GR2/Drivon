@@ -60,7 +60,6 @@
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
   background-color: #f5f5f5;
-  width: 100%;
 }
 
 .car-image img {
@@ -92,33 +91,6 @@
   color: white;
   font-size: 12px;
   font-weight: bold;
-}
-
-.car-status-dropdown {
-  padding: 4px 12px;
-  border: 1.5px solid #ccc;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  min-width: 100px;
-  outline: none;
-  margin-right: 10px;
-  cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
-}
-.car-status-dropdown.available {
-  background: #e6f9ed;
-  color: #1ca94c;
-  border-color: #1ca94c;
-}
-.car-status-dropdown.unavailable {
-  background: #ffeaea;
-  color: #e74c3c;
-  border-color: #e74c3c;
-}
-.car-status-dropdown:focus,
-.car-status-dropdown:hover {
-  border-color: #888;
 }
 
 .car-info {
@@ -207,60 +179,204 @@
   font-size: 18px;
 }
 
+/* CSS cải tiến cho 3 nút - Căn giữa và đẹp hơn */
 .car-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
-  justify-content: flex-start;
-  margin-top: 8px;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px;
+  margin-top: 15px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+  border-top: 1px solid #dee2e6;
 }
-.car-status-dropdown,
-.edit-btn,
-.delete-btn {
-  height: 40px;
-  min-width: 70px;
-  padding: 0 8px;
-  border-radius: 6px;
+
+/* Dropdown Available */
+.car-status-dropdown {
+  height: 42px;
+  min-width: 110px;
+  padding: 8px 16px;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  text-align-last: center;
+}
+
+.car-status-dropdown::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.car-status-dropdown:hover::before {
+  left: 100%;
+}
+
+.car-status-dropdown.available {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #575560;
+  border-color: #10b981;
+}
+
+.car-status-dropdown.available:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+
+.car-status-dropdown.unavailable {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #575560;
+  border-color: #ef4444;
+}
+
+.car-status-dropdown.unavailable:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+}
+
+/* Edit Button - SỬA ĐỂ CĂNG CHỈNH VỚI DELETE */
+.edit-btn {
+  height: 42px;
+  min-width: 85px;
+  padding: 8px 16px;
+  border: 2px solid #3b82f6;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  color: #3b82f6;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
-  font-weight: 500;
-  box-sizing: border-box;
+  text-align: center;
 }
-.edit-btn {
-  border: 2px solid #1890ff;
-  background: #fff;
-  color: #1890ff;
-  transition: background 0.2s, color 0.2s;
+
+.edit-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  transition: left 0.3s ease;
+  z-index: -1;
 }
+
+.edit-btn:hover::before {
+  left: 0;
+}
+
 .edit-btn:hover {
-  background: #e6f0ff;
-  color: #1765ad;
+  color: white;
+  border-color: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
 }
+
+.edit-btn i {
+  margin-right: 6px;
+  transition: transform 0.3s ease;
+}
+
+.edit-btn:hover i {
+  transform: rotate(15deg);
+}
+
+/* Delete Button - SỬA ĐỂ CĂNG CHỈNH TEXT */
 .delete-btn {
-  border: 2px solid #e74c3c;
-  background: #fff;
-  color: #e74c3c;
-  transition: background 0.2s, color 0.2s;
+  height: 42px;
+  min-width: 85px;
+  padding: 8px 16px;
+  border: 2px solid #ef4444;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%);
+  color: #ef4444;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
+
+.delete-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  transition: left 0.3s ease;
+  z-index: -1;
+}
+
+.delete-btn:hover::before {
+  left: 0;
+}
+
 .delete-btn:hover {
-  background: #ffeaea;
-  color: #c0392b;
+  color: white;
+  border-color: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
 }
-.car-status-dropdown.available {
-  background: #e6f9ed;
-  color: #1ca94c;
-  border-color: #1ca94c;
+
+.delete-btn i {
+  margin-right: 6px;
+  transition: transform 0.3s ease;
 }
-.car-status-dropdown.unavailable {
-  background: #ffeaea;
-  color: #e74c3c;
-  border-color: #e74c3c;
+
+.delete-btn:hover i {
+  transform: scale(1.1);
 }
+
+/* Active states */
+.car-status-dropdown:active,
+.edit-btn:active,
+.delete-btn:active {
+  transform: translateY(0);
+  transition: transform 0.1s;
+}
+
+/* Focus states for accessibility */
 .car-status-dropdown:focus,
-.car-status-dropdown:hover {
-  border-color: #888;
+.edit-btn:focus,
+.delete-btn:focus {
+  outline: 3px solid rgba(59, 130, 246, 0.3);
+  outline-offset: 2px;
 }
 
 .no-cars {
@@ -293,4 +409,42 @@
   color: #f44336;
   background: #ffebee;
   border-radius: 10px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .car-actions {
+    flex-direction: column;
+    gap: 10px;
+    padding: 15px;
+  }
+
+  .car-status-dropdown,
+  .edit-btn,
+  .delete-btn {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .car-attributes-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .car-attribute-box {
+    min-width: unset;
+  }
+}
+
+@media (max-width: 480px) {
+  .cars-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .car-management-header {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
 }
