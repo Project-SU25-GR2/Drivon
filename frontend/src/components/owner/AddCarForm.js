@@ -120,6 +120,12 @@ const AddCarForm = ({ onSave, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // 1. Thêm state loading riêng cho từng loại ảnh
+  const [mainImageUploading, setMainImageUploading] = useState(false);
+  const [otherImagesUploading, setOtherImagesUploading] = useState(false);
+  const [cavetImagesUploading, setCavetImagesUploading] = useState(false);
+  const [otherDocImagesUploading, setOtherDocImagesUploading] = useState(false);
+
   // Lấy userId từ localStorage (hoặc context nếu có)
   const user = JSON.parse(localStorage.getItem("user"));
   const ownerId = user?.id || user?.userId;
@@ -141,7 +147,7 @@ const AddCarForm = ({ onSave, onClose }) => {
       return;
     }
     setMainPreviewUrl(URL.createObjectURL(file));
-    setUploading(true);
+    setMainImageUploading(true);
     try {
       const formDataImg = new FormData();
       formDataImg.append("file", file);
@@ -154,7 +160,7 @@ const AddCarForm = ({ onSave, onClose }) => {
     } catch (error) {
       showErrorToast("Error uploading image");
     } finally {
-      setUploading(false);
+      setMainImageUploading(false);
     }
   };
 
@@ -172,7 +178,7 @@ const AddCarForm = ({ onSave, onClose }) => {
     }
     const newPreviewUrls = files.map((file) => URL.createObjectURL(file));
     setOtherPreviewUrls((prev) => [...prev, ...newPreviewUrls]);
-    setUploading(true);
+    setOtherImagesUploading(true);
     try {
       const uploadPromises = files.map(async (file) => {
         const formDataImg = new FormData();
@@ -189,7 +195,7 @@ const AddCarForm = ({ onSave, onClose }) => {
     } catch (error) {
       showErrorToast("Error uploading images");
     } finally {
-      setUploading(false);
+      setOtherImagesUploading(false);
     }
   };
 
@@ -207,7 +213,7 @@ const AddCarForm = ({ onSave, onClose }) => {
     }
     const newPreviewUrls = files.map((file) => URL.createObjectURL(file));
     setCavetPreviewUrls((prev) => [...prev, ...newPreviewUrls]);
-    setUploading(true);
+    setCavetImagesUploading(true);
     try {
       const uploadPromises = files.map(async (file) => {
         const formDataImg = new FormData();
@@ -224,7 +230,7 @@ const AddCarForm = ({ onSave, onClose }) => {
     } catch (error) {
       showErrorToast("Error uploading cavet images");
     } finally {
-      setUploading(false);
+      setCavetImagesUploading(false);
     }
   };
 
@@ -242,7 +248,7 @@ const AddCarForm = ({ onSave, onClose }) => {
     }
     const newPreviewUrls = files.map((file) => URL.createObjectURL(file));
     setOtherDocPreviewUrls((prev) => [...prev, ...newPreviewUrls]);
-    setUploading(true);
+    setOtherDocImagesUploading(true);
     try {
       const uploadPromises = files.map(async (file) => {
         const formDataImg = new FormData();
@@ -261,7 +267,7 @@ const AddCarForm = ({ onSave, onClose }) => {
     } catch (error) {
       showErrorToast("Error uploading other document images");
     } finally {
-      setUploading(false);
+      setOtherDocImagesUploading(false);
     }
   };
 
@@ -610,10 +616,13 @@ const AddCarForm = ({ onSave, onClose }) => {
                       id="car-main-image"
                       accept="image/*"
                       onChange={handleMainImageChange}
-                      disabled={uploading}
+                      disabled={mainImageUploading || uploading}
                       style={{ display: "none" }}
                     />
                   </label>
+                )}
+                {mainImageUploading && (
+                  <div className="image-loading">Uploading main image...</div>
                 )}
               </div>
             </div>
@@ -632,7 +641,7 @@ const AddCarForm = ({ onSave, onClose }) => {
                   accept="image/*"
                   multiple
                   onChange={handleOtherImagesChange}
-                  disabled={uploading}
+                  disabled={otherImagesUploading || uploading}
                   style={{ display: "none" }}
                 />
               </label>
@@ -650,6 +659,9 @@ const AddCarForm = ({ onSave, onClose }) => {
                   </div>
                 ))}
               </div>
+              {otherImagesUploading && (
+                <div className="image-loading">Uploading other images...</div>
+              )}
             </div>
           </div>
           <div className="form-group full-width">
@@ -668,7 +680,7 @@ const AddCarForm = ({ onSave, onClose }) => {
                   accept="image/*"
                   multiple
                   onChange={handleCavetImagesChange}
-                  disabled={uploading}
+                  disabled={cavetImagesUploading || uploading}
                   style={{ display: "none" }}
                 />
               </label>
@@ -686,6 +698,9 @@ const AddCarForm = ({ onSave, onClose }) => {
                   </div>
                 ))}
               </div>
+              {cavetImagesUploading && (
+                <div className="image-loading">Uploading cavet images...</div>
+              )}
             </div>
             <label style={{ fontWeight: 600, margin: "16px 0 8px 0" }}>
               Other Documents (if needed)
@@ -702,7 +717,7 @@ const AddCarForm = ({ onSave, onClose }) => {
                   accept="image/*"
                   multiple
                   onChange={handleOtherDocImagesChange}
-                  disabled={uploading}
+                  disabled={otherDocImagesUploading || uploading}
                   style={{ display: "none" }}
                 />
               </label>
@@ -720,6 +735,11 @@ const AddCarForm = ({ onSave, onClose }) => {
                   </div>
                 ))}
               </div>
+              {otherDocImagesUploading && (
+                <div className="image-loading">
+                  Uploading other document images...
+                </div>
+              )}
             </div>
             <small
               className="partner-upload-info"

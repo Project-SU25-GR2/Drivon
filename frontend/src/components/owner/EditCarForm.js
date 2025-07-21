@@ -31,6 +31,10 @@ const EditCarForm = ({ car, onSave, onClose }) => {
   // 1. Thêm state cho cavetImages và cavetPreviewUrls
   const [cavetImages, setCavetImages] = useState([]);
   const [cavetPreviewUrls, setCavetPreviewUrls] = useState([]);
+  // 1. Thêm state loading riêng cho từng loại ảnh
+  const [mainImageUploading, setMainImageUploading] = useState(false);
+  const [otherImagesUploading, setOtherImagesUploading] = useState(false);
+  const [cavetImagesUploading, setCavetImagesUploading] = useState(false);
 
   const CAR_BRANDS = [
     "Toyota",
@@ -145,36 +149,24 @@ const EditCarForm = ({ car, onSave, onClose }) => {
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-  const handleMainFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedMainImageFile(e.target.files[0]);
-    }
-  };
-
-  const handleOtherFileChange = (e) => {
-    if (e.target.files) {
-      setSelectedOtherImageFiles(Array.from(e.target.files));
-    }
-  };
-
-  const handleRemoveImage = (indexToRemove) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      otherImages: prevData.otherImages.filter(
-        (_, index) => index !== indexToRemove
-      ),
-    }));
-  };
-
-  const handleImageUpload = async () => {
-    // This is for the main image (single file upload)
-    if (!selectedMainImageFile) {
-      showErrorToast("Please select a main image file to upload.");
+  const handleMainFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setMainImageUploading(true);
+    if (file.size > 5 * 1024 * 1024) {
+      showErrorToast("File size must not exceed 5MB");
+      setMainImageUploading(false);
       return;
     }
+    if (!file.type.startsWith("image/")) {
+      showErrorToast("Please select an image file");
+      setMainImageUploading(false);
+      return;
+    }
+    setSelectedMainImageFile(file);
 
     const formDataUpload = new FormData();
-    formDataUpload.append("file", selectedMainImageFile);
+    formDataUpload.append("file", file);
     formDataUpload.append("upload_preset", cloudinaryConfig.uploadPreset);
     formDataUpload.append("api_key", cloudinaryConfig.apiKey);
 
@@ -198,17 +190,27 @@ const EditCarForm = ({ car, onSave, onClose }) => {
       showErrorToast("Failed to upload main image. Please try again.");
     } finally {
       setUploadingImage(false);
+      setMainImageUploading(false);
     }
   };
 
-  const handleOtherImageUpload = async () => {
-    // This is for other images (multiple file upload)
-    if (selectedOtherImageFiles.length === 0) {
-      showErrorToast(
-        "Please select at least one image file to upload for other images."
-      );
-      return;
+  const handleOtherFileChange = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    setOtherImagesUploading(true);
+    for (const file of files) {
+      if (file.size > 5 * 1024 * 1024) {
+        showErrorToast("File size must not exceed 5MB");
+        setOtherImagesUploading(false);
+        return;
+      }
+      if (!file.type.startsWith("image/")) {
+        showErrorToast("Please select an image file");
+        setOtherImagesUploading(false);
+        return;
+      }
     }
+    setSelectedOtherImageFiles(files);
 
     setUploadingImage(true);
     setError(null);
@@ -217,7 +219,7 @@ const EditCarForm = ({ car, onSave, onClose }) => {
     try {
       const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/upload`;
 
-      for (const file of selectedOtherImageFiles) {
+      for (const file of files) {
         const formDataUploadOther = new FormData();
         formDataUploadOther.append("file", file);
         formDataUploadOther.append(
@@ -245,25 +247,32 @@ const EditCarForm = ({ car, onSave, onClose }) => {
       showErrorToast("Failed to upload other images. Please try again.");
     } finally {
       setUploadingImage(false);
+      setOtherImagesUploading(false);
     }
   };
 
   // 2. Thêm hàm handleCavetImagesChange
   const handleCavetImagesChange = async (e) => {
     const files = Array.from(e.target.files);
+    if (!files.length) return;
+    setCavetImagesUploading(true);
     for (const file of files) {
       if (file.size > 5 * 1024 * 1024) {
         showErrorToast("File size must not exceed 5MB");
+        setCavetImagesUploading(false);
         return;
       }
       if (!file.type.startsWith("image/")) {
         showErrorToast("Please select an image file");
+        setCavetImagesUploading(false);
         return;
       }
     }
     const newPreviewUrls = files.map((file) => URL.createObjectURL(file));
     setCavetPreviewUrls((prev) => [...prev, ...newPreviewUrls]);
+
     setUploadingImage(true);
+    setError(null);
     try {
       const uploadPromises = files.map(async (file) => {
         const formDataImg = new FormData();
@@ -281,7 +290,17 @@ const EditCarForm = ({ car, onSave, onClose }) => {
       showErrorToast("Error uploading cavet images");
     } finally {
       setUploadingImage(false);
+      setCavetImagesUploading(false);
     }
+  };
+
+  const handleRemoveImage = (indexToRemove) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      otherImages: prevData.otherImages.filter(
+        (_, index) => index !== indexToRemove
+      ),
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -580,10 +599,13 @@ const EditCarForm = ({ car, onSave, onClose }) => {
                   id="car-main-image"
                   accept="image/*"
                   onChange={handleMainFileChange}
-                  disabled={uploadingImage}
+                  disabled={mainImageUploading || uploadingImage}
                   style={{ display: "none" }}
                 />
               </label>
+              {mainImageUploading && (
+                <div className="image-loading">Uploading main image...</div>
+              )}
               <div className="partner-image-preview-grid">
                 {formData.mainImage ? (
                   <div className="partner-image-preview-item">
@@ -628,10 +650,13 @@ const EditCarForm = ({ car, onSave, onClose }) => {
                   accept="image/*"
                   multiple
                   onChange={handleOtherFileChange}
-                  disabled={uploadingImage}
+                  disabled={otherImagesUploading || uploadingImage}
                   style={{ display: "none" }}
                 />
               </label>
+              {otherImagesUploading && (
+                <div className="image-loading">Uploading other images...</div>
+              )}
               <div className="partner-image-preview-grid">
                 {formData.otherImages.length > 0 ? (
                   formData.otherImages.map((img, index) => (
@@ -675,10 +700,13 @@ const EditCarForm = ({ car, onSave, onClose }) => {
                   accept="image/*"
                   multiple
                   onChange={handleCavetImagesChange}
-                  disabled={uploadingImage}
+                  disabled={cavetImagesUploading || uploadingImage}
                   style={{ display: "none" }}
                 />
               </label>
+              {cavetImagesUploading && (
+                <div className="image-loading">Uploading cavet images...</div>
+              )}
               <div className="partner-image-preview-grid">
                 {cavetPreviewUrls.map((url, index) => (
                   <div key={index} className="partner-image-preview-item">
@@ -713,7 +741,13 @@ const EditCarForm = ({ car, onSave, onClose }) => {
             <button
               type="submit"
               className="save-btn"
-              disabled={loading || uploadingImage}
+              disabled={
+                loading ||
+                uploadingImage ||
+                mainImageUploading ||
+                otherImagesUploading ||
+                cavetImagesUploading
+              }
             >
               {loading ? "Saving..." : "Save Changes"}
             </button>
@@ -721,7 +755,13 @@ const EditCarForm = ({ car, onSave, onClose }) => {
               type="button"
               className="cancel-btn"
               onClick={onClose}
-              disabled={loading || uploadingImage}
+              disabled={
+                loading ||
+                uploadingImage ||
+                mainImageUploading ||
+                otherImagesUploading ||
+                cavetImagesUploading
+              }
             >
               Cancel
             </button>
