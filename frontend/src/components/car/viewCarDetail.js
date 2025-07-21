@@ -37,7 +37,6 @@ const ViewCarDetail = () => {
   const [showCouponModal, setShowCouponModal] = useState(false);
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   const [couponList, setCouponList] = useState([]);
-  const [allCars, setAllCars] = useState([]);
   const [carFilter, setCarFilter] = useState('all');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showRentalForm, setShowRentalForm] = useState(false);
@@ -93,13 +92,17 @@ const ViewCarDetail = () => {
   const currentReviews = allReviewsFiltered.slice(indexOfFirstReview, indexOfLastReview);
 
   // Đặt filteredCars lên trên các useEffect để tránh lỗi ReferenceError
-  const filteredCars = useMemo(() => allCars.filter(item => {
-    if (!car) return false;
-    if (item.licensePlate === car.licensePlate) return false;
-    if (carFilter === 'brand') return item.brand === car.brand;
-    if (carFilter === 'type') return item.type === car.type;
-    return true;
-  }), [allCars, car, carFilter]);
+  const filteredCars = useMemo(() => {
+    return carsData.filter(item => {
+      if (!car) return false;
+      if (item.licensePlate === car.licensePlate) return false;
+      if (!item.contract || item.contract.status !== 'ACTIVE_LEASE') return false;
+      if (item.status !== 'available') return false;
+      if (carFilter === 'brand') return item.brand === car.brand;
+      if (carFilter === 'type') return item.type === car.type;
+      return true;
+    });
+  }, [carsData, car, carFilter]);
 
   useEffect(() => {
     // Fetch cars data using context first
@@ -213,12 +216,6 @@ const ViewCarDetail = () => {
         .catch(() => setCouponList([]));
     }
   }, [showCouponModal]);
-
-  useEffect(() => {
-    axios.get(`${API_URL}/cars`)
-      .then(res => setAllCars(res.data))
-      .catch(() => setAllCars([]));
-  }, []);
 
   useEffect(() => {
     const fetchContracts = async () => {
@@ -337,7 +334,7 @@ const ViewCarDetail = () => {
   const handlePrev = () => setCurrentIndex(idx => Math.max(0, idx - 1));
   const handleNext = () => setCurrentIndex(idx => Math.min(maxIndex, idx + 1));
 
-  useEffect(() => { setCurrentIndex(0); }, [carFilter, allCars, car]);
+  useEffect(() => { setCurrentIndex(0); }, [carFilter, carsData, car]);
 
   // Thêm state cho modal license warning
   const [showLicenseModal, setShowLicenseModal] = useState(false);
