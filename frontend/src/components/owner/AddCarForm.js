@@ -323,6 +323,7 @@ const AddCarForm = ({ onSave, onClose }) => {
       return;
     }
     try {
+      // 1. Gửi thông tin xe (chỉ gửi mainImage)
       const carData = {
         licensePlate: formData.licensePlate,
         brand: formData.brand,
@@ -338,21 +339,42 @@ const AddCarForm = ({ onSave, onClose }) => {
         pricePerDay: parseFloat(formData.pricePerDay),
         deposit: parseFloat(formData.deposit),
         phoneNumber: formData.phoneNumber,
-        status: "PENDING",
         mainImage: mainImage || "",
-        otherImages: otherImages || [],
-        cavetImages: cavetImages || [],
-        otherDocImages: otherDocImages || [],
         ownerId: ownerId, // Thêm ownerId vào payload
       };
       const response = await axios.post(`${API_URL}/cars`, carData);
+      // 2. Sau khi xe đã tạo thành công, gửi các ảnh phụ
+      const carId = formData.licensePlate;
+      // Gửi otherImages
+      if (otherImages.length > 0) {
+        await axios.post(`${API_URL}/cars/images`, {
+          carId,
+          otherImages,
+        });
+      }
+      // Gửi cavetImages
+      if (cavetImages.length > 0) {
+        await axios.post(`${API_URL}/cars/images/cavet`, {
+          carId,
+          cavetImages,
+        });
+      }
+      // Gửi otherDocImages
+      if (otherDocImages.length > 0) {
+        await axios.post(`${API_URL}/cars/images/other`, {
+          carId,
+          otherDocumentImages: otherDocImages,
+        });
+      }
       onSave(response.data);
       showSuccessToast(
-        "Car registered successfully! Waiting for admin approval."
+        "Car registered successfully! Images and documents uploaded."
       );
     } catch (err) {
       showErrorToast(
-        `Failed to register car: ${err.response?.data?.error || err.message}`
+        `Failed to register car or upload images: ${
+          err.response?.data?.error || err.message
+        }`
       );
     } finally {
       setLoading(false);
