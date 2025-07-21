@@ -7,6 +7,8 @@ import Drivon.backend.repository.CarImageRepository;
 import Drivon.backend.service.ContractService;
 import Drivon.backend.service.ReviewService;
 import Drivon.backend.dto.ReviewResponseDto;
+import Drivon.backend.model.Contract;
+import Drivon.backend.repository.ContractRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +18,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import Drivon.backend.repository.CarRepository;
+import Drivon.backend.repository.UserRepository;
+import Drivon.backend.model.User;
 
 @RestController
 @RequestMapping("/api/cars")
@@ -33,6 +38,15 @@ public class CarController {
 
     @Autowired
     private ReviewService reviewService;
+
+    @Autowired
+    private ContractRepository contractRepository;
+
+    @Autowired
+    private CarRepository carRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @GetMapping
     public ResponseEntity<?> getAllCars() {
@@ -355,6 +369,75 @@ public class CarController {
             }
 
             return ResponseEntity.ok(carsWithDetails);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    @PostMapping
+    public ResponseEntity<?> createCar(@RequestBody Map<String, Object> carData) {
+        try {
+            String licensePlate = (String) carData.get("licensePlate");
+            if (licensePlate == null || licensePlate.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "License plate is required"));
+            }
+            // Check if car already exists
+            if (carRepository.existsById(licensePlate)) {
+                return ResponseEntity.badRequest().body(Map.of("error", "A car with this license plate already exists."));
+            }
+            // 1. Lưu xe vào bảng cars như hiện tại (luôn dùng save để insert mới)
+            Car car = new Car();
+            car.setLicensePlate(licensePlate);
+            car.setBrand((String) carData.get("brand"));
+            car.setModel((String) carData.get("model"));
+            car.setYear(carData.get("year") != null ? Integer.parseInt(carData.get("year").toString()) : null);
+            car.setType((String) carData.get("type"));
+            car.setDescription((String) carData.get("description"));
+            car.setSeats(carData.get("seats") != null ? Integer.parseInt(carData.get("seats").toString()) : null);
+            car.setTransmission(Car.Transmission.valueOf(((String) carData.get("transmission")).toLowerCase()));
+            car.setFuelType(Car.FuelType.valueOf(((String) carData.get("fuelType")).toLowerCase()));
+            car.setFuelConsumption(carData.get("fuelConsumption") != null ? Double.parseDouble(carData.get("fuelConsumption").toString()) : null);
+            car.setLocation((String) carData.get("location"));
+            car.setStatus("pending");
+            car.setMainImage((String) carData.get("mainImage"));
+            // Lấy ownerId từ request nếu có
+            Long ownerId = carData.get("ownerId") != null ? Long.valueOf(carData.get("ownerId").toString()) : null;
+            if (ownerId != null) car.setOwnerId(ownerId.intValue());
+            Car savedCar = carRepository.save(car);
+
+            // Lấy thông tin owner
+            String name = "";
+            String phone = "";
+            String email = "";
+            if (ownerId != null) {
+                Optional<User> userOpt = userRepository.findById(ownerId);
+                if (userOpt.isPresent()) {
+                    User user = userOpt.get();
+                    name = user.getFullName();
+                    email = user.getEmail();
+                }
+            }
+            // Phone lấy từ frontend
+            if (carData.get("phoneNumber") != null) {
+                phone = carData.get("phoneNumber").toString();
+            }
+
+            // 2. Lưu hợp đồng vào contract_partners
+            Contract contract = new Contract();
+            contract.setContractNumber("HD" + System.currentTimeMillis());
+            contract.setCarId(savedCar.getLicensePlate());
+            contract.setCustomerId(ownerId != null ? ownerId.toString() : "1");
+            contract.setDeposit(carData.get("deposit") != null ? Double.valueOf(carData.get("deposit").toString()) : 0.0);
+            contract.setStatus("PENDING_LEASE");
+            contract.setName(name);
+            contract.setPhone(phone);
+            contract.setEmail(email);
+            contract.setPricePerDay(carData.get("pricePerDay") != null ? Double.valueOf(carData.get("pricePerDay").toString()) : 0.0);
+            contractRepository.save(contract);
+
+            return ResponseEntity.ok(savedCar);
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
             error.put("error", e.getMessage());
