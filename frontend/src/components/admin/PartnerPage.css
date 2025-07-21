@@ -242,39 +242,47 @@
 
 /* --- Card List Modern Layout for PartnerPage (5 Columns) --- */
 .partner-list {
-  margin-top: 0;
   display: flex;
   flex-direction: column;
   gap: 0;
 }
 
 .partner-card {
-  margin-bottom: 0;
-  border-radius: 0;
-  box-shadow: none;
-  border-top: 1px solid #e0e0e0;
-  border-bottom: none;
-  display: grid;
-  grid-template-columns: 1.5fr 1.2fr 1.2fr 1fr 120px;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid #eee;
   background: #fff;
-  padding: 16px 20px;
+  transition: background 0.2s;
   cursor: pointer;
-  min-height: 72px;
-}
-.partner-card:hover {
-  box-shadow: 0 4px 16px rgba(60, 72, 88, 0.16);
-  border: 1.5px solid #1976d2;
 }
 
-.partner-main {
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
-  justify-content: flex-start;
-  padding-left: 0;
-  margin-left: 0;
+.partner-card:hover {
+  background: #f5f7fa;
 }
+
+.partner-main-info {
+  flex: 2;
+  font-weight: bold;
+}
+
+.partner-contact {
+  flex: 3;
+  color: #888;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.partner-car-count {
+  flex: 1;
+  text-align: right;
+  font-size: 15px;
+  color: #333;
+}
+
 .partner-avatar {
   margin-left: 0;
 }

@@ -43,9 +43,6 @@ public class Contract {
     @Column(name = "price_per_day", nullable = false)
     private Double pricePerDay;
 
-    @Column(name = "pdf_url")
-    private String pdfUrl;
-
     @Column(name = "created_at")
     private java.time.LocalDateTime createdAt;
 }
