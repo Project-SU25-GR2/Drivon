@@ -176,7 +176,9 @@ const CarManagementPage = ({ user }) => {
                   onChange={(e) =>
                     handleStatusChange(car.licensePlate, e.target.value)
                   }
-                  className={`car-status-dropdown ${car.status}`}
+                  className={`car-status-dropdown${
+                    car.status === "unavailable" ? " unavailable" : ""
+                  }`}
                 >
                   <option value="available">Available</option>
                   <option value="unavailable">Unavailable</option>

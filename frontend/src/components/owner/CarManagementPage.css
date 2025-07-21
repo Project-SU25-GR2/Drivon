@@ -192,12 +192,12 @@
   border-top: 1px solid #dee2e6;
 }
 
-/* Dropdown Available */
+/* Dropdown Available - LUÔN XANH LÁ */
 .car-status-dropdown {
   height: 42px;
   min-width: 110px;
   padding: 8px 16px;
-  border: 2px solid transparent;
+  border: 2px solid #10b981;
   border-radius: 10px;
   font-size: 14px;
   font-weight: 600;
@@ -209,6 +209,9 @@
   overflow: hidden;
   text-align: center;
   text-align-last: center;
+  /* LUÔN XANH LÁ */
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
 }
 
 .car-status-dropdown::before {
@@ -231,31 +234,20 @@
   left: 100%;
 }
 
-.car-status-dropdown.available {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: #575560;
-  border-color: #10b981;
-}
-
-.car-status-dropdown.available:hover {
+/* Xóa các class riêng biệt để đảm bảo tất cả đều xanh */
+.car-status-dropdown:hover {
   background: linear-gradient(135deg, #059669 0%, #047857 100%);
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
 }
 
 .car-status-dropdown.unavailable {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  color: #575560;
-  border-color: #ef4444;
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+  color: white;
+  border: 2px solid #ef4444;
 }
 
-.car-status-dropdown.unavailable:hover {
-  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
-}
-
-/* Edit Button - SỬA ĐỂ CĂNG CHỈNH VỚI DELETE */
+/* Edit Button */
 .edit-btn {
   height: 42px;
   min-width: 85px;
@@ -309,7 +301,7 @@
   transform: rotate(15deg);
 }
 
-/* Delete Button - SỬA ĐỂ CĂNG CHỈNH TEXT */
+/* Delete Button */
 .delete-btn {
   height: 42px;
   min-width: 85px;
