@@ -120,6 +120,10 @@ const AddCarForm = ({ onSave, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Lấy userId từ localStorage (hoặc context nếu có)
+  const user = JSON.parse(localStorage.getItem("user"));
+  const ownerId = user?.id;
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -339,6 +343,7 @@ const AddCarForm = ({ onSave, onClose }) => {
         otherImages: otherImages || [],
         cavetImages: cavetImages || [],
         otherDocImages: otherDocImages || [],
+        ownerId: ownerId, // Thêm ownerId vào payload
       };
       const response = await axios.post(`${API_URL}/cars`, carData);
       onSave(response.data);
