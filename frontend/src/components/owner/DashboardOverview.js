@@ -21,6 +21,23 @@ const DashboardOverview = ({ user }) => {
 
   useEffect(() => {
     console.log("user in DashboardOverview:", user);
+    console.log("rentalsData in DashboardOverview:", rentalsData);
+    if (Array.isArray(rentalsData)) {
+      const statusList = rentalsData.map((r) => r.status);
+      console.log("Booking status list:", statusList);
+      const activeBookings = rentalsData.filter(
+        (r) =>
+          r.status && ["approved", "ongoing"].includes(r.status.toLowerCase())
+      );
+      console.log(
+        "Active bookings (approved/ongoing):",
+        activeBookings.length,
+        activeBookings
+      );
+    }
+  }, [user, rentalsData]);
+
+  useEffect(() => {
     if (user && user.userId) {
       fetchCarsData(user.userId);
       fetchRentalsData(user.userId);
