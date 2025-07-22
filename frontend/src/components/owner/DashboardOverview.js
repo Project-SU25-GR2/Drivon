@@ -105,7 +105,7 @@ const DashboardOverview = ({ user }) => {
               <i className="fas fa-clock"></i>
             </div>
             <h3>Active Rentals</h3>
-            <p className="stat-value">{stats.activeRentals}</p>
+            <p className="stat-value">{stats.activeRentals ?? 0}</p>
             <div className="progress-line"></div>
           </div>
           <div className="stat-card purple">
