@@ -32,9 +32,10 @@ const DashboardOverview = ({ user }) => {
   }, [carsData]);
 
   useEffect(() => {
-    // Đếm số lượng booking có trạng thái ongoing hoặc active
+    // Đếm số lượng booking có trạng thái approved hoặc ongoing
     const activeCount = rentalsData.filter(
-      (r) => r.status && ["ongoing", "active"].includes(r.status.toLowerCase())
+      (r) =>
+        r.status && ["approved", "ongoing"].includes(r.status.toLowerCase())
     ).length;
     setStats((prev) => ({ ...prev, activeRentals: activeCount }));
   }, [rentalsData]);
