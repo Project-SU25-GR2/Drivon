@@ -6,6 +6,7 @@ import './Messages.css';
 import Loader from '../others/loader';
 import { API_URL } from '../../api/configApi';
 import { showErrorToast, showSuccessToast } from '../notification/notification';
+import cloudinaryConfig from '../../config/cloudinary';
 const Messages = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -19,12 +20,12 @@ const Messages = () => {
   const selectedUserRef = useRef(selectedUser);
   //binhvuong
   // Polling intervals (in milliseconds)
-  const MESSAGES_POLL_INTERVAL = 3000; // 3 seconds
-  const CONVERSATIONS_POLL_INTERVAL = 5000; // 5 seconds
+  // const MESSAGES_POLL_INTERVAL = 3000; // 3 seconds
+  // const CONVERSATIONS_POLL_INTERVAL = 5000; // 5 seconds
   
   // Refs for polling intervals
-  const messagesPollingRef = useRef(null);
-  const conversationsPollingRef = useRef(null);
+  // const messagesPollingRef = useRef(null);
+  // const conversationsPollingRef = useRef(null);
   
   // State to track if tab is active
   const [isTabActive, setIsTabActive] = useState(true);
@@ -37,108 +38,51 @@ const Messages = () => {
   const hasAutoSentMessage = useRef(false);
 
   const [loading, setLoading] = useState(false);
-
-  const scrollToBottom = () => {
-    const chatBox = chatMessagesRef.current;
-    if (chatBox) {
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
-  };
-
-  const fetchMessages = async (userId1, userId2) => {
-    try {
-      setLoading(true);
-      const response = await axios.get(
-        `${API_URL}/messages/conversation/${userId1}/${userId2}`
-      );
-      setMessages(response.data);
-      const conversation = conversations.find(conv => conv.id === userId2);
-      if (conversation && conversation.conversationId) {
-        setSelectedConversationId(conversation.conversationId);
-      }
-    } catch (error) {
-      console.error('Error fetching messages:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchConversations = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get(`${API_URL}/messages/conversations/${currentUser.userId}`);
-      setConversations(prevConversations => {
-        const newConversations = response.data;
-        const existingConversationsMap = new Map();
-        prevConversations.forEach(conv => {
-          existingConversationsMap.set(conv.id, conv);
-        });
-        const mergedConversations = newConversations.map(newConv => {
-          const existingConv = existingConversationsMap.get(newConv.id);
-          if (existingConv) {
-            return {
-              ...newConv,
-              unread: existingConv.unread || newConv.unread || 0
-            };
-          }
-          return newConv;
-        });
-        const hasNewConversations = newConversations.some(newConv => 
-          !existingConversationsMap.has(newConv.id)
-        );
-        if (hasNewConversations) {
-          console.log('New conversations found via polling');
-        }
-        return mergedConversations;
-      });
-    } catch (error) {
-      console.error('Error fetching conversations:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  
+  // File input ref for image uploads
+  const fileInputRef = useRef(null);
 
   // Start polling for messages
-  const startMessagesPolling = () => {
-    if (messagesPollingRef.current) {
-      clearInterval(messagesPollingRef.current);
-    }
+  // const startMessagesPolling = () => {
+  //   if (messagesPollingRef.current) {
+  //     clearInterval(messagesPollingRef.current);
+  //   }
     
-    messagesPollingRef.current = setInterval(() => {
-      if (selectedUser && currentUser && isTabActive) {
-        console.log('Polling for messages...');
-        setLastPollTime(new Date());
-        fetchMessages(currentUser.userId, selectedUser.id);
-      }
-    }, MESSAGES_POLL_INTERVAL);
-  };
+  //   messagesPollingRef.current = setInterval(() => {
+  //     if (selectedUser && currentUser && isTabActive) {
+  //       console.log('Polling for messages...');
+  //       setLastPollTime(new Date());
+  //       fetchMessages(currentUser.userId, selectedUser.id);
+  //     }
+  //   }, MESSAGES_POLL_INTERVAL);
+  // };
 
   // Start polling for conversations
-  const startConversationsPolling = () => {
-    if (conversationsPollingRef.current) {
-      clearInterval(conversationsPollingRef.current);
-    }
+  // const startConversationsPolling = () => {
+  //   if (conversationsPollingRef.current) {
+  //     clearInterval(conversationsPollingRef.current);
+  //   }
     
-    conversationsPollingRef.current = setInterval(() => {
-      if (currentUser && isTabActive) {
-        console.log('Polling for conversations...');
-        setLastPollTime(new Date());
-        fetchConversations();
-      }
-    }, CONVERSATIONS_POLL_INTERVAL);
-  };
+  //   conversationsPollingRef.current = setInterval(() => {
+  //     if (currentUser && isTabActive) {
+  //       console.log('Polling for conversations...');
+  //       setLastPollTime(new Date());
+  //       fetchConversations();
+  //     }
+  //   }, CONVERSATIONS_POLL_INTERVAL);
+  // };
 
   // Stop all polling
-  const stopPolling = () => {
-    if (messagesPollingRef.current) {
-      clearInterval(messagesPollingRef.current);
-      messagesPollingRef.current = null;
-    }
-    if (conversationsPollingRef.current) {
-      clearInterval(conversationsPollingRef.current);
-      conversationsPollingRef.current = null;
-    }
-  };
+  // const stopPolling = () => {
+  //   if (messagesPollingRef.current) {
+  //     clearInterval(messagesPollingRef.current);
+  //     messagesPollingRef.current = null;
+  //   }
+  //   if (conversationsPollingRef.current) {
+  //     clearInterval(conversationsPollingRef.current);
+  //     conversationsPollingRef.current = null;
+  //   }
+  // };
 
   useEffect(() => {
     scrollToBottom();
@@ -309,7 +253,9 @@ const Messages = () => {
               )
           );
           if (exists) return prev;
-          return [...prev, newMessage];
+          // Gán type nếu là ảnh
+          const msgToAdd = (!newMessage.type && isImageUrl(newMessage.content)) ? { ...newMessage, type: 'image' } : newMessage;
+          return [...prev, msgToAdd];
         });
       } else {
         console.log('Message not for current conversation:', {
@@ -339,14 +285,14 @@ const Messages = () => {
     fetchConversations();
     
     // Start polling
-    startConversationsPolling();
-    if (selectedUser) {
-      startMessagesPolling();
-    }
+    // startConversationsPolling();
+    // if (selectedUser) {
+    //   startMessagesPolling();
+    // }
   
     return () => {
       webSocketService.unsubscribe('messages', handleNewMessage);
-      stopPolling();
+      // stopPolling();
     };
   }, [currentUser?.userId, selectedConversationId, selectedUser]);
   
@@ -355,22 +301,22 @@ const Messages = () => {
       fetchMessages(currentUser.userId, selectedUser.id);
 
       // Chỉ gửi tin nhắn tự động 1 lần khi có initialMessage và chưa gửi
-      if (location.state?.initialMessage && !hasAutoSentMessage.current) {
+      // Chỉ auto-send nếu input đang rỗng (tránh gửi 2 lần nếu input đã có sẵn)
+      if (location.state?.initialMessage && !hasAutoSentMessage.current && message === '') {
         hasAutoSentMessage.current = true;
-        // Delay một chút để đảm bảo WebSocket đã kết nối
+        setMessage(location.state.initialMessage); // Đảm bảo input có nội dung trước khi gửi
         setTimeout(() => {
-          handleSendMessage(new Event('submit'));
-        }, 1000);
+          handleSendMessage(new Event('submit'), true); // truyền cờ autoSend
+        }, 500);
       }
-      
       // Start polling for messages when a user is selected
-      startMessagesPolling();
+      // startMessagesPolling();
     } else {
       // Stop polling for messages when no user is selected
-      if (messagesPollingRef.current) {
-        clearInterval(messagesPollingRef.current);
-        messagesPollingRef.current = null;
-      }
+      // if (messagesPollingRef.current) {
+      //   clearInterval(messagesPollingRef.current);
+      //   messagesPollingRef.current = null;
+      // }
       // Reset flag khi không có user được chọn
       hasAutoSentMessage.current = false;
     }
@@ -417,8 +363,8 @@ const Messages = () => {
     if (selectedUser) setShowSidebar(false);
   }, [selectedUser]);
 
-  const handleSendMessage = async (e) => {
-    e.preventDefault();
+  const handleSendMessage = async (e, autoSend = false) => {
+    if (e && e.preventDefault) e.preventDefault();
     if (!message.trim() || !selectedUser) return;
 
     const messageContent = message.trim();
@@ -445,6 +391,9 @@ const Messages = () => {
         );
       });
 
+      // Optimistically update messages list
+      setMessages(prev => [...prev, newMessage]);
+
       if (!webSocketService.isWebSocketConnected()) {
         console.log('WebSocket not connected, reconnecting...');
         await new Promise((resolve) => {
@@ -457,10 +406,11 @@ const Messages = () => {
         throw new Error('Failed to send message');
       }
 
-      if (location.state?.initialMessage) {
-        navigate('/messages', { state: { selectedUser } });
-        // Clear initialMessage sau khi gửi thành công
+      // Only clear initialMessage and input after auto-send
+      if (autoSend && location.state?.initialMessage) {
+        // Only clear history and input, do not navigate again
         window.history.replaceState({}, document.title);
+        setMessage('');
       }
     } catch (error) {
       console.error('Error sending message:', error);
@@ -490,7 +440,118 @@ const Messages = () => {
     );
     
     // Restart polling for messages with the new user
-    startMessagesPolling();
+    // startMessagesPolling();
+  };
+
+  if (loading) return <div className="loading"><Loader /></div>;
+
+  const scrollToBottom = () => {
+    const chatBox = chatMessagesRef.current;
+    if (chatBox) {
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+  };
+
+  const isImageUrl = (url) => {
+    return typeof url === 'string' && url.match(/^https?:\/\/.+\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i);
+  };
+
+  const fetchMessages = async (userId1, userId2) => {
+    try {
+      setLoading(true);
+      const response = await axios.get(
+        `${API_URL}/messages/conversation/${userId1}/${userId2}`
+      );
+      // Gán type: 'image' nếu là link ảnh
+      const processedMessages = response.data.map(msg => {
+        if (!msg.type && isImageUrl(msg.content)) {
+          return { ...msg, type: 'image' };
+        }
+        return msg;
+      });
+      setMessages(processedMessages);
+      const conversation = conversations.find(conv => conv.id === userId2);
+      if (conversation && conversation.conversationId) {
+        setSelectedConversationId(conversation.conversationId);
+      }
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchConversations = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API_URL}/messages/conversations/${currentUser.userId}`);
+      setConversations(prevConversations => {
+        const newConversations = response.data;
+        const existingConversationsMap = new Map();
+        prevConversations.forEach(conv => {
+          existingConversationsMap.set(conv.id, conv);
+        });
+        const mergedConversations = newConversations.map(newConv => {
+          const existingConv = existingConversationsMap.get(newConv.id);
+          if (existingConv) {
+            return {
+              ...newConv,
+              unread: existingConv.unread || newConv.unread || 0
+            };
+          }
+          return newConv;
+        });
+        const hasNewConversations = newConversations.some(newConv => 
+          !existingConversationsMap.has(newConv.id)
+        );
+        if (hasNewConversations) {
+          console.log('New conversations found via polling');
+        }
+        return mergedConversations;
+      });
+    } catch (error) {
+      console.error('Error fetching conversations:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      showErrorToast('File size must not exceed 5MB');
+      return;
+    }
+    if (!file.type.startsWith('image/')) {
+      showErrorToast('Please select an image file');
+      return;
+    }
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', cloudinaryConfig.uploadPreset);
+      formData.append('api_key', cloudinaryConfig.apiKey);
+      const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/upload`;
+      const res = await axios.post(cloudinaryUrl, formData);
+      const imageUrl = res.data.secure_url;
+      sendImageMessage(imageUrl);
+    } catch (err) {
+      showErrorToast('Error uploading image');
+    }
+  };
+
+  const sendImageMessage = (imageUrl) => {
+    if (!selectedUser) return;
+    const newMessage = {
+      sender_id: currentUser.userId,
+      receiver_id: selectedUser.id,
+      content: imageUrl,
+      type: 'image',
+      sent_at: new Date().toISOString()
+    };
+    setMessages(prev => [...prev, newMessage]);
+    webSocketService.sendMessage(newMessage);
   };
 
   return (
@@ -511,14 +572,25 @@ const Messages = () => {
                 <img src={conv.avatar} alt={conv.name} className="conversation-avatar" />
                 <div className="conversation-info">
                   <div className="conversation-header">
-                    <h3>{conv.name}</h3>
-                    <span className="conversation-time">{conv.time}</span>
+                    <h3 style={{ display: 'inline-block', marginRight: 8 }}>{conv.name}</h3>
+                    {conv.unread > 0 && (
+                      <span className="unread-badge">new</span>
+                    )}
                   </div>
-                  <p className="conversation-last-message">{conv.lastMessage}</p>
+                  <div className="conversation-meta">
+                    <span className="conversation-time">{
+                      (() => {
+                        const d = new Date(conv.time);
+                        return conv.time && !isNaN(d) ? d.toISOString().slice(0, 10) : '';
+                      })()
+                    }</span>
+                  </div>
+                  <p className="conversation-last-message">{
+                    isImageUrl(conv.lastMessage)
+                      ? 'New image:'
+                      : conv.lastMessage
+                  }</p>
                 </div>
-                {conv.unread > 0 && (
-                  <div className="unread-badge">{conv.unread}</div>
-                )}
               </div>
             ))}
           </div>
@@ -550,40 +622,44 @@ const Messages = () => {
                 >
                   <i className="bi bi-x"></i>
                 </button>
-                <button
-                  className="delete-chat-btn"
-                  title="Delete chat"
-                  onClick={async () => {
-                    if (window.confirm('Are you sure you want to delete this entire chat?')) {
-                      try {
-                        await axios.delete(`${API_URL}/messages/conversation/${currentUser.userId}/${selectedUser.id}`);
-                        setMessages([]);
-                        setSelectedUser(null);
-                        fetchConversations();
-                        showSuccessToast('Chat deleted successfully!');
-                      } catch (err) {
-                        showErrorToast('Failed to delete chat.');
-                      }
-                    }
-                  }}
-                  style={{ padding: '4px', borderRadius: '4px', border: 'none', background: '#ffdddd', color: '#c00', cursor: 'pointer', fontSize: 20 }}
-                >
-                  <i className="bi bi-trash"></i>
-                </button>
               </div>
             </div>
             <div className="chat-messages" ref={chatMessagesRef}>
-              {messages.map((msg, index) => (
-                <div
-                  key={index}
-                  className={`message ${msg.sender_id === currentUser.userId ? 'sent' : 'received'}`}
-                >
-                  <p>{msg.content}</p>
-                  <span className="message-time">
-                    {new Date(msg.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                </div>
-              ))}
+              {(() => {
+                const elements = [];
+                let lastDate = null;
+                messages.forEach((msg, index) => {
+                  const msgDate = new Date(msg.sent_at);
+                  let showDate = false;
+                  if (!lastDate || (msgDate - lastDate) > 24 * 60 * 60 * 1000) {
+                    showDate = true;
+                  }
+                  if (showDate) {
+                    elements.push(
+                      <div key={`date-${index}`} className="message-date-separator" style={{textAlign:'center',color:'#888',margin:'10px 0',fontSize:'0.95rem'}}>
+                        {msgDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                      </div>
+                    );
+                  }
+                  elements.push(
+                    <div
+                      key={index}
+                      className={`message ${msg.sender_id === currentUser.userId ? 'sent' : 'received'}`}
+                    >
+                      {msg.type === 'image' ? (
+                        <img src={msg.content} alt="sent-img" style={{ maxWidth: 200, borderRadius: 8 }} />
+                      ) : (
+                        <p>{msg.content}</p>
+                      )}
+                      <span className="message-time">
+                        {new Date(msg.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                  );
+                  lastDate = msgDate;
+                });
+                return elements;
+              })()}
               <div />
             </div>
             <form className="message-input" onSubmit={handleSendMessage}>
@@ -593,6 +669,16 @@ const Messages = () => {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
               />
+              <input
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                ref={fileInputRef}
+                onChange={handleImageChange}
+              />
+              <button type="button" className="send-image-btn" onClick={() => fileInputRef.current.click()} title="Send image">
+                <i className="bi bi-image" style={{fontSize:22}}></i>
+              </button>
               <button type="submit">
                 <i className="bi bi-send"></i>
               </button>

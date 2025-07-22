@@ -237,6 +237,24 @@
   background-color: #0056b3;
 }
 
+.send-image-btn {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-right: 4px;
+}
+.send-image-btn:hover {
+  background-color: #218838;
+}
+
 .no-chat-selected {
   flex: 1;
   display: flex;

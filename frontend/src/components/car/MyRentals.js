@@ -948,7 +948,18 @@ const MyRentals = () => {
           <Button key="cancel" onClick={handleCloseCancelModal}>
             Cancel
           </Button>,
-          <Button key="delete" type="primary" danger onClick={handleConfirmCancelBooking}>
+          <Button 
+            key="delete" 
+            type="primary" 
+            danger 
+            onClick={handleConfirmCancelBooking}
+            disabled={
+              rentalToCancel &&
+              rentalToCancel.paymentMethod?.toLowerCase() === "bank" &&
+              rentalToCancel.status?.toUpperCase() === "PAID" &&
+              (!refundBankAccount.trim() || !refundBankName.trim())
+            }
+          >
             Confirm Cancellation
           </Button>,
         ]}

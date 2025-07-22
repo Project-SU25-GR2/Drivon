@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaClock, FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaCar, FaHeadphones, FaExclamationTriangle } from 'react-icons/fa';
 import './ContactPage.css';
+import emailjs from '@emailjs/browser';
+
+const SERVICE_ID = 'service_4kxo9bc';
+const TEMPLATE_ID = 'template_ke3xtdn';
+const PUBLIC_KEY = 'GEk6xcGUMXH9SDK18';
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -24,10 +29,17 @@ const ContactPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    // Simulate form submission
-    setTimeout(() => {
-      setIsSubmitting(false);
+
+    const templateParams = {
+      from_name: formData.name,
+      from_email: formData.email,
+      phone: formData.phone,
+      subject: formData.subject,
+      message: formData.message,
+    };
+
+    try {
+      await emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY);
       setSubmitStatus('success');
       setFormData({
         name: '',
@@ -36,10 +48,11 @@ const ContactPage = () => {
         subject: '',
         message: ''
       });
-      
-      // Reset status after 3 seconds
       setTimeout(() => setSubmitStatus(null), 3000);
-    }, 1500);
+    } catch (error) {
+      setSubmitStatus('error');
+    }
+    setIsSubmitting(false);
   };
 
   return (
@@ -204,6 +217,11 @@ const ContactPage = () => {
                 <p>✅ Message sent successfully! We will respond as soon as possible.</p>
               </div>
             )}
+            {submitStatus === 'error' && (
+              <div className="error-message">
+                <p>❌ Failed to send message. Please try again later.</p>
+              </div>
+            )}
           </form>
         </div>
       </div>
@@ -217,7 +235,7 @@ const ContactPage = () => {
             <p>Car rental consultation and booking</p>
             <div className="department-contact">
               <div>
-                <span role="img" aria-label="phone">📞</span> 028 1234 5678
+                <span role="img" aria-label="phone">📞</span> 039 467 2210
               </div>
               <div>
                 <span role="img" aria-label="email">✉️</span> booking@carrental.vn
@@ -230,7 +248,7 @@ const ContactPage = () => {
             <p>Support and answer questions</p>
             <div className="department-contact">
               <div>
-                <span role="img" aria-label="phone">📞</span> 028 1234 5679
+                <span role="img" aria-label="phone">📞</span> 039 467 2210
               </div>
               <div>
                 <span role="img" aria-label="email">✉️</span> support@carrental.vn
@@ -243,7 +261,7 @@ const ContactPage = () => {
             <p>Handle insurance and complaints</p>
             <div className="department-contact">
               <div>
-                <span role="img" aria-label="phone">📞</span> 028 1234 5680
+                <span role="img" aria-label="phone">📞</span> 039 467 2210
               </div>
               <div>
                 <span role="img" aria-label="email">✉️</span> claims@carrental.vn
