@@ -76,6 +76,10 @@ public class Booking {
         return car;
     }
 
+    public User getRenter() {
+        return renter;
+    }
+
     @Override
     public String toString() {
         return "Booking{" +

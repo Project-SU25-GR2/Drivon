@@ -277,10 +277,22 @@ public class BookingService {
         if (!booking.getRenter().getUserId().equals(renterId)) {
             throw new RuntimeException("Bạn không phải là người thuê của booking này!");
         }
-        if (booking.getStatus() != Booking.BookingStatus.ongoing) {
-            throw new RuntimeException("Chỉ có thể yêu cầu huỷ khi đang thuê!");
+        if (booking.getStatus() == Booking.BookingStatus.pending) {
+            // Hủy ngay lập tức
+            booking.setStatus(Booking.BookingStatus.cancelled);
+            Car car = booking.getCar();
+            if (car != null) {
+                car.setStatus("available");
+                carRepository.save(car);
+            }
+            bookingRepository.save(booking);
+            // Có thể gửi notification cho chủ xe nếu muốn
+            return null; // Không tạo CancelRequest
         }
-        // Kiểm tra đã có yêu cầu huỷ chưa
+        if (booking.getStatus() != Booking.BookingStatus.ongoing) {
+            throw new RuntimeException("Chỉ có thể yêu cầu huỷ khi đang thuê hoặc chờ duyệt!");
+        }
+        // Logic cũ: tạo CancelRequest
         if (cancelRequestRepository.findByBookingAndStatus(booking, CancelRequest.Status.PENDING).isPresent()) {
             throw new RuntimeException("Đã có yêu cầu huỷ đang chờ xử lý!");
         }
@@ -291,7 +303,7 @@ public class BookingService {
         cancelRequest.setStatus(CancelRequest.Status.PENDING);
         CancelRequest saved = cancelRequestRepository.save(cancelRequest);
 
-        // Gửi notification cho chủ xe
+        // Gửi notification cho chủ xe (giữ nguyên)
         Car car = booking.getCar();
         if (car != null && car.getOwnerId() != null) {
             User owner = userRepository.findById(car.getOwnerId().longValue()).orElse(null);

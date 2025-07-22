@@ -338,6 +338,8 @@ const ViewCarDetail = () => {
 
   // Thêm state cho modal license warning
   const [showLicenseModal, setShowLicenseModal] = useState(false);
+  // Thêm state để phân biệt trạng thái license
+  const [licenseStatus, setLicenseStatus] = useState('none'); // 'none', 'uploaded', 'pending'
 
   const handleRentClick = async () => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -349,10 +351,16 @@ const ViewCarDetail = () => {
     try {
       const res = await axios.get(`${API_URL}/user/image/check-license/${user.userId}`);
       if (!res.data.hasLicense) {
+        setLicenseStatus('none');
+        setShowLicenseModal(true);
+        return;
+      } else if (!res.data.verified) {
+        setLicenseStatus('pending');
         setShowLicenseModal(true);
         return;
       }
     } catch (e) {
+      setLicenseStatus('none');
       setShowLicenseModal(true);
       return;
     }
@@ -833,15 +841,25 @@ const ViewCarDetail = () => {
             ×
           </button>
           <FaExclamationCircle size={64} color="#e74c3c" style={{ marginBottom: 16 }} />
-          <div style={{ fontWeight: 400, fontSize: 18, marginBottom: 12, color: '#222' }}>
-            You need to verify your <span style={{ fontWeight: 700 }}>driver's license</span> before you can rent a car.
-          </div>
-          <button
-            className="license-modal-upload-btn"
-            onClick={() => { setShowLicenseModal(false); navigate('/profile'); }}
-          >
-            Upload License
-          </button>
+          {licenseStatus === 'none' && (
+            <>
+              <div style={{ fontWeight: 400, fontSize: 18, marginBottom: 12, color: '#222' }}>
+                You need to <span style={{ fontWeight: 700 }}>upload your driver's license</span> before you can rent a car.
+              </div>
+              <button
+                className="license-modal-upload-btn"
+                onClick={() => { setShowLicenseModal(false); navigate('/profile'); }}
+              >
+                Upload License
+              </button>
+            </>
+          )}
+          {licenseStatus === 'pending' && (
+            <div style={{ fontWeight: 400, fontSize: 18, marginBottom: 12, color: '#222' }}>
+              Your driver's license is <span style={{ fontWeight: 700 }}>pending verification</span>.<br />
+              Please wait for admin approval before you can rent a car.
+            </div>
+          )}
         </div>
       </Modal>
     </div>

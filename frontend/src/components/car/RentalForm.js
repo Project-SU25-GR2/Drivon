@@ -96,12 +96,12 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
     if (visible && user) {
       // Chỉ set giá trị mặc định khi form mở lần đầu hoặc user thay đổi
       if (!form.getFieldValue('phone') && !form.getFieldValue('address')) {
-        form.setFieldsValue({
-          fullName: user.fullName,
-          email: user.email,
-          phone: user.phone,
-          address: user.address,
-        });
+      form.setFieldsValue({
+        fullName: user.fullName,
+        email: user.email,
+        phone: user.phone,
+        address: user.address,
+      });
       }
     }
   }, [visible, user, form]);

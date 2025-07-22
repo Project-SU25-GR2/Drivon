@@ -484,38 +484,41 @@ const MyRentals = () => {
       }
 
       // 2. Gửi yêu cầu hủy đặt xe đến API (Yêu cầu này vẫn được gửi đi bình thường)
-      await axios.post(`${API_URL}/bookings/${rentalToCancel.bookingId}/request-cancel?renterId=${user.userId}`);
+      const response = await axios.post(`${API_URL}/bookings/${rentalToCancel.bookingId}/request-cancel?renterId=${user.userId}`);
 
       // 3. Cập nhật giao diện ngay lập tức và giữ nguyên trạng thái này
-      setRentals(prevRentals =>
-        prevRentals.map(r =>
-          r.bookingId === rentalToCancel.bookingId
-            ? { ...r, bookingStatus: "CANCEL_REQUESTED" }
-            : r
-        )
-      );
-      
+      if (response.data && response.data.status && response.data.status.toLowerCase() === 'cancelled') {
+        // Hủy ngay lập tức (pending)
+        setRentals(prevRentals =>
+          prevRentals.map(r =>
+            r.bookingId === rentalToCancel.bookingId
+              ? { ...r, bookingStatus: "cancelled", status: "cancelled" }
+              : r
+          )
+        );
+        // Fetch lại rentals từ backend để đồng bộ UI
+        fetchRentalsWithCleanup(user.userId);
+      } else {
+        // Có CancelRequest (ongoing)
+        setRentals(prevRentals =>
+          prevRentals.map(r =>
+            r.bookingId === rentalToCancel.bookingId
+              ? { ...r, bookingStatus: "CANCEL_REQUESTED" }
+              : r
+          )
+        );
+      }
       // Hiển thị thông báo thành công
       if (refundCreated) {
         message.success('Refund request and cancellation request sent successfully!');
       } else {
         message.success('Cancellation request sent successfully!');
       }
-
       // Đóng modal
       handleCloseCancelModal();
-
-      // ===== THAY ĐỔI QUAN TRỌNG: ĐÃ XÓA BỎ HOÀN TOÀN HÀM GỌI LẠI DỮ LIỆU =====
-      // Các dòng code dưới đây đã bị xóa bỏ để ngăn việc giao diện bị cập nhật lại với dữ liệu cũ từ server.
-      // setTimeout(() => {
-      //   fetchRentalsWithCleanup(user.userId);
-      // }, 1500);
-
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Could not send cancellation request or create refund request.';
-      message.error(errorMessage);
-      // Đóng modal ngay cả khi có lỗi
-      handleCloseCancelModal();
+      console.error("Error cancelling booking:", error);
+      message.error("Unable to cancel booking.");
     }
   };
 
@@ -529,6 +532,8 @@ const MyRentals = () => {
   const renderRentalCard = (rental) => {
     // A user can rate a car if the booking is completed and chưa đánh giá
     const bookingStatus = rental.bookingStatus || rental.booking_status || rental.booking_status_text;
+    // Debug log trạng thái
+    console.log('Rental:', rental.orderCode, 'status:', rental.status, 'bookingStatus:', bookingStatus);
     const canRate = bookingStatus?.toLowerCase() === "completed" && !reviewedRentals.includes(rental.bookingId);
     const isPending = rental.status?.toUpperCase() === "PENDING";
     const isCash = rental.paymentMethod?.toLowerCase() === "cash";

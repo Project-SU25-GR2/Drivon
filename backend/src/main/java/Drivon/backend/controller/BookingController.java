@@ -82,8 +82,13 @@ public class BookingController {
 
     // Người thuê yêu cầu huỷ booking khi đang thuê (tạo CancelRequest, không đổi trạng thái booking)
     @PostMapping("/{bookingId}/request-cancel")
-    public ResponseEntity<CancelRequest> requestCancelByRenter(@PathVariable Integer bookingId, @RequestParam Long renterId) {
+    public ResponseEntity<?> requestCancelByRenter(@PathVariable Integer bookingId, @RequestParam Long renterId) {
         CancelRequest cancelRequest = bookingService.requestCancelByRenter(bookingId, renterId);
+        if (cancelRequest == null) {
+            // Booking đã bị huỷ ngay lập tức, trả về thông tin booking đã huỷ
+            Booking cancelledBooking = bookingService.getBookingById(bookingId);
+            return ResponseEntity.ok(cancelledBooking);
+        }
         return ResponseEntity.ok(cancelRequest);
     }
 
