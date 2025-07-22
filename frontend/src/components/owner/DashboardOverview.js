@@ -20,19 +20,10 @@ const DashboardOverview = ({ user }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log("user in DashboardOverview:", user);
-    console.log("rentalsData in DashboardOverview:", rentalsData);
     if (Array.isArray(rentalsData)) {
-      const statusList = rentalsData.map((r) => r.status);
-      console.log("Booking status list:", statusList);
       const activeBookings = rentalsData.filter(
         (r) =>
           r.status && ["approved", "ongoing"].includes(r.status.toLowerCase())
-      );
-      console.log(
-        "Active bookings (approved/ongoing):",
-        activeBookings.length,
-        activeBookings
       );
     }
   }, [user, rentalsData]);
@@ -54,7 +45,6 @@ const DashboardOverview = ({ user }) => {
       (r) =>
         r.status && ["approved", "ongoing"].includes(r.status.toLowerCase())
     ).length;
-    console.log("DEBUG activeCount:", activeCount, "rentalsData:", rentalsData);
     setStats((prev) => ({ ...prev, activeRentals: activeCount }));
   }, [rentalsData]);
 
