@@ -48,12 +48,13 @@ const DashboardOverview = ({ user }) => {
     setStats((prev) => ({ ...prev, totalCars: carsData.length }));
   }, [carsData]);
 
+  // useEffect tính activeRentals dựa trên rentalsData
   useEffect(() => {
-    // Đếm số lượng booking có trạng thái approved hoặc ongoing
     const activeCount = rentalsData.filter(
       (r) =>
         r.status && ["approved", "ongoing"].includes(r.status.toLowerCase())
     ).length;
+    console.log("DEBUG activeCount:", activeCount, "rentalsData:", rentalsData);
     setStats((prev) => ({ ...prev, activeRentals: activeCount }));
   }, [rentalsData]);
 
@@ -82,12 +83,13 @@ const DashboardOverview = ({ user }) => {
         );
         const totalBookings = bookingsRes.data?.length ?? 0;
 
-        setStats({
+        setStats((prev) => ({
+          ...prev,
           earnings: totalEarnings,
           totalCars,
           averageRating,
           totalBookings,
-        });
+        }));
       } catch (error) {
         console.error("Error fetching stats:", error);
       } finally {
