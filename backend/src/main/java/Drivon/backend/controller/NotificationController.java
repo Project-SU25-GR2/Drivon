@@ -60,7 +60,7 @@ public class NotificationController {
     // Admin tạo thông báo
     @PreAuthorize("hasRole('ADMIN') or hasRole('admin')")
     @PostMapping
-    public ResponseEntity<?> createNotification(@RequestBody Map<String, String> body) {
+    public ResponseEntity<?> createNotification(@RequestBody Map<String, String> body, Principal principal) {
         try {
             String content = body.get("content");
             String typeStr = body.getOrDefault("type", "SYSTEM");
@@ -76,6 +76,12 @@ public class NotificationController {
 
             Notification savedNotification = null;
 
+            // Lấy senderId từ principal nếu có
+            Long senderId = null;
+            if (principal != null) {
+                senderId = notificationService.getUserIdByEmail(principal.getName());
+            }
+
             // Tạo thông báo theo loại
             switch (targetType) {
                 case ALL_USERS:
@@ -86,7 +92,8 @@ public class NotificationController {
                         "content", content,
                         "type", type.toString(),
                         "targetType", targetType.toString(),
-                        "createdAt", savedNotification.getCreatedAt().toString()
+                        "createdAt", savedNotification.getCreatedAt().toString(),
+                        "senderId", senderId // Thêm dòng này
                     ));
                     break;
 
@@ -98,7 +105,8 @@ public class NotificationController {
                         "content", content,
                         "type", type.toString(),
                         "targetType", targetType.toString(),
-                        "createdAt", savedNotification.getCreatedAt().toString()
+                        "createdAt", savedNotification.getCreatedAt().toString(),
+                        "senderId", senderId
                     ));
                     break;
 
@@ -110,7 +118,8 @@ public class NotificationController {
                         "content", content,
                         "type", type.toString(),
                         "targetType", targetType.toString(),
-                        "createdAt", savedNotification.getCreatedAt().toString()
+                        "createdAt", savedNotification.getCreatedAt().toString(),
+                        "senderId", senderId
                     ));
                     break;
 
@@ -128,7 +137,8 @@ public class NotificationController {
                             "content", content,
                             "type", type.toString(),
                             "targetType", targetType.toString(),
-                            "createdAt", savedNotification.getCreatedAt().toString()
+                            "createdAt", savedNotification.getCreatedAt().toString(),
+                            "senderId", senderId
                         )
                     );
                     break;

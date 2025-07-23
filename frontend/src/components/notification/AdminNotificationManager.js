@@ -106,12 +106,12 @@ const AdminNotificationManager = () => {
     switch (targetType) {
       case 'ALL_USERS':
         return 'All users';
-      case 'OWNER_ONLY':
-        return 'Car owners only';
-      case 'USER_SPECIFIC':
-        return 'Specific user';
-      case 'ADMIN_ONLY':
-        return 'Admins only';
+      // case 'OWNER_ONLY':
+      //   return 'Car owners only';
+      // case 'USER_SPECIFIC':
+      //   return 'Specific user';
+      // case 'ADMIN_ONLY':
+      //   return 'Admins only';
       default:
         return targetType;
     }
@@ -229,32 +229,32 @@ const AdminNotificationManager = () => {
                 onChange={handleInputChange}
               >
                 <option value="ALL_USERS">All users</option>
-                <option value="OWNER_ONLY">Car owners only</option>
-                <option value="USER_SPECIFIC">Specific user</option>
-                <option value="ADMIN_ONLY">Admins only</option>
+                {/*<option value="OWNER_ONLY">Car owners only</option>*/}
+                {/*<option value="USER_SPECIFIC">Specific user</option>*/}
+                {/*<option value="ADMIN_ONLY">Admins only</option>*/}
               </select>
             </div>
           </div>
 
-          {formData.targetType === 'USER_SPECIFIC' && (
-            <div className="form-group">
-              <label htmlFor="targetUserId">Select User:</label>
-              <select
-                id="targetUserId"
-                name="targetUserId"
-                value={formData.targetUserId}
-                onChange={handleInputChange}
-                required
-              >
-                <option value="">Select user...</option>
-                {users.map(user => (
-                  <option key={user.userId} value={user.userId}>
-                    {user.fullName} ({user.email}) - {user.role}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+          {/*{formData.targetType === 'USER_SPECIFIC' && (*/}
+          {/*  <div className="form-group">*/}
+          {/*    <label htmlFor="targetUserId">Select User:</label>*/}
+          {/*    <select*/}
+          {/*      id="targetUserId"*/}
+          {/*      name="targetUserId"*/}
+          {/*      value={formData.targetUserId}*/}
+          {/*      onChange={handleInputChange}*/}
+          {/*      required*/}
+          {/*    >*/}
+          {/*      <option value="">Select user...</option>*/}
+          {/*      {users.map(user => (*/}
+          {/*        <option key={user.userId} value={user.userId}>*/}
+          {/*          {user.fullName} ({user.email}) - {user.role}*/}
+          {/*        </option>*/}
+          {/*      ))}*/}
+          {/*    </select>*/}
+          {/*  </div>*/}
+          {/*)}*/}
 
           <button type="submit" disabled={loading} className="submit-btn">
             {loading ? 'Sending...' : 'Send Notification'}
@@ -267,10 +267,10 @@ const AdminNotificationManager = () => {
       <div className="notifications-list-container">
         <h3>Notification History</h3>
         <div className="notifications-list">
-          {notifications.length === 0 ? (
+          {notifications.filter(n => n.targetType === 'ALL_USERS').length === 0 ? (
             <p>No notifications yet</p>
           ) : (
-            notifications.map(notification => (
+            notifications.filter(n => n.targetType === 'ALL_USERS').map(notification => (
               <div key={notification.notificationId} className="notification-item">
                 {editingId === notification.notificationId ? (
                   <div className="notification-edit-form">

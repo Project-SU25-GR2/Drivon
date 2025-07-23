@@ -31,7 +31,7 @@ const NotificationBell = () => {
     } catch (error) {
       console.error('Error loading notifications:', error);
       setNotifications([]);
-      showErrorToast('Failed to load notifications');
+      // showErrorToast('Failed to load notifications');
     } finally {
       setLoading(false);
     }
@@ -228,47 +228,43 @@ const NotificationBell = () => {
       </div>
 
       {isOpen && (
-        <div className="notification-dropdown">
-          <div className="notification-header">
+        <div className="notification-dropdown-custom">
+          <div className="notification-header-custom">
             <h3>Notifications</h3>
             {unreadCount > 0 && (
-              <button className="mark-all-read-btn" onClick={handleMarkAllAsRead}>
+              <button className="mark-all-read-btn-custom" onClick={handleMarkAllAsRead}>
                 Mark all read
               </button>
             )}
           </div>
-          <div className="notification-list">
+          <div className="notification-list-custom">
             {loading ? (
-              <div style={{ padding: 20, textAlign: 'center', color: '#666' }}>
-                Loading...
-              </div>
+              <div className="notification-empty-custom">Loading...</div>
             ) : notifications.length === 0 ? (
-              <div style={{ padding: 20, textAlign: 'center', color: '#666' }}>
-                No notifications
-              </div>
+              <div className="notification-empty-custom">No notifications</div>
             ) : (
               notifications.map((notification) => (
                 <div
                   key={notification.notificationId}
-                  className={`notification-item ${!isNotificationRead(notification.notificationId) ? 'unread' : ''}`}
+                  className={`notification-item-custom ${!isNotificationRead(notification.notificationId) ? 'unread-custom' : ''}`}
                   onClick={() => !isNotificationRead(notification.notificationId) && handleMarkAsRead(notification.notificationId)}
                 >
-                  <div className="notification-content">
-                    <div className="notification-header-item">
-                      <span className="notification-icon-item">
-                        {getNotificationIcon(notification.type)}
-                      </span>
-                      <span className={`notification-type${notification.type === 'PROMO' ? ' promotion' : ''}`}>
+                  <div className="notification-icon-type-custom">
+                    {getNotificationIcon(notification.type)}
+                  </div>
+                  <div className="notification-content-custom">
+                    <div className="notification-type-row-custom">
+                      <span className={`notification-type-custom${notification.type === 'PROMO' ? ' promotion-custom' : ''}`}>
                         {getTypeLabel(notification.type)}
                       </span>
                       {!isNotificationRead(notification.notificationId) && (
-                        <span className="unread-indicator">●</span>
+                        <span className="unread-indicator-custom" title="Chưa đọc"></span>
                       )}
                     </div>
-                    <div className="notification-text">
+                    <div className="notification-text-custom">
                       {notification.content}
                     </div>
-                    <div className="notification-time">
+                    <div className="notification-time-custom">
                       {formatDate(notification.createdAt)}
                     </div>
                   </div>
