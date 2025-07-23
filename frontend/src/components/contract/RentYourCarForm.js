@@ -190,7 +190,7 @@ import { useContracts } from '../../contexts/ContractsContext';
                 className="cccd-modal-btn primary"
                 onClick={() => navigate('/contracts')}
               >
-                View Contract Status
+                View Application Status
               </button>
             </div>
           </div>
@@ -914,7 +914,7 @@ import { useContracts } from '../../contexts/ContractsContext';
           isLoading={uploading}
           aria-label="Submit Registration"
         >
-          {uploading ? 'Uploading...' : 'Submit'}
+          {uploading ? 'Uploading...' : 'Submit Application'}
         </SimpleButton>
       </form>
       
@@ -950,7 +950,7 @@ import { useContracts } from '../../contexts/ContractsContext';
             <ol>
               <li>Fill in your car and personal information</li>
               <li>Wait for confirmation from our team</li>
-              <li>Sign the partnership contract</li>
+              <li>Sign the partnership agreement</li>
               <li>Start renting out your car and earning income</li>
             </ol>
           </div>
