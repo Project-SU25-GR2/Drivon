@@ -250,7 +250,24 @@ public class AdminController {
                 Optional<User> user = userRepository.findByEmail(email);
                 if (user.isPresent()) {
                     String content = "Your partner application has been reviewed. Status: " + status;
-                    notificationService.createNotificationForSpecificUser(content, Notification.NotificationType.SYSTEM, user.get().getUserId());
+//                    notificationService.createNotificationForSpecificUser(content, Notification.NotificationType.SYSTEM, user.get().getUserId());
+                    var notification = notificationService.createNotificationForSpecificUser(
+                            content,
+                            Notification.NotificationType.SYSTEM,
+                            user.get().getUserId()
+                    );
+                    // Gửi real-time notification qua WebSocket
+                    messagingTemplate.convertAndSendToUser(
+                            String.valueOf(user.get().getUserId()),
+                            "/notifications/new",
+                            Map.of(
+                                    "notificationId", notification.getNotificationId(),
+                                    "content", notification.getContent(),
+                                    "type", notification.getType().toString(),
+                                    "targetType", notification.getTargetType().toString(),
+                                    "createdAt", notification.getCreatedAt().toString()
+                            )
+                    );
                 }
             } catch (Exception e) { /* ignore */ }
             return ResponseEntity.ok("Status updated");
