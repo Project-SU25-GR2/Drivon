@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaClock, FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaCar, FaHeadphones, FaExclamationTriangle } from 'react-icons/fa';
 import './ContactPage.css';
 import emailjs from '@emailjs/browser';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
 
 const SERVICE_ID = 'service_4kxo9bc';
 const TEMPLATE_ID = 'template_ke3xtdn';
@@ -48,9 +49,11 @@ const ContactPage = () => {
         subject: '',
         message: ''
       });
+      showSuccessToast('Message sent successfully! We will respond as soon as possible.');
       setTimeout(() => setSubmitStatus(null), 3000);
     } catch (error) {
       setSubmitStatus('error');
+      showErrorToast('Failed to send message. Please try again later.');
     }
     setIsSubmitting(false);
   };
@@ -212,16 +215,6 @@ const ContactPage = () => {
               {isSubmitting ? 'Sending...' : 'Send Message'}
             </button>
 
-            {submitStatus === 'success' && (
-              <div className="success-message">
-                <p>✅ Message sent successfully! We will respond as soon as possible.</p>
-              </div>
-            )}
-            {submitStatus === 'error' && (
-              <div className="error-message">
-                <p>❌ Failed to send message. Please try again later.</p>
-              </div>
-            )}
           </form>
         </div>
       </div>
