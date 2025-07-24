@@ -150,7 +150,7 @@ const ContractsPage = () => {
                 <div className="contract-expanded-details">
                   {/* Car Information lên đầu */}
                   <div className="detail-section">
-                    <h4>🚗 Car Information</h4>
+                    <h4> Car Information</h4>
                     <div className="detail-grid">
                       <div className="detail-group">
                         <label>License Plate:</label>
@@ -180,7 +180,7 @@ const ContractsPage = () => {
                   </div>
                   {/* Applicant Information sau */}
                   <div className="detail-section">
-                    <h4>📋 Applicant Information</h4>
+                    <h4>Applicant Information</h4>
                     <div className="detail-grid">
                       <div className="detail-group">
                         <label>Full Name:</label>
@@ -198,7 +198,7 @@ const ContractsPage = () => {
                   </div>
                   {/* CCCD Images */}
                   <div className="detail-section">
-                    <h4>🆔 Citizen ID</h4>
+                    <h4>Citizen ID</h4>
                     <div className="cccd-images">
                       {contract.cccdImages && contract.cccdImages.length > 0 ? (
                         <div className="image-grid">
@@ -221,7 +221,7 @@ const ContractsPage = () => {
                   </div>
                   {/* Car Images */}
                   <div className="detail-section">
-                    <h4>📸 Car Images</h4>
+                    <h4>Car Images</h4>
                     <div className="car-images">
                       {(contract.carData?.mainImage || (contract.carData?.otherImages && contract.carData.otherImages.length > 0)) ? (
                         <div className="image-grid two-cols">
@@ -257,7 +257,7 @@ const ContractsPage = () => {
                   </div>
                   {/* Cavet Images */}
                   <div className="detail-section">
-                    <h4>📋 Cavet Images</h4>
+                    <h4>Cavet Images</h4>
                     <div className="cavet-images">
                       {contract.carData?.cavetImages && contract.carData.cavetImages.length > 0 ? (
                         <div className="image-grid">
