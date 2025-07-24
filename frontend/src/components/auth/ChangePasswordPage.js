@@ -208,6 +208,7 @@ const ChangePasswordPage = () => {
                 type="submit"
                 className="btn btn-primary me-2"
                 disabled={loading}
+                style={{marginTop: "0 !important"}}
               >
                 {loading ? (
                   <>
