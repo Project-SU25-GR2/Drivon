@@ -164,7 +164,7 @@ const MainLayout = ({ user, handleLogout, children }) => {
         <nav className="desktop-nav">
           <Link to="/" className={location.pathname === "/" ? "active" : ""}>Home</Link>
           <Link to="/rent-car" className={location.pathname.startsWith("/rent-car") ? "active" : ""}>Rent car</Link>
-          <Link to="/contracts" className={location.pathname.startsWith("/contracts") ? "active" : ""}>Contracts</Link>
+          <Link to="/contracts" className={location.pathname.startsWith("/contracts") ? "active" : ""}>Partner Applications</Link>
           <Link to="/rent-your-car" className={location.pathname.startsWith("/rent-your-car") ? "active" : ""}>Become a Partner</Link>
           <Link to="/contact" className={location.pathname === "/contact" ? "active" : ""}>Contact</Link>
           <div className="search-box">
@@ -252,7 +252,7 @@ const MainLayout = ({ user, handleLogout, children }) => {
               <nav className="mobile-nav">
                 <Link to="/" className={location.pathname === "/" ? "active" : ""} onClick={() => setMobileMenuOpen(false)}>Home</Link>
                 <Link to="/rent-car" className={location.pathname.startsWith("/rent-car") ? "active" : ""} onClick={() => setMobileMenuOpen(false)}>Rent car</Link>
-                <Link to="/contracts" className={location.pathname.startsWith("/contracts") ? "active" : ""} onClick={() => setMobileMenuOpen(false)}>Contracts</Link>
+                <Link to="/contracts" className={location.pathname.startsWith("/contracts") ? "active" : ""} onClick={() => setMobileMenuOpen(false)}>Partner Applications</Link>
                 <Link to="/rent-your-car" className={location.pathname.startsWith("/rent-your-car") ? "active" : ""} onClick={() => setMobileMenuOpen(false)}>Become a Partner</Link>
                 <Link to="/contact" className={location.pathname === "/contact" ? "active" : ""} onClick={() => setMobileMenuOpen(false)}>Contact</Link>
                 <div className="mobile-search-box">

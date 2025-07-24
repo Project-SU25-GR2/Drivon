@@ -89,16 +89,16 @@ const ContractsPage = () => {
   return (
     <div className="contracts-page">
       <div className="contracts-header">
-        <h1>My Contracts</h1>
-        <p>Manage all your contracts and their statuses</p>
+        <h1>My Partner Applications</h1>
+        <p>Manage all your partner applications and their statuses</p>
       </div>
 
       {!contracts || contracts.length === 0 ? (
         <div className="no-contracts">
           <div className="no-contracts-content">
             <i className="bi bi-file-earmark-text"></i>
-            <h3>No contracts found</h3>
-            <p>You have no contracts in the system.</p>
+            <h3>No partner applications found</h3>
+            <p>You have no partner applications in the system.</p>
             <div className="no-contracts-actions">
               <button 
                 className="btn-primary"
@@ -115,7 +115,7 @@ const ContractsPage = () => {
             <div key={contract.id || contract.contractNumber} className="contract-card">
               <div className="contract-header">
                 <div className="contract-info">
-                  <h3>Contract #{contract.contractNumber || 'N/A'}</h3>
+                  <h3>Application #{contract.contractNumber || 'N/A'}</h3>
                   <p className="contract-date">Created at: {formatDate(contract.createdAt)}</p>
                 </div>
               </div>
@@ -124,7 +124,7 @@ const ContractsPage = () => {
               <div className="contract-details">
                 <div className="detail-row">
                   <div className="detail-group">
-                    <label>Contract Number:</label>
+                    <label>Application Number:</label>
                     <span>{contract.contractNumber || 'N/A'}</span>
                   </div>
                   <div className="detail-group">
@@ -150,7 +150,7 @@ const ContractsPage = () => {
                 <div className="contract-expanded-details">
                   {/* Car Information lên đầu */}
                   <div className="detail-section">
-                    <h4>🚗 Car Information</h4>
+                    <h4> Car Information</h4>
                     <div className="detail-grid">
                       <div className="detail-group">
                         <label>License Plate:</label>
@@ -180,7 +180,7 @@ const ContractsPage = () => {
                   </div>
                   {/* Applicant Information sau */}
                   <div className="detail-section">
-                    <h4>📋 Applicant Information</h4>
+                    <h4>Applicant Information</h4>
                     <div className="detail-grid">
                       <div className="detail-group">
                         <label>Full Name:</label>
@@ -198,7 +198,7 @@ const ContractsPage = () => {
                   </div>
                   {/* CCCD Images */}
                   <div className="detail-section">
-                    <h4>🆔 Citizen ID</h4>
+                    <h4>Citizen ID</h4>
                     <div className="cccd-images">
                       {contract.cccdImages && contract.cccdImages.length > 0 ? (
                         <div className="image-grid">
@@ -221,7 +221,7 @@ const ContractsPage = () => {
                   </div>
                   {/* Car Images */}
                   <div className="detail-section">
-                    <h4>📸 Car Images</h4>
+                    <h4>Car Images</h4>
                     <div className="car-images">
                       {(contract.carData?.mainImage || (contract.carData?.otherImages && contract.carData.otherImages.length > 0)) ? (
                         <div className="image-grid two-cols">
@@ -257,7 +257,7 @@ const ContractsPage = () => {
                   </div>
                   {/* Cavet Images */}
                   <div className="detail-section">
-                    <h4>📋 Cavet Images</h4>
+                    <h4>Cavet Images</h4>
                     <div className="cavet-images">
                       {contract.carData?.cavetImages && contract.carData.cavetImages.length > 0 ? (
                         <div className="image-grid">
@@ -300,11 +300,11 @@ const ContractsPage = () => {
                     try {
                       await updateContractStatus(contract.id, 'CANCELLED_LEASE');
                     } catch (e) {
-                      alert('Failed to cancel contract!');
+                      alert('Failed to cancel application!');
                     }
                   }}>
                     <i className="bi bi-x-circle"></i>
-                    Cancel contract
+                    Cancel application
                   </button>
                 )}
               </div>

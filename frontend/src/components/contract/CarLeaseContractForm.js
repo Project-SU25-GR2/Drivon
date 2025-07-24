@@ -38,6 +38,8 @@ const CarLeaseContractForm = ({ user }) => {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [cccdImages, setCccdImages] = useState([]);
   const [zoomImg, setZoomImg] = useState(null);
+  // Thêm state cho tab điều khoản
+  const [termsTab, setTermsTab] = useState('en');
 
   useEffect(() => {
     if (contractData) {
@@ -272,19 +274,19 @@ const CarLeaseContractForm = ({ user }) => {
         <div className="lease-section-card">
           <h3 className="lease-section-title">Vehicle Information</h3>
           <div className="lease-info-grid">
-            <div className="lease-info-item"><label>Brand:</label><span>{contractData.carData.brand || 'N/A'}</span></div>
-            <div className="lease-info-item"><label>Model:</label><span>{contractData.carData.model || 'N/A'}</span></div>
-            <div className="lease-info-item"><label>Year:</label><span>{contractData.carData.year || 'N/A'}</span></div>
-            <div className="lease-info-item"><label>License Plate:</label><span>{contractData.carData.licensePlate || 'N/A'}</span></div>
-            <div className="lease-info-item"><label>Owner ID:</label><span>{contractData.carData.ownerId || 'N/A'}</span></div>
-            <div className="lease-info-item"><label>Seats:</label><span>{contractData.carData.seats || 'N/A'}</span></div>
-            <div className="lease-info-item"><label>Type:</label><span>{contractData.carData.type || 'N/A'}</span></div>
-            <div className="lease-info-item"><label>Transmission:</label><span>{contractData.carData.transmission || 'N/A'}</span></div>
-            <div className="lease-info-item"><label>Fuel Type:</label><span>{contractData.carData.fuelType || 'N/A'}</span></div>
-            <div className="lease-info-item"><label>Fuel Consumption:</label><span>{contractData.carData.fuelConsumption ? contractData.carData.fuelConsumption + ' L/100km' : 'N/A'}</span></div>
-            <div className="lease-info-item"><label>Status:</label><span>{contractData.carData.status || 'N/A'}</span></div>
-            <div className="lease-info-item"><label>Location:</label><span>{contractData.carData.location || 'N/A'}</span></div>
-            <div className="lease-info-item lease-full-width"><label>Description:</label><span>{contractData.carData.description || 'N/A'}</span></div>
+            <div className="lease-info-item"><label>Brand: </label><span>{contractData.carData.brand || 'N/A'}</span></div>
+            <div className="lease-info-item"><label>Model: </label><span>{contractData.carData.model || 'N/A'}</span></div>
+            <div className="lease-info-item"><label>Year: </label><span>{contractData.carData.year || 'N/A'}</span></div>
+            <div className="lease-info-item"><label>License Plate: </label><span>{contractData.carData.licensePlate || 'N/A'}</span></div>
+            <div className="lease-info-item"><label>Owner ID: </label><span>{contractData.carData.ownerId || 'N/A'}</span></div>
+            <div className="lease-info-item"><label>Seats: </label><span>{contractData.carData.seats || 'N/A'}</span></div>
+            <div className="lease-info-item"><label>Type: </label><span>{contractData.carData.type || 'N/A'}</span></div>
+            <div className="lease-info-item"><label>Transmission: </label><span>{contractData.carData.transmission || 'N/A'}</span></div>
+            <div className="lease-info-item"><label>Fuel Type: </label><span>{contractData.carData.fuelType || 'N/A'}</span></div>
+            <div className="lease-info-item"><label>Fuel Consumption: </label><span>{contractData.carData.fuelConsumption ? contractData.carData.fuelConsumption + ' L/100km' : 'N/A'}</span></div>
+            <div className="lease-info-item"><label>Status: </label><span>{contractData.carData.status || 'N/A'}</span></div>
+            <div className="lease-info-item"><label>Location: </label><span>{contractData.carData.location || 'N/A'}</span></div>
+            <div className="lease-info-item lease-full-width"><label>Description: </label><span>{contractData.carData.description || 'N/A'}</span></div>
           </div>
           {contractData.carData.images && contractData.carData.images.length > 0 && (
             <div className="lease-image-section">
@@ -349,7 +351,7 @@ const CarLeaseContractForm = ({ user }) => {
           )}
         </div>
         <div className="lease-form-group">
-          <label>Contract Number:</label>
+          <label>Application Number:</label>
           <input
             type="text"
             name="contractNumber"
@@ -468,17 +470,17 @@ const CarLeaseContractForm = ({ user }) => {
             />
             <div style={{flex:1}}>
               <label htmlFor="acceptTerms">
-                Tôi đã đọc và đồng ý với <button 
+                I have read and agree to the <button 
                   type="button" 
                   onClick={() => setShowTermsModal(true)}
                   disabled={isContractCreated}
                 >
-                  Điều khoản và Chính sách sử dụng
-                </button> của nền tảng Drivon
+                  Terms of Use and Privacy Policy
+                </button> of Drivon
               </label>
               {!acceptedTerms && errors.terms && (
                 <div className="partner-terms-error">
-                  Vui lòng chấp nhận điều khoản và chính sách để tiếp tục
+                  Please accept the terms and privacy policy to continue
                 </div>
               )}
             </div>
@@ -491,7 +493,7 @@ const CarLeaseContractForm = ({ user }) => {
             isLoading={isSubmitting}
             className="lease-submit-btn"
           >
-            Create Contract
+            Register Partner Application
           </SimpleButton>
         </div>
       </form>
@@ -503,7 +505,7 @@ const CarLeaseContractForm = ({ user }) => {
             {/* Modal Header */}
             <div className="partner-terms-modal-header">
               <h2>
-                📄 ĐIỀU KHOẢN VÀ CHÍNH SÁCH SỬ DỤNG
+                📄 TERMS OF USE AND PRIVACY POLICY
               </h2>
               <button
                 onClick={() => setShowTermsModal(false)}
@@ -512,104 +514,222 @@ const CarLeaseContractForm = ({ user }) => {
                 ×
               </button>
             </div>
-            
+            {/* Tabs */}
+            <div className="partner-terms-modal-tabs" style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+              <button
+                className={termsTab === 'en' ? 'active' : ''}
+                style={{ padding: '6px 16px', borderRadius: 4, border: '1px solid #ccc', background: termsTab === 'en' ? '#eee' : '#fff', cursor: 'pointer' }}
+                onClick={() => setTermsTab('en')}
+              >
+                English
+              </button>
+              <button
+                className={termsTab === 'vi' ? 'active' : ''}
+                style={{ padding: '6px 16px', borderRadius: 4, border: '1px solid #ccc', background: termsTab === 'vi' ? '#eee' : '#fff', cursor: 'pointer' }}
+                onClick={() => setTermsTab('vi')}
+              >
+                Tiếng Việt
+              </button>
+            </div>
             {/* Modal Content */}
             <div className="partner-terms-modal-body">
-              <p style={{color: '#7f8c8d', marginBottom: '1.5rem', fontSize: '0.9rem'}}>
-                (Áp dụng cho người dùng nền tảng Drivon)<br/>
-                Cập nhật ngày: [●]
-              </p>
-              
-              <div style={{marginBottom: '1.5rem'}}>
-                <h3>1. ĐỊNH NGHĨA</h3>
-                <ul>
-                  <li><strong>Drivon:</strong> Nền tảng trực tuyến (bao gồm website và ứng dụng) cung cấp dịch vụ kết nối giữa người thuê xe tự lái và chủ xe.</li>
-                  <li><strong>Người thuê:</strong> Cá nhân hoặc tổ chức sử dụng nền tảng để tìm và thuê xe từ chủ xe.</li>
-                  <li><strong>Chủ xe (Owner):</strong> Cá nhân hoặc tổ chức sở hữu phương tiện và đăng xe lên nền tảng để cho thuê.</li>
-                  <li><strong>Giao dịch thuê xe:</strong> Bao gồm quá trình đặt xe, thanh toán, bàn giao, sử dụng và hoàn trả xe giữa người thuê và chủ xe.</li>
-                </ul>
-              </div>
-              
-              <div style={{marginBottom: '1.5rem'}}>
-                <h3>2. VAI TRÒ CỦA DRIVON</h3>
-                <ul>
-                  <li>Drivon là nền tảng trung gian kết nối, không phải là bên cho thuê xe, không sở hữu xe, không đại diện cho bất kỳ người thuê hoặc chủ xe nào.</li>
-                  <li>Drivon không tham gia vào giao dịch thuê xe, bao gồm: đàm phán giá, bàn giao xe, xác minh người thuê, hoặc ký hợp đồng thuê xe.</li>
-                  <li>Mọi thông tin về phương tiện, giá thuê, điều kiện thuê… là do chủ xe cung cấp, Drivon không chịu trách nhiệm về tính xác thực hoặc chất lượng của thông tin này.</li>
-                </ul>
-              </div>
-              
-              <div style={{marginBottom: '1.5rem'}}>
-                <h3>3. ĐIỀU KHOẢN DÀNH CHO NGƯỜI THUÊ</h3>
-                <p style={{marginBottom: '0.8rem'}}>Người thuê khi sử dụng nền tảng Drivon đồng ý rằng:</p>
-                <ul>
-                  <li>Cung cấp thông tin cá nhân chính xác và chịu trách nhiệm với các thông tin đã khai báo.</li>
-                  <li>Tự chịu trách nhiệm với quá trình thuê, sử dụng và hoàn trả xe đúng thời hạn, đúng tình trạng.</li>
-                  <li>Tuân thủ luật giao thông và các quy định pháp luật khi điều khiển phương tiện.</li>
-                  <li>Chủ động liên hệ, đàm phán và giải quyết các vấn đề phát sinh trực tiếp với chủ xe.</li>
-                  <li>Drivon không chịu trách nhiệm đối với bất kỳ sự cố nào xảy ra trong giao dịch thuê xe.</li>
-                </ul>
-              </div>
-              
-              <div style={{marginBottom: '1.5rem'}}>
-                <h3>4. ĐIỀU KHOẢN DÀNH CHO CHỦ XE (OWNER)</h3>
-                <p style={{marginBottom: '0.8rem'}}>Chủ xe khi sử dụng nền tảng Drivon đồng ý rằng:</p>
-                <ul>
-                  <li>Là chủ sở hữu hợp pháp của xe hoặc có đủ quyền hợp pháp để cho thuê.</li>
-                  <li>Cung cấp thông tin chính xác, cập nhật về phương tiện và chịu trách nhiệm với thông tin đó.</li>
-                  <li>Tự quyết định điều kiện cho thuê, giá thuê, quy trình đặt cọc, giấy tờ và yêu cầu với người thuê.</li>
-                  <li>Tự chịu trách nhiệm giải quyết mọi rủi ro phát sinh từ việc cho thuê xe (tai nạn, hư hỏng, vi phạm pháp luật, tranh chấp...).</li>
-                  <li>Drivon không chịu trách nhiệm tài chính, pháp lý hay bồi thường trong bất kỳ trường hợp nào liên quan đến xe đã cho thuê.</li>
-                </ul>
-                <div className="highlight-box">
-                  <strong style={{color: '#856404'}}>📌 Khuyến nghị quan trọng:</strong><br/>
-                  Chủ xe nên lập hợp đồng thuê xe riêng bằng văn bản với người thuê trước khi bàn giao xe, bao gồm:
-                  <ul style={{margin: '0.5rem 0 0 1.5rem'}}>
-                    <li>Điều kiện sử dụng xe</li>
-                    <li>Quy định về trách nhiệm khi xảy ra sự cố, mất mát</li>
-                    <li>Quy trình xử lý tranh chấp, mức bồi thường, và các nghĩa vụ cụ thể</li>
-                  </ul>
-                  Drivon không cung cấp, không xác nhận và không lưu trữ hợp đồng này.
-                </div>
-              </div>
-              
-              <div style={{marginBottom: '1.5rem'}}>
-                <h3>5. MIỄN TRỪ TRÁCH NHIỆM PHÁP LÝ</h3>
-                <p style={{marginBottom: '0.8rem'}}>Bằng việc sử dụng nền tảng, người dùng xác nhận rằng:</p>
-                <ul>
-                  <li>Drivon không chịu trách nhiệm pháp lý, tài chính hoặc hình sự với bất kỳ sự cố nào phát sinh từ giao dịch thuê hoặc cho thuê xe.</li>
-                  <li>Drivon không đại diện, không bảo đảm, không bảo lãnh cho chất lượng xe, hành vi người thuê hay chủ xe.</li>
-                  <li>Drivon không chịu trách nhiệm trong các trường hợp tai nạn, vi phạm giao thông, gian lận, lừa đảo hoặc tranh chấp cá nhân giữa hai bên.</li>
-                  <li>Trong trường hợp xảy ra sự cố, người dùng có trách nhiệm tự thương lượng, xử lý với bên còn lại. Drivon chỉ hỗ trợ cung cấp lịch sử giao dịch, nhật ký truy cập khi cần thiết.</li>
-                </ul>
-              </div>
-              
-              <div style={{marginBottom: '1.5rem'}}>
-                <h3>6. GIẢI QUYẾT TRANH CHẤP</h3>
-                <ul>
-                  <li>Mọi tranh chấp giữa người thuê và chủ xe phải được giải quyết trực tiếp giữa hai bên.</li>
-                  <li>Drivon không tham gia tố tụng, hòa giải hay đứng ra đại diện cho bất kỳ bên nào.</li>
-                  <li>Trong trường hợp được yêu cầu bởi cơ quan nhà nước, Drivon sẽ cung cấp dữ liệu liên quan như lịch sử giao dịch, hồ sơ tài khoản… trong phạm vi pháp luật cho phép.</li>
-                </ul>
-              </div>
-              
-              <div style={{marginBottom: '1.5rem'}}>
-                <h3>7. CAM KẾT VÀ RÀNG BUỘC</h3>
-                <ul>
-                  <li>Việc đăng ký tài khoản, đăng xe hoặc thuê xe thông qua nền tảng được xem là người dùng đã đọc, hiểu, đồng ý và ràng buộc với toàn bộ nội dung của bản điều khoản này.</li>
-                  <li>Drivon có quyền cập nhật, chỉnh sửa nội dung chính sách và điều khoản này mà không cần thông báo trước.</li>
-                  <li>Phiên bản mới sẽ được công bố công khai trên nền tảng và có hiệu lực kể từ thời điểm đăng tải.</li>
-                </ul>
-              </div>
-              
-              <div style={{marginBottom: '1.5rem'}}>
-                <h3>8. HIỆU LỰC PHÁP LÝ</h3>
-                <ul>
-                  <li>Chính sách và Điều khoản sử dụng này có hiệu lực kể từ ngày công bố và áp dụng cho toàn bộ người dùng nền tảng Drivon.</li>
-                  <li>Đây là một thỏa thuận sử dụng dịch vụ có giá trị pháp lý giữa người dùng và Drivon, có thể được sử dụng làm căn cứ giải trình với cơ quan chức năng hoặc trong tranh chấp dân sự (nếu có).</li>
-                  <li>Người dùng có trách nhiệm đọc và cập nhật chính sách định kỳ.</li>
-                </ul>
-              </div>
+              {termsTab === 'en' ? (
+                <>
+                  <p style={{color: '#7f8c8d', marginBottom: '1.5rem', fontSize: '0.9rem'}}>
+                    (Applies to Drivon platform users)<br/>
+                    Updated on: [●]
+                  </p>
+                  
+                  <div style={{marginBottom: '1.5rem'}}>
+                    <h3>1. DEFINITIONS</h3>
+                    <ul>
+                      <li><strong>Drivon:</strong> Online platform (including website and application) providing services to connect car renters and car owners.</li>
+                      <li><strong>Renter:</strong> Individual or organization using the platform to find and rent cars from car owners.</li>
+                      <li><strong>Car Owner (Owner):</strong> Individual or organization owning the vehicle and listing it on the platform for rent.</li>
+                      <li><strong>Rental Transaction:</strong> Includes the process of booking, payment, delivery, use, and return of the car between renter and owner.</li>
+                    </ul>
+                  </div>
+                  
+                  <div style={{marginBottom: '1.5rem'}}>
+                    <h3>2. ROLE OF DRIVON</h3>
+                    <ul>
+                      <li>Drivon is a platform intermediary, not a car rental party, does not own cars, does not represent any renter or car owner.</li>
+                      <li>Drivon does not participate in rental transactions, including: negotiation of price, delivery of car, verification of renter, or signing of rental agreement.</li>
+                      <li>All information about the vehicle, rental price, rental conditions… is provided by the car owner, Drivon is not responsible for the accuracy or quality of this information.</li>
+                    </ul>
+                  </div>
+                  
+                  <div style={{marginBottom: '1.5rem'}}>
+                    <h3>3. TERMS FOR RENTERS</h3>
+                    <p style={{marginBottom: '0.8rem'}}>When using the Drivon platform, renters agree that:</p>
+                    <ul>
+                      <li>Provide accurate personal information and assume responsibility for the information declared.</li>
+                      <li>Take responsibility for the rental process, use, and return of the car on time and in good condition.</li>
+                      <li>Comply with traffic laws and all relevant laws and regulations when operating the vehicle.</li>
+                      <li>Actively contact, negotiate, and resolve any issues arising directly with the car owner.</li>
+                      <li>Drivon is not responsible for any incident arising from the rental transaction.</li>
+                    </ul>
+                  </div>
+                  
+                  <div style={{marginBottom: '1.5rem'}}>
+                    <h3>4. TERMS FOR CAR OWNERS (OWNER)</h3>
+                    <p style={{marginBottom: '0.8rem'}}>Car owners agree when using the Drivon platform that:</p>
+                    <ul>
+                      <li>Are the legal owner of the vehicle or have legal authorization to rent it.</li>
+                      <li>Provide accurate, updated information about the vehicle and assume responsibility for it.</li>
+                      <li>Independently decide on rental conditions, rental price, deposit procedure, documents, and requirements for renters.</li>
+                      <li>Independently assume responsibility for resolving any disputes or risks arising from renting the car (accidents, damage, violations of law, disputes...).</li>
+                      <li>Drivon is not responsible for financial, legal, or compensation matters arising from the car rented.</li>
+                    </ul>
+                    <div className="highlight-box">
+                      <strong style={{color: '#856404'}}>📌 Important Note:</strong><br/>
+                      Car owners should draw up a separate rental agreement in writing with the renter before delivering the car, including:
+                      <ul style={{margin: '0.5rem 0 0 1.5rem'}}>
+                        <li>Rental conditions</li>
+                        <li>Rules for handling incidents, loss, and disputes</li>
+                        <li>Specific obligations and procedures for dispute resolution, compensation, and other matters</li>
+                      </ul>
+                      Drivon does not provide, confirm, or store this agreement.
+                    </div>
+                  </div>
+                  
+                  <div style={{marginBottom: '1.5rem'}}>
+                    <h3>5. DISCLAIMER OF LEGAL LIABILITY</h3>
+                    <p style={{marginBottom: '0.8rem'}}>By using the platform, users confirm that:</p>
+                    <ul>
+                      <li>Drivon is not liable for any legal, financial, or criminal matters arising from the rental or rental transaction.</li>
+                      <li>Drivon does not represent, guarantee, or guarantee the quality of the vehicle, renter's behavior, or car owner's behavior.</li>
+                      <li>Drivon is not liable for any accidents, traffic violations, fraud, or personal disputes between the two parties.</li>
+                      <li>In case of an incident, users are responsible for resolving it directly with the other party. Drivon only supports providing transaction history, access logs when necessary.</li>
+                    </ul>
+                  </div>
+                  
+                  <div style={{marginBottom: '1.5rem'}}>
+                    <h3>6. DISPUTE RESOLUTION</h3>
+                    <ul>
+                      <li>All disputes between renters and car owners must be resolved directly between the two parties.</li>
+                      <li>Drivon does not participate in litigation, mediation, or acting as an agent for any party.</li>
+                      <li>In the event of a request from a public authority, Drivon will provide relevant data such as transaction history, account records… within the scope permitted by law.</li>
+                    </ul>
+                  </div>
+                  
+                  <div style={{marginBottom: '1.5rem'}}>
+                    <h3>7. COMMITMENT AND BINDING</h3>
+                    <ul>
+                      <li>Registering an account, listing a car, or renting a car through the platform is deemed to be read, understood, agreed, and bound by all the terms of this agreement.</li>
+                      <li>Drivon reserves the right to update, modify, and amend the terms and conditions of this policy without prior notice.</li>
+                      <li>The new version will be published publicly on the platform and take effect from the date of publication.</li>
+                    </ul>
+                  </div>
+                  
+                  <div style={{marginBottom: '1.5rem'}}>
+                    <h3>8. LEGAL EFFECTIVENESS</h3>
+                    <ul>
+                      <li>This Terms of Use and Privacy Policy is effective from the date of publication and applies to all users of the Drivon platform.</li>
+                      <li>This is a legally binding agreement between users and Drivon, which can be used as a basis for explanation with public authorities or in civil disputes (if any).</li>
+                      <li>Users are responsible for reading and updating the policy periodically.</li>
+                    </ul>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p style={{color: '#7f8c8d', marginBottom: '1.5rem', fontSize: '0.9rem'}}>
+                    (Áp dụng cho người dùng nền tảng Drivon)<br/>
+                    Cập nhật lần cuối: [●]
+                  </p>
+                  
+                  <div style={{marginBottom: '1.5rem'}}>
+                    <h3>1. ĐỊNH NGHĨA</h3>
+                    <ul>
+                      <li><strong>Drivon:</strong> Nền tảng trực tuyến (bao gồm trang web và ứng dụng) cung cấp dịch vụ để kết nối người thuê xe và chủ xe.</li>
+                      <li><strong>Người thuê:</strong> Cá nhân hoặc tổ chức sử dụng nền tảng để tìm và thuê xe từ chủ xe.</li>
+                      <li><strong>Chủ xe (Chủ sở hữu):</strong> Cá nhân hoặc tổ chức sở hữu xe và đăng tải nó trên nền tảng để cho thuê.</li>
+                      <li><strong>Giao dịch thuê:</strong> Bao gồm quá trình đặt phòng, thanh toán, giao xe, sử dụng và trả xe giữa người thuê và chủ xe.</li>
+                    </ul>
+                  </div>
+                  
+                  <div style={{marginBottom: '1.5rem'}}>
+                    <h3>2. VAI TRÒ CỦA DRIVON</h3>
+                    <ul>
+                      <li>Drivon là một nền tảng trung gian, không phải là một bên thuê xe, không sở hữu xe, không đại diện cho bất kỳ người thuê hoặc chủ xe nào.</li>
+                      <li>Drivon không tham gia vào các giao dịch thuê xe, bao gồm: thương lượng giá thuê, giao xe, xác minh người thuê hoặc ký kết hợp đồng thuê.</li>
+                      <li>Tất cả thông tin về xe, giá thuê, điều kiện thuê… được cung cấp bởi chủ xe, Drivon không chịu trách nhiệm về tính chính xác hoặc chất lượng của thông tin này.</li>
+                    </ul>
+                  </div>
+                  
+                  <div style={{marginBottom: '1.5rem'}}>
+                    <h3>3. ĐIỀU KHOẢN CHO NGƯỜI THUÊ</h3>
+                    <p style={{marginBottom: '0.8rem'}}>Khi sử dụng nền tảng Drivon, người thuê đồng ý rằng:</p>
+                    <ul>
+                      <li>Cung cấp thông tin cá nhân chính xác và chịu trách nhiệm về thông tin khai báo.</li>
+                      <li>Chịu trách nhiệm về quá trình thuê xe, sử dụng và trả xe đúng thời gian và trạng thái tốt.</li>
+                      <li>Tuân thủ các luật giao thông và tất cả các luật và văn bản pháp lý khi vận hành xe.</li>
+                      <li>Tương tác tích cực, thương lượng và giải quyết các vấn đề xảy ra trực tiếp với chủ xe.</li>
+                      <li>Drivon không chịu trách nhiệm về bất kỳ sự cố nào xảy ra từ giao dịch thuê xe.</li>
+                    </ul>
+                  </div>
+                  
+                  <div style={{marginBottom: '1.5rem'}}>
+                    <h3>4. ĐIỀU KHOẢN CHO CHỦ XE (CHỦ SỞ HỮU)</h3>
+                    <p style={{marginBottom: '0.8rem'}}>Chủ xe đồng ý khi sử dụng nền tảng Drivon rằng:</p>
+                    <ul>
+                      <li>Là chủ sở hữu pháp lý của xe hoặc có sự đồng ý pháp lý để cho thuê.</li>
+                      <li>Cung cấp thông tin chính xác, cập nhật liên tục về xe và chịu trách nhiệm về nó.</li>
+                      <li>Độc lập quyết định điều kiện thuê, giá thuê, thủ tục ký quỹ, tài liệu và yêu cầu của người thuê.</li>
+                      <li>Độc lập chịu trách nhiệm giải quyết các tranh chấp hoặc rủi ro xảy ra từ việc cho thuê xe (tai nạn, hư hỏng, vi phạm pháp luật, tranh chấp...).</li>
+                      <li>Drivon không chịu trách nhiệm về các vấn đề tài chính, pháp lý hoặc bồi thường xảy ra từ xe được thuê.</li>
+                    </ul>
+                    <div className="highlight-box">
+                      <strong style={{color: '#856404'}}>📌 Ghi chú quan trọng:</strong><br/>
+                      Chủ xe nên lập một thỏa thuận thuê riêng biệt bằng văn bản với người thuê trước khi giao xe, bao gồm:
+                      <ul style={{margin: '0.5rem 0 0 1.5rem'}}>
+                        <li>Điều kiện thuê</li>
+                        <li>Quy tắc xử lý sự cố, thiệt hại và tranh chấp</li>
+                        <li>Trách nhiệm và thủ tục cụ thể cho việc giải quyết tranh chấp, bồi thường và các vấn đề khác</li>
+                      </ul>
+                      Drivon không cung cấp, xác nhận hoặc lưu trữ thỏa thuận này.
+                    </div>
+                  </div>
+                  
+                  <div style={{marginBottom: '1.5rem'}}>
+                    <h3>5. PHÁT TRIỂN HỢP LÝ CỦA TRÁCH NHIỆM PHÁP LÝ</h3>
+                    <p style={{marginBottom: '0.8rem'}}>Bằng cách sử dụng nền tảng, người dùng xác nhận rằng:</p>
+                    <ul>
+                      <li>Drivon không chịu trách nhiệm về bất kỳ vấn đề pháp lý, tài chính hoặc tội phạm nào xảy ra từ việc thuê hoặc giao dịch thuê.</li>
+                      <li>Drivon không đại diện, cam kết hoặc bảo đảm về chất lượng xe, hành vi của người thuê hoặc hành vi của chủ xe.</li>
+                      <li>Drivon không chịu trách nhiệm về bất kỳ tai nạn, vi phạm pháp luật, gian lận hoặc xung đột cá nhân nào giữa hai bên.</li>
+                      <li>Trong trường hợp xảy ra sự cố, người dùng chịu trách nhiệm giải quyết trực tiếp với bên kia. Drivon chỉ hỗ trợ cung cấp lịch sử giao dịch, nhật ký truy cập khi cần thiết.</li>
+                    </ul>
+                  </div>
+                  
+                  <div style={{marginBottom: '1.5rem'}}>
+                    <h3>6. GIẢI QUYẾT TRANH CHẤP</h3>
+                    <ul>
+                      <li>Tất cả các tranh chấp giữa người thuê và chủ xe phải được giải quyết trực tiếp giữa hai bên.</li>
+                      <li>Drivon không tham gia trong phiên dịch, trọng tài hoặc hoạt động đại diện cho bất kỳ bên nào.</li>
+                      <li>Trong trường hợp có yêu cầu từ cơ quan công cộng, Drivon sẽ cung cấp dữ liệu liên quan như lịch sử giao dịch, sổ sách tài khoản… trong phạm vi được phép theo luật.</li>
+                    </ul>
+                  </div>
+                  
+                  <div style={{marginBottom: '1.5rem'}}>
+                    <h3>7. CAM KẾT VÀ BĂNG HẠN</h3>
+                    <ul>
+                      <li>Đăng ký tài khoản, đăng tải xe hoặc thuê xe qua nền tảng được coi là đọc, hiểu, đồng ý và bị ràng buộc bởi tất cả các điều khoản của thỏa thuận này.</li>
+                      <li>Drivon cam kết cập nhật, sửa đổi và bổ sung các điều khoản và điều kiện của chính sách này mà không có thông báo trước.</li>
+                      <li>Phiên bản mới sẽ được công bố công khai trên nền tảng và có hiệu lực từ ngày công bố.</li>
+                    </ul>
+                  </div>
+                  
+                  <div style={{marginBottom: '1.5rem'}}>
+                    <h3>8. HIỆU LỰC PHÁP LÝ</h3>
+                    <ul>
+                      <li>Điều khoản Sử dụng và Chính sách bảo mật này có hiệu lực từ ngày công bố và áp dụng cho tất cả người dùng của nền tảng Drivon.</li>
+                      <li>Đây là một thỏa thuận bắt buộc giữa người dùng và Drivon, có thể được sử dụng làm cơ sở giải thích với cơ quan công cộng hoặc trong tranh chấp dân sự (nếu có).</li>
+                      <li>Người dùng chịu trách nhiệm đọc và cập nhật chính sách định kỳ.</li>
+                    </ul>
+                  </div>
+                </>
+              )}
             </div>
             
             {/* Modal Footer */}
@@ -618,7 +738,7 @@ const CarLeaseContractForm = ({ user }) => {
                 onClick={() => setShowTermsModal(false)}
                 className="partner-terms-modal-btn secondary"
               >
-                Đóng
+                {termsTab === 'en' ? 'Close' : 'Đóng'}
               </button>
               <button
                 onClick={() => {
@@ -627,7 +747,7 @@ const CarLeaseContractForm = ({ user }) => {
                 }}
                 className="partner-terms-modal-btn primary"
               >
-                Tôi đồng ý
+                {termsTab === 'en' ? 'I Agree' : 'Tôi đồng ý'}
               </button>
             </div>
           </div>
