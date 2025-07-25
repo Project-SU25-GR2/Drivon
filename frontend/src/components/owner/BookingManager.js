@@ -6,6 +6,7 @@ import {
   FaClipboardCheck,
   FaMoneyBillWave,
   FaCalendarAlt,
+  FaDownload,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from '../../api/configApi';
@@ -77,6 +78,7 @@ const RentalFilters = ({
   setDate,
   onFilter,
   onExport,
+  onDownloadSampleContract,
 }) => (
   <div className="filtersBar">
     <input
@@ -106,6 +108,10 @@ const RentalFilters = ({
     />
     <button className="exportBtn" onClick={onExport}>
       Export
+    </button>
+    <button className="downloadBtn" onClick={onDownloadSampleContract}>
+      <FaDownload style={{ fontSize: '1.1em' }} />
+      Download Sample Contract
     </button>
   </div>
 );
@@ -421,6 +427,552 @@ const RentalHistoryPage = () => {
     }
   };
 
+  // Hàm tải hợp đồng mẫu (copy từ ContractModal.js, đổi tên)
+  const handleDownloadSampleContract = async () => {
+    try {
+        if (!window.pdfMake && pdfMake) {
+            window.pdfMake = pdfMake;
+        }
+        if (!window.pdfMake) {
+            showErrorToast('PDFMake chưa được load. Vui lòng refresh trang và thử lại.');
+            return;
+        }
+        // Hàm phụ trợ
+        const formatDate = (dateString) => {
+            if (!dateString) return '.......................';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('vi-VN');
+        };
+        const formatPrice = (price) => {
+            if (!price) return '.......................';
+            return new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            }).format(price);
+        };
+        // Dữ liệu mẫu
+        const contractData = {};
+        const docDefinition = {
+          content: [
+              // Header
+              {
+                  text: 'HỢP ĐỒNG THUÊ XE Ô TÔ',
+                  style: 'header',
+                  alignment: 'center'
+              },
+              {
+                  text: '(Số: ......................./HĐTX)',
+                  style: 'normal',
+                  alignment: 'center'
+              },
+              { text: '\n' },
+              
+              // Date and location
+              {
+                  text: 'Hôm nay, ngày ....................... tháng ....................... năm ......................., tại ........................',
+                  style: 'normal'
+              },
+              { text: 'Chúng tôi gồm có:\n' },
+              
+              // Party A
+              {
+                  text: 'BÊN CHO THUÊ (BÊN A):',
+                  style: 'sectionHeader'
+              },
+              {
+                  ul: [
+                      'Cá nhân: Ông/Bà .......................',
+                      'Sinh ngày: .......................',
+                      'CMND/CCCD số: ....................... do ....................... cấp ngày .......................',
+                      'Địa chỉ thường trú: .......................',
+                      'Số điện thoại liên hệ: .......................',
+                      'Email: .......................',
+                      'Số tài khoản ngân hàng: ....................... tại Ngân hàng .......................'
+                  ],
+                  style: 'list'
+              },
+              { text: '\n' },
+              
+              // Party B
+              {
+                  text: 'BÊN THUÊ (BÊN B):',
+                  style: 'sectionHeader'
+              },
+              {
+                  ul: [
+                      'Cá nhân: Ông/Bà .......................',
+                      'Sinh ngày: .......................',
+                      'CMND/CCCD số: ....................... do ....................... cấp ngày .......................',
+                      'Giấy phép lái xe hạng: ....................... số ....................... có giá trị đến .......................',
+                      'Địa chỉ thường trú: .......................',
+                      'Số điện thoại liên hệ: .......................',
+                      'Email: .......................'
+                  ],
+                  style: 'list'
+              },
+              { text: '\n' },
+              
+              // Contract content
+              {
+                  text: 'Sau khi bàn bạc, hai bên thống nhất ký kết Hợp đồng thuê xe ô tô (sau đây gọi tắt là "Hợp đồng") với các điều khoản và điều kiện chi tiết như sau:\n',
+                  style: 'normal'
+              },
+              
+              // Article 1
+              {
+                  text: 'ĐIỀU 1: ĐỐI TƯỢNG CỦA HỢP ĐỒNG',
+                  style: 'sectionHeader'
+              },
+              {
+                  text: '1.1. Bên A đồng ý cho Bên B thuê và Bên B đồng ý thuê 01 (một) xe ô tô (sau đây gọi là "Xe") với các đặc điểm sau:',
+                  style: 'normal'
+              },
+              {
+                  ul: [
+                      `Loại xe: ${contractData?.carBrand || '.......................'} ${contractData?.carModel || '.......................'}`,
+                      `Màu sơn: ${contractData?.carColor || '.......................'}`,
+                      `Biển số đăng ký: ${contractData?.carPlate || '.......................'}`,
+                      `Số khung: ${contractData?.carVin || '.......................'}`,
+                      `Số máy: ${contractData?.carEngine || '.......................'}`
+                  ],
+                  style: 'list'
+              },
+              {
+                  text: '1.2. Tình trạng Xe khi bàn giao được mô tả chi tiết tại Biên bản bàn giao xe (Phụ lục 01 đính kèm Hợp đồng này và là một phần không thể tách rời của Hợp đồng).',
+                  style: 'normal'
+              },
+              
+              // Article 2
+              {
+                  text: 'ĐIỀU 2: THỜI HẠN THUÊ VÀ MỤC ĐÍCH SỬ DỤNG',
+                  style: 'sectionHeader'
+              },
+              {
+                  text: '2.1. Thời hạn thuê:',
+                  style: 'normal'
+              },
+              {
+                  ul: [
+                      `Thời gian thuê là: ${contractData?.rentalDays || '.......................'} ngày/tháng`,
+                      `Bắt đầu từ: ${formatDate(contractData?.startDate)}`,
+                      `Kết thúc vào: ${formatDate(contractData?.endDate)}`
+                  ],
+                  style: 'list'
+              },
+              {
+                  text: '2.2. Gia hạn: Nếu Bên B có nhu cầu gia hạn Hợp đồng, phải thông báo cho Bên A trước ít nhất ....................... giờ/ngày trước khi Hợp đồng hết hạn.',
+                  style: 'normal'
+              },
+              {
+                  text: '2.3. Mục đích sử dụng: Bên B thuê xe để ........................ Bên B cam kết không sử dụng xe vào các mục đích vi phạm pháp luật.',
+                  style: 'normal'
+              },
+              
+              // Article 3
+              {
+                  text: 'ĐIỀU 3: GIÁ THUÊ, ĐẶT CỌC VÀ PHƯƠNG THỨC THANH TOÁN',
+                  style: 'sectionHeader'
+              },
+              {
+                  text: '3.1. Giá thuê:',
+                  style: 'normal'
+              },
+              {
+                  ul: [
+                      `Đơn giá thuê là: ${formatPrice(contractData?.dailyPrice)}/ngày (Bằng chữ: .......................)`,
+                      `Tổng giá trị Hợp đồng (tạm tính): ${formatPrice(contractData?.totalPrice)} (Bằng chữ: .......................)`,
+                      'Giá thuê trên chưa bao gồm thuế GTGT (nếu có), chi phí nhiên liệu, phí cầu đường, phí đỗ xe, và các khoản phạt vi phạm giao thông (nếu có).',
+                      'Phụ phí vượt giờ: Nếu Bên B trả xe muộn so với thời gian quy định tại Điều 2, Bên B sẽ phải thanh toán thêm một khoản phí vượt giờ là ....................... VNĐ/giờ. Nếu quá ....................... giờ sẽ được tính tròn 01 (một) ngày thuê.',
+                      'Phụ phí vượt km (nếu có): Hợp đồng giới hạn số km di chuyển là ....................... km/ngày. Nếu vượt quá, Bên B phải trả thêm ....................... VNĐ/km.'
+                  ],
+                  style: 'list'
+              },
+              {
+                  text: '3.2. Tiền đặt cọc:',
+                  style: 'normal'
+              },
+              {
+                  ul: [
+                      `Bên B phải đặt cọc cho Bên A một khoản tiền là ${formatPrice(contractData?.deposit)} (Bằng chữ: .......................) VÀ/HOẶC tài sản thế chấp là ........................`,
+                      'Khoản tiền/tài sản đặt cọc này sẽ được Bên A hoàn trả đầy đủ cho Bên B sau khi Bên B đã thanh toán toàn bộ tiền thuê và các chi phí phát sinh (nếu có), đồng thời bàn giao lại xe trong tình trạng như lúc nhận.'
+                  ],
+                  style: 'list'
+              },
+              {
+                  text: '3.3. Phương thức thanh toán:',
+                  style: 'normal'
+              },
+              {
+                  ul: [
+                      'Thanh toán tiền thuê: Bên B thanh toán cho Bên A ....................... tổng giá trị Hợp đồng ngay khi ký kết. Số tiền còn lại sẽ được thanh toán khi Bên B trả xe.',
+                      'Hình thức thanh toán: Tiền mặt hoặc chuyển khoản vào tài khoản ngân hàng của Bên A tại thông tin nêu trên.'
+                  ],
+                  style: 'list'
+              },
+              
+              // Article 4
+              {
+                  text: 'ĐIỀU 4: QUYỀN VÀ NGHĨA VỤ CỦA BÊN A',
+                  style: 'sectionHeader'
+              },
+              {
+                  text: '4.1. Quyền của Bên A:',
+                  style: 'normal'
+              },
+              {
+                  ul: [
+                      'Nhận đủ tiền thuê và tiền đặt cọc theo thỏa thuận tại Điều 3.',
+                      'Yêu cầu Bên B bồi thường thiệt hại nếu xe bị hư hỏng, mất mát do lỗi của Bên B.',
+                      'Đơn phương chấm dứt Hợp đồng và thu hồi xe ngay lập tức nếu Bên B vi phạm nghiêm trọng các nghĩa vụ nêu trong Hợp đồng (sử dụng xe sai mục đích, không trả tiền thuê, tự ý sửa chữa, cầm cố xe...).'
+                  ],
+                  style: 'list'
+              },
+              {
+                  text: '4.2. Nghĩa vụ của Bên A:',
+                  style: 'normal'
+              },
+              {
+                  ul: [
+                      'Bàn giao Xe và toàn bộ giấy tờ liên quan (bản sao công chứng Giấy đăng ký xe, bản gốc Giấy chứng nhận kiểm định, bản gốc Giấy bảo hiểm TNDS) cho Bên B đúng thời gian, địa điểm và trong tình trạng kỹ thuật tốt, đảm bảo an toàn vận hành.',
+                      'Chịu trách nhiệm pháp lý về nguồn gốc và quyền sở hữu của Xe.',
+                      'Hướng dẫn Bên B các tính năng cơ bản của Xe.',
+                      'Hoàn trả tiền/tài sản đặt cọc cho Bên B sau khi đã trừ các chi phí hợp lý (nếu có) khi kết thúc Hợp đồng.',
+                      'Chịu trách nhiệm chi trả chi phí bảo dưỡng, sửa chữa các hư hỏng do lỗi kỹ thuật của bản thân chiếc xe.'
+                  ],
+                  style: 'list'
+              },
+              
+              // Article 5
+              {
+                  text: 'ĐIỀU 5: QUYỀN VÀ NGHĨA VỤ CỦA BÊN B',
+                  style: 'sectionHeader'
+              },
+              {
+                  text: '5.1. Quyền của Bên B:',
+                  style: 'normal'
+              },
+              {
+                  ul: [
+                      'Nhận xe và giấy tờ đúng theo thỏa thuận.',
+                      'Được toàn quyền sử dụng Xe trong thời hạn thuê và đúng mục đích đã thỏa thuận.',
+                      'Yêu cầu Bên A sửa chữa kịp thời các hư hỏng không do lỗi của mình gây ra.'
+                  ],
+                  style: 'list'
+              },
+              {
+                  text: '5.2. Nghĩa vụ của Bên B:',
+                  style: 'normal'
+              },
+              {
+                  ul: [
+                      'Thanh toán đầy đủ tiền thuê và các chi phí phát sinh (nếu có).',
+                      'Xuất trình đầy đủ CMND/CCCD, Giấy phép lái xe hợp lệ.',
+                      'Chịu trách nhiệm quản lý, bảo quản xe và các giấy tờ liên quan trong suốt thời gian thuê.',
+                      'Tự chi trả toàn bộ chi phí nhiên liệu, phí cầu đường, bến bãi, và các chi phí khác phát sinh trong quá trình sử dụng xe.',
+                      'Chịu hoàn toàn trách nhiệm trước pháp luật nếu gây ra tai nạn giao thông, vi phạm luật giao thông đường bộ (bao gồm cả phạt nguội). Bên A sẽ cung cấp thông tin của Bên B cho cơ quan chức năng khi có yêu cầu.',
+                      'Không được cho thuê lại, giao xe cho người không có trong Hợp đồng điều khiển (trừ khi có sự đồng ý bằng văn bản của Bên A).',
+                      'Không được sử dụng xe để cầm cố, thế chấp, bán hoặc thực hiện các hành vi trái pháp luật khác.',
+                      'Không được tự ý tháo dỡ, thay đổi kết cấu, phụ kiện của xe. Nếu xe gặp sự cố kỹ thuật, phải báo ngay cho Bên A để phối hợp giải quyết. Không tự ý sửa chữa trừ trường hợp khẩn cấp và có sự đồng ý của Bên A.',
+                      'Bàn giao lại xe đúng thời gian, địa điểm, với tình trạng kỹ thuật và vệ sinh như khi nhận.'
+                  ],
+                  style: 'list'
+              },
+              
+              // Article 6
+              {
+                  text: 'ĐIỀU 6: TRÁCH NHIỆM BỒI THƯỜNG THIỆT HẠI',
+                  style: 'sectionHeader'
+              },
+              {
+                  text: '6.1. Trường hợp tai nạn, hư hỏng:',
+                  style: 'normal'
+              },
+              {
+                  ul: [
+                      'Bên B phải có trách nhiệm giữ nguyên hiện trường, báo ngay cho cơ quan công an nơi gần nhất và thông báo cho Bên A để cùng giải quyết.',
+                      'Nếu lỗi thuộc về Bên B, Bên B phải chịu toàn bộ chi phí sửa chữa, khắc phục thiệt hại. Trong trường hợp xe được bảo hiểm chi trả, Bên B phải chịu phần chi phí mà bảo hiểm không chi trả (mức miễn thường) và toàn bộ chi phí thiệt hại về giá trị của xe (nếu có) và tiền thuê xe trong những ngày xe phải vào xưởng sửa chữa.',
+                      'Nếu lỗi không thuộc về Bên B, Bên B không phải chịu trách nhiệm bồi thường.'
+                  ],
+                  style: 'list'
+              },
+              {
+                  text: '6.2. Trường hợp mất mát:',
+                  style: 'normal'
+              },
+              {
+                  ul: [
+                      'Nếu Bên B làm mất xe hoặc các phụ kiện, giấy tờ đi kèm, Bên B phải bồi thường 100% giá trị của xe/phụ kiện/giấy tờ tại thời điểm mất mát. Giá trị xe được xác định theo giá thị trường.'
+                  ],
+                  style: 'list'
+              },
+              
+              // Article 7
+              {
+                  text: 'ĐIỀU 7: CHẤM DỨT HỢP ĐỒNG',
+                  style: 'sectionHeader'
+              },
+              {
+                  text: '7.1. Hợp đồng này chấm dứt khi:',
+                  style: 'normal'
+              },
+              {
+                  ul: [
+                      'Hết thời hạn thuê và hai bên đã hoàn thành mọi nghĩa vụ.',
+                      'Hai bên thỏa thuận chấm dứt trước hạn.',
+                      'Một trong hai bên đơn phương chấm dứt Hợp đồng do có sự vi phạm của bên còn lại theo quy định tại Hợp đồng này.'
+                  ],
+                  style: 'list'
+              },
+              
+              // Article 8
+              {
+                  text: 'ĐIỀU 8: GIẢI QUYẾT TRANH CHẤP',
+                  style: 'sectionHeader'
+              },
+              {
+                  text: 'Mọi tranh chấp phát sinh từ Hợp đồng này sẽ được giải quyết trước hết thông qua thương lượng, hòa giải. Nếu không thể giải quyết được, một trong hai bên có quyền khởi kiện tại Tòa án nhân dân có thẩm quyền để giải quyết theo quy định của pháp luật.',
+                  style: 'normal'
+              },
+              
+              // Article 9
+              {
+                  text: 'ĐIỀU 9: CAM KẾT CHUNG',
+                  style: 'sectionHeader'
+              },
+              {
+                  text: '9.1. Hai bên cam kết thực hiện đúng và đầy đủ các điều khoản đã thỏa thuận trong Hợp đồng.',
+                  style: 'normal'
+              },
+              {
+                  text: '9.2. Mọi sửa đổi, bổ sung Hợp đồng phải được lập thành văn bản và có chữ ký của cả hai bên.',
+                  style: 'normal'
+              },
+              {
+                  text: '9.3. Hợp đồng này được lập thành 02 (hai) bản, có giá trị pháp lý như nhau, mỗi bên giữ 01 (một) bản.',
+                  style: 'normal'
+              },
+              {
+                  text: '9.4. Hợp đồng có hiệu lực kể từ thời điểm ký kết.',
+                  style: 'normal'
+              },
+              
+              // Chữ ký
+              { text: '\n\n' },
+              {
+                  text: 'BÊN GIAO (BÊN A)                    BÊN NHẬN (BÊN B)',
+                  style: 'normal',
+                  alignment: 'center'
+              },
+              {
+                  text: '(Ký, ghi rõ họ tên)                 (Ký, ghi rõ họ tên)',
+                  style: 'normal',
+                  alignment: 'center'
+              },
+              { text: '\n' },
+              
+              // Phụ lục
+              { text: '\n\n' },
+              {
+                  text: 'PHỤ LỤC 01: BIÊN BẢN BÀN GIAO XE',
+                  style: 'appendixHeader',
+                  alignment: 'center'
+              },
+              {
+                  text: `(Đính kèm Hợp đồng thuê xe số: ${new Date().toLocaleDateString('vi-VN').replace(/\//g, '')}/HĐTX)`,
+                  style: 'normal',
+                  alignment: 'left'
+              },
+              { text: '\n' },
+              
+              // I. THÔNG TIN BÀN GIAO
+              {
+                  text: 'I. THÔNG TIN BÀN GIAO',
+                  style: 'sectionHeader'
+              },
+              {
+                  ul: [
+                      `Thời gian bàn giao: ${formatDate(contractData?.startDate)}`,
+                      `Thời gian nhận lại (dự kiến): ${formatDate(contractData?.endDate)}`,
+                      `Địa điểm bàn giao: ${contractData?.pickupLocation || '.......................'}`,
+                      `Số km hiện tại (ODO): ${contractData?.currentKm || '.......................'}`,
+                      `Tình trạng nhiên liệu: ${contractData?.fuelStatus || '.......................'}`
+                  ],
+                  style: 'list'
+              },
+              { text: '\n' },
+              
+              // II. KIỂM TRA TÌNH TRẠNG XE
+              {
+                  text: 'II. KIỂM TRA TÌNH TRẠNG XE (Đánh dấu x vào ô tương ứng)',
+                  style: 'sectionHeader'
+              },
+              {
+                  table: {
+                      headerRows: 1,
+                      widths: ['*', '*', '*', '*'],
+                      body: [
+                          [
+                              { text: 'Hạng mục', style: 'tableHeader' },
+                              { text: 'Tình trạng lúc giao', style: 'tableHeader' },
+                              { text: 'Tình trạng lúc nhận', style: 'tableHeader' },
+                              { text: 'Ghi chú', style: 'tableHeader' }
+                          ],
+                          [
+                              'Ngoại thất - Sơn xe',
+                              '[ ] Tốt / [ ] Có xước',
+                              '[ ] Tốt / [ ] Có xước',
+                              '(Mô tả vị trí)'
+                          ],
+                          [
+                              'Đèn pha, đèn hậu',
+                              '[ ] Tốt',
+                              '[ ] Tốt',
+                              ''
+                          ],
+                          [
+                              'Gương chiếu hậu',
+                              '[ ] Tốt',
+                              '[ ] Tốt',
+                              ''
+                          ],
+                          [
+                              'Lốp xe (4 bánh)',
+                              '[ ] Tốt',
+                              '[ ] Tốt',
+                              ''
+                          ],
+                          [
+                              'Lốp dự phòng & dụng cụ',
+                              '[ ] Có đủ',
+                              '[ ] Có đủ',
+                              ''
+                          ],
+                          [
+                              'Nội thất - Ghế ngồi',
+                              '[ ] Sạch / [ ] Bẩn',
+                              '[ ] Sạch / [ ] Bẩn',
+                              ''
+                          ],
+                          [
+                              'Hệ thống điều hòa',
+                              '[ ] Hoạt động tốt',
+                              '[ ] Hoạt động tốt',
+                              ''
+                          ],
+                          [
+                              'Hệ thống âm thanh',
+                              '[ ] Hoạt động tốt',
+                              '[ ] Hoạt động tốt',
+                              ''
+                          ],
+                          [
+                              'Thảm lót sàn',
+                              '[ ] Sạch',
+                              '[ ] Sạch',
+                              ''
+                          ],
+                          [
+                              'Giấy đăng ký xe (bản sao)',
+                              '[ ] Có',
+                              '[ ] Có',
+                              ''
+                          ],
+                          [
+                              'Giấy kiểm định',
+                              '[ ] Có',
+                              '[ ] Có',
+                              ''
+                          ],
+                          [
+                              'Giấy bảo hiểm TNDS',
+                              '[ ] Có',
+                              '[ ] Có',
+                              ''
+                          ]
+                      ]
+                  },
+                  layout: {
+                      hLineWidth: function (i, node) {
+                          return 0.5;
+                      },
+                      vLineWidth: function (i, node) {
+                          return 0.5;
+                      },
+                      hLineColor: function (i, node) {
+                          return '#aaa';
+                      },
+                      vLineColor: function (i, node) {
+                          return '#aaa';
+                      }
+                  }
+              },
+              { text: '\n' },
+              
+              // III. XÁC NHẬN
+              {
+                  text: 'III. XÁC NHẬN',
+                  style: 'sectionHeader'
+              },
+              {
+                  text: 'Bên B xác nhận đã nhận xe với đầy đủ giấy tờ và tình trạng như mô tả ở trên.',
+                  style: 'normal'
+              },
+              { text: '\n' },
+              
+              // Chữ ký phụ lục
+              {
+                  text: 'BÊN GIAO (BÊN A)                    BÊN NHẬN (BÊN B)',
+                  style: 'normal',
+                  alignment: 'center'
+              },
+              {
+                  text: '(Ký, ghi rõ họ tên)                 (Ký, ghi rõ họ tên)',
+                  style: 'normal',
+                  alignment: 'center'
+              }
+          ],
+          styles: {
+              header: {
+                  fontSize: 18,
+                  bold: true,
+                  margin: [0, 0, 0, 10]
+              },
+              sectionHeader: {
+                  fontSize: 14,
+                  bold: true,
+                  margin: [0, 10, 0, 5]
+              },
+              appendixHeader: {
+                  fontSize: 16,
+                  bold: true,
+                  margin: [0, 20, 0, 10]
+              },
+              normal: {
+                  fontSize: 12,
+                  margin: [0, 5, 0, 5]
+              },
+              list: {
+                  fontSize: 12,
+                  margin: [0, 5, 0, 5]
+              },
+              tableHeader: {
+                  bold: true,
+                  fontSize: 11,
+                  color: 'black',
+                  fillColor: '#f0f0f0'
+              }
+          },
+          defaultStyle: {
+              font: 'Roboto'
+          }
+      };
+        window.pdfMake.createPdf(docDefinition).download('hop-dong-mau.pdf');
+        showSuccessToast('Downloaded sample contract!');
+    } catch (error) {
+        showErrorToast('An error occurred while downloading the sample contract!');
+    }
+};
+
   return (
     <div className="mainContent">
       <h2 className="h2Title">Rental History</h2>
@@ -433,8 +985,8 @@ const RentalHistoryPage = () => {
         setSearch={setSearch}
         date={date}
         setDate={setDate}
-        onFilter={() => {}}
         onExport={exportToPDF}
+        onDownloadSampleContract={handleDownloadSampleContract}
       />
       <div className="rentalList">
         {loading ? (

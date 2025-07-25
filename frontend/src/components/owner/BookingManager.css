@@ -115,6 +115,25 @@
   opacity: 0.9;
 }
 
+.downloadBtn {
+  background: #3498db;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s;
+}
+.downloadBtn:hover {
+  background: #217dbb;
+  opacity: 0.95;
+}
+
 .rentalList {
   background: #fff;
   border-radius: 16px;
