@@ -177,8 +177,6 @@ const UserManagementPage = () => {
                                         <option value="renter">Renter</option>
                                         <option value="owner">Owner</option>
                                         <option value="admin">Admin</option>
-                                        <option value="verify_owner">Verify Owner</option>
-                                        <option value="verify_user">Verify User</option>
                                     </select>
                                 </td>
                                 <td>
