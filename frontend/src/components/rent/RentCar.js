@@ -64,14 +64,8 @@ const RentCar = () => {
 
     // Fetch cars data using context
     fetchCarsData();
+    fetchBookingStatuses();
   }, [location.search, fetchCarsData]);
-
-  // Fetch booking statuses when carsData changes
-  useEffect(() => {
-    if (carsData.length > 0) {
-      fetchBookingStatuses();
-    }
-  }, [carsData]);
 
   // Fetch booking statuses for all cars
   const fetchBookingStatuses = async () => {
