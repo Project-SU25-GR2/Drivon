@@ -4,7 +4,9 @@ import axios from 'axios';
 import { DateRange } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
-import { Modal, Button, List, message, Rate, Avatar, Divider, Pagination, Slider } from 'antd';
+import { Modal, Button, List, Rate, Avatar, Divider, Pagination, Slider } from 'antd';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
+import '../notification/noti.css';
 import 'antd/dist/reset.css';
 import RentalForm from './RentalForm';
 import { GiGearStickPattern } from "react-icons/gi";
@@ -138,6 +140,14 @@ const ViewCarDetail = () => {
           email: carFromContext.contract.email,
           phone: carFromContext.contract.phone
         });
+      } else if (carFromContext.ownerId) {
+        // Fallback to car's ownerId if contract is not available
+        setOwnerInfo({
+          userId: carFromContext.ownerId.toString(),
+          fullName: carFromContext.contract?.name || 'Car Owner',
+          email: carFromContext.contract?.email || '',
+          phone: carFromContext.contract?.phone || ''
+        });
       }
     } else {
       // Car not found in context, fetch individually
@@ -148,6 +158,16 @@ const ViewCarDetail = () => {
           setMainImage(res.data.mainImage);
           setOtherImages(res.data.otherImages || []);
           setLoading(false);
+          
+          // Set owner info from car data if available
+          if (res.data.ownerId) {
+            setOwnerInfo({
+              userId: res.data.ownerId.toString(),
+              fullName: 'Car Owner',
+              email: '',
+              phone: ''
+            });
+          }
         })
         .catch(error => {
           console.error('Error fetching car:', error);
@@ -173,6 +193,15 @@ const ViewCarDetail = () => {
         .catch(error => {
           console.error('Error fetching contract:', error);
           setContract(null);
+          // Try to get owner info from car data if contract fetch fails
+          if (car && car.ownerId) {
+            setOwnerInfo({
+              userId: car.ownerId.toString(),
+              fullName: 'Car Owner',
+              email: '',
+              phone: ''
+            });
+          }
         });
 
       // Fetch reviews
@@ -251,10 +280,10 @@ const ViewCarDetail = () => {
   const handleApplyCoupon = (coupon) => {
     if (selectedCoupon && selectedCoupon.code === coupon.code) {
       setSelectedCoupon(null);
-      message.info('Coupon removed');
+      showErrorToast('Coupon removed');
     } else {
       setSelectedCoupon(coupon);
-      message.success(`Applied coupon: ${coupon.code}`);
+      showSuccessToast(`Applied coupon: ${coupon.code}`);
     }
   };
 
@@ -344,9 +373,25 @@ const ViewCarDetail = () => {
   const handleRentClick = async () => {
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user) {
-      message.warning('Please log in to rent a car');
+      showErrorToast('Please log in to rent a car');
       return;
     }
+
+    // Debug: Log user and owner info
+    console.log('Current user:', user);
+    console.log('Owner info:', ownerInfo);
+    console.log('User ID:', user.userId);
+    console.log('Owner ID:', ownerInfo?.userId);
+    console.log('User ID type:', typeof user.userId);
+    console.log('Owner ID type:', typeof ownerInfo?.userId);
+
+    // Check if user is trying to rent their own car
+    if (ownerInfo && String(user.userId) === String(ownerInfo.userId)) {
+      console.log('User is trying to rent their own car');
+      showErrorToast('This is your car');
+      return;
+    }
+
     // Check license
     try {
       const res = await axios.get(`${API_URL}/user/image/check-license/${user.userId}`);
@@ -368,7 +413,7 @@ const ViewCarDetail = () => {
   };
 
   const handleRentalSuccess = (rentalData) => {
-    message.success('Car booking successful!');
+    showSuccessToast('Car booking successful!');
     setShowRentalForm(false);
     // You can add additional logic here, such as redirecting to a confirmation page
   };
@@ -380,19 +425,19 @@ const ViewCarDetail = () => {
     console.log('Owner info:', ownerInfo);
 
     if (!user) {
-      message.warning('Please log in to contact car owner');
+      showErrorToast('Please log in to contact car owner');
       navigate('/auth');
       return;
     }
 
     if (!ownerInfo) {
-      message.error('Unable to get car owner information');
+      showErrorToast('Unable to get car owner information');
       return;
     }
 
     // Check if user is trying to contact themselves
     if (user.userId === ownerInfo.userId) {
-      message.warning('You cannot contact yourself');
+      showErrorToast('You cannot contact yourself');
       return;
     }
 

@@ -167,9 +167,6 @@ const MainLayout = ({ user, handleLogout, children }) => {
           <Link to="/contracts" className={location.pathname.startsWith("/contracts") ? "active" : ""}>Partner Applications</Link>
           <Link to="/rent-your-car" className={location.pathname.startsWith("/rent-your-car") ? "active" : ""}>Become a Partner</Link>
           <Link to="/contact" className={location.pathname === "/contact" ? "active" : ""}>Contact</Link>
-          <div className="search-box">
-            <input type="text" placeholder="Search..." />
-          </div>
         </nav>
 
         {/* Right Side - User Menu & Notifications */}

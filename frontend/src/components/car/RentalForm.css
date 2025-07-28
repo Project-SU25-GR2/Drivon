@@ -1,5 +1,10 @@
 .rental-form-modal .ant-modal-content {
   border-radius: 8px;
+  overflow: visible;
+}
+
+.rental-form-modal .ant-modal-body {
+  overflow: visible;
 }
 
 .rental-form-modal .ant-modal-header {
@@ -112,6 +117,7 @@
 .date-range-container {
   position: relative;
   margin-bottom: 24px;
+  z-index: 1;
 }
 
 .date-range-display {
@@ -154,17 +160,19 @@
 
 .calendar-container {
   position: absolute;
-  top: 100%;
+  bottom: 100%;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1000;
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  margin-top: 8px;
+  margin-bottom: 8px;
   max-width: calc(100% - 40px);
   overflow-x: auto;
   box-sizing: border-box;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
 /* Override react-date-range styles to ensure responsiveness */
@@ -251,6 +259,9 @@
     transform: translateX(-50%);
     width: 100%;
     max-width: 100%;
+    bottom: 100%;
+    margin-bottom: 8px;
+    max-height: 350px;
   }
   
   .rdrMonths {
@@ -259,6 +270,14 @@
   
   .rdrMonth {
     width: 100%;
+  }
+}
+
+/* Ensure calendar stays within modal bounds */
+@media (max-height: 600px) {
+  .calendar-container {
+    max-height: 300px;
+    bottom: 100%;
   }
 }
 

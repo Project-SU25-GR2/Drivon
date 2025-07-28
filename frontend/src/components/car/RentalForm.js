@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Modal, Form, Input, Button, message, List, Radio } from 'antd';
+import { Modal, Form, Input, Button, List, Radio } from 'antd';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { DateRange } from 'react-date-range';
@@ -8,6 +8,7 @@ import 'react-date-range/dist/theme/default.css';
 import './RentalForm.css';
 import { API_URL } from '../../api/configApi';
 import ContractModal from '../contract/ContractModal';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
 
 const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, contract }) => {
   const [form] = Form.useForm();
@@ -76,10 +77,10 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
     if (searchParams.get('status') === 'CANCELLED' && searchParams.get('orderCode')) {
       axios.post(`${API_URL}/payments/cancel`, { orderCode: searchParams.get('orderCode') })
         .then(() => {
-          message.info('Order has been cancelled.');
+          showSuccessToast('Order has been cancelled.');
         })
         .catch(() => {
-          message.error('Unable to cancel order.');
+          showErrorToast('Unable to cancel order.');
         })
         .finally(() => {
           navigate(location.pathname, { replace: true });
@@ -87,7 +88,7 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
       return;
     }
     if (searchParams.get('cancel') === 'true') {
-      message.info('Payment was cancelled');
+      showSuccessToast('Payment was cancelled');
       navigate(location.pathname, { replace: true });
     }
   }, [location, navigate]);
@@ -117,10 +118,10 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
   const handleApplyCoupon = (coupon) => {
     if (selectedCoupon && selectedCoupon.code === coupon.code) {
       setSelectedCoupon(null);
-      message.info('Coupon removed');
+      showSuccessToast('Coupon removed');
     } else {
       setSelectedCoupon(coupon);
-      message.success(`Applied coupon: ${coupon.code}`);
+      showSuccessToast(`Applied coupon: ${coupon.code}`);
     }
     setShowCouponModal(false);
   };
@@ -129,7 +130,7 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
     setLoading(true);
 
     if (!car || !contract || !contract.pricePerDay || !dateRange[0].startDate || !dateRange[0].endDate || isNaN(amount) || amount <= 0) {
-      message.error('Car information, contract, rental dates or amount is invalid. Please try again.');
+      showErrorToast('Car information, contract, rental dates or amount is invalid. Please try again.');
       setLoading(false);
       return;
     }
@@ -226,13 +227,13 @@ const RentalForm = ({ visible, onClose, car, user, dateRange: initialDateRange, 
         if (paymentResponse.data.data && paymentResponse.data.data.checkoutUrl) {
           window.location.href = paymentResponse.data.data.checkoutUrl;
         } else {
-          message.error('Unable to redirect to payment page. Please try again.');
+          showErrorToast('Unable to redirect to payment page. Please try again.');
         }
       }
     } catch (error) {
       console.error('Error occurred:', error);
       const errorMessage = error.response?.data?.message || error.response?.data?.error || 'An error occurred. Please try again.';
-      message.error(errorMessage);
+      showErrorToast(errorMessage);
     } finally {
       setLoading(false);
     }

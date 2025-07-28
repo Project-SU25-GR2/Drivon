@@ -178,19 +178,9 @@ public class OwnerWithdrawController {
             
             req.setSign(true);
             
-            // RESET WALLET: Owner đã xác nhận nhận được tiền rồi
-            Long ownerId = req.getOwnerId();
-            if (ownerId != null) {
-                OwnerWallet wallet = ownerWalletRepository.findByOwnerId(ownerId).orElse(null);
-                if (wallet != null) {
-                    // Reset tất cả về 0 vì owner đã rút và xác nhận nhận tiền
-                    wallet.setTotalProfit(0.0);
-                    wallet.setTotalDebt(0.0);
-                    wallet.setBalance(0.0);
-                    wallet.setUpdatedAt(java.time.LocalDateTime.now());
-                    ownerWalletRepository.save(wallet);
-                }
-            }
+            // Chỉ đánh dấu đã ký xác nhận, không reset wallet
+            // Tiền đã được trừ khi admin chuyển status thành "completed"
+            // Không cần thao tác gì thêm với wallet
             
             return withdrawRepo.save(req);
         }

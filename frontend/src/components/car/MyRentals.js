@@ -8,7 +8,6 @@ import {
   Spin,
   Empty,
   Tag,
-  message,
   Modal,
   Descriptions,
   Divider,
@@ -23,6 +22,7 @@ import "../../styles/MyRentals.css";
 import { FrownOutlined, MehOutlined, SmileOutlined, CarOutlined, EnvironmentOutlined, CalendarOutlined, CreditCardOutlined, DeleteOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import { CgArrowsExchange } from "react-icons/cg";
 import { API_URL } from '../../api/configApi';
+import { showSuccessToast, showErrorToast } from '../notification/notification';
 const { Title, Text } = Typography;
 
 const MyRentals = () => {
@@ -77,7 +77,7 @@ const MyRentals = () => {
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("user"));
     if (!userData) {
-      message.error("Please log in to view rental history");
+      showErrorToast("Please log in to view rental history");
       navigate("/login");
       return;
     }
@@ -129,7 +129,7 @@ const MyRentals = () => {
       setRentals(filteredRentals);
     } catch (error) {
       console.error("Error fetching rentals:", error);
-      message.error("Unable to load rental history");
+      showErrorToast("Unable to load rental history");
     } finally {
       setLoading(false);
     }
@@ -230,7 +230,7 @@ const MyRentals = () => {
 
   const handleRatingSubmit = async () => {
     if (rating === 0) {
-      message.error("Please select a star rating.");
+      showErrorToast("Please select a star rating.");
       return;
     }
     try {
@@ -247,14 +247,14 @@ const MyRentals = () => {
           },
         }
       );
-      message.success("Review saved successfully!");
+      showSuccessToast("Review saved successfully!");
       setIsReviewSubmitted(true);
       setReviewedRentals((prev) => [...prev, ratingRental.bookingId]);
       setTimeout(() => {
         handleRatingModalClose();
       }, 2000);
     } catch (error) {
-      message.error("Failed to submit review. Please try again!");
+      showErrorToast("Failed to submit review. Please try again!");
     }
   };
 
@@ -275,11 +275,11 @@ const MyRentals = () => {
         if (response.data.data && response.data.data.checkoutUrl) {
           window.location.href = response.data.data.checkoutUrl;
         } else {
-          message.error('Unable to redirect to payment page. Please try again.');
+          showErrorToast('Unable to redirect to payment page. Please try again.');
         }
       })
       .catch(() => {
-        message.error('An error occurred while creating payment link.');
+        showErrorToast('An error occurred while creating payment link.');
       });
   };
 
@@ -298,7 +298,7 @@ const MyRentals = () => {
       console.log('Booking ID:', rentalToDelete.bookingId);
       
       if (!paymentId && !rentalToDelete.bookingId) {
-        message.error('Unable to find ID to delete.');
+        showErrorToast('Unable to find ID to delete.');
         return;
       }
 
@@ -307,7 +307,7 @@ const MyRentals = () => {
         console.log('Trying to delete booking:', rentalToDelete.bookingId);
         const response = await axios.delete(`${API_URL}/bookings/${rentalToDelete.bookingId}`);
         console.log('Delete booking response:', response);
-        message.success('Car booking deleted successfully!');
+        showSuccessToast('Car booking deleted successfully!');
         fetchRentalsWithCleanup(user.userId);
         handleCloseDeleteModal();
         return;
@@ -318,7 +318,7 @@ const MyRentals = () => {
         console.log('Trying to delete payment:', paymentId);
         const response = await axios.delete(`${API_URL}/payments/${paymentId}`);
         console.log('Delete payment response:', response);
-        message.success('Payment deleted successfully!');
+        showSuccessToast('Payment deleted successfully!');
         fetchRentalsWithCleanup(user.userId);
         handleCloseDeleteModal();
         return;
@@ -327,7 +327,7 @@ const MyRentals = () => {
     } catch (error) {
       console.error('Delete error:', error);
       console.error('Error details:', error.response?.data);
-      message.error(`Unable to delete: ${error.response?.data?.message || error.message}`);
+      showErrorToast(`Unable to delete: ${error.response?.data?.message || error.message}`);
     }
   };
 
@@ -360,17 +360,17 @@ const MyRentals = () => {
       console.log('Update payment response:', response.data);
       
       if (response.data || response.status === 200) {
-        message.success('Successfully switched to bank payment! You can pay later.');
+        showSuccessToast('Successfully switched to bank payment! You can pay later.');
         fetchRentalsWithCleanup(user.userId);
         handleCloseSwitchToBankModal();
       } else {
         console.error('No response data received');
-        message.error('Unable to change payment method.');
+        showErrorToast('Unable to change payment method.');
       }
     } catch (error) {
       console.error('Error switching to bank:', error);
       console.error('Error details:', error.response?.data);
-      message.error(`An error occurred: ${error.response?.data?.message || error.message}`);
+      showErrorToast(`An error occurred: ${error.response?.data?.message || error.message}`);
     }
   };
 
@@ -444,17 +444,17 @@ const MyRentals = () => {
       console.log('Update payment response:', response.data);
       
       if (response.data || response.status === 200) {
-        message.success('Successfully switched to cash payment!');
+        showSuccessToast('Successfully switched to cash payment!');
         fetchRentalsWithCleanup(user.userId);
         handleCloseSwitchModal();
       } else {
         console.error('No response data received');
-        message.error('Unable to change payment method.');
+        showErrorToast('Unable to change payment method.');
       }
     } catch (error) {
       console.error('Error switching to cash:', error);
       console.error('Error details:', error.response?.data);
-      message.error(`An error occurred: ${error.response?.data?.message || error.message}`);
+      showErrorToast(`An error occurred: ${error.response?.data?.message || error.message}`);
     }
   };
 
@@ -470,7 +470,7 @@ const MyRentals = () => {
 
   const handleConfirmCancelBooking = async () => {
     if (!rentalToCancel || !rentalToCancel.bookingId) {
-      message.error('Could not find booking to cancel.');
+      showErrorToast('Could not find booking to cancel.');
       return;
     }
 
@@ -479,7 +479,7 @@ const MyRentals = () => {
       // 1. Logic xử lý hoàn tiền (nếu có)
       if (rentalToCancel.paymentMethod?.toLowerCase() === "bank" && rentalToCancel.status?.toUpperCase() === "PAID") {
         if (!refundBankAccount || !refundBankName) {
-          message.error("Please enter full bank account number and bank name for refund.");
+          showErrorToast("Please enter full bank account number and bank name for refund.");
           return;
         }
         let refundAmount = rentalToCancel.amount;
@@ -522,15 +522,15 @@ const MyRentals = () => {
       }
       // Hiển thị thông báo thành công
       if (refundCreated) {
-        message.success('Refund request and cancellation request sent successfully!');
+        showSuccessToast('Refund request and cancellation request sent successfully!');
       } else {
-        message.success('Cancellation request sent successfully!');
+        showSuccessToast('Cancellation request sent successfully!');
       }
       // Đóng modal
       handleCloseCancelModal();
     } catch (error) {
       console.error("Error cancelling booking:", error);
-      message.error("Unable to cancel booking.");
+      showErrorToast("Unable to cancel booking.");
     }
   };
 

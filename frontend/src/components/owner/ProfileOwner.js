@@ -3,6 +3,7 @@ import "./ProfileOwner.css";
 import { API_URL } from "../../api/configApi";
 import axios from "axios";
 import { showSuccessToast, showErrorToast } from '../notification/notification';
+import { Modal } from 'antd';
 
 const BANK_LIST = [
   "Vietcombank",
@@ -47,6 +48,10 @@ const ProfileOwner = ({ user }) => {
 
   // Withdraw history
   const [withdrawHistory, setWithdrawHistory] = useState([]);
+  
+  // Modal state
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
+  const [selectedRequestId, setSelectedRequestId] = useState(null);
 
   // Fetch bank info
   useEffect(() => {
@@ -139,13 +144,21 @@ const ProfileOwner = ({ user }) => {
     }
   };
 
-  // Added at the beginning of file:
-  const handleSign = async (requestId) => {
-    if (!window.confirm('Are you sure you have received the money? This action cannot be undone!')) return;
+  // Show confirmation modal
+  const showConfirmModal = (requestId) => {
+    setSelectedRequestId(requestId);
+    setConfirmModalVisible(true);
+  };
+
+  // Handle sign confirmation
+  const handleSign = async () => {
+    if (!selectedRequestId) return;
     try {
-      await axios.patch(`${API_URL}/owner-withdraw/${requestId}/sign`, { sign: true });
-      setWithdrawHistory(his => his.map(w => w.requestId === requestId ? { ...w, sign: true } : w));
+      await axios.patch(`${API_URL}/owner-withdraw/${selectedRequestId}/sign`, { sign: true });
+      setWithdrawHistory(his => his.map(w => w.requestId === selectedRequestId ? { ...w, sign: true } : w));
       showSuccessToast('Confirmed money receipt!');
+      setConfirmModalVisible(false);
+      setSelectedRequestId(null);
     } catch {
       showErrorToast('Confirmation failed!');
     }
@@ -327,7 +340,21 @@ const ProfileOwner = ({ user }) => {
                       {w.sign ? (
                         <span style={{color: 'green', fontWeight: 600}}>Confirmed</span>
                       ) : w.status === 'completed' ? (
-                        <input type="checkbox" onChange={() => handleSign(w.requestId)} />
+                        <button 
+                          type="button" 
+                          onClick={() => showConfirmModal(w.requestId)}
+                          style={{
+                            background: '#1890ff',
+                            color: 'white',
+                            border: 'none',
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '12px'
+                          }}
+                        >
+                          Confirm Receipt
+                        </button>
                       ) : (
                         <span style={{color: '#999'}}>Not completed</span>
                       )}
@@ -339,6 +366,51 @@ const ProfileOwner = ({ user }) => {
           </div>
         </div>
       </div>
+      
+      {/* Confirmation Modal */}
+      <Modal
+        title="Confirm Money Receipt"
+        open={confirmModalVisible}
+        onOk={handleSign}
+        onCancel={() => {
+          setConfirmModalVisible(false);
+          setSelectedRequestId(null);
+        }}
+        okText="Confirm Receipt"
+        cancelText="Cancel"
+        okButtonProps={{ 
+          style: { background: '#52c41a', borderColor: '#52c41a' },
+          loading: false
+        }}
+      >
+        <div style={{ padding: '20px 0' }}>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            marginBottom: '16px',
+            fontSize: '16px',
+            color: '#333'
+          }}>
+            <span style={{ 
+              fontSize: '24px', 
+              marginRight: '12px',
+              color: '#faad14'
+            }}>
+              ⚠️
+            </span>
+            Are you sure you have received the money?
+          </div>
+          <p style={{ 
+            color: '#666', 
+            margin: 0,
+            fontSize: '14px',
+            lineHeight: '1.5'
+          }}>
+            This action confirms that you have received the withdrawal amount in your bank account. 
+            This action cannot be undone once confirmed.
+          </p>
+        </div>
+      </Modal>
     </div>
   );
 };

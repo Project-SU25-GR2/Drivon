@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Result, Button, Card, Descriptions, Spin, message } from 'antd';
+import { Result, Button, Card, Descriptions, Spin } from 'antd';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { API_URL } from '../../api/configApi';
@@ -62,7 +62,6 @@ const RentalSuccess = () => {
       const res = await axios.post(`${API_URL}/payments/confirm`, payload);
       if (res.data && res.data.success) {
         setConfirmed(true);
-        message.success('Order confirmed successfully!');
         setTimeout(() => {
           if (redirectTo) {
             navigate(redirectTo);
@@ -70,11 +69,9 @@ const RentalSuccess = () => {
             navigate('/my-rentals');
           }
         }, 1000);
-      } else {
-        message.error('Unable to confirm order.');
       }
     } catch (err) {
-      message.error('Order confirmation error: ' + (err.response?.data?.error || err.message));
+      console.error('Order confirmation error:', err);
     } finally {
       setConfirming(false);
     }
