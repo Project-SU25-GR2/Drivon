@@ -6,6 +6,7 @@ import { useUserData } from '../../contexts/UserDataContext';
 import { API_URL } from '../../api/configApi';
 import { showErrorToast, showSuccessToast } from '../notification/notification';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 const PartnerPage = () => {
   const { partnersData, loading, error, fetchPartnersData, updatePartnerStatus } = usePartnerData();
   const { updateUserRole } = useUserData();
@@ -187,6 +188,8 @@ const PartnerPage = () => {
     setCccdImages([]);
   };
 
+  const navigate = useNavigate();
+
   if (loading) {
     return <div className="loading"><Loader text="Loading partners..." /></div>;
   }
@@ -251,19 +254,46 @@ const PartnerPage = () => {
                 <span className="icon">✉️</span> {group.owner.email}
               </div>
               <div className="partner-car-count">Số lượng xe: {group.cars.length}</div>
+              <button
+                className="chatIconBtn"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  marginLeft: 12,
+                  cursor: 'pointer',
+                  verticalAlign: 'middle',
+                  fontSize: 20,
+                  color: '#6c63ff',
+                }}
+                title="Nhắn tin với partner"
+                onClick={e => {
+                  e.stopPropagation();
+                  navigate('/messages', {
+                    state: {
+                      selectedUser: {
+                        id: group.owner.userId,
+                        name: group.owner.name || group.owner.email || group.owner.userId,
+                        avatar: undefined,
+                      },
+                    },
+                  });
+                }}
+              >
+                <i className="bi bi-chat-dots"></i>
+              </button>
             </div>
           ))}
         </div>
       )}
       {/* Popup list xe của chủ xe */}
       {showOwnerModal && selectedOwner && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
+        <div className="partner-modal-overlay">
+          <div className="partner-modal-content">
+            <div className="partner-modal-header">
               <h2>Danh sách xe của {selectedOwner.owner.name}</h2>
-              <button className="close-btn" onClick={closeOwnerModal}>&times;</button>
+              <button className="partner-close-btn" onClick={closeOwnerModal}>&times;</button>
             </div>
-            <div className="modal-body">
+            <div className="partner-modal-body">
               <div className="partner-list">
                 {selectedOwner.cars.map((carContract) => (
                   <div className="partner-card" key={carContract.id} onClick={() => handleOpenCarModal(carContract)}>
@@ -307,13 +337,13 @@ const PartnerPage = () => {
       )}
       {/* Popup chi tiết xe (reuse modal cũ) */}
       {showCarModal && selectedPartner && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
+        <div className="partner-modal-overlay">
+          <div className="partner-modal-content">
+            <div className="partner-modal-header">
               <h2>Car Details</h2>
-              <button className="close-btn" onClick={closeCarModal}>&times;</button>
+              <button className="partner-close-btn" onClick={closeCarModal}>&times;</button>
             </div>
-            <div className="modal-body">
+            <div className="partner-modal-body">
               {/* Container cho ảnh */}
               <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
                 {/* Cột trái - Ảnh chính */}

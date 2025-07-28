@@ -139,7 +139,7 @@
   background-color: #45a049;
 }
 
-.modal-overlay {
+.partner-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -152,12 +152,12 @@
   z-index: 1000;
 }
 
-.modal-content {
+.partner-modal-content {
   background-color: #fff !important;
   padding: 20px;
   border-radius: 10px;
-  width: 80%;
-  max-width: 800px;
+  width: 95%;
+  max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
@@ -165,7 +165,8 @@
   border-radius: 10px !important;
 }
 
-.modal-header {
+/* Đổi các modal-header, modal-body, close-btn nếu cần */
+.partner-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -174,12 +175,12 @@
   border-bottom: 1px solid #eee;
 }
 
-.modal-header h2 {
+.partner-modal-header h2 {
   margin: 0;
   color: #333;
 }
 
-.close-btn {
+.partner-close-btn {
   background: none;
   border: none;
   font-size: 24px;
@@ -187,11 +188,11 @@
   color: #666;
 }
 
-.close-btn:hover {
+.partner-close-btn:hover {
   color: #333;
 }
 
-.modal-body {
+.partner-modal-body {
   display: flex;
   flex-direction: column;
   gap: 20px;
