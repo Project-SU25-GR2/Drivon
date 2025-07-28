@@ -100,13 +100,13 @@ const RentalSuccess = () => {
         title="Car Booking Successful!"
         subTitle={rentalData.paymentMethod === 'cash' ? "Thank you for booking. Please pay cash when receiving the car." : "Thank you for booking. Bank transfer transaction was successful."}
         extra={[
-          <Button
-            type="primary"
-            key="confirm"
-            loading={confirming}
-            onClick={() => handleConfirmOrder()}>
-            Confirm Order
-          </Button>,
+          // <Button
+          //   type="primary"
+          //   key="confirm"
+          //   loading={confirming}
+          //   onClick={() => handleConfirmOrder()}>
+          //   Confirm Order
+          // </Button>,
           <Button
             key="console"
             loading={confirming}
