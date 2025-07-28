@@ -4,8 +4,10 @@ import AddCarForm from "./AddCarForm";
 import "./CarManagementPage.css";
 import { useCarManagement } from "../../contexts/CarManagementContext";
 import { useCarData } from "../../contexts/CarDataContext";
-import { API_URL } from "../../api/configApi";
 import { showErrorToast, showSuccessToast } from "../notification/notification";
+import axios from "axios";
+import { API_URL } from "../../api/configApi";
+
 const CarManagementPage = ({ user }) => {
   const {
     carsData,
@@ -21,22 +23,58 @@ const CarManagementPage = ({ user }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [currentCarToEdit, setCurrentCarToEdit] = useState(null);
+  const [bookingStatuses, setBookingStatuses] = useState({}); // Lưu trạng thái booking cho từng xe
 
   useEffect(() => {
     if (user && user.userId) {
       fetchCarsData(user.userId);
+      fetchBookingStatuses(user.userId);
     }
   }, [user, fetchCarsData]);
 
-  const handleDeleteCar = async (licensePlate) => {
-    if (window.confirm("Are you sure you want to delete this car?")) {
-      try {
-        await deleteCar(licensePlate);
-        showSuccessToast("Car deleted successfully!");
-      } catch (error) {
-        showErrorToast("Failed to delete car. Please try again.");
-      }
+  // Fetch booking statuses for all cars
+  const fetchBookingStatuses = async (ownerId) => {
+    try {
+      const response = await axios.get(`${API_URL}/bookings/owner/${ownerId}`);
+      const bookings = response.data || [];
+
+      // Tạo map để lưu trạng thái booking cho từng xe
+      const statusMap = {};
+      bookings.forEach((booking) => {
+        if (booking.car?.licensePlate) {
+          // Nếu xe đã có booking, kiểm tra xem có booking ongoing không
+          if (
+            !statusMap[booking.car.licensePlate] ||
+            booking.status?.toLowerCase() === "ongoing"
+          ) {
+            statusMap[booking.car.licensePlate] = booking.status?.toLowerCase();
+          }
+        }
+      });
+
+      setBookingStatuses(statusMap);
+    } catch (error) {
+      console.error("Error fetching booking statuses:", error);
     }
+  };
+
+  // Function to check if car has ongoing booking
+  const hasOngoingBooking = (car) => {
+    const bookingStatus = bookingStatuses[car.licensePlate];
+    return bookingStatus === "ongoing";
+  };
+
+  // Function to get car status based on booking status
+  const getCarStatus = (car) => {
+    if (hasOngoingBooking(car)) {
+      return "unavailable"; // Force unavailable when car is being rented
+    }
+    return car.status || "available";
+  };
+
+  // Function to check if car can be edited
+  const canEditCar = (car) => {
+    return !hasOngoingBooking(car); // Can't edit when car is being rented
   };
 
   const handleStatusChange = async (licensePlate, newStatus) => {
@@ -50,6 +88,10 @@ const CarManagementPage = ({ user }) => {
   };
 
   const handleEditClick = (car) => {
+    if (!canEditCar(car)) {
+      showErrorToast("Cannot edit car while it is being rented!");
+      return;
+    }
     setCurrentCarToEdit(car);
     setIsEditing(true);
   };
@@ -100,6 +142,10 @@ const CarManagementPage = ({ user }) => {
         {console.log("Rendering cars:", carsData)}
         {carsData.map((car) => {
           console.log("Car object before rendering image:", car);
+          const carStatus = getCarStatus(car);
+          const isBeingRented = hasOngoingBooking(car);
+          const canEdit = canEditCar(car);
+
           return (
             <div key={car.licensePlate} className="car-management-card">
               <div className="car-image">
@@ -111,13 +157,23 @@ const CarManagementPage = ({ user }) => {
                 ) : (
                   <div className="no-image">No Image Available</div>
                 )}
+                {/* Status badge thay thế ACTIVE_LEASE */}
                 <div
                   className="car-status-badge"
                   style={{
-                    backgroundColor: "#4CAF50",
+                    backgroundColor: isBeingRented
+                      ? "#ef4444" // Đỏ khi đang được thuê
+                      : carStatus === "available"
+                      ? "#10b981" // Xanh lá khi available
+                      : "#f59e0b", // Vàng khi unavailable
+                    color: "white",
                   }}
                 >
-                  ACTIVE_LEASE
+                  {isBeingRented
+                    ? "RENTED"
+                    : carStatus === "available"
+                    ? "AVAILABLE"
+                    : "UNAVAILABLE"}
                 </div>
               </div>
               <div className="car-info">
@@ -171,29 +227,32 @@ const CarManagementPage = ({ user }) => {
                 </div>
               </div>
               <div className="car-actions">
-                <select
-                  value={car.status}
-                  onChange={(e) =>
-                    handleStatusChange(car.licensePlate, e.target.value)
-                  }
-                  className={`car-status-dropdown${
-                    car.status === "unavailable" ? " unavailable" : ""
-                  }`}
-                >
-                  <option value="available">Available</option>
-                  <option value="unavailable">Unavailable</option>
-                </select>
+                {/* Chỉ hiển thị dropdown khi xe không đang được thuê */}
+                {!isBeingRented && (
+                  <select
+                    value={carStatus}
+                    onChange={(e) =>
+                      handleStatusChange(car.licensePlate, e.target.value)
+                    }
+                    className={`car-status-dropdown${
+                      carStatus === "unavailable" ? " unavailable" : ""
+                    }`}
+                  >
+                    <option value="available">Available</option>
+                    <option value="unavailable">Unavailable</option>
+                  </select>
+                )}
                 <button
-                  className="edit-btn"
+                  className={`edit-btn ${!canEdit ? "disabled" : ""}`}
                   onClick={() => handleEditClick(car)}
+                  disabled={!canEdit}
+                  title={
+                    !canEdit
+                      ? "Cannot edit car while it is being rented"
+                      : "Edit car information"
+                  }
                 >
                   <i className="fas fa-edit"></i> Edit
-                </button>
-                <button
-                  className="delete-btn"
-                  onClick={() => handleDeleteCar(car.licensePlate)}
-                >
-                  <i className="fas fa-trash"></i> Delete
                 </button>
               </div>
             </div>
