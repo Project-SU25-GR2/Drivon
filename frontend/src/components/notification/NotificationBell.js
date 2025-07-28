@@ -92,14 +92,14 @@ const NotificationBell = () => {
       });
       setUnreadCount(prev => prev + 1);
       // Nếu notification do chính mình gửi thì không hiện toast realtime
-      if (newNotification.senderId && newNotification.senderId === currentUserId) return;
-      window.toast && window.toast({
-        title: 'Notification',
-        message: data.content,
-        type: 'info',
-        duration: 5000,
-        position: 'left'
-      });
+      // if (newNotification.senderId && newNotification.senderId === currentUserId) return;
+      // window.toast && window.toast({
+      //   title: 'Notification',
+      //   message: data.content,
+      //   type: 'info',
+      //   duration: 5000,
+      //   position: 'left'
+      // });
     };
 
     const handleBroadcastNotification = (data) => {

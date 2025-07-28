@@ -27,7 +27,7 @@ public class ContractController {
     @Autowired
     private EmailService emailService;
 
-    // Endpoint tạo contract khi đăng ký chủ xe
+    //  tạo contract khi đăng ký chủ xe
     @PostMapping
     public ResponseEntity<?> createContract(@Valid @RequestBody ContractRequest contractRequest) {
         try {
@@ -40,7 +40,7 @@ public class ContractController {
         }
     }
 
-    // Endpoint tạo lease contract
+    //  tạo lease contract
     @PostMapping("/lease")
     public ResponseEntity<?> createLeaseContract(@Valid @RequestBody ContractRequest contractRequest) {
         try {
@@ -53,7 +53,7 @@ public class ContractController {
         }
     }
 
-    // Endpoint gửi PDF contract qua email
+    //  gửi PDF contract qua email
     @PostMapping("/send-pdf")
     public ResponseEntity<?> sendContractPDF(@RequestBody Map<String, String> request) {
         try {
@@ -68,7 +68,7 @@ public class ContractController {
         }
     }
 
-    // Endpoint kiểm tra xe có tồn tại không
+    //  kiểm tra xe có tồn tại không
     @GetMapping("/check-car/{carId}")
     public ResponseEntity<?> checkCarExists(@PathVariable String carId) {
         try {
@@ -81,7 +81,7 @@ public class ContractController {
         }
     }
 
-    // Endpoint lấy contract mới nhất của xe
+    //  lấy contract mới nhất của xe
     @GetMapping("/by-car/{carId}")
     public ResponseEntity<?> getLatestContractByCar(@PathVariable String carId) {
         var contractOpt = contractService.getLatestContractByCar(carId);
@@ -92,7 +92,7 @@ public class ContractController {
         }
     }
 
-    // Endpoint lấy contracts theo userId
+    //  lấy contracts theo userId
     @GetMapping("/user/{userId}")
     public ResponseEntity<?> getContractsByUserId(@PathVariable String userId) {
         try {

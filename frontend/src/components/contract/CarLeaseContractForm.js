@@ -38,7 +38,7 @@ const CarLeaseContractForm = ({ user }) => {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [cccdImages, setCccdImages] = useState([]);
   const [zoomImg, setZoomImg] = useState(null);
-  // Thêm state cho tab điều khoản
+
   const [termsTab, setTermsTab] = useState('en');
 
   useEffect(() => {
@@ -84,7 +84,7 @@ const CarLeaseContractForm = ({ user }) => {
       [name]: newValue,
     }));
 
-    // Validate và set lỗi (chỉ hiển thị lỗi, không return)
+
     if (name === "phone" && value && !/^[0-9]{10,11}$/.test(value)) {
       setErrors((prev) => ({
         ...prev,
@@ -166,13 +166,13 @@ const CarLeaseContractForm = ({ user }) => {
     // Generate a new contract number
     const newContractNumber = generateContractNumber();
 
-    // Update formData with the new contract number
+
     setFormData((prev) => ({
       ...prev,
       contractNumber: newContractNumber,
     }));
 
-    // Ensure all required fields are present and properly formatted
+
     const formattedData = {
       contractNumber: newContractNumber,
       carId: formData.carId.toString(),
@@ -186,19 +186,19 @@ const CarLeaseContractForm = ({ user }) => {
     };
 
     try {
-      // Gửi thông tin hợp đồng lên backend (không có pdfUrl)
+    
       const response = await axios.post(
         `${API_URL}/contracts/lease`,
         formattedData
       );
 
-      // Sau khi tạo hợp đồng thành công, lưu ảnh vào car_images nếu có
+
       if (
         contractData?.carData?.images &&
         contractData.carData.images.length > 0
       ) {
         try {
-          // Lấy ảnh đầu tiên làm main image, các ảnh còn lại là other images
+
           const mainImage = contractData.carData.images[0];
           const otherImages = contractData.carData.images.slice(1);
 
@@ -212,7 +212,7 @@ const CarLeaseContractForm = ({ user }) => {
         }
       }
 
-      // Lưu cavetImages nếu có
+      
       if (contractData?.cavetImages && contractData.cavetImages.length > 0) {
         try {
           await axios.post(`${API_URL}/cars/images/cavet`, {
@@ -224,7 +224,7 @@ const CarLeaseContractForm = ({ user }) => {
         }
       }
       
-      // Save otherDocImages if available
+    
       if (contractData?.otherDocImages && contractData.otherDocImages.length > 0) {
         try {
           await axios.post(`${API_URL}/cars/images/other`, {
