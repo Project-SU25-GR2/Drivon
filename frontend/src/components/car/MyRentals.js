@@ -52,6 +52,18 @@ const MyRentals = () => {
   const [refundBankAccount, setRefundBankAccount] = useState("");
   const [refundBankName, setRefundBankName] = useState("");
 
+  // PHÂN TRANG
+  const [currentPage, setCurrentPage] = useState(1);
+  const rentalsPerPage = 6;
+  const totalPages = Math.ceil(rentals.length / rentalsPerPage);
+  const paginatedRentals = rentals.slice((currentPage - 1) * rentalsPerPage, currentPage * rentalsPerPage);
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   const tooltips = ["Very Bad", "Bad", "Average", "Good", "Very Good"];
 
   const customIcons = {
@@ -550,11 +562,11 @@ const MyRentals = () => {
             </div>
             <div className="rental-card-status">
               <Tag color={getStatusColor(rental.status)}>
-                {rental.status}
+                {`Payment: ${rental.status}`}
               </Tag>
               {bookingStatus && (
                 <Tag color={getBookingStatusColor(bookingStatus)} style={{ marginLeft: 4 }}>
-                  {bookingStatus}
+                  {`Booking: ${bookingStatus}`}
                 </Tag>
               )}
             </div>
@@ -762,9 +774,26 @@ const MyRentals = () => {
             className="empty-state"
           />
         ) : (
-          <Row gutter={[24, 24]} className="rentals-grid">
-            {rentals.map(renderRentalCard)}
-          </Row>
+          <>
+            <Row gutter={[24, 24]} className="rentals-grid">
+              {paginatedRentals.map(renderRentalCard)}
+            </Row>
+            {totalPages > 1 && (
+              <div className="pagination-controls" style={{ marginTop: '2rem' }}>
+                <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>&lt;</button>
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <button
+                    key={i + 1}
+                    className={currentPage === i + 1 ? 'active' : ''}
+                    onClick={() => handlePageChange(i + 1)}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>&gt;</button>
+              </div>
+            )}
+          </>
         )}
       </div>
 
