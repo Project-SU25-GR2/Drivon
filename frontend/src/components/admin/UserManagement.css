@@ -262,7 +262,7 @@ input:checked + .toggle-slider:before {
 } 
 
 /* Modal xác nhận xóa user */
-.modal-overlay {
+.usermanager-modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0,0,0,0.5);
@@ -271,7 +271,7 @@ input:checked + .toggle-slider:before {
   align-items: center;
   justify-content: center;
 }
-.modal-content {
+.usermanager-modal-content {
   background: #231f26;
   color: #fff;
   padding: 32px 24px 24px 24px;
@@ -281,22 +281,22 @@ input:checked + .toggle-slider:before {
   box-shadow: 0 8px 32px rgba(0,0,0,0.25);
   text-align: center;
 }
-.modal-content h3 {
+.usermanager-modal-content h3 {
   margin: 0 0 10px 0;
   font-size: 1.15rem;
   font-weight: 600;
 }
-.modal-content p {
+.usermanager-modal-content p {
   margin: 0 0 18px 0;
   font-size: 1rem;
 }
-.modal-actions {
+.usermanager-modal-actions {
   margin-top: 24px;
   display: flex;
   justify-content: center;
   gap: 16px;
 }
-.modal-btn {
+.usermanager-modal-btn {
   min-width: 80px;
   padding: 8px 20px;
   border-radius: 8px;
@@ -306,18 +306,18 @@ input:checked + .toggle-slider:before {
   font-weight: 500;
   transition: background 0.2s;
 }
-.modal-btn.confirm {
+.usermanager-modal-btn.confirm {
   background: #e0b3ff;
   color: #231f26;
   border: 2px solid #fff;
 }
-.modal-btn.confirm:hover {
+.usermanager-modal-btn.confirm:hover {
   background: #d1a3f7;
 }
-.modal-btn.cancel {
+.usermanager-modal-btn.cancel {
   background: #6c4587;
   color: #fff;
 }
-.modal-btn.cancel:hover {
+.usermanager-modal-btn.cancel:hover {
   background: #56346b;
 } 

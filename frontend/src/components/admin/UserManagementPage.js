@@ -6,13 +6,13 @@ import { showErrorToast, showSuccessToast } from '../notification/notification';
 // Modal xác nhận xóa user
 const ConfirmDeleteModal = ({ open, onCancel, onConfirm, user }) => (
   open ? (
-    <div className="modal-overlay">
-      <div className="modal-content">
+    <div className="usermanager-modal-overlay">
+      <div className="usermanager-modal-content">
         <h3>Xác nhận xóa người dùng</h3>
         <p>Bạn có chắc chắn muốn xóa user <b>{user?.fullName || user?.email || user?.userId}</b>?</p>
-        <div className="modal-actions">
-          <button className="modal-btn confirm" onClick={onConfirm}>OK</button>
-          <button className="modal-btn cancel" onClick={onCancel}>Hủy</button>
+        <div className="usermanager-modal-actions">
+          <button className="usermanager-modal-btn confirm" onClick={onConfirm}>OK</button>
+          <button className="usermanager-modal-btn cancel" onClick={onCancel}>Hủy</button>
         </div>
       </div>
     </div>
