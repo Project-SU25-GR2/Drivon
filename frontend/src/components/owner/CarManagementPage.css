@@ -86,11 +86,23 @@
   position: absolute;
   top: 10px;
   right: 10px;
-  padding: 5px 10px;
-  border-radius: 15px;
+  padding: 6px 12px;
+  border-radius: 20px;
   color: white;
-  font-size: 12px;
-  font-weight: bold;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  z-index: 10;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.car-status-badge:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .car-info {
@@ -192,6 +204,11 @@
   border-top: 1px solid #dee2e6;
 }
 
+/* Khi chỉ có 2 nút (không có dropdown) */
+.car-actions:has(.edit-btn):has(.delete-btn):not(:has(.car-status-dropdown)) {
+  gap: 20px; /* Tăng khoảng cách giữa 2 nút */
+}
+
 /* Dropdown Available - LUÔN XANH LÁ */
 .car-status-dropdown {
   height: 42px;
@@ -212,6 +229,23 @@
   /* LUÔN XANH LÁ */
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: white;
+}
+
+.car-status-dropdown:disabled {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  color: #94a3b8;
+  border-color: #cbd5e1;
+  cursor: not-allowed;
+  box-shadow: 0 2px 8px rgba(148, 163, 184, 0.15);
+}
+
+.car-status-dropdown:disabled:hover {
+  transform: none;
+  box-shadow: 0 2px 8px rgba(148, 163, 184, 0.15);
+}
+
+.car-status-dropdown:disabled::before {
+  display: none;
 }
 
 .car-status-dropdown::before {
@@ -267,6 +301,23 @@
   align-items: center;
   justify-content: center;
   text-align: center;
+}
+
+.edit-btn.disabled {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  color: #94a3b8;
+  border-color: #cbd5e1;
+  cursor: not-allowed;
+  box-shadow: 0 2px 8px rgba(148, 163, 184, 0.15);
+}
+
+.edit-btn.disabled:hover {
+  transform: none;
+  box-shadow: 0 2px 8px rgba(148, 163, 184, 0.15);
+}
+
+.edit-btn.disabled::before {
+  display: none;
 }
 
 .edit-btn::before {
@@ -416,6 +467,11 @@
   .delete-btn {
     width: 100%;
     min-width: unset;
+  }
+
+  /* Khi chỉ có 2 nút */
+  .car-actions:has(.edit-btn):has(.delete-btn):not(:has(.car-status-dropdown)) {
+    gap: 15px;
   }
 
   .car-attributes-row {

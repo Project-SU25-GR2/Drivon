@@ -70,6 +70,7 @@ const getPaymentMethodIcon = (paymentMethod) => {
             return 'fa-question-circle';
     }
 };
+
 const EarningsPage = () => {
     const [earnings, setEarnings] = useState({
         totalEarnings: 0,
@@ -94,6 +95,10 @@ const EarningsPage = () => {
     const [showDebtPaymentModal, setShowDebtPaymentModal] = useState(false);
     const [showConfirmDebtModal, setShowConfirmDebtModal] = useState(false);
     const [pendingOrderCode, setPendingOrderCode] = useState(null);
+
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(1);
+    const [transactionsPerPage, setTransactionsPerPage] = useState(10);
 
     // Check for debt payment result
     useEffect(() => {
@@ -191,6 +196,156 @@ const EarningsPage = () => {
             (tx.renterName && tx.renterName.toLowerCase().includes(search.toLowerCase()));
         return matchesMonth && matchesStatus && matchesSearch;
     });
+
+    // Pagination logic
+    const indexOfLastTransaction = currentPage * transactionsPerPage;
+    const indexOfFirstTransaction = indexOfLastTransaction - transactionsPerPage;
+    const currentTransactions = filteredTransactions.slice(indexOfFirstTransaction, indexOfLastTransaction);
+    const totalPages = Math.ceil(filteredTransactions.length / transactionsPerPage);
+
+    // Reset to first page when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [selectedMonth, search, statusFilter, transactionsPerPage]);
+
+    // Pagination component
+    const Pagination = () => {
+        const pageNumbers = [];
+        const maxVisiblePages = 5;
+        
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+        
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            pageNumbers.push(i);
+        }
+
+        if (totalPages <= 1) return null;
+
+        return (
+            <div className="pagination-container" style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginTop: '20px',
+                gap: '8px'
+            }}>
+                {/* Previous button */}
+                <button
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    style={{
+                        padding: '8px 12px',
+                        border: '1px solid #ddd',
+                        backgroundColor: currentPage === 1 ? '#f5f5f5' : '#fff',
+                        color: currentPage === 1 ? '#999' : '#333',
+                        cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                        borderRadius: '4px',
+                        fontSize: '14px'
+                    }}
+                >
+                    <i className="fas fa-chevron-left"></i>
+                </button>
+
+                {/* First page */}
+                {startPage > 1 && (
+                    <>
+                        <button
+                            onClick={() => setCurrentPage(1)}
+                            style={{
+                                padding: '8px 12px',
+                                border: '1px solid #ddd',
+                                backgroundColor: '#fff',
+                                color: '#333',
+                                cursor: 'pointer',
+                                borderRadius: '4px',
+                                fontSize: '14px'
+                            }}
+                        >
+                            1
+                        </button>
+                        {startPage > 2 && (
+                            <span style={{ color: '#999', fontSize: '14px' }}>...</span>
+                        )}
+                    </>
+                )}
+
+                {/* Page numbers */}
+                {pageNumbers.map(number => (
+                    <button
+                        key={number}
+                        onClick={() => setCurrentPage(number)}
+                        style={{
+                            padding: '8px 12px',
+                            border: '1px solid #ddd',
+                            backgroundColor: currentPage === number ? '#6c63ff' : '#fff',
+                            color: currentPage === number ? '#fff' : '#333',
+                            cursor: 'pointer',
+                            borderRadius: '4px',
+                            fontSize: '14px',
+                            fontWeight: currentPage === number ? 'bold' : 'normal'
+                        }}
+                    >
+                        {number}
+                    </button>
+                ))}
+
+                {/* Last page */}
+                {endPage < totalPages && (
+                    <>
+                        {endPage < totalPages - 1 && (
+                            <span style={{ color: '#999', fontSize: '14px' }}>...</span>
+                        )}
+                        <button
+                            onClick={() => setCurrentPage(totalPages)}
+                            style={{
+                                padding: '8px 12px',
+                                border: '1px solid #ddd',
+                                backgroundColor: '#fff',
+                                color: '#333',
+                                cursor: 'pointer',
+                                borderRadius: '4px',
+                                fontSize: '14px'
+                            }}
+                        >
+                            {totalPages}
+                        </button>
+                    </>
+                )}
+
+                {/* Next button */}
+                <button
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                    style={{
+                        padding: '8px 12px',
+                        border: '1px solid #ddd',
+                        backgroundColor: currentPage === totalPages ? '#f5f5f5' : '#fff',
+                        color: currentPage === totalPages ? '#999' : '#333',
+                        cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                        borderRadius: '4px',
+                        fontSize: '14px'
+                    }}
+                >
+                    <i className="fas fa-chevron-right"></i>
+                </button>
+
+                {/* Page info */}
+                <span style={{
+                    marginLeft: '15px',
+                    color: '#666',
+                    fontSize: '14px'
+                }}>
+                    Hiển thị {indexOfFirstTransaction + 1}-{Math.min(indexOfLastTransaction, filteredTransactions.length)} 
+                    trong tổng số {filteredTransactions.length} giao dịch
+                </span>
+            </div>
+        );
+    };
 
     const exportToPDF = () => {
         try {
@@ -697,7 +852,7 @@ const EarningsPage = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredTransactions && filteredTransactions.length > 0 ? filteredTransactions.map(transaction => (
+                        {currentTransactions && currentTransactions.length > 0 ? currentTransactions.map(transaction => (
                             <tr key={transaction.id}>
                                 <td>{transaction.date ? new Date(transaction.date).toLocaleDateString('vi-VN') : 'N/A'}</td>
                                 <td><i className="fas fa-car icon-prefix"></i> {transaction.carName}</td>
@@ -722,6 +877,7 @@ const EarningsPage = () => {
                         )}
                     </tbody>
                 </table>
+                {totalPages > 1 && <Pagination />}
             </div>
             {showWithdrawModal && (
       <div className="modal-backdrop" style={{position: 'fixed', top:0, left:0, right:0, bottom:0, background: 'rgba(0,0,0,0.2)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
