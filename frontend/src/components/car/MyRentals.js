@@ -423,7 +423,7 @@ const MyRentals = () => {
       // Chỉ update payment method và status, không tạo paymentId mới
       const updateRequest = {
         paymentMethod: 'cash',
-        status: 'SUCCESS' // Cash được coi như đã thanh toán
+        status: 'PAID' // Cash được coi như đã thanh toán
       };
 
       console.log('Update payment request:', updateRequest);

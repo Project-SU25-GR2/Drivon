@@ -65,7 +65,7 @@ public class DebtPaymentService {
             }
 
             // Check if payment is successful
-            if (!"PAID".equals(payment.getStatus()) && !"SUCCESS".equals(payment.getStatus())) {
+            if (!"PAID".equals(payment.getStatus())) {
                 logger.warn("Payment {} is not successful yet, status: {}. Cannot process debt payment.", orderCode,
                         payment.getStatus());
                 return;
@@ -176,7 +176,7 @@ public class DebtPaymentService {
     public boolean confirmDebtPayment(String orderCode) {
         Payment payment = paymentRepository.findByOrderCode(orderCode);
         if (payment != null && "PENDING".equals(payment.getStatus())) {
-            payment.setStatus("SUCCESS");
+            payment.setStatus("PAID");
             paymentRepository.save(payment);
             // Trừ nợ thực sự
             processDebtPayment(orderCode);

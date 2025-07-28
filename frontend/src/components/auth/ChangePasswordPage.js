@@ -2,13 +2,12 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from '../../api/configApi';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
 
 const ChangePasswordPage = () => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [hasPassword, setHasPassword] = useState(true);
   const navigate = useNavigate();
@@ -29,7 +28,7 @@ const ChangePasswordPage = () => {
         setHasPassword(response.data.hasPassword);
       } catch (err) {
         console.error("Error checking password status:", err);
-        setError("Unable to check password status");
+        showErrorToast("Unable to check password status");
       }
     };
 
@@ -57,21 +56,19 @@ const ChangePasswordPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
-    setSuccess(false);
     setLoading(true);
 
     // Validate new password
     const passwordError = validatePassword(newPassword);
     if (passwordError) {
-      setError(passwordError);
+      showErrorToast(passwordError);
       setLoading(false);
       return;
     }
 
     // Check confirm password
     if (newPassword !== confirmPassword) {
-      setError("Confirm password does not match");
+      showErrorToast("Confirm password does not match");
       setLoading(false);
       return;
     }
@@ -95,7 +92,7 @@ const ChangePasswordPage = () => {
       );
 
       if (response.data.success) {
-        setSuccess(true);
+        showSuccessToast(hasPassword ? "Password changed successfully!" : "Password created successfully!");
         setNewPassword("");
         setConfirmPassword("");
         setCurrentPassword("");
@@ -107,7 +104,7 @@ const ChangePasswordPage = () => {
       }
     } catch (err) {
       console.error("Error changing password:", err);
-      setError(
+      showErrorToast(
         err.response?.data?.error || "An error occurred while changing the password"
       );
     } finally {
@@ -126,36 +123,6 @@ const ChangePasswordPage = () => {
         </div>
         <div className="card-body">
           <form onSubmit={handleSubmit}>
-            {error && (
-              <div
-                className="alert alert-danger alert-dismissible fade show"
-                role="alert"
-              >
-                {error}
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setError(null)}
-                ></button>
-              </div>
-            )}
-
-            {success && (
-              <div
-                className="alert alert-success alert-dismissible fade show"
-                role="alert"
-              >
-                {hasPassword
-                  ? "Password changed successfully!"
-                  : "Password created successfully!"}
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setSuccess(false)}
-                ></button>
-              </div>
-            )}
-
             {hasPassword && (
               <div className="mb-3">
                 <label htmlFor="currentPassword" className="form-label password-label">
