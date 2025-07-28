@@ -334,7 +334,7 @@ const AdminPage = ({ user }) => {
               <span>Promotion</span>
             </a>
           </li>
-          <li>
+          {/* <li>
             <a 
               href="#" 
               className={activeComponent === 'chat' ? 'active' : ''}
@@ -347,7 +347,7 @@ const AdminPage = ({ user }) => {
               <i className="fas fa-comments"></i>
               <span>Chat</span>
             </a>
-          </li>
+          </li> */}
           <li>
             <a 
               href="#" 
@@ -376,7 +376,7 @@ const AdminPage = ({ user }) => {
               <span>Earnings Management</span>
             </a>
           </li>
-          <li>
+          {/* <li>
             <a 
               href="#" 
               className={activeComponent === 'ui-elements' ? 'active' : ''}
@@ -389,8 +389,8 @@ const AdminPage = ({ user }) => {
               <i className="fas fa-cube"></i>
               <span>UI Elements</span>
             </a>
-          </li>
-          <li>
+          </li> */}
+          {/* <li>
             <a 
               href="#" 
               className={activeComponent === 'tables' ? 'active' : ''}
@@ -403,8 +403,8 @@ const AdminPage = ({ user }) => {
               <i className="fas fa-table"></i>
               <span>Tables</span>
             </a>
-          </li>
-          <li>
+          </li> */}
+          {/* <li>
             <a 
               href="#" 
               className={activeComponent === 'maps' ? 'active' : ''}
@@ -417,8 +417,8 @@ const AdminPage = ({ user }) => {
               <i className="fas fa-map"></i>
               <span>Maps</span>
             </a>
-          </li>
-          <li>
+          </li> */}
+          {/* <li>
             <a 
               href="#" 
               className={activeComponent === 'pages' ? 'active' : ''}
@@ -431,8 +431,8 @@ const AdminPage = ({ user }) => {
               <i className="fas fa-file"></i>
               <span>Pages</span>
             </a>
-          </li>
-          <li>
+          </li> */}
+          {/* <li>
             <a 
               href="#" 
               className={activeComponent === 'multiple-levels' ? 'active' : ''}
@@ -445,7 +445,7 @@ const AdminPage = ({ user }) => {
               <i className="fas fa-layer-group"></i>
               <span>Multiple Levels</span>
             </a>
-          </li>
+          </li> */}
           <li>
             <a 
               href="#" 
