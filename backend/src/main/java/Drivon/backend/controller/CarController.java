@@ -519,4 +519,29 @@ public class CarController {
         carService.updateCar(car);
         return ResponseEntity.ok(Map.of("success", true, "status", car.getStatus()));
     }
+
+    @DeleteMapping("/{licensePlate}")
+    public ResponseEntity<?> deleteCar(@PathVariable String licensePlate) {
+        try {
+            Car car = carService.getCarById(licensePlate);
+            if (car == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Xóa tất cả hình ảnh liên quan đến xe
+            List<CarImage> carImages = carImageRepository.findByCarId(licensePlate);
+            for (CarImage image : carImages) {
+                carImageRepository.delete(image);
+            }
+
+            // Xóa xe
+            carRepository.delete(car);
+
+            return ResponseEntity.ok(Map.of("success", true, "message", "Car deleted successfully"));
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to delete car: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(error);
+        }
+    }
 }

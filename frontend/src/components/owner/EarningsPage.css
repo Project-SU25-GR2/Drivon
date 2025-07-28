@@ -1,30 +1,31 @@
 body {
-    background-color: #f0f2f5;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: #f0f2f5;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
 }
 
 .earnings-page {
-    padding: 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
 }
 
 .page-header h1 {
-    font-size: 2rem;
-    font-weight: 600;
-    margin: 0;
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0;
 }
 
 .page-header .page-subtitle {
-    color: #6c757d;
-    margin: 0;
+  color: #6c757d;
+  margin: 0;
 }
 
 .header-actions {
@@ -34,226 +35,243 @@ body {
 }
 
 .date-filter-container {
-    position: relative;
-    display: flex;
-    align-items: center;
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .date-icon {
-    position: absolute;
-    left: 12px;
-    color: #6c757d;
+  position: absolute;
+  left: 12px;
+  color: #6c757d;
 }
 
 .date-filter {
-    background-color: #fff;
-    border: 1px solid #dee2e6;
-    border-radius: 0.375rem;
-    padding: 0.5rem 1rem 0.5rem 2.2rem;
-    font-size: 0.9rem;
-    font-weight: 500;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    background-repeat: no-repeat;
-    background-position: right 0.75rem center;
-    background-size: 16px 12px;
-    padding-right: 0px !important;
-    text-indent: 8px;
-    padding-left: 16px;
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 0.375rem;
+  padding: 0.5rem 1rem 0.5rem 2.2rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px 12px;
+  padding-right: 0px !important;
+  text-indent: 8px;
+  padding-left: 16px;
 }
 
 .earnings-overview {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 @media (max-width: 768px) {
-    .earnings-overview {
-        grid-template-columns: repeat(2, 1fr);
-    }
+  .earnings-overview {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 480px) {
-    .earnings-overview {
-        grid-template-columns: 1fr;
-    }
+  .earnings-overview {
+    grid-template-columns: 1fr;
+  }
 }
 
 .earnings-card {
-    color: #fff;
-    border-radius: 0.5rem;
-    padding: 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  color: #fff;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .earnings-card .card-content {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .earnings-card h3 {
-    font-size: 0.9rem;
-    font-weight: 500;
-    margin: 0 0 0.5rem;
-    opacity: 0.9;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin: 0 0 0.5rem;
+  opacity: 0.9;
 }
 
 .earnings-card .amount {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin: 0 0 0.5rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
 }
 
-.earnings-card .comparison, .earnings-card .period {
-    font-size: 0.8rem;
-    opacity: 0.8;
-    margin: 0;
+.earnings-card .comparison,
+.earnings-card .period {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  margin: 0;
 }
 
 .earnings-card .card-icon {
-    font-size: 1.5rem;
-    opacity: 0.7;
+  font-size: 1.5rem;
+  opacity: 0.7;
 }
 
-.earnings-card.total-earnings { background: #0d6efd; }
-.earnings-card.this-month { background: #198754; }
-.earnings-card.pending-payouts { background: #fd7e14; }
-.earnings-card.last-month { background: #6f42c1; }
-.earnings-card.total-cash { background: #28a745; }
-.earnings-card.total-banking { background: #17a2b8; }
+.earnings-card.total-earnings {
+  background: #0d6efd;
+}
+.earnings-card.this-month {
+  background: #198754;
+}
+.earnings-card.pending-payouts {
+  background: #fd7e14;
+}
+.earnings-card.last-month {
+  background: #6f42c1;
+}
+.earnings-card.total-cash {
+  background: #28a745;
+}
+.earnings-card.total-banking {
+  background: #17a2b8;
+}
 .earnings-card.total-profit {
-    background: linear-gradient(135deg, #e8f8f5 0%, #d4efdf 100%);
-    border-left: 5px solid #27ae60;
+  background: linear-gradient(135deg, #e8f8f5 0%, #d4efdf 100%);
+  border-left: 5px solid #27ae60;
 }
 .earnings-card.total-debt {
-    background: linear-gradient(135deg, #fdeaea 0%, #fadbd8 100%);
-    border-left: 5px solid #e74c3c;
+  background: linear-gradient(135deg, #fdeaea 0%, #fadbd8 100%);
+  border-left: 5px solid #e74c3c;
 }
 
 .transactions-section {
-    background-color: #fff;
-    border-radius: 0.5rem;
-    padding: 1.5rem;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  background-color: #fff;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .transactions-header {
-    margin-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .transactions-header h3 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin: 0 0 0.25rem;
-    display: flex;
-    align-items: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+  display: flex;
+  align-items: center;
 }
 
 .transactions-header h3 i {
-    margin-right: 0.75rem;
-    color: #6c757d;
+  margin-right: 0.75rem;
+  color: #6c757d;
 }
 
 .transactions-header p {
-    color: #6c757d;
-    margin: 0;
+  color: #6c757d;
+  margin: 0;
 }
 
 .transactions-table {
-    width: 100%;
-    border-collapse: collapse;
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.transactions-table th, .transactions-table td {
-    padding: 1rem;
-    text-align: left;
-    border-bottom: 1px solid #dee2e6;
-    vertical-align: middle;
+.transactions-table th,
+.transactions-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #dee2e6;
+  vertical-align: middle;
 }
 
 .transactions-table th {
-    font-weight: 600;
-    color: #6c757d;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+  font-weight: 600;
+  color: #6c757d;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .transactions-table td {
-    font-size: 0.9rem;
-    color: #212529;
+  font-size: 0.9rem;
+  color: #212529;
 }
 
 .transactions-table .icon-prefix {
-    margin-right: 0.5rem;
-    color: #6c757d;
+  margin-right: 0.5rem;
+  color: #6c757d;
 }
 
 .transactions-table .amount-cell {
-    font-weight: 600;
+  font-weight: 600;
 }
 
 .status-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.25em 0.6em;
-    font-size: 0.85rem;
-    font-weight: 600;
-    border-radius: 1rem;
-    color: #0f5132;
-    background-color: #d1e7dd;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25em 0.6em;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 1rem;
+  color: #0f5132;
+  background-color: #d1e7dd;
 }
 
 .status-badge i {
-    margin-right: 0.35rem;
+  margin-right: 0.35rem;
 }
 
 .status-paid {
-    color: #0f5132;
-    background-color: #d1e7dd;
+  color: #0f5132;
+  background-color: #d1e7dd;
 }
 
 .payment-method-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.25em 0.6em;
-    font-size: 0.85rem;
-    font-weight: 600;
-    border-radius: 1rem;
-    color: #fff;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25em 0.6em;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 1rem;
+  color: #fff;
 }
 
 .payment-method-badge i {
-    margin-right: 0.35rem;
+  margin-right: 0.35rem;
 }
 
 .payment-cash {
-    background-color: #28a745;
+  background-color: #28a745;
 }
 
-.payment-bank, .payment-bank_transfer {
-    background-color: #17a2b8;
+.payment-bank,
+.payment-bank_transfer {
+  background-color: #17a2b8;
 }
 
-.payment-credit_card, .payment-debit_card {
-    background-color: #6f42c1;
+.payment-credit_card,
+.payment-debit_card {
+  background-color: #6f42c1;
 }
 
 .payment-e_wallet {
-    background-color: #fd7e14;
+  background-color: #fd7e14;
 }
 
-.payment-null, .payment-undefined {
-    background-color: #6c757d;
+.payment-null,
+.payment-undefined {
+  background-color: #6c757d;
 }
 
 tr:last-child td {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 /* Đảm bảo input type=month hoạt động đúng */
@@ -277,4 +295,56 @@ input[type="month"]::-webkit-outer-spin-button {
 
 input[type="month"]::-moz-dropdown-arrow {
   display: none;
+}
+
+/* Pagination styles */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pagination-container button {
+  transition: all 0.2s ease;
+}
+
+.pagination-container button:hover:not(:disabled) {
+  background-color: #f8f9fa;
+  border-color: #6c63ff;
+}
+
+.pagination-container button:active {
+  transform: scale(0.95);
+}
+
+/* Responsive pagination */
+@media (max-width: 768px) {
+  .pagination-container {
+    gap: 4px;
+  }
+
+  .pagination-container button {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .pagination-container span {
+    font-size: 12px;
+    margin-left: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pagination-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .pagination-container span {
+    margin-left: 0;
+    text-align: center;
+  }
 }

@@ -24,6 +24,8 @@ const CarManagementPage = ({ user }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [currentCarToEdit, setCurrentCarToEdit] = useState(null);
   const [bookingStatuses, setBookingStatuses] = useState({}); // Lưu trạng thái booking cho từng xe
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [carToDelete, setCarToDelete] = useState(null);
 
   useEffect(() => {
     if (user && user.userId) {
@@ -119,6 +121,34 @@ const CarManagementPage = ({ user }) => {
 
   const handleCloseAddModal = () => {
     setIsAdding(false);
+  };
+
+  const handleDeleteClick = (car) => {
+    if (!canEditCar(car)) {
+      showErrorToast("Cannot delete car while it is being rented!");
+      return;
+    }
+    setCarToDelete(car);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!carToDelete) return;
+
+    try {
+      await deleteCar(carToDelete.licensePlate);
+      showSuccessToast("Car deleted successfully!");
+      refreshCarsData();
+      setShowDeleteModal(false);
+      setCarToDelete(null);
+    } catch (error) {
+      showErrorToast("Failed to delete car. Please try again.");
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteModal(false);
+    setCarToDelete(null);
   };
 
   if (loading) {
@@ -254,6 +284,18 @@ const CarManagementPage = ({ user }) => {
                 >
                   <i className="fas fa-edit"></i> Edit
                 </button>
+                <button
+                  className={`delete-btn ${!canEdit ? "disabled" : ""}`}
+                  onClick={() => handleDeleteClick(car)}
+                  disabled={!canEdit}
+                  title={
+                    !canEdit
+                      ? "Cannot delete car while it is being rented"
+                      : "Delete car"
+                  }
+                >
+                  <i className="fas fa-trash"></i> Delete
+                </button>
               </div>
             </div>
           );
@@ -280,6 +322,53 @@ const CarManagementPage = ({ user }) => {
 
       {isAdding && (
         <AddCarForm onSave={handleAddNewCar} onClose={handleCloseAddModal} />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && carToDelete && (
+        <div className="delete-modal-overlay">
+          <div className="delete-modal">
+            <div className="delete-modal-header">
+              <h3>Confirm Delete</h3>
+              <button
+                className="delete-modal-close"
+                onClick={handleCancelDelete}
+              >
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+            <div className="delete-modal-content">
+              <div className="delete-modal-icon">
+                <i className="fas fa-exclamation-triangle"></i>
+              </div>
+              <p>
+                Are you sure you want to delete{" "}
+                <strong>
+                  {carToDelete.brand} {carToDelete.model}
+                </strong>
+                ?
+              </p>
+              <p className="delete-modal-warning">
+                This action cannot be undone. All car data and images will be
+                permanently deleted.
+              </p>
+            </div>
+            <div className="delete-modal-actions">
+              <button
+                className="delete-modal-cancel"
+                onClick={handleCancelDelete}
+              >
+                Cancel
+              </button>
+              <button
+                className="delete-modal-confirm"
+                onClick={handleConfirmDelete}
+              >
+                Delete Car
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
