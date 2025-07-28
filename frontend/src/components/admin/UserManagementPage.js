@@ -3,6 +3,22 @@ import './UserManagement.css';
 import { useUserData } from '../../contexts/UserDataContext';
 import { showErrorToast, showSuccessToast } from '../notification/notification';
 
+// Modal xác nhận xóa user
+const ConfirmDeleteModal = ({ open, onCancel, onConfirm, user }) => (
+  open ? (
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <h3>Xác nhận xóa người dùng</h3>
+        <p>Bạn có chắc chắn muốn xóa user <b>{user?.fullName || user?.email || user?.userId}</b>?</p>
+        <div className="modal-actions">
+          <button className="modal-btn confirm" onClick={onConfirm}>OK</button>
+          <button className="modal-btn cancel" onClick={onCancel}>Hủy</button>
+        </div>
+      </div>
+    </div>
+  ) : null
+);
+
 const LoadingSpinner = () => (
   <div className="loading-container">
     <div className="loading-spinner">
@@ -17,6 +33,9 @@ const LoadingSpinner = () => (
 const UserManagementPage = () => {
     const { usersData, loading, error, fetchUsersData, updateUserRole, updateUserStatus, deleteUser } = useUserData();
     const [searchTerm, setSearchTerm] = useState('');
+    // State cho modal xác nhận xóa
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [userToDelete, setUserToDelete] = useState(null);
 
     useEffect(() => {
         // Fetch users data using context
@@ -33,15 +52,23 @@ const UserManagementPage = () => {
         }
     };
 
-    const handleDeleteUser = async (userId) => {
-        if (window.confirm('Are you sure you want to delete this user?')) {
-            try {
-                await deleteUser(userId);
-                showSuccessToast('User deleted successfully!');
-            } catch (err) {
-                console.error('Error deleting user:', err);
-                showErrorToast('Failed to delete user: ' + (err.response?.data?.message || err.message));
-            }
+    // Sửa lại hàm này để mở modal thay vì window.confirm
+    const handleDeleteUser = (user) => {
+        setUserToDelete(user);
+        setDeleteModalOpen(true);
+    };
+    // Hàm xác nhận xóa thực sự
+    const confirmDeleteUser = async () => {
+        if (!userToDelete) return;
+        try {
+            await deleteUser(userToDelete.userId);
+            showSuccessToast('User deleted successfully!');
+        } catch (err) {
+            console.error('Error deleting user:', err);
+            showErrorToast('Failed to delete user: ' + (err.response?.data?.message || err.message));
+        } finally {
+            setDeleteModalOpen(false);
+            setUserToDelete(null);
         }
     };
 
@@ -173,7 +200,7 @@ const UserManagementPage = () => {
                                 <td>
                                     <div className="action-buttons">
                                         <button
-                                            onClick={() => handleDeleteUser(user.userId)}
+                                            onClick={() => handleDeleteUser(user)}
                                             className="delete-button"
                                         >
                                             Delete
@@ -185,6 +212,13 @@ const UserManagementPage = () => {
                     </tbody>
                 </table>
             </div>
+            {/* Modal xác nhận xóa user */}
+            <ConfirmDeleteModal
+              open={deleteModalOpen}
+              onCancel={() => { setDeleteModalOpen(false); setUserToDelete(null); }}
+              onConfirm={confirmDeleteUser}
+              user={userToDelete}
+            />
         </div>
     );
 };
