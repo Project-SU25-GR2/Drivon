@@ -668,11 +668,11 @@ const MyRentals = () => {
                       />
                     </Tooltip>
                   )}
-                  {/* Nút hủy đặt xe luôn hiển thị nếu bookingStatus là ongoing hoặc pending */}
-                  {(bookingStatus?.toLowerCase() === 'ongoing' || bookingStatus?.toLowerCase() === 'pending') && bookingStatus?.toLowerCase() !== 'cancel_requested' && (
+                  {/* Nút hủy đặt xe chỉ hiển thị nếu bookingStatus là pending */}
+                  {bookingStatus?.toLowerCase() === 'pending' && bookingStatus?.toLowerCase() !== 'cancel_requested' && (
                     <Tooltip title="Cancel booking">
-                      <Button 
-                        className="cancel-booking-btn" 
+                      <Button
+                        className="cancel-booking-btn"
                         danger
                         style={{ backgroundColor: '#ff4d4f', borderColor: '#ff4d4f', color: 'white', border: 'none', boxShadow: 'none' }}
                         onClick={() => handleCancelBooking(rental)}
