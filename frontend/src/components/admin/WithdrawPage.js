@@ -306,7 +306,7 @@ const WithdrawPage = () => {
                     <thead>
                         <tr style={{ background: '#f5f7fa' }}>
                             <th style={{ padding: 12 }}>Request Date</th>
-                            <th>Car Owner</th>
+                            <th>User</th>
                             <th>Email</th>
                             <th>Account Number</th>
                             <th>Bank Name</th>

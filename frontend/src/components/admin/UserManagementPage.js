@@ -8,11 +8,11 @@ const ConfirmDeleteModal = ({ open, onCancel, onConfirm, user }) => (
   open ? (
     <div className="usermanager-modal-overlay">
       <div className="usermanager-modal-content">
-        <h3>Xác nhận xóa người dùng</h3>
-        <p>Bạn có chắc chắn muốn xóa user <b>{user?.fullName || user?.email || user?.userId}</b>?</p>
+        <h3>Confirm User Deletion</h3>
+        <p>Are you sure you want to delete user <b>{user?.fullName || user?.email || user?.userId}</b>?</p>
         <div className="usermanager-modal-actions">
           <button className="usermanager-modal-btn confirm" onClick={onConfirm}>OK</button>
-          <button className="usermanager-modal-btn cancel" onClick={onCancel}>Hủy</button>
+          <button className="usermanager-modal-btn cancel" onClick={onCancel}>Cancel</button>
         </div>
       </div>
     </div>
