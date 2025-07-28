@@ -199,10 +199,10 @@ const MainLayout = ({ user, handleLogout, children }) => {
                       <i className="bi bi-car-front"></i>
                       My Rentals
                     </Link>
-                    <Link to="/payment" className="dropdown-item">
+                    {/* <Link to="/payment" className="dropdown-item">
                       <i className="bi bi-credit-card"></i>
                       Payment
-                    </Link>
+                    </Link> */}
                     
                     {/* Admin Dashboard Button */}
                     {userRole === "admin" && (
