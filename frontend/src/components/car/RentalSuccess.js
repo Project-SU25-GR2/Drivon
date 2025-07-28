@@ -42,7 +42,7 @@ const RentalSuccess = () => {
   }, [location]);
 
   // Hàm xác nhận đơn hàng
-  const handleConfirmOrder = async () => {
+  const handleConfirmOrder = async (redirectTo = null) => {
     if (!rentalData) return;
     setConfirming(true);
     try {
@@ -64,7 +64,11 @@ const RentalSuccess = () => {
         setConfirmed(true);
         message.success('Order confirmed successfully!');
         setTimeout(() => {
-          navigate('/my-rentals');
+          if (redirectTo) {
+            navigate(redirectTo);
+          } else {
+            navigate('/my-rentals');
+          }
         }, 1000);
       } else {
         message.error('Unable to confirm order.');
@@ -99,14 +103,26 @@ const RentalSuccess = () => {
         title="Car Booking Successful!"
         subTitle={rentalData.paymentMethod === 'cash' ? "Thank you for booking. Please pay cash when receiving the car." : "Thank you for booking. Bank transfer transaction was successful."}
         extra={[
-          !confirmed && (
-            <Button type="primary" key="confirm" loading={confirming} onClick={handleConfirmOrder}>
-              Confirm Order
-            </Button>
-          ),
-          <Button key="console" onClick={() => navigate('/')}>Go to Homepage</Button>,
-          <Button key="buy" onClick={() => navigate('/my-rentals')}>View My Bookings</Button>,
-        ].filter(Boolean)}
+          <Button
+            type="primary"
+            key="confirm"
+            loading={confirming}
+            onClick={() => handleConfirmOrder()}>
+            Confirm Order
+          </Button>,
+          <Button
+            key="console"
+            loading={confirming}
+            onClick={() => handleConfirmOrder('/')}>
+            Go to Homepage
+          </Button>,
+          <Button
+            key="buy"
+            loading={confirming}
+            onClick={() => handleConfirmOrder('/my-rentals')}>
+            View My Bookings
+          </Button>
+        ]}
       />
       <Card style={{ marginTop: 24 }}>
         <Descriptions bordered column={1}>

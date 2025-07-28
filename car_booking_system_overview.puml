@@ -1,0 +1,147 @@
+@startuml Car Rental System Overview
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam handwritten false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 10
+
+title Car Rental System Overview - Drivon
+
+package "Frontend (React)" {
+  [Home Page] as Home
+  [Car Listing] as Listing
+  [Car Detail] as Detail
+  [Rental Form] as RentalForm
+  [Payment Page] as Payment
+  [User Dashboard] as Dashboard
+  [Owner Dashboard] as OwnerDashboard
+}
+
+package "Backend (Spring Boot)" {
+  package "Controllers" {
+    [CarController] as CarCtrl
+    [BookingController] as BookingCtrl
+    [PaymentController] as PaymentCtrl
+    [ContractController] as ContractCtrl
+    [AuthController] as AuthCtrl
+    [ProfileController] as ProfileCtrl
+  }
+  
+  package "Services" {
+    [CarService] as CarSvc
+    [BookingService] as BookingSvc
+    [PaymentService] as PaymentSvc
+    [ContractService] as ContractSvc
+    [EmailService] as EmailSvc
+    [JwtTokenProvider] as JwtSvc
+  }
+  
+  package "Repositories" {
+    [CarRepository] as CarRepo
+    [BookingRepository] as BookingRepo
+    [PaymentRepository] as PaymentRepo
+    [ContractRepository] as ContractRepo
+    [UserRepository] as UserRepo
+  }
+}
+
+package "External Services" {
+  [PayOS Payment Gateway] as PayOS
+  [Cloudinary] as Cloudinary
+  [Email Service] as EmailExt
+}
+
+database "Database (MySQL)" {
+  [Cars] as CarsDB
+  [Bookings] as BookingsDB
+  [Payments] as PaymentsDB
+  [Contracts] as ContractsDB
+  [Users] as UsersDB
+  [CancelRequests] as CancelDB
+}
+
+' Frontend connections
+Home --> Listing
+Listing --> Detail
+Detail --> RentalForm
+RentalForm --> Payment
+Payment --> Dashboard
+Dashboard --> OwnerDashboard
+
+' Frontend to Backend
+Listing --> CarCtrl
+Detail --> CarCtrl
+RentalForm --> BookingCtrl
+Payment --> PaymentCtrl
+Dashboard --> BookingCtrl
+OwnerDashboard --> BookingCtrl
+
+' Controller to Service
+CarCtrl --> CarSvc
+BookingCtrl --> BookingSvc
+PaymentCtrl --> PaymentSvc
+ContractCtrl --> ContractSvc
+
+' Service to Repository
+CarSvc --> CarRepo
+BookingSvc --> BookingRepo
+PaymentSvc --> PaymentRepo
+ContractSvc --> ContractRepo
+
+' Repository to Database
+CarRepo --> CarsDB
+BookingRepo --> BookingsDB
+PaymentRepo --> PaymentsDB
+ContractRepo --> ContractsDB
+UserRepo --> UsersDB
+BookingRepo --> CancelDB
+
+' External integrations
+PaymentSvc --> PayOS
+CarSvc --> Cloudinary
+EmailSvc --> EmailExt
+
+' Authentication flow
+AuthCtrl --> JwtSvc
+JwtSvc --> UserRepo
+
+note right of [PayOS]
+**Payment Methods:**
+- QR Code Payment
+- Bank Transfer
+- Cash Payment
+end note
+
+note right of [Cloudinary]
+**Image Management:**
+- Car Images
+- User Avatars
+- Document Uploads
+end note
+
+note right of [EmailExt]
+**Email Notifications:**
+- Rental Confirmations
+- Payment Receipts
+- Contract PDFs
+- Cancellation Notices
+end note
+
+note right of [CarsDB]
+**Car Status:**
+- AVAILABLE
+- RENTED
+- MAINTENANCE
+- UNAVAILABLE
+end note
+
+note right of [BookingsDB]
+**Rental Status:**
+- PENDING
+- CONFIRMED
+- ONGOING
+- COMPLETED
+- CANCELLED
+end note
+
+@enduml 

@@ -114,6 +114,9 @@
   box-sizing: border-box !important;
   min-height: 48px !important;
   height: 48px !important;
+  line-height: 1.5 !important;
+  vertical-align: middle !important;
+  margin: 0 !important;
 }
 
 .auth-input:focus {
@@ -509,11 +512,17 @@
 
 .auth-input.error {
   border: 2px solid #dc3545 !important;
+  line-height: 1.5 !important;
+  vertical-align: middle !important;
+  margin: 0 !important;
 }
 
 .auth-input.error:focus {
   border: 2px solid #dc3545 !important;
   box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+  line-height: 1.5 !important;
+  vertical-align: middle !important;
+  margin: 0 !important;
 }
 
 /* Globally disable tooltip transition to make them appear/disappear instantly.

@@ -50,6 +50,12 @@ const Signup = ({ onSignupSuccess }) => {
             if (err.response?.data) {
                 // Handle validation errors (object with field names as keys)
                 if (typeof err.response.data === 'object' && !err.response.data.general) {
+                    // Show toast for each field error
+                    Object.values(err.response.data).forEach(errorMsg => {
+                        if (errorMsg) {
+                            showErrorToast(errorMsg);
+                        }
+                    });
                     setErrors(err.response.data);
                 } else if (typeof err.response.data === 'object' && err.response.data.general) {
                     // Handle general error from backend (object with 'general' key)
@@ -222,7 +228,6 @@ const Signup = ({ onSignupSuccess }) => {
                     className={`auth-input ${errors.fullName ? 'error' : ''}`}
                     required
                 />
-                {errors.fullName && <div className="field-error">{errors.fullName}</div>}
             </div>
 
             <div>
@@ -235,7 +240,6 @@ const Signup = ({ onSignupSuccess }) => {
                     className={`auth-input ${errors.email ? 'error' : ''}`}
                     required
                 />
-                {errors.email && <div className="field-error">{errors.email}</div>}
             </div>
 
             <div>
@@ -248,7 +252,6 @@ const Signup = ({ onSignupSuccess }) => {
                     className={`auth-input ${errors.password ? 'error' : ''}`}
                     required
                 />
-                {errors.password && <div className="field-error">{errors.password}</div>}
             </div>
 
             <div>
@@ -261,7 +264,6 @@ const Signup = ({ onSignupSuccess }) => {
                     className={`auth-input ${errors.phone ? 'error' : ''}`}
                     required
                 />
-                {errors.phone && <div className="field-error">{errors.phone}</div>}
             </div>
 
             <div>
@@ -274,7 +276,6 @@ const Signup = ({ onSignupSuccess }) => {
                     className={`auth-input ${errors.address ? 'error' : ''}`}
                     required
                 />
-                {errors.address && <div className="field-error">{errors.address}</div>}
             </div>
 
             <SimpleButton

@@ -297,20 +297,20 @@ public class PaymentService {
                         payment.setPaymentId("PAYOS_" + System.currentTimeMillis());
                         payment.setOrderCode(orderCode);
                         payment.setAmount(amount);
-                        payment.setStatus("SUCCESS");
+                        payment.setStatus("PAID");
                         payment.setPaymentMethod("bank");
                         payment.setPaymentDate(LocalDateTime.now());
                         payment.setUserId(Long.valueOf(userId));
                         payment.setCarId(carId);
                         // Có thể bổ sung thêm các trường khác nếu webhook trả về
                         savePayment(payment);
-                        logger.info("Saved SUCCESS PayOS payment: {}", payment);
+                        logger.info("Saved PAID PayOS payment: {}", payment);
                     } else {
                         // Nếu đã có payment thì chỉ update status nếu cần
-                        if (!"SUCCESS".equalsIgnoreCase(payment.getStatus())) {
-                            payment.setStatus("SUCCESS");
+                        if (!"PAID".equalsIgnoreCase(payment.getStatus())) {
+                            payment.setStatus("PAID");
                             savePayment(payment);
-                            logger.info("Updated PayOS payment status to SUCCESS: {}", payment);
+                            logger.info("Updated PayOS payment status to PAID: {}", payment);
                         }
                     }
 
@@ -425,7 +425,7 @@ public class PaymentService {
                 payment.setPaymentId("PAYOS_" + System.currentTimeMillis());
                 payment.setOrderCode(orderCode);
                 payment.setAmount(amount);
-                payment.setStatus("SUCCESS");
+                payment.setStatus("PAID");
                 payment.setPaymentMethod(paymentMethod);
                 payment.setPaymentDate(LocalDateTime.now());
                 payment.setUserId(Long.valueOf(userId));
@@ -459,13 +459,13 @@ public class PaymentService {
                 payment.setDiscountPercent(discountPercent);
                 payment.setBookingId(bookingId);
                 savePayment(payment);
-                logger.info("Saved SUCCESS payment from frontend confirm: {}", payment);
+                logger.info("Saved PAID payment from frontend confirm: {}", payment);
             } else {
                 // Nếu đã có payment thì chỉ update status nếu cần
-                if (!"SUCCESS".equalsIgnoreCase(payment.getStatus())) {
-                    payment.setStatus("SUCCESS");
+                if (!"PAID".equalsIgnoreCase(payment.getStatus())) {
+                    payment.setStatus("PAID");
                     savePayment(payment);
-                    logger.info("Updated payment status to SUCCESS from frontend confirm: {}", payment);
+                    logger.info("Updated payment status to PAID from frontend confirm: {}", payment);
                 }
             }
             return ResponseEntity.ok(Map.of("success", true, "paymentId", payment.getPaymentId()));

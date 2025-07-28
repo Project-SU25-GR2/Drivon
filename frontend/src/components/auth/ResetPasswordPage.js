@@ -3,11 +3,11 @@ import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import SimpleButton from "../others/SimpleButton";
 import { API_URL } from '../../api/configApi';
+import { showErrorToast, showSuccessToast } from '../notification/notification';
+
 const ResetPasswordPage = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -16,11 +16,9 @@ const ResetPasswordPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setMessage("");
-    setError("");
 
     if (newPassword !== confirmPassword) {
-      setError("Passwords do not match");
+      showErrorToast("Passwords do not match");
       setIsLoading(false);
       return;
     }
@@ -33,10 +31,10 @@ const ResetPasswordPage = () => {
           newPassword,
         }
       );
-      setMessage("Password has been reset successfully");
+      showSuccessToast("Password has been reset successfully");
       setTimeout(() => navigate("/login"), 2000);
     } catch (err) {
-      setError(err.response?.data?.message || "Unable to reset password");
+      showErrorToast(err.response?.data?.message || "Unable to reset password");
     } finally {
       setIsLoading(false);
     }
@@ -76,34 +74,6 @@ const ResetPasswordPage = () => {
             minLength="6"
           />
         </div>
-
-        {message && (
-          <div
-            style={{
-              color: "green",
-              marginBottom: "15px",
-              padding: "10px",
-              backgroundColor: "#d4edda",
-              borderRadius: "4px",
-            }}
-          >
-            {message}
-          </div>
-        )}
-
-        {error && (
-          <div
-            style={{
-              color: "red",
-              marginBottom: "15px",
-              padding: "10px",
-              backgroundColor: "#ffebee",
-              borderRadius: "4px",
-            }}
-          >
-            {error}
-          </div>
-        )}
 
         <SimpleButton type="submit" isLoading={isLoading}>
           Reset Password

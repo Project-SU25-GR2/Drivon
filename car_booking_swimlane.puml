@@ -1,0 +1,105 @@
+@startuml Car Rental Swimlane Diagram
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam handwritten false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+title Car Rental Flow - Drivon System
+
+|User|
+start
+:Search for cars;
+:Browse car listings;
+:Select desired car;
+:Fill rental information;
+note right
+- Start date
+- End date  
+- Personal information
+end note
+
+|Frontend|
+:Display car listings;
+:Show car details;
+:Display rental form;
+:Validate input data;
+:Show payment information;
+
+|Backend API|
+:GET /api/cars;
+:GET /api/cars/{licensePlate};
+:POST /api/bookings;
+:Validate rental request;
+:Check car availability;
+:POST /api/payments/create;
+
+|Payment Gateway|
+:PayOS Integration;
+:QR Code Generation;
+:Payment Processing;
+:Webhook Notification;
+
+|Database|
+:Query available cars;
+:Query car details;
+:Create rental record;
+:Update car status;
+:Create payment record;
+:Update payment status;
+
+|Email Service|
+:Send rental confirmation;
+:Send payment receipt;
+
+|User|
+:Pay via QR code;
+:Wait for payment confirmation;
+:Receive confirmation email;
+:Complete rental;
+
+|Frontend|
+:Redirect to payment page;
+:Display QR code;
+:Poll payment status;
+:Show success page;
+
+|Backend API|
+:POST /api/payments/webhook;
+:Update rental status;
+:Generate contract;
+:POST /api/contracts/lease;
+
+|Database|
+:Update rental status;
+:Create contract record;
+:Update car availability;
+
+|Email Service|
+:Send contract PDF;
+
+|User|
+:Receive contract;
+:Review contract terms;
+stop
+
+legend right
+|= |= |
+|<#lightblue>|**Rental Status:**|
+| |PENDING: Awaiting payment|
+| |CONFIRMED: Payment confirmed|
+| |ONGOING: Currently renting|
+| |COMPLETED: Rental completed|
+| |CANCELLED: Rental cancelled|
+|<#lightgreen>|**Payment Methods:**|
+| |QR Code (PayOS)|
+| |Cash Payment|
+| |Bank Transfer|
+|<#lightyellow>|**Main APIs:**|
+| |BookingController|
+| |PaymentController|
+| |ContractController|
+| |CarController|
+endlegend
+
+@enduml 
