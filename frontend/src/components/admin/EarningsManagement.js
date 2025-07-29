@@ -139,7 +139,7 @@ const EarningsManagement = () => {
                                 width: '50%',
                                 text: [
                                     { text: 'Total website revenue: ', bold: true },
-                                    { text: formatCurrency(statistics.totalSystemRevenue) }
+                                    { text: formatCurrency(totalSystemMoney - statistics.totalSystemDebt) }
                                 ]
                             }
                         ],
@@ -294,8 +294,8 @@ const EarningsManagement = () => {
                     </div>
                     <div className="stat-content">
                         <h3>Total Website Revenue</h3>
-                        <p className="stat-value">{formatCurrency(statistics.totalSystemRevenue)}</p>
-                        <span className="stat-change positive">2% fee from all transactions</span>
+                        <p className="stat-value">{formatCurrency(totalSystemMoney - statistics.totalSystemDebt)}</p>
+                        <span className="stat-change positive">Money in system minus total debt</span>
                     </div>
                 </div>
             </div>
